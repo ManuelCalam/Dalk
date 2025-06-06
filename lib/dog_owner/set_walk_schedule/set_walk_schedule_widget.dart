@@ -22,6 +22,7 @@ class SetWalkScheduleWidget extends StatefulWidget {
   });
 
   final int? selectedAddress;
+  
 
   static String routeName = 'setWalkSchedule';
   static String routePath = '/setWalkSchedule';
@@ -34,11 +35,13 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
   late SetWalkScheduleModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  int? selectedAddressId;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => SetWalkScheduleModel());
+    selectedAddressId = widget.selectedAddress;
   }
 
   @override
@@ -561,84 +564,8 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                       ),
                                     ),
                                   ),
-                                  InkWell(
-                                    splashColor: Colors.transparent,
-                                    focusColor: Colors.transparent,
-                                    hoverColor: Colors.transparent,
-                                    highlightColor: Colors.transparent,
-                                    onTap: () async {
-                                      context.pushNamed(
-                                          AddAddressWidget.routeName);
-                                    },
-                                    child: Container(
-                                      width: 100.0,
-                                      height: 110.0,
-                                      decoration: BoxDecoration(
-                                        color: FlutterFlowTheme.of(context)
-                                            .alternate,
-                                        borderRadius:
-                                            BorderRadius.circular(20.0),
-                                      ),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.max,
-                                        children: [
-                                          Container(
-                                            width: 100.0,
-                                            height: 70.0,
-                                            decoration: BoxDecoration(),
-                                            child: Icon(
-                                              Icons.add_home_work_rounded,
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primary,
-                                              size: 45.0,
-                                            ),
-                                          ),
-                                          Container(
-                                            width: 100.0,
-                                            height: 30.0,
-                                            decoration: BoxDecoration(),
-                                            child: Align(
-                                              alignment: AlignmentDirectional(
-                                                  0.0, 0.0),
-                                              child: AutoSizeText(
-                                                'Agregar dirección',
-                                                textAlign: TextAlign.center,
-                                                maxLines: 1,
-                                                minFontSize: 8.0,
-                                                style: FlutterFlowTheme.of(
-                                                        context)
-                                                    .bodyMedium
-                                                    .override(
-                                                      font: GoogleFonts.lexend(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                      color: FlutterFlowTheme
-                                                              .of(context)
-                                                          .secondaryBackground,
-                                                      fontSize: 12.0,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .fontStyle,
-                                                    ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
+        
+                                  // ListView Dinamico de las Direcciones
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         0.0, 10.0, 0.0, 0.0),
@@ -647,86 +574,128 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                           1.0,
                                       height: 110.0,
                                       decoration: BoxDecoration(),
+                                      
                                       child: StreamBuilder<List<AddressesRow>>(
-                                        stream: _model
-                                                .addressesListViewSupabaseStream ??=
+                                        stream: _model.addressesListViewSupabaseStream ??=
                                             SupaFlow.client
                                                 .from("addresses")
                                                 .stream(primaryKey: ['id'])
-                                                .eqOrNull(
-                                                  'uuid',
-                                                  currentUserUid,
-                                                )
-                                                .map((list) => list
-                                                    .map((item) =>
-                                                        AddressesRow(item))
-                                                    .toList()),
+                                                .eqOrNull('uuid', currentUserUid)
+                                                .map((list) => list.map((item) => AddressesRow(item)).toList()),
                                         builder: (context, snapshot) {
-                                          // Customize what your widget looks like when it's loading.
                                           if (!snapshot.hasData) {
                                             return Center(
                                               child: SizedBox(
                                                 width: 50.0,
                                                 height: 50.0,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                  valueColor:
-                                                      AlwaysStoppedAnimation<
-                                                          Color>(
-                                                    FlutterFlowTheme.of(context)
-                                                        .primary,
+                                                child: CircularProgressIndicator(
+                                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                                    FlutterFlowTheme.of(context).primary,
                                                   ),
                                                 ),
                                               ),
                                             );
                                           }
-                                          List<AddressesRow>
-                                              addressesListViewAddressesRowList =
-                                              snapshot.data!;
+                                          List<AddressesRow> addressesList = snapshot.data!;
 
                                           return ListView.separated(
                                             padding: EdgeInsets.zero,
                                             primary: false,
                                             shrinkWrap: true,
                                             scrollDirection: Axis.horizontal,
-                                            itemCount:
-                                                addressesListViewAddressesRowList
-                                                    .length,
-                                            separatorBuilder: (_, __) =>
-                                                SizedBox(width: 10.0),
-                                            itemBuilder: (context,
-                                                addressesListViewIndex) {
-                                              final addressesListViewAddressesRow =
-                                                  addressesListViewAddressesRowList[
-                                                      addressesListViewIndex];
-                                              return wrapWithModel(
-                                                model: _model.addressCardModels
-                                                    .getModel(
-                                                  widget!.selectedAddress!
-                                                      .toString(),
-                                                  addressesListViewIndex,
-                                                ),
-                                                updateCallback: () =>
-                                                    safeSetState(() {}),
-                                                child: AddressCardWidget(
-                                                  key: Key(
-                                                    'Keyil1_${widget!.selectedAddress!.toString()}',
+                                            itemCount: addressesList.length + 1, // +1 para el botón extra
+                                            separatorBuilder: (_, __) => SizedBox(width: 10.0),
+                                            itemBuilder: (context, index) {
+                                              if (index < addressesList.length) {
+                                                final address = addressesList[index];
+                                                return GestureDetector(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      if (selectedAddressId == address.id) {
+                                                        selectedAddressId = null; // Deselecciona si ya estaba seleccionada
+                                                      } else {
+                                                        selectedAddressId = address.id; // Selecciona si era otra
+                                                      }
+                                                    });
+                                                  },
+                                                  child: AddressCardWidget(
+                                                    key: Key('Keyil1_${address.id}'),
+                                                    alias: address.alias,
+                                                    id: address.id,
+                                                    selected: selectedAddressId == address.id, // Solo uno seleccionado
                                                   ),
-                                                  alias:
-                                                      addressesListViewAddressesRow
-                                                          .alias,
-                                                  id: addressesListViewAddressesRow
-                                                      .id,
-                                                  selected: widget!
-                                                          .selectedAddress ==
-                                                      addressesListViewAddressesRow
-                                                          .id,
-                                                ),
-                                              );
+                                                );
+                                              } else {
+                                                // Último elemento: botón para agregar dirección
+                                                return InkWell(
+                                                  splashColor: Colors.transparent,
+                                                  focusColor: Colors.transparent,
+                                                  hoverColor: Colors.transparent,
+                                                  highlightColor: Colors.transparent,
+                                                  onTap: () async {
+                                                    context.pushNamed(AddAddressWidget.routeName);
+                                                  },
+                                                  child: Container(
+                                                    width: 100.0,
+                                                    height: 110.0,
+                                                    decoration: BoxDecoration(
+                                                      color: FlutterFlowTheme.of(context).alternate,
+                                                      borderRadius: BorderRadius.circular(20.0),
+                                                    ),
+                                                    child: Column(
+                                                      mainAxisSize: MainAxisSize.max,
+                                                      children: [
+                                                        Container(
+                                                          width: 100.0,
+                                                          height: 70.0,
+                                                          decoration: BoxDecoration(),
+                                                          child: Icon(
+                                                            Icons.add_home_work_rounded,
+                                                            color: FlutterFlowTheme.of(context).primary,
+                                                            size: 45.0,
+                                                          ),
+                                                        ),
+                                                        Container(
+                                                          width: 100.0,
+                                                          height: 30.0,
+                                                          decoration: BoxDecoration(),
+                                                          child: Align(
+                                                            alignment: AlignmentDirectional(0.0, 0.0),
+                                                            child: AutoSizeText(
+                                                              'Agregar dirección',
+                                                              textAlign: TextAlign.center,
+                                                              maxLines: 1,
+                                                              minFontSize: 8.0,
+                                                              style: FlutterFlowTheme.of(context)
+                                                                  .bodyMedium
+                                                                  .override(
+                                                                    font: GoogleFonts.lexend(
+                                                                      fontWeight: FontWeight.w500,
+                                                                      fontStyle: FlutterFlowTheme.of(context)
+                                                                          .bodyMedium
+                                                                          .fontStyle,
+                                                                    ),
+                                                                    color: FlutterFlowTheme.of(context)
+                                                                        .secondaryBackground,
+                                                                    fontSize: 12.0,
+                                                                    letterSpacing: 0.0,
+                                                                    fontWeight: FontWeight.w500,
+                                                                    fontStyle: FlutterFlowTheme.of(context)
+                                                                        .bodyMedium
+                                                                        .fontStyle,
+                                                                  ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                );
+                                              }
                                             },
                                           );
                                         },
-                                      ),
+                                      )
                                     ),
                                   ),
                                   Align(

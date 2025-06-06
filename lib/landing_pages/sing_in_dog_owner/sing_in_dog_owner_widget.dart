@@ -135,7 +135,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    'DueÃ±o',
+                                    'Dueño',
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .override(
@@ -161,7 +161,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         0, 5, 0, 0),
                                     child: Text(
-                                      'Â¡Registrate como dueÃ±o!',
+                                      '¡Registrate como dueño!',
                                       textAlign: TextAlign.center,
                                       style: FlutterFlowTheme.of(context)
                                           .bodyMedium
@@ -830,7 +830,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                     initialDate:
                                                         getCurrentTimestamp,
                                                     firstDate:
-                                                        getCurrentTimestamp,
+                                                        DateTime(1900),
                                                     lastDate: DateTime(2050),
                                                     builder: (context, child) {
                                                       return wrapInMaterialDatePickerTheme(
@@ -952,7 +952,9 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                                 .fromSTEB(
                                                                     7, 0, 0, 0),
                                                         child: AutoSizeText(
-                                                          'Fecha de nacimiento\n',
+                                                          _model.datePicked != null
+                                                            ? 'Fecha de nacimiento: ${dateTimeFormat('d/M/y', _model.datePicked)}'
+                                                            : 'Fecha de nacimiento',
                                                           textAlign:
                                                               TextAlign.start,
                                                           maxLines: 1,
@@ -1060,7 +1062,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                               .bodyMedium
                                                               .fontStyle,
                                                     ),
-                                                hintText: 'GÃ©nero',
+                                                hintText: 'Género',
                                                 icon: Icon(
                                                   Icons
                                                       .keyboard_arrow_down_rounded,
@@ -2060,7 +2062,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                     .passDogOwnerInputVisibility,
                                                 decoration: InputDecoration(
                                                   isDense: true,
-                                                  labelText: 'ContraseÃ±a',
+                                                  labelText: 'Contraseña',
                                                   labelStyle: FlutterFlowTheme
                                                           .of(context)
                                                       .bodyMedium
@@ -2268,7 +2270,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                 decoration: InputDecoration(
                                                   isDense: true,
                                                   labelText:
-                                                      'Confirmar contraseÃ±a',
+                                                      'Confirmar contraseña',
                                                   labelStyle: FlutterFlowTheme
                                                           .of(context)
                                                       .bodyMedium
@@ -2473,7 +2475,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                     print('===> [Registro] Las contraseñas no coinciden');
                                                     ScaffoldMessenger.of(context).showSnackBar(
                                                       SnackBar(
-                                                        content: Text('Passwords don\'t match!'),
+                                                        content: Text('Las contraseñas no coinciden!'),
                                                       ),
                                                     );
                                                     return;
@@ -2511,26 +2513,55 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                       'uuid': currentUserUid,
                                                       'name': _model.nameDogOwnerInputTextController.text,
                                                       'email': currentUserEmail,
+                                                      'phone': _model.phoneDogOwnerInputTextController.text,
                                                       'birthdate': supaSerialize<DateTime>(_model.datePicked),
                                                       'gender': _model.genderDogOwnerMenuValue,
                                                       'address': _model.streetDogOwnerInputTextController.text,
-                                                      'aptNumber': _model.apartamentNumDogOwnerInputTextController.text,
+                                                      'houseNumber': _model.apartamentNumDogOwnerInputTextController.text,
+                                                      'zipCode': _model.zipCodeDogOwnerInputTextController.text,
+                                                      'neighborhood': _model.neighborhoodDogOwnerInputTextController.text,
+                                                      'city': _model.cityDogOwnerInputTextController.text,
+                                                      'usertype': 'Dueño'
+                                                    });
+
+                                                    try{
+                                                    final response = await Supabase.instance.client
+                                                    .from('addresses')
+                                                    .insert({
+                                                      'uuid': currentUserUid,
+                                                      'alias': 'Mi Dirección',
+                                                      'address': _model.streetDogOwnerInputTextController.text,
+                                                      'houseNumber': _model.apartamentNumDogOwnerInputTextController.text,
                                                       'zipCode': _model.zipCodeDogOwnerInputTextController.text,
                                                       'neighborhood': _model.neighborhoodDogOwnerInputTextController.text,
                                                       'city': _model.cityDogOwnerInputTextController.text,
                                                     });
+                                                    print('===>[Registro de Direccion] Insert response: $response');
+                                                  } catch (e, st) {
+                                                    print('===> [Registro] ERROR en insert: $e');
+                                                    print(st);
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text('Error al registrar usuario: $e')
+                                                      ),
+                                                    );
+                                                    return;
+                                                  }
+
+
                                                     print('===> [Registro] Insert response: $response');
                                                   } catch (e, st) {
                                                     print('===> [Registro] ERROR en insert: $e');
                                                     print(st);
                                                     ScaffoldMessenger.of(context).showSnackBar(
                                                       SnackBar(
-                                                        content: Text('Error al registrar usuario: $e'),
+                                                        content: Text('Error al registrar usuario: $e')
                                                       ),
                                                     );
                                                     return;
                                                   }
 
+                                                  
                                                   print('===> [Registro] Navegando a HomeDogOwner');
                                                   context.goNamedAuth(HomeDogOwnerWidget.routeName, context.mounted);
                                                 },
