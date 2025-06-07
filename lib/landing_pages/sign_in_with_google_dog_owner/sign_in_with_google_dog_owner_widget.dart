@@ -774,31 +774,33 @@ class _SignInWithGoogleDogOwnerWidgetState
                                                     .fromSTEB(0, 18, 0, 0),
                                                 child: FFButtonWidget(
                                                    onPressed: () async {
-                                                      print('currentUserUid: $currentUserUid');
-                                                      print('currentUserEmail: $currentUserEmail');
-                                                      
-                                                      final session = Supabase.instance.client.auth.currentSession;
-                                                      print('Session: $session');
-                                                      print('Access token: ${session?.accessToken}');
                                                       if (currentUserUid == null) {
                                                         ScaffoldMessenger.of(context).showSnackBar(
                                                           SnackBar(content: Text('Error: usuario no autenticado')),
                                                         );
                                                         return;
                                                       }
-                                                      await Supabase.instance.client
-                                                      .from('users')
-                                                      .insert({
-                                                        'uuid': currentUserUid,
-                                                        'name': _model.nameInputTextController.text,
-                                                        'email': currentUserEmail,
-                                                        'usertype': 'Dueño',
-                                                        'phone': _model.phoneInputTextController.text,
-                                                        'neighborhood': _model.neighborhoodInputTextController.text,
-                                                      });
+                                                      try {
+                                                          final response = await Supabase.instance.client
+                                                            .from('users')
+                                                            .insert({
+                                                              'uuid': currentUserUid,
+                                                              'name': _model.nameInputTextController.text,
+                                                              'email': currentUserEmail,
+                                                              'usertype': 'Dueño',
+                                                              'phone': _model.phoneInputTextController.text,
+                                                              'neighborhood': _model.neighborhoodInputTextController.text,
+                                                            });
 
-
-                                                      context.goNamed(HomeDogOwnerWidget.routeName);
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            SnackBar(content: Text('¡Registro exitoso!')),
+                                                          );
+                                                          context.goNamed(HomeDogOwnerWidget.routeName);
+                                                        } catch (e) {
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            SnackBar(content: Text('Error al registrar usuario: $e')),
+                                                          );
+                                                        }
                                                     },
                                                   text: 'Registrarse',
                                                   options: FFButtonOptions(

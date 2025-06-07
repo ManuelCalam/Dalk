@@ -39,7 +39,7 @@ class _ChooseUserTypeWidgetState extends State<ChooseUserTypeWidget> {
     super.dispose();
   }
 
-  @override
+ @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
@@ -53,266 +53,224 @@ class _ChooseUserTypeWidgetState extends State<ChooseUserTypeWidget> {
           top: true,
           child: Column(
             mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Align(
-                alignment: AlignmentDirectional(0, 0),
-                child: Container(
-                  width: MediaQuery.sizeOf(context).width,
-                  height: MediaQuery.sizeOf(context).height * 0.1,
-                  decoration: BoxDecoration(
-                    color: FlutterFlowTheme.of(context).secondary,
-                  ),
+              Container(
+                width: MediaQuery.sizeOf(context).width,
+                decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).tertiary,
+                  borderRadius: BorderRadius.circular(50),
                 ),
-              ),
-              Expanded(
-                child: Align(
-                  alignment: AlignmentDirectional(0, -1),
-                  child: Container(
-                    width: MediaQuery.sizeOf(context).width,
-                    height: MediaQuery.sizeOf(context).height * 0.58,
-                    decoration: BoxDecoration(
-                      color: FlutterFlowTheme.of(context).secondary,
-                      borderRadius: BorderRadius.circular(0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    wrapWithModel(
+                      model: _model.goBackContainerModel,
+                      updateCallback: () => safeSetState(() {}),
+                      child: GoBackContainerWidget(),
                     ),
-                    child: Container(
+                    Container(
                       width: MediaQuery.sizeOf(context).width,
-                      height: MediaQuery.sizeOf(context).height,
-                      decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context).tertiary,
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          wrapWithModel(
-                            model: _model.goBackContainerModel,
-                            updateCallback: () => safeSetState(() {}),
-                            child: GoBackContainerWidget(),
-                          ),
-                          Container(
-                            width: MediaQuery.sizeOf(context).width,
-                            height: 100,
-                            decoration: BoxDecoration(),
-                            child: Align(
-                              alignment: AlignmentDirectional(0, 0),
-                              child: AutoSizeText(
-                                'Â¿DueÃ±o o paseador?',
-                                textAlign: TextAlign.center,
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      font: GoogleFonts.lexend(
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .fontStyle,
-                                      ),
-                                      color:
-                                          FlutterFlowTheme.of(context).primary,
-                                      fontSize: 30,
-                                      letterSpacing: 0.0,
+                      height: 100,
+                      decoration: BoxDecoration(),
+                      child: Align(
+                        alignment: AlignmentDirectional(0, 0),
+                        child: AutoSizeText(
+                          '?Dueño o paseador?',
+                          textAlign: TextAlign.center,
+                          style:
+                              FlutterFlowTheme.of(context).bodyMedium.override(
+                                    font: GoogleFonts.lexend(
                                       fontWeight: FontWeight.bold,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .bodyMedium
                                           .fontStyle,
                                     ),
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding:
-                                EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
-                            child: Container(
-                              width: MediaQuery.sizeOf(context).width,
-                              height: 360,
-                              decoration: BoxDecoration(),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.max,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Align(
-                                    alignment: AlignmentDirectional(0, -1),
-                                    child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0, 0, 10, 0),
-                                      child: InkWell(
-                                        splashColor: Colors.transparent,
-                                        focusColor: Colors.transparent,
-                                        hoverColor: Colors.transparent,
-                                        highlightColor: Colors.transparent,
-                                        onTap: () async {
-                                          context.pushNamed(
-                                              SignInWithGoogleDogOwnerWidget
-                                                  .routeName);
-                                        },
-                                        child: Container(
-                                          width:
-                                              MediaQuery.sizeOf(context).width *
-                                                  0.37,
-                                          height: MediaQuery.sizeOf(context)
-                                                  .height *
-                                              0.21,
-                                          decoration: BoxDecoration(
-                                            color: FlutterFlowTheme.of(context)
-                                                .alternate,
-                                            borderRadius:
-                                                BorderRadius.circular(25),
-                                          ),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.max,
-                                            children: [
-                                              Container(
-                                                width: 100,
-                                                height: 130,
-                                                decoration: BoxDecoration(),
-                                                child: ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                  child: Image.asset(
-                                                    'assets/images/dueo.png',
-                                                    width: 200,
-                                                    height: 200,
-                                                    fit: BoxFit.cover,
-                                                  ),
-                                                ),
-                                              ),
-                                              Flexible(
-                                                child: AutoSizeText(
-                                                  'DueÃ±o',
-                                                  textAlign: TextAlign.center,
-                                                  maxLines: 1,
-                                                  minFontSize: 18,
-                                                  style: FlutterFlowTheme.of(
-                                                          context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font:
-                                                            GoogleFonts.lexend(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .accent1,
-                                                        fontSize: 25,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
+                                    color: FlutterFlowTheme.of(context).primary,
+                                    fontSize: 30,
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.bold,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontStyle,
                                   ),
-                                  Align(
-                                    alignment: AlignmentDirectional(0, -1),
-                                    child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          10, 0, 0, 0),
-                                      child: InkWell(
-                                        splashColor: Colors.transparent,
-                                        focusColor: Colors.transparent,
-                                        hoverColor: Colors.transparent,
-                                        highlightColor: Colors.transparent,
-                                        onTap: () async {
-                                          context.pushNamed(
-                                              SingInDogWalkerWidget.routeName);
-                                        },
-                                        child: Container(
-                                          width:
-                                              MediaQuery.sizeOf(context).width *
-                                                  0.37,
-                                          height: MediaQuery.sizeOf(context)
-                                                  .height *
-                                              0.21,
-                                          decoration: BoxDecoration(
-                                            color: FlutterFlowTheme.of(context)
-                                                .alternate,
-                                            borderRadius:
-                                                BorderRadius.circular(25),
-                                          ),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.max,
-                                            children: [
-                                              Container(
-                                                width: 100,
-                                                height: 130,
-                                                decoration: BoxDecoration(),
-                                                child: ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                  child: Image.asset(
-                                                    'assets/images/paseador.png',
-                                                    width: 200,
-                                                    height: 200,
-                                                    fit: BoxFit.cover,
-                                                  ),
-                                                ),
-                                              ),
-                                              Flexible(
-                                                child: AutoSizeText(
-                                                  'Paseador',
-                                                  textAlign: TextAlign.center,
-                                                  maxLines: 1,
-                                                  minFontSize: 18,
-                                                  style: FlutterFlowTheme.of(
-                                                          context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font:
-                                                            GoogleFonts.lexend(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .accent1,
-                                                        fontSize: 25,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
+                    Padding(
+                      padding: EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+                      child: Container(
+                        width: MediaQuery.sizeOf(context).width,
+                        height: MediaQuery.sizeOf(context).height * 0.3,
+                        decoration: BoxDecoration(),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Align(
+                              alignment: AlignmentDirectional(0, -1),
+                              child: Padding(
+                                padding:
+                                    EdgeInsetsDirectional.fromSTEB(0, 0, 10, 0),
+                                child: InkWell(
+                                  splashColor: Colors.transparent,
+                                  focusColor: Colors.transparent,
+                                  hoverColor: Colors.transparent,
+                                  highlightColor: Colors.transparent,
+                                  onTap: () async {
+                                    context.pushNamed(
+                                        SignInWithGoogleDogOwnerWidget
+                                            .routeName);
+                                  },
+                                  child: Container(
+                                    width:
+                                        MediaQuery.sizeOf(context).width * 0.37,
+                                    height: MediaQuery.sizeOf(context).height *
+                                        0.21,
+                                    decoration: BoxDecoration(
+                                      color: FlutterFlowTheme.of(context)
+                                          .alternate,
+                                      borderRadius: BorderRadius.circular(25),
+                                    ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.max,
+                                      children: [
+                                        Container(
+                                          width: 100,
+                                          height: 130,
+                                          decoration: BoxDecoration(),
+                                          child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            child: Image.asset(
+                                              'assets/images/dueo.png',
+                                              width: 200,
+                                              height: 200,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        ),
+                                        Flexible(
+                                          child: AutoSizeText(
+                                            'Dueño',
+                                            textAlign: TextAlign.center,
+                                            maxLines: 1,
+                                            minFontSize: 18,
+                                            style: FlutterFlowTheme.of(context)
+                                                .bodyMedium
+                                                .override(
+                                                  font: GoogleFonts.lexend(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontStyle:
+                                                        FlutterFlowTheme.of(
+                                                                context)
+                                                            .bodyMedium
+                                                            .fontStyle,
+                                                  ),
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .accent1,
+                                                  fontSize: 25,
+                                                  letterSpacing: 0.0,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontStyle:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .bodyMedium
+                                                          .fontStyle,
+                                                ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Align(
+                              alignment: AlignmentDirectional(0, -1),
+                              child: Padding(
+                                padding:
+                                    EdgeInsetsDirectional.fromSTEB(10, 0, 0, 0),
+                                child: InkWell(
+                                  splashColor: Colors.transparent,
+                                  focusColor: Colors.transparent,
+                                  hoverColor: Colors.transparent,
+                                  highlightColor: Colors.transparent,
+                                  onTap: () async {
+                                    context.pushNamed(
+                                        SingInDogWalkerWidget.routeName);
+                                  },
+                                  child: Container(
+                                    width:
+                                        MediaQuery.sizeOf(context).width * 0.37,
+                                    height: MediaQuery.sizeOf(context).height *
+                                        0.21,
+                                    decoration: BoxDecoration(
+                                      color: FlutterFlowTheme.of(context)
+                                          .alternate,
+                                      borderRadius: BorderRadius.circular(25),
+                                    ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.max,
+                                      children: [
+                                        Container(
+                                          width: 100,
+                                          height: 130,
+                                          decoration: BoxDecoration(),
+                                          child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            child: Image.asset(
+                                              'assets/images/paseador.png',
+                                              width: 200,
+                                              height: 200,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        ),
+                                        Flexible(
+                                          child: AutoSizeText(
+                                            'Paseador',
+                                            textAlign: TextAlign.center,
+                                            maxLines: 1,
+                                            minFontSize: 18,
+                                            style: FlutterFlowTheme.of(context)
+                                                .bodyMedium
+                                                .override(
+                                                  font: GoogleFonts.lexend(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontStyle:
+                                                        FlutterFlowTheme.of(
+                                                                context)
+                                                            .bodyMedium
+                                                            .fontStyle,
+                                                  ),
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .accent1,
+                                                  fontSize: 25,
+                                                  letterSpacing: 0.0,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontStyle:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .bodyMedium
+                                                          .fontStyle,
+                                                ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

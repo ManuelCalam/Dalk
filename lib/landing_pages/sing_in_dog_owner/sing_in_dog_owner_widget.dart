@@ -32,6 +32,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
   late SingInDogOwnerModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool isRegistering = false;
 
   @override
   void initState() {
@@ -2466,22 +2467,22 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(0, 18, 0, 18),
                                               child: FFButtonWidget(
-                                                onPressed: () async {
-                                                  print('===> [Registro] Botón presionado');
+                                                onPressed: isRegistering ? null : () async {
+                                                  setState(() => isRegistering = true);
                                                   GoRouter.of(context).prepareAuthEvent();
 
                                                   if (_model.passDogOwnerInputTextController.text !=
                                                       _model.confirmPassDogOwnerInputTextController.text) {
-                                                    print('===> [Registro] Las contraseñas no coinciden');
                                                     ScaffoldMessenger.of(context).showSnackBar(
                                                       SnackBar(
                                                         content: Text('Las contraseñas no coinciden!'),
                                                       ),
                                                     );
+                                                    setState(() => isRegistering = false);
                                                     return;
                                                   }
 
-                                                  print('===> [Registro] Intentando crear usuario en Auth');
+                                                  // Autenticación en Supabase
                                                   try{
 
                                                     final user = await authManager.createAccountWithEmail(
@@ -2489,23 +2490,22 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                       _model.emailDogOwnerInputTextController.text,
                                                       _model.passDogOwnerInputTextController.text,
                                                     );
-                                                    print('===> [Registro] Resultado de createAccountWithEmail: $user');
                                                     if (user == null) {
-                                                      print('===> [Registro] No se pudo crear el usuario en Auth');
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(content: Text('No se pudo crear el usuario.')),
+                                                      );
+                                                      setState(() => isRegistering = false);
                                                       return;
                                                     }
                                                   } catch (e, st){
-                                                    print('===> [Registro] ERROR en createAccountWithEmail: $e');
-                                                    print(st);
                                                     ScaffoldMessenger.of(context).showSnackBar(
                                                       SnackBar(content: Text('Error al crear usuario: $e')),
                                                     );
+                                                    setState(() => isRegistering = false);    
                                                     return;
                                                   }
 
-                                                  print('===> [Registro] currentUserUid: $currentUserUid');
-                                                  print('===> [Registro] currentUserEmail: $currentUserEmail');
-                                                  print('===> [Registro] Insertando en tabla users...');
+                                                  // Registro en la tabla users
                                                   try {
                                                     final response = await Supabase.instance.client
                                                     .from('users')
@@ -2524,46 +2524,45 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                       'usertype': 'Dueño'
                                                     });
 
+                                                    // Registro en la tabla addresses
                                                     try{
-                                                    final response = await Supabase.instance.client
-                                                    .from('addresses')
-                                                    .insert({
-                                                      'uuid': currentUserUid,
-                                                      'alias': 'Mi Dirección',
-                                                      'address': _model.streetDogOwnerInputTextController.text,
-                                                      'houseNumber': _model.apartamentNumDogOwnerInputTextController.text,
-                                                      'zipCode': _model.zipCodeDogOwnerInputTextController.text,
-                                                      'neighborhood': _model.neighborhoodDogOwnerInputTextController.text,
-                                                      'city': _model.cityDogOwnerInputTextController.text,
+                                                      final response = await Supabase.instance.client
+                                                      .from('addresses')
+                                                      .insert({
+                                                        'uuid': currentUserUid,
+                                                        'alias': 'Mi Dirección',
+                                                        'address': _model.streetDogOwnerInputTextController.text,
+                                                        'houseNumber': _model.apartamentNumDogOwnerInputTextController.text,
+                                                        'zipCode': _model.zipCodeDogOwnerInputTextController.text,
+                                                        'neighborhood': _model.neighborhoodDogOwnerInputTextController.text,
+                                                        'city': _model.cityDogOwnerInputTextController.text,
                                                     });
-                                                    print('===>[Registro de Direccion] Insert response: $response');
                                                   } catch (e, st) {
-                                                    print('===> [Registro] ERROR en insert: $e');
-                                                    print(st);
                                                     ScaffoldMessenger.of(context).showSnackBar(
                                                       SnackBar(
-                                                        content: Text('Error al registrar usuario: $e')
+                                                        content: Text('Error al registrar dirección: $e')
                                                       ),
                                                     );
+                                                    setState(() => isRegistering = false);
                                                     return;
                                                   }
 
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(content: Text('¡Registro exitoso!')),
+                                                  );
+                                                  context.goNamedAuth(HomeDogOwnerWidget.routeName, context.mounted);
 
-                                                    print('===> [Registro] Insert response: $response');
                                                   } catch (e, st) {
-                                                    print('===> [Registro] ERROR en insert: $e');
-                                                    print(st);
                                                     ScaffoldMessenger.of(context).showSnackBar(
                                                       SnackBar(
                                                         content: Text('Error al registrar usuario: $e')
                                                       ),
                                                     );
+                                                    setState(() => isRegistering = false);
                                                     return;
                                                   }
 
                                                   
-                                                  print('===> [Registro] Navegando a HomeDogOwner');
-                                                  context.goNamedAuth(HomeDogOwnerWidget.routeName, context.mounted);
                                                 },
                                                 text: 'Registrarse',
                                                 options: FFButtonOptions(

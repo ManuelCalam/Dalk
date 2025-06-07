@@ -73,15 +73,15 @@ class _AddPetWidgetState extends State<AddPetWidget> {
             mainAxisSize: MainAxisSize.max,
             children: [
               Container(
-                width: MediaQuery.sizeOf(context).width * 1.0,
+                width: MediaQuery.sizeOf(context).width,
                 height: MediaQuery.sizeOf(context).height * 0.1,
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).secondary,
                   borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(0.0),
-                    bottomRight: Radius.circular(0.0),
-                    topLeft: Radius.circular(0.0),
-                    topRight: Radius.circular(0.0),
+                    bottomLeft: Radius.circular(0),
+                    bottomRight: Radius.circular(0),
+                    topLeft: Radius.circular(0),
+                    topRight: Radius.circular(0),
                   ),
                 ),
                 child: wrapWithModel(
@@ -92,14 +92,14 @@ class _AddPetWidgetState extends State<AddPetWidget> {
               ),
               Expanded(
                 child: Container(
-                  width: MediaQuery.sizeOf(context).width * 1.0,
+                  width: MediaQuery.sizeOf(context).width,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).tertiary,
                     borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(0.0),
-                      bottomRight: Radius.circular(0.0),
-                      topLeft: Radius.circular(50.0),
-                      topRight: Radius.circular(50.0),
+                      bottomLeft: Radius.circular(0),
+                      bottomRight: Radius.circular(0),
+                      topLeft: Radius.circular(50),
+                      topRight: Radius.circular(50),
                     ),
                   ),
                   child: Column(
@@ -113,7 +113,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                       AutoSizeText(
                         'Nueva mascota',
                         textAlign: TextAlign.center,
-                        minFontSize: 22.0,
+                        minFontSize: 22,
                         style: FlutterFlowTheme.of(context).bodyMedium.override(
                               font: GoogleFonts.lexend(
                                 fontWeight: FontWeight.bold,
@@ -122,7 +122,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                     .fontStyle,
                               ),
                               color: FlutterFlowTheme.of(context).primary,
-                              fontSize: 32.0,
+                              fontSize: 32,
                               letterSpacing: 0.0,
                               fontWeight: FontWeight.bold,
                               fontStyle: FlutterFlowTheme.of(context)
@@ -133,7 +133,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                       AutoSizeText(
                         '!Registra a tu mascota!',
                         textAlign: TextAlign.center,
-                        minFontSize: 10.0,
+                        minFontSize: 10,
                         style: FlutterFlowTheme.of(context).bodyMedium.override(
                               font: GoogleFonts.lexend(
                                 fontWeight: FontWeight.w500,
@@ -151,26 +151,24 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                       ),
                       Expanded(
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              0.0, 0.0, 0.0, 15.0),
+                          padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 0.9,
                             height: double.infinity,
                             decoration: BoxDecoration(),
                             child: Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 20.0, 0.0, 0.0),
+                              padding:
+                                  EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
                               child: SingleChildScrollView(
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Flexible(
                                       child: Align(
-                                        alignment:
-                                            AlignmentDirectional(0.0, 0.0),
+                                        alignment: AlignmentDirectional(0, 0),
                                         child: Container(
-                                          width: 120.0,
-                                          height: 120.0,
+                                          width: 120,
+                                          height: 120,
                                           clipBehavior: Clip.antiAlias,
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
@@ -183,15 +181,13 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                       ),
                                     ),
                                     Align(
-                                      alignment:
-                                          AlignmentDirectional(-1.0, -1.0),
+                                      alignment: AlignmentDirectional(-1, -1),
                                       child: Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 18.0, 0.0, 0.0),
+                                            0, 18, 0, 0),
                                         child: Container(
                                           width:
-                                              MediaQuery.sizeOf(context).width *
-                                                  1.0,
+                                              MediaQuery.sizeOf(context).width,
                                           height: MediaQuery.sizeOf(context)
                                                   .height *
                                               0.05,
@@ -199,7 +195,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                             color: FlutterFlowTheme.of(context)
                                                 .alternate,
                                             borderRadius:
-                                                BorderRadius.circular(35.0),
+                                                BorderRadius.circular(35),
                                           ),
                                           child: Container(
                                             width: double.infinity,
@@ -259,7 +255,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                           FlutterFlowTheme.of(
                                                                   context)
                                                               .primary,
-                                                      fontSize: 16.0,
+                                                      fontSize: 16,
                                                       letterSpacing: 0.0,
                                                       fontWeight:
                                                           FontWeight.w500,
@@ -273,32 +269,29 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                     color: Color(0x00000000),
-                                                    width: 1.0,
+                                                    width: 1,
                                                   ),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
+                                                      BorderRadius.circular(8),
                                                 ),
                                                 focusedBorder:
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                     color: Color(0x00000000),
-                                                    width: 1.0,
+                                                    width: 1,
                                                   ),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
+                                                      BorderRadius.circular(8),
                                                 ),
                                                 errorBorder: OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                     color: FlutterFlowTheme.of(
                                                             context)
                                                         .error,
-                                                    width: 1.0,
+                                                    width: 1,
                                                   ),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
+                                                      BorderRadius.circular(8),
                                                 ),
                                                 focusedErrorBorder:
                                                     OutlineInputBorder(
@@ -306,18 +299,17 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                     color: FlutterFlowTheme.of(
                                                             context)
                                                         .error,
-                                                    width: 1.0,
+                                                    width: 1,
                                                   ),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
+                                                      BorderRadius.circular(8),
                                                 ),
                                                 prefixIcon: Icon(
                                                   Icons.person,
                                                   color: FlutterFlowTheme.of(
                                                           context)
                                                       .primary,
-                                                  size: 25.0,
+                                                  size: 25,
                                                 ),
                                               ),
                                               style: FlutterFlowTheme.of(
@@ -339,7 +331,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                     color: FlutterFlowTheme.of(
                                                             context)
                                                         .secondaryBackground,
-                                                    fontSize: 16.0,
+                                                    fontSize: 16,
                                                     letterSpacing: 0.0,
                                                     fontWeight:
                                                         FlutterFlowTheme.of(
@@ -364,15 +356,13 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                       ),
                                     ),
                                     Align(
-                                      alignment:
-                                          AlignmentDirectional(-1.0, -1.0),
+                                      alignment: AlignmentDirectional(-1, -1),
                                       child: Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 18.0, 0.0, 0.0),
+                                            0, 18, 0, 0),
                                         child: Container(
                                           width:
-                                              MediaQuery.sizeOf(context).width *
-                                                  1.0,
+                                              MediaQuery.sizeOf(context).width,
                                           height: MediaQuery.sizeOf(context)
                                                   .height *
                                               0.05,
@@ -380,7 +370,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                             color: FlutterFlowTheme.of(context)
                                                 .alternate,
                                             borderRadius:
-                                                BorderRadius.circular(35.0),
+                                                BorderRadius.circular(35),
                                           ),
                                           child: Container(
                                             width: double.infinity,
@@ -439,7 +429,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                           FlutterFlowTheme.of(
                                                                   context)
                                                               .primary,
-                                                      fontSize: 16.0,
+                                                      fontSize: 16,
                                                       letterSpacing: 0.0,
                                                       fontWeight:
                                                           FontWeight.w500,
@@ -453,32 +443,29 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                     color: Color(0x00000000),
-                                                    width: 1.0,
+                                                    width: 1,
                                                   ),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
+                                                      BorderRadius.circular(8),
                                                 ),
                                                 focusedBorder:
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                     color: Color(0x00000000),
-                                                    width: 1.0,
+                                                    width: 1,
                                                   ),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
+                                                      BorderRadius.circular(8),
                                                 ),
                                                 errorBorder: OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                     color: FlutterFlowTheme.of(
                                                             context)
                                                         .error,
-                                                    width: 1.0,
+                                                    width: 1,
                                                   ),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
+                                                      BorderRadius.circular(8),
                                                 ),
                                                 focusedErrorBorder:
                                                     OutlineInputBorder(
@@ -486,11 +473,10 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                     color: FlutterFlowTheme.of(
                                                             context)
                                                         .error,
-                                                    width: 1.0,
+                                                    width: 1,
                                                   ),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
+                                                      BorderRadius.circular(8),
                                                 ),
                                                 prefixIcon: Icon(
                                                   Icons
@@ -498,7 +484,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                   color: FlutterFlowTheme.of(
                                                           context)
                                                       .primary,
-                                                  size: 25.0,
+                                                  size: 25,
                                                 ),
                                               ),
                                               style: FlutterFlowTheme.of(
@@ -520,7 +506,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                     color: FlutterFlowTheme.of(
                                                             context)
                                                         .secondaryBackground,
-                                                    fontSize: 16.0,
+                                                    fontSize: 16,
                                                     letterSpacing: 0.0,
                                                     fontWeight:
                                                         FlutterFlowTheme.of(
@@ -545,15 +531,13 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                       ),
                                     ),
                                     Align(
-                                      alignment:
-                                          AlignmentDirectional(-1.0, -1.0),
+                                      alignment: AlignmentDirectional(-1, -1),
                                       child: Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 18.0, 0.0, 0.0),
+                                            0, 18, 0, 0),
                                         child: Container(
                                           width:
-                                              MediaQuery.sizeOf(context).width *
-                                                  1.0,
+                                              MediaQuery.sizeOf(context).width,
                                           height: MediaQuery.sizeOf(context)
                                                   .height *
                                               0.05,
@@ -561,7 +545,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                             color: FlutterFlowTheme.of(context)
                                                 .alternate,
                                             borderRadius:
-                                                BorderRadius.circular(35.0),
+                                                BorderRadius.circular(35),
                                           ),
                                           child: Container(
                                             width: double.infinity,
@@ -574,7 +558,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                               obscureText: false,
                                               decoration: InputDecoration(
                                                 isDense: true,
-                                                labelText: 'Género',
+                                                labelText: 'GÃ©nero',
                                                 labelStyle: FlutterFlowTheme.of(
                                                         context)
                                                     .bodyLarge
@@ -591,7 +575,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                                 .bodyLarge
                                                                 .fontStyle,
                                                       ),
-                                                      fontSize: 16.0,
+                                                      fontSize: 16,
                                                       letterSpacing: 0.0,
                                                       fontWeight:
                                                           FlutterFlowTheme.of(
@@ -621,7 +605,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                           FlutterFlowTheme.of(
                                                                   context)
                                                               .primary,
-                                                      fontSize: 16.0,
+                                                      fontSize: 16,
                                                       letterSpacing: 0.0,
                                                       fontWeight:
                                                           FontWeight.w500,
@@ -635,32 +619,29 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                     color: Color(0x00000000),
-                                                    width: 1.0,
+                                                    width: 1,
                                                   ),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          0.0),
+                                                      BorderRadius.circular(0),
                                                 ),
                                                 focusedBorder:
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                     color: Color(0x00000000),
-                                                    width: 1.0,
+                                                    width: 1,
                                                   ),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          0.0),
+                                                      BorderRadius.circular(0),
                                                 ),
                                                 errorBorder: OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                     color: FlutterFlowTheme.of(
                                                             context)
                                                         .error,
-                                                    width: 1.0,
+                                                    width: 1,
                                                   ),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          0.0),
+                                                      BorderRadius.circular(0),
                                                 ),
                                                 focusedErrorBorder:
                                                     OutlineInputBorder(
@@ -668,18 +649,17 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                     color: FlutterFlowTheme.of(
                                                             context)
                                                         .error,
-                                                    width: 1.0,
+                                                    width: 1,
                                                   ),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          0.0),
+                                                      BorderRadius.circular(0),
                                                 ),
                                                 prefixIcon: Icon(
                                                   Icons.transgender_sharp,
                                                   color: FlutterFlowTheme.of(
                                                           context)
                                                       .primary,
-                                                  size: 25.0,
+                                                  size: 25,
                                                 ),
                                               ),
                                               style: FlutterFlowTheme.of(
@@ -701,7 +681,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                     color: FlutterFlowTheme.of(
                                                             context)
                                                         .secondaryBackground,
-                                                    fontSize: 16.0,
+                                                    fontSize: 16,
                                                     letterSpacing: 0.0,
                                                     fontWeight:
                                                         FlutterFlowTheme.of(
@@ -726,15 +706,13 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                       ),
                                     ),
                                     Align(
-                                      alignment:
-                                          AlignmentDirectional(-1.0, -1.0),
+                                      alignment: AlignmentDirectional(-1, -1),
                                       child: Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 18.0, 0.0, 0.0),
+                                            0, 18, 0, 0),
                                         child: Container(
                                           width:
-                                              MediaQuery.sizeOf(context).width *
-                                                  1.0,
+                                              MediaQuery.sizeOf(context).width,
                                           height: MediaQuery.sizeOf(context)
                                                   .height *
                                               0.05,
@@ -742,7 +720,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                             color: FlutterFlowTheme.of(context)
                                                 .alternate,
                                             borderRadius:
-                                                BorderRadius.circular(35.0),
+                                                BorderRadius.circular(35),
                                           ),
                                           child: Container(
                                             width: double.infinity,
@@ -800,7 +778,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                                 .bodyMedium
                                                                 .fontStyle,
                                                       ),
-                                                      fontSize: 16.0,
+                                                      fontSize: 16,
                                                       letterSpacing: 0.0,
                                                       fontWeight:
                                                           FlutterFlowTheme.of(
@@ -817,32 +795,29 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                     color: Color(0x00000000),
-                                                    width: 1.0,
+                                                    width: 1,
                                                   ),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
+                                                      BorderRadius.circular(8),
                                                 ),
                                                 focusedBorder:
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                     color: Color(0x00000000),
-                                                    width: 1.0,
+                                                    width: 1,
                                                   ),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
+                                                      BorderRadius.circular(8),
                                                 ),
                                                 errorBorder: OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                     color: FlutterFlowTheme.of(
                                                             context)
                                                         .error,
-                                                    width: 1.0,
+                                                    width: 1,
                                                   ),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
+                                                      BorderRadius.circular(8),
                                                 ),
                                                 focusedErrorBorder:
                                                     OutlineInputBorder(
@@ -850,18 +825,17 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                     color: FlutterFlowTheme.of(
                                                             context)
                                                         .error,
-                                                    width: 1.0,
+                                                    width: 1,
                                                   ),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
+                                                      BorderRadius.circular(8),
                                                 ),
                                                 prefixIcon: Icon(
                                                   Icons.pets_outlined,
                                                   color: FlutterFlowTheme.of(
                                                           context)
                                                       .primary,
-                                                  size: 25.0,
+                                                  size: 25,
                                                 ),
                                               ),
                                               style: FlutterFlowTheme.of(
@@ -883,7 +857,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                     color: FlutterFlowTheme.of(
                                                             context)
                                                         .secondaryBackground,
-                                                    fontSize: 16.0,
+                                                    fontSize: 16,
                                                     letterSpacing: 0.0,
                                                     fontWeight:
                                                         FlutterFlowTheme.of(
@@ -909,7 +883,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                     ),
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 18.0, 0.0, 0.0),
+                                          0, 18, 0, 0),
                                       child: FlutterFlowDropDown<String>(
                                         controller: _model
                                                 .dogSizeMenuValueController ??=
@@ -925,9 +899,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                         ],
                                         onChanged: (val) => safeSetState(() =>
                                             _model.dogSizeMenuValue = val),
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: MediaQuery.sizeOf(context).width,
                                         height:
                                             MediaQuery.sizeOf(context).height *
                                                 0.05,
@@ -944,7 +916,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                         .bodyMedium
                                                         .fontStyle,
                                               ),
-                                              fontSize: 16.0,
+                                              fontSize: 16,
                                               letterSpacing: 0.0,
                                               fontWeight:
                                                   FlutterFlowTheme.of(context)
@@ -955,21 +927,21 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                       .bodyMedium
                                                       .fontStyle,
                                             ),
-                                        hintText: 'Tamaño',
+                                        hintText: 'TamaÃ±o',
                                         icon: Icon(
                                           Icons.keyboard_arrow_down_rounded,
                                           color: FlutterFlowTheme.of(context)
                                               .primary,
-                                          size: 25.0,
+                                          size: 25,
                                         ),
                                         fillColor: FlutterFlowTheme.of(context)
                                             .alternate,
-                                        elevation: 2.0,
+                                        elevation: 2,
                                         borderColor: Colors.transparent,
-                                        borderWidth: 0.0,
-                                        borderRadius: 8.0,
+                                        borderWidth: 0,
+                                        borderRadius: 8,
                                         margin: EdgeInsetsDirectional.fromSTEB(
-                                            12.0, 0.0, 12.0, 0.0),
+                                            12, 0, 12, 0),
                                         hidesUnderline: true,
                                         isOverButton: false,
                                         isSearchable: false,
@@ -979,22 +951,20 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                     Expanded(
                                       child: Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 18.0, 0.0, 0.0),
+                                            0, 18, 0, 0),
                                         child: Container(
                                           width:
-                                              MediaQuery.sizeOf(context).width *
-                                                  1.0,
+                                              MediaQuery.sizeOf(context).width,
                                           decoration: BoxDecoration(),
                                           child: Column(
                                             mainAxisSize: MainAxisSize.max,
                                             children: [
                                               Align(
-                                                alignment: AlignmentDirectional(
-                                                    -1.0, 0.0),
+                                                alignment:
+                                                    AlignmentDirectional(-1, 0),
                                                 child: Padding(
                                                   padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          0.0, 0.0, 0.0, 5.0),
+                                                      .fromSTEB(0, 0, 0, 5),
                                                   child: AutoSizeText(
                                                     'Comportamiento',
                                                     maxLines: 1,
@@ -1034,8 +1004,8 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                 ),
                                               ),
                                               Align(
-                                                alignment: AlignmentDirectional(
-                                                    0.0, 0.0),
+                                                alignment:
+                                                    AlignmentDirectional(0, 0),
                                                 child: FlutterFlowChoiceChips(
                                                   options: [
                                                     ChipData(
@@ -1043,7 +1013,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                     ChipData('Nervioso'),
                                                     ChipData('Tranquilo'),
                                                     ChipData('Obediente'),
-                                                    ChipData('Energético'),
+                                                    ChipData('EnergÃ©tico'),
                                                     ChipData(
                                                         'Tira de la correa'),
                                                     ChipData(
@@ -1096,13 +1066,13 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                         FlutterFlowTheme.of(
                                                                 context)
                                                             .info,
-                                                    iconSize: 16.0,
+                                                    iconSize: 16,
                                                     labelPadding:
-                                                        EdgeInsets.all(5.0),
-                                                    elevation: 0.0,
+                                                        EdgeInsets.all(5),
+                                                    elevation: 0,
                                                     borderRadius:
                                                         BorderRadius.circular(
-                                                            8.0),
+                                                            8),
                                                   ),
                                                   unselectedChipStyle:
                                                       ChipStyle(
@@ -1129,7 +1099,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                               color: FlutterFlowTheme
                                                                       .of(context)
                                                                   .secondaryBackground,
-                                                              fontSize: 16.0,
+                                                              fontSize: 16,
                                                               letterSpacing:
                                                                   0.0,
                                                               fontWeight:
@@ -1146,16 +1116,16 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                     iconColor: FlutterFlowTheme
                                                             .of(context)
                                                         .secondaryBackground,
-                                                    iconSize: 16.0,
+                                                    iconSize: 16,
                                                     labelPadding:
-                                                        EdgeInsets.all(5.0),
-                                                    elevation: 0.0,
+                                                        EdgeInsets.all(5),
+                                                    elevation: 0,
                                                     borderRadius:
                                                         BorderRadius.circular(
-                                                            8.0),
+                                                            8),
                                                   ),
-                                                  chipSpacing: 2.0,
-                                                  rowSpacing: 5.0,
+                                                  chipSpacing: 2,
+                                                  rowSpacing: 5,
                                                   multiselect: true,
                                                   initialized: _model
                                                           .behaviourChipsValues !=
@@ -1177,15 +1147,13 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                       ),
                                     ),
                                     Align(
-                                      alignment:
-                                          AlignmentDirectional(-1.0, -1.0),
+                                      alignment: AlignmentDirectional(-1, -1),
                                       child: Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 18.0, 0.0, 0.0),
+                                            0, 18, 0, 0),
                                         child: Container(
                                           width:
-                                              MediaQuery.sizeOf(context).width *
-                                                  1.0,
+                                              MediaQuery.sizeOf(context).width,
                                           height: MediaQuery.sizeOf(context)
                                                   .height *
                                               0.05,
@@ -1193,7 +1161,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                             color: FlutterFlowTheme.of(context)
                                                 .alternate,
                                             borderRadius:
-                                                BorderRadius.circular(35.0),
+                                                BorderRadius.circular(35),
                                           ),
                                           child: Container(
                                             width: double.infinity,
@@ -1222,7 +1190,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                                 .bodyLarge
                                                                 .fontStyle,
                                                       ),
-                                                      fontSize: 16.0,
+                                                      fontSize: 16,
                                                       letterSpacing: 0.0,
                                                       fontWeight:
                                                           FlutterFlowTheme.of(
@@ -1236,7 +1204,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                               .fontStyle,
                                                     ),
                                                 hintText:
-                                                    'Cuéntamos más sobre tu mascota',
+                                                    'CuÃ©ntamos mÃ¡s sobre tu mascota',
                                                 hintStyle: FlutterFlowTheme.of(
                                                         context)
                                                     .labelMedium
@@ -1254,7 +1222,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                           FlutterFlowTheme.of(
                                                                   context)
                                                               .primaryText,
-                                                      fontSize: 16.0,
+                                                      fontSize: 16,
                                                       letterSpacing: 0.0,
                                                       fontWeight:
                                                           FontWeight.normal,
@@ -1270,32 +1238,29 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                     color: FlutterFlowTheme.of(
                                                             context)
                                                         .alternate,
-                                                    width: 1.0,
+                                                    width: 1,
                                                   ),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          30.0),
+                                                      BorderRadius.circular(30),
                                                 ),
                                                 focusedBorder:
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                     color: Color(0x00000000),
-                                                    width: 1.0,
+                                                    width: 1,
                                                   ),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          30.0),
+                                                      BorderRadius.circular(30),
                                                 ),
                                                 errorBorder: OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                     color: FlutterFlowTheme.of(
                                                             context)
                                                         .error,
-                                                    width: 1.0,
+                                                    width: 1,
                                                   ),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          30.0),
+                                                      BorderRadius.circular(30),
                                                 ),
                                                 focusedErrorBorder:
                                                     OutlineInputBorder(
@@ -1303,11 +1268,10 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                     color: FlutterFlowTheme.of(
                                                             context)
                                                         .error,
-                                                    width: 1.0,
+                                                    width: 1,
                                                   ),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          30.0),
+                                                      BorderRadius.circular(30),
                                                 ),
                                                 filled: true,
                                                 fillColor:
@@ -1318,7 +1282,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                   color: FlutterFlowTheme.of(
                                                           context)
                                                       .primary,
-                                                  size: 25.0,
+                                                  size: 25,
                                                 ),
                                               ),
                                               style: FlutterFlowTheme.of(
@@ -1340,7 +1304,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                     color: FlutterFlowTheme.of(
                                                             context)
                                                         .primaryText,
-                                                    fontSize: 16.0,
+                                                    fontSize: 16,
                                                     letterSpacing: 0.0,
                                                     fontWeight:
                                                         FlutterFlowTheme.of(
@@ -1370,7 +1334,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                     Flexible(
                                       child: Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 18.0, 0.0, 0.0),
+                                            0, 18, 0, 0),
                                         child: FFButtonWidget(
                                           onPressed: () {
                                             print('addPet_btn pressed ...');
@@ -1378,17 +1342,16 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                           text: 'Agregar Mascota',
                                           options: FFButtonOptions(
                                             width: MediaQuery.sizeOf(context)
-                                                    .width *
-                                                1.0,
+                                                .width,
                                             height: MediaQuery.sizeOf(context)
                                                     .height *
                                                 0.05,
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 0.0, 0.0, 0.0),
+                                                    0, 0, 0, 0),
                                             iconPadding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 0.0, 0.0, 0.0),
+                                                    0, 0, 0, 0),
                                             color: FlutterFlowTheme.of(context)
                                                 .accent1,
                                             textStyle:
@@ -1420,9 +1383,9 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                               .titleSmall
                                                               .fontStyle,
                                                     ),
-                                            elevation: 0.0,
+                                            elevation: 0,
                                             borderRadius:
-                                                BorderRadius.circular(8.0),
+                                                BorderRadius.circular(8),
                                           ),
                                         ),
                                       ),
