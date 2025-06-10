@@ -1,4 +1,5 @@
 import '/auth/supabase_auth/auth_util.dart';
+import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -416,7 +417,66 @@ class _LoginWidgetState extends State<LoginWidget> {
                               0.0, 20.0, 0.0, 20.0),
                           child: FFButtonWidget(
                             onPressed: () async {
-                              context.goNamed(HomeDogOwnerWidget.routeName);
+                              final email = _model.emailInputTextController.text.trim();
+                              final password = _model.passwordInputTextController.text;
+                              if (email.isEmpty || password.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Por favor, completa todos los campos.'),
+                                  ),
+                                );
+                                return;
+                              }
+
+                              try {
+                                final response = await Supabase.instance.client.auth.signInWithPassword(
+                                  email: email,
+                                  password: password,
+                                );
+                                final user = response.user;
+                                if (user == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Error al iniciar sesión. Verifica tus credenciales.'),
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                final userData = await Supabase.instance.client
+                                    .from('users')
+                                    .select()
+                                    .eq('email', email)
+                                    .maybeSingle();
+
+                                if (userData == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Usuario no encontrado.'),
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                // Redirige según el tipo de usuario
+                                if (userData['usertype'] == 'Dueño') {
+                                  context.goNamedAuth(HomeDogOwnerWidget.routeName, context.mounted);
+                                } else if (userData['usertype'] == 'Paseador') {
+                                  context.goNamedAuth(HomeDogWalkerWidget.routeName, context.mounted);
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Tipo de usuario desconocido.'),
+                                    ),
+                                  );
+                                }
+                              } catch (e, st) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error al iniciar sesión: $e'),
+                                  ),
+                                );
+                              }
                             },
                             text: 'Iniciar Sesión',
                             options: FFButtonOptions(

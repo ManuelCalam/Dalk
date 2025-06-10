@@ -1,3 +1,7 @@
+import 'package:dalk/dog_walker/home_dog_walker/home_dog_walker_widget.dart';
+
+import '/auth/supabase_auth/auth_util.dart';
+import '/backend/supabase/supabase.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -28,6 +32,7 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
   late SingInDogWalkerModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool isRegistering = false;
 
   @override
   void initState() {
@@ -56,8 +61,8 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
     _model.neighborhoodDogWalkerInputTextController ??= TextEditingController();
     _model.neighborhoodDogWalkerInputFocusNode ??= FocusNode();
 
-    _model.countryDogWalkerInputTextController ??= TextEditingController();
-    _model.countryDogWalkerInputFocusNode ??= FocusNode();
+    _model.cityDogWalkerInputTextController ??= TextEditingController();
+    _model.cityDogWalkerInputFocusNode ??= FocusNode();
 
     _model.passDogWalkerInputTextController ??= TextEditingController();
     _model.passDogWalkerInputFocusNode ??= FocusNode();
@@ -1885,9 +1890,9 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
                                                       0.0, 18.0, 0.0, 0.0),
                                               child: TextFormField(
                                                 controller: _model
-                                                    .countryDogWalkerInputTextController,
+                                                    .cityDogWalkerInputTextController,
                                                 focusNode: _model
-                                                    .countryDogWalkerInputFocusNode,
+                                                    .cityDogWalkerInputFocusNode,
                                                 autofocus: false,
                                                 obscureText: false,
                                                 decoration: InputDecoration(
@@ -2057,7 +2062,7 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
                                                     FlutterFlowTheme.of(context)
                                                         .primaryText,
                                                 validator: _model
-                                                    .countryDogWalkerInputTextControllerValidator
+                                                    .cityDogWalkerInputTextControllerValidator
                                                     .asValidator(context),
                                               ),
                                             ),
@@ -2479,9 +2484,102 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
                                                   .fromSTEB(
                                                       0.0, 18.0, 0.0, 18.0),
                                               child: FFButtonWidget(
-                                                onPressed: () {
-                                                  print(
-                                                      'RegisterDogwalker_Btn pressed ...');
+                                                onPressed: isRegistering ? null : () async {
+                                                  setState(() => isRegistering = true);
+                                                  GoRouter.of(context).prepareAuthEvent();
+
+                                                  if (_model.passDogWalkerInputTextController.text !=
+                                                      _model.confirmPassDogWalkerInputTextController.text) {
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text('Las contraseñas no coinciden!'),
+                                                      ),
+                                                    );
+                                                    setState(() => isRegistering = false);
+                                                    return;
+                                                  }
+
+                                                  // Autenticación en Supabase
+                                                  try{
+
+                                                    final user = await authManager.createAccountWithEmail(
+                                                      context,
+                                                      _model.emailDogWalkerInputTextController.text,
+                                                      _model.passDogWalkerInputTextController.text,
+                                                    );
+                                                    if (user == null) {
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(content: Text('No se pudo crear el usuario.')),
+                                                      );
+                                                      setState(() => isRegistering = false);
+                                                      return;
+                                                    }
+                                                  } catch (e, st){
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(content: Text('Error al crear usuario: $e')),
+                                                    );
+                                                    setState(() => isRegistering = false);    
+                                                    return;
+                                                  }
+
+                                                  // Registro en la tabla users
+                                                  try {
+                                                    final response = await Supabase.instance.client
+                                                    .from('users')
+                                                    .insert({
+                                                      'uuid': currentUserUid,
+                                                      'name': _model.nameDogWalkerInputTextController.text,
+                                                      'email': currentUserEmail,
+                                                      'phone': _model.phoneDogWalkerInputTextController.text,
+                                                      'birthdate': supaSerialize<DateTime>(_model.datePicked),
+                                                      'gender': _model.genderDogWalkerMenuValue,
+                                                      'address': _model.streetDogWalkerInputTextController.text,
+                                                      'houseNumber': _model.apartamentNumDogWalkerInputTextController.text,
+                                                      'zipCode': _model.zipCodeDogWalkerInputTextController.text,
+                                                      'neighborhood': _model.neighborhoodDogWalkerInputTextController.text,
+                                                      'city': _model.cityDogWalkerInputTextController.text,
+                                                      'usertype': 'Paseador'
+                                                    });
+
+                                                    // Registro en la tabla addresses
+                                                    try{
+                                                      final response = await Supabase.instance.client
+                                                      .from('addresses')
+                                                      .insert({
+                                                        'uuid': currentUserUid,
+                                                        'alias': 'Mi Dirección',
+                                                        'address': _model.streetDogWalkerInputTextController.text,
+                                                        'houseNumber': _model.apartamentNumDogWalkerInputTextController.text,
+                                                        'zipCode': _model.zipCodeDogWalkerInputTextController.text,
+                                                        'neighborhood': _model.neighborhoodDogWalkerInputTextController.text,
+                                                        'city': _model.cityDogWalkerInputTextController.text,
+                                                    });
+                                                  } catch (e, st) {
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text('Error al registrar dirección: $e')
+                                                      ),
+                                                    );
+                                                    setState(() => isRegistering = false);
+                                                    return;
+                                                  }
+
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(content: Text('¡Registro exitoso!')),
+                                                  );
+                                                  context.goNamedAuth(HomeDogWalkerWidget.routeName, context.mounted);
+
+                                                  } catch (e, st) {
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text('Error al registrar usuario: $e')
+                                                      ),
+                                                    );
+                                                    setState(() => isRegistering = false);
+                                                    return;
+                                                  }
+
+                                                  
                                                 },
                                                 text: 'Continuar',
                                                 options: FFButtonOptions(

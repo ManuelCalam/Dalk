@@ -113,11 +113,11 @@ class SingInDogWalkerModel extends FlutterFlowModel<SingInDogWalkerWidget> {
   }
 
   // State field(s) for CountryDogWalker_Input widget.
-  FocusNode? countryDogWalkerInputFocusNode;
-  TextEditingController? countryDogWalkerInputTextController;
+  FocusNode? cityDogWalkerInputFocusNode;
+  TextEditingController? cityDogWalkerInputTextController;
   String? Function(BuildContext, String?)?
-      countryDogWalkerInputTextControllerValidator;
-  String? _countryDogWalkerInputTextControllerValidator(
+      cityDogWalkerInputTextControllerValidator;
+  String? _cityDogWalkerInputTextControllerValidator(
       BuildContext context, String? val) {
     if (val == null || val.isEmpty) {
       return 'Ciudad is required';
@@ -154,8 +154,8 @@ class SingInDogWalkerModel extends FlutterFlowModel<SingInDogWalkerWidget> {
         _zipCodeDogWalkerInputTextControllerValidator;
     neighborhoodDogWalkerInputTextControllerValidator =
         _neighborhoodDogWalkerInputTextControllerValidator;
-    countryDogWalkerInputTextControllerValidator =
-        _countryDogWalkerInputTextControllerValidator;
+    cityDogWalkerInputTextControllerValidator =
+        _cityDogWalkerInputTextControllerValidator;
     passDogWalkerInputVisibility = false;
     confirmPassDogWalkerInputVisibility = false;
   }
@@ -184,8 +184,8 @@ class SingInDogWalkerModel extends FlutterFlowModel<SingInDogWalkerWidget> {
     neighborhoodDogWalkerInputFocusNode?.dispose();
     neighborhoodDogWalkerInputTextController?.dispose();
 
-    countryDogWalkerInputFocusNode?.dispose();
-    countryDogWalkerInputTextController?.dispose();
+    cityDogWalkerInputFocusNode?.dispose();
+    cityDogWalkerInputTextController?.dispose();
 
     passDogWalkerInputFocusNode?.dispose();
     passDogWalkerInputTextController?.dispose();

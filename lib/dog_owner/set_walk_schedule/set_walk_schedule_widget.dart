@@ -314,42 +314,31 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(7.0, 0.0, 0.0, 0.0),
                                               child: AutoSizeText(
-                                                'Fecha',
+                                                _model.datePicked1 != null
+                                                    ? dateTimeFormat('d/M/y', _model.datePicked1)
+                                                    : 'Fecha',
                                                 textAlign: TextAlign.start,
                                                 maxLines: 1,
                                                 minFontSize: 12.0,
-                                                style: FlutterFlowTheme.of(
-                                                        context)
+                                                style: FlutterFlowTheme.of(context)
                                                     .bodyMedium
                                                     .override(
                                                       font: GoogleFonts.lexend(
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
+                                                        fontWeight: FlutterFlowTheme.of(context)
+                                                            .bodyMedium
+                                                            .fontWeight,
+                                                        fontStyle: FlutterFlowTheme.of(context)
+                                                            .bodyMedium
+                                                            .fontStyle,
                                                       ),
-                                                      color:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .primary,
                                                       fontSize: 16.0,
                                                       letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .fontStyle,
+                                                      fontWeight: FlutterFlowTheme.of(context)
+                                                          .bodyMedium
+                                                          .fontWeight,
+                                                      fontStyle: FlutterFlowTheme.of(context)
+                                                          .bodyMedium
+                                                          .fontStyle,
                                                     ),
                                               ),
                                             ),
@@ -485,43 +474,31 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                     .fromSTEB(
                                                         7.0, 0.0, 0.0, 0.0),
                                                 child: AutoSizeText(
-                                                  'Hora',
+                                                  _model.datePicked2 != null
+                                                      ? dateTimeFormat('Hm', _model.datePicked2)
+                                                      : 'Hora',
                                                   textAlign: TextAlign.start,
                                                   maxLines: 1,
                                                   minFontSize: 12.0,
-                                                  style: FlutterFlowTheme.of(
-                                                          context)
+                                                  style: FlutterFlowTheme.of(context)
                                                       .bodyMedium
                                                       .override(
-                                                        font:
-                                                            GoogleFonts.lexend(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
+                                                        font: GoogleFonts.lexend(
+                                                          fontWeight: FlutterFlowTheme.of(context)
+                                                              .bodyMedium
+                                                              .fontWeight,
+                                                          fontStyle: FlutterFlowTheme.of(context)
+                                                              .bodyMedium
+                                                              .fontStyle,
                                                         ),
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primary,
                                                         fontSize: 16.0,
                                                         letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
+                                                        fontWeight: FlutterFlowTheme.of(context)
+                                                            .bodyMedium
+                                                            .fontWeight,
+                                                        fontStyle: FlutterFlowTheme.of(context)
+                                                            .bodyMedium
+                                                            .fontStyle,
                                                       ),
                                                 ),
                                               ),
@@ -730,6 +707,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                       ),
                                     ),
                                   ),
+                                  
                                   Container(
                                     width:
                                         MediaQuery.sizeOf(context).width * 1.0,
