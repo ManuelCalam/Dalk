@@ -1,3 +1,5 @@
+import 'package:dalk/backend/supabase/supabase.dart';
+import '/auth/supabase_auth/auth_util.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
 import '/flutter_flow/flutter_flow_choice_chips.dart';
@@ -11,6 +13,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+
 import 'add_pet_model.dart';
 export 'add_pet_model.dart';
 
@@ -40,11 +43,8 @@ class _AddPetWidgetState extends State<AddPetWidget> {
     _model.ageInputTextController ??= TextEditingController();
     _model.ageInputFocusNode ??= FocusNode();
 
-    _model.genderInputTextController ??= TextEditingController();
-    _model.genderInputFocusNode ??= FocusNode();
-
-    _model.raceInputTextController ??= TextEditingController();
-    _model.raceInputFocusNode ??= FocusNode();
+    _model.breeInputTextController ??= TextEditingController();
+    _model.breeInputFocusNode ??= FocusNode();
 
     _model.dogInfoInputTextController ??= TextEditingController();
     _model.dogInfoInputFocusNode ??= FocusNode();
@@ -205,6 +205,8 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                               focusNode:
                                                   _model.nameInputFocusNode,
                                               autofocus: false,
+                                              textInputAction:
+                                                  TextInputAction.next,
                                               obscureText: false,
                                               decoration: InputDecoration(
                                                 isDense: true,
@@ -380,6 +382,8 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                               focusNode:
                                                   _model.ageInputFocusNode,
                                               autofocus: false,
+                                              textInputAction:
+                                                  TextInputAction.next,
                                               obscureText: false,
                                               decoration: InputDecoration(
                                                 isDense: true,
@@ -519,6 +523,8 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                             .bodyMedium
                                                             .fontStyle,
                                                   ),
+                                              keyboardType:
+                                                  TextInputType.number,
                                               cursorColor:
                                                   FlutterFlowTheme.of(context)
                                                       .primaryText,
@@ -547,58 +553,38 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                             borderRadius:
                                                 BorderRadius.circular(35),
                                           ),
-                                          child: Container(
-                                            width: double.infinity,
-                                            child: TextFormField(
-                                              controller: _model
-                                                  .genderInputTextController,
-                                              focusNode:
-                                                  _model.genderInputFocusNode,
-                                              autofocus: false,
-                                              obscureText: false,
-                                              decoration: InputDecoration(
-                                                isDense: true,
-                                                labelText: 'GÃ©nero',
-                                                labelStyle: FlutterFlowTheme.of(
-                                                        context)
-                                                    .bodyLarge
+                                          child: FlutterFlowDropDown<String>(
+                                            controller: _model
+                                                    .genderDogOwnerMenuValueController ??=
+                                                FormFieldController<String>(
+                                              _model.genderDogOwnerMenuValue ??=
+                                                  '',
+                                            ),
+                                            options: List<String>.from(
+                                                ['Macho', 'Hembra']),
+                                            optionLabels: ['Macho', 'Hembra'],
+                                            onChanged: (val) => safeSetState(() =>
+                                                _model.genderDogOwnerMenuValue =
+                                                    val),
+                                            width: MediaQuery.sizeOf(context)
+                                                .width,
+                                            height: MediaQuery.sizeOf(context)
+                                                    .height *
+                                                0.05,
+                                            textStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .bodyMedium
                                                     .override(
                                                       font: GoogleFonts.lexend(
                                                         fontWeight:
                                                             FlutterFlowTheme.of(
                                                                     context)
-                                                                .bodyLarge
+                                                                .bodyMedium
                                                                 .fontWeight,
                                                         fontStyle:
                                                             FlutterFlowTheme.of(
                                                                     context)
-                                                                .bodyLarge
-                                                                .fontStyle,
-                                                      ),
-                                                      fontSize: 16,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyLarge
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyLarge
-                                                              .fontStyle,
-                                                    ),
-                                                hintStyle: FlutterFlowTheme.of(
-                                                        context)
-                                                    .labelMedium
-                                                    .override(
-                                                      font: GoogleFonts.lexend(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
+                                                                .bodyMedium
                                                                 .fontStyle,
                                                       ),
                                                       color:
@@ -608,66 +594,6 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                       fontSize: 16,
                                                       letterSpacing: 0.0,
                                                       fontWeight:
-                                                          FontWeight.w500,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .labelMedium
-                                                              .fontStyle,
-                                                    ),
-                                                enabledBorder:
-                                                    OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                    color: Color(0x00000000),
-                                                    width: 1,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(0),
-                                                ),
-                                                focusedBorder:
-                                                    OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                    color: Color(0x00000000),
-                                                    width: 1,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(0),
-                                                ),
-                                                errorBorder: OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .error,
-                                                    width: 1,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(0),
-                                                ),
-                                                focusedErrorBorder:
-                                                    OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .error,
-                                                    width: 1,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(0),
-                                                ),
-                                                prefixIcon: Icon(
-                                                  Icons.transgender_sharp,
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primary,
-                                                  size: 25,
-                                                ),
-                                              ),
-                                              style: FlutterFlowTheme.of(
-                                                      context)
-                                                  .bodyMedium
-                                                  .override(
-                                                    font: GoogleFonts.lexend(
-                                                      fontWeight:
                                                           FlutterFlowTheme.of(
                                                                   context)
                                                               .bodyMedium
@@ -678,29 +604,28 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                               .bodyMedium
                                                               .fontStyle,
                                                     ),
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .secondaryBackground,
-                                                    fontSize: 16,
-                                                    letterSpacing: 0.0,
-                                                    fontWeight:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontStyle,
-                                                  ),
-                                              cursorColor:
+                                            hintText: 'Género',
+                                            icon: Icon(
+                                              Icons.keyboard_arrow_down_rounded,
+                                              color:
                                                   FlutterFlowTheme.of(context)
-                                                      .primaryText,
-                                              validator: _model
-                                                  .genderInputTextControllerValidator
-                                                  .asValidator(context),
+                                                      .primary,
+                                              size: 25,
                                             ),
+                                            fillColor:
+                                                FlutterFlowTheme.of(context)
+                                                    .alternate,
+                                            elevation: 2,
+                                            borderColor: Colors.transparent,
+                                            borderWidth: 0,
+                                            borderRadius: 8,
+                                            margin:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    12, 0, 12, 0),
+                                            hidesUnderline: true,
+                                            isOverButton: false,
+                                            isSearchable: false,
+                                            isMultiSelect: false,
                                           ),
                                         ),
                                       ),
@@ -726,10 +651,12 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                             width: double.infinity,
                                             child: TextFormField(
                                               controller: _model
-                                                  .raceInputTextController,
+                                                  .breeInputTextController,
                                               focusNode:
-                                                  _model.raceInputFocusNode,
+                                                  _model.breeInputFocusNode,
                                               autofocus: false,
+                                              textInputAction:
+                                                  TextInputAction.next,
                                               obscureText: false,
                                               decoration: InputDecoration(
                                                 isDense: true,
@@ -874,7 +801,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                   FlutterFlowTheme.of(context)
                                                       .primaryText,
                                               validator: _model
-                                                  .raceInputTextControllerValidator
+                                                  .breeInputTextControllerValidator
                                                   .asValidator(context),
                                             ),
                                           ),
@@ -927,7 +854,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                       .bodyMedium
                                                       .fontStyle,
                                             ),
-                                        hintText: 'TamaÃ±o',
+                                        hintText: 'Tamaño',
                                         icon: Icon(
                                           Icons.keyboard_arrow_down_rounded,
                                           color: FlutterFlowTheme.of(context)
@@ -1190,6 +1117,9 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                                 .bodyLarge
                                                                 .fontStyle,
                                                       ),
+                                                      color: FlutterFlowTheme
+                                                              .of(context)
+                                                          .secondaryBackground,
                                                       fontSize: 16,
                                                       letterSpacing: 0.0,
                                                       fontWeight:
@@ -1204,7 +1134,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                               .fontStyle,
                                                     ),
                                                 hintText:
-                                                    'CuÃ©ntamos mÃ¡s sobre tu mascota',
+                                                    'Cuéntamos más sobre tu mascota',
                                                 hintStyle: FlutterFlowTheme.of(
                                                         context)
                                                     .labelMedium
@@ -1318,6 +1248,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                             .fontStyle,
                                                   ),
                                               maxLines: null,
+                                              minLines: 5,
                                               keyboardType:
                                                   TextInputType.multiline,
                                               cursorColor:
@@ -1336,8 +1267,31 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                         padding: EdgeInsetsDirectional.fromSTEB(
                                             0, 18, 0, 0),
                                         child: FFButtonWidget(
-                                          onPressed: () {
-                                            print('addPet_btn pressed ...');
+                                          onPressed: () async {
+                                            try{
+                                              final response = await Supabase.instance.client
+                                              .from('pets')
+                                              .insert({
+                                                  'uuid': currentUserUid,
+                                                  'name': _model.nameInputTextController.text,
+                                                  'age': _model.ageInputTextController.text,
+                                                  'gender': _model.genderDogOwnerMenuValue,
+                                                  'bree': _model.breeInputTextController.text,
+                                                  'size': _model.dogSizeMenuValue,
+                                                  'behaviour': _model.behaviourChipsValueController?.value ?? [],
+                                                  'aboutme': _model.dogInfoInputTextController.text,
+                                                  // 'imageUrl': _model.uploadedFileUrl,
+
+                                              });
+
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(content: Text('¡Registro exitoso!')),
+                                              );
+                                            } catch (e, st) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(content: Text('Error al registrar la dirección: $e')),
+                                                );
+                                            }
                                           },
                                           text: 'Agregar Mascota',
                                           options: FFButtonOptions(

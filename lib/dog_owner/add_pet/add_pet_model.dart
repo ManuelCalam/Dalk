@@ -28,14 +28,13 @@ class AddPetModel extends FlutterFlowModel<AddPetWidget> {
   FocusNode? ageInputFocusNode;
   TextEditingController? ageInputTextController;
   String? Function(BuildContext, String?)? ageInputTextControllerValidator;
-  // State field(s) for gender_Input widget.
-  FocusNode? genderInputFocusNode;
-  TextEditingController? genderInputTextController;
-  String? Function(BuildContext, String?)? genderInputTextControllerValidator;
-  // State field(s) for race_Input widget.
-  FocusNode? raceInputFocusNode;
-  TextEditingController? raceInputTextController;
-  String? Function(BuildContext, String?)? raceInputTextControllerValidator;
+  // State field(s) for GenderDogOwner_Menu widget.
+  String? genderDogOwnerMenuValue;
+  FormFieldController<String>? genderDogOwnerMenuValueController;
+  // State field(s) for bree_Input widget.
+  FocusNode? breeInputFocusNode;
+  TextEditingController? breeInputTextController;
+  String? Function(BuildContext, String?)? breeInputTextControllerValidator;
   // State field(s) for dogSize_Menu widget.
   String? dogSizeMenuValue;
   FormFieldController<String>? dogSizeMenuValueController;
@@ -67,11 +66,8 @@ class AddPetModel extends FlutterFlowModel<AddPetWidget> {
     ageInputFocusNode?.dispose();
     ageInputTextController?.dispose();
 
-    genderInputFocusNode?.dispose();
-    genderInputTextController?.dispose();
-
-    raceInputFocusNode?.dispose();
-    raceInputTextController?.dispose();
+    breeInputFocusNode?.dispose();
+    breeInputTextController?.dispose();
 
     dogInfoInputFocusNode?.dispose();
     dogInfoInputTextController?.dispose();
