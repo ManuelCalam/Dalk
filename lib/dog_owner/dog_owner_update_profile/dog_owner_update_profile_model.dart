@@ -29,17 +29,12 @@ class DogOwnerUpdateProfileModel
   String? _nameDogOwnerInputTextControllerValidator(
       BuildContext context, String? val) {
     if (val == null || val.isEmpty) {
-      return 'Teléfono is required';
+      return 'TelÃ©fono is required';
     }
 
     return null;
   }
 
-  // State field(s) for EmailDogOwner_Input widget.
-  FocusNode? emailDogOwnerInputFocusNode;
-  TextEditingController? emailDogOwnerInputTextController;
-  String? Function(BuildContext, String?)?
-      emailDogOwnerInputTextControllerValidator;
   // State field(s) for PhoneDogOwner_Input widget.
   FocusNode? phoneDogOwnerInputFocusNode;
   TextEditingController? phoneDogOwnerInputTextController;
@@ -48,7 +43,7 @@ class DogOwnerUpdateProfileModel
   String? _phoneDogOwnerInputTextControllerValidator(
       BuildContext context, String? val) {
     if (val == null || val.isEmpty) {
-      return 'Teléfono is required';
+      return 'TelÃ©fono is required';
     }
 
     return null;
@@ -114,12 +109,12 @@ class DogOwnerUpdateProfileModel
     return null;
   }
 
-  // State field(s) for CountryDogOwner_Input widget.
-  FocusNode? countryDogOwnerInputFocusNode;
-  TextEditingController? countryDogOwnerInputTextController;
+  // State field(s) for CityDogOwner_Input widget.
+  FocusNode? cityDogOwnerInputFocusNode;
+  TextEditingController? cityDogOwnerInputTextController;
   String? Function(BuildContext, String?)?
-      countryDogOwnerInputTextControllerValidator;
-  String? _countryDogOwnerInputTextControllerValidator(
+      cityDogOwnerInputTextControllerValidator;
+  String? _cityDogOwnerInputTextControllerValidator(
       BuildContext context, String? val) {
     if (val == null || val.isEmpty) {
       return 'Ciudad is required';
@@ -143,8 +138,8 @@ class DogOwnerUpdateProfileModel
         _zipCodeDogOwnerInputTextControllerValidator;
     neighborhoodDogOwnerInputTextControllerValidator =
         _neighborhoodDogOwnerInputTextControllerValidator;
-    countryDogOwnerInputTextControllerValidator =
-        _countryDogOwnerInputTextControllerValidator;
+    cityDogOwnerInputTextControllerValidator =
+        _cityDogOwnerInputTextControllerValidator;
   }
 
   @override
@@ -152,9 +147,6 @@ class DogOwnerUpdateProfileModel
     goBackContainerModel.dispose();
     nameDogOwnerInputFocusNode?.dispose();
     nameDogOwnerInputTextController?.dispose();
-
-    emailDogOwnerInputFocusNode?.dispose();
-    emailDogOwnerInputTextController?.dispose();
 
     phoneDogOwnerInputFocusNode?.dispose();
     phoneDogOwnerInputTextController?.dispose();
@@ -171,7 +163,7 @@ class DogOwnerUpdateProfileModel
     neighborhoodDogOwnerInputFocusNode?.dispose();
     neighborhoodDogOwnerInputTextController?.dispose();
 
-    countryDogOwnerInputFocusNode?.dispose();
-    countryDogOwnerInputTextController?.dispose();
+    cityDogOwnerInputFocusNode?.dispose();
+    cityDogOwnerInputTextController?.dispose();
   }
 }

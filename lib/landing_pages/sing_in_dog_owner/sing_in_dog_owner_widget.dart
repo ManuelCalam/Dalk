@@ -954,7 +954,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                                     7, 0, 0, 0),
                                                         child: AutoSizeText(
                                                           _model.datePicked != null
-                                                            ? 'Fecha de nacimiento: ${dateTimeFormat('d/M/y', _model.datePicked)}'
+                                                            ? '${dateTimeFormat('d/M/y', _model.datePicked)}'
                                                             : 'Fecha de nacimiento',
                                                           textAlign:
                                                               TextAlign.start,

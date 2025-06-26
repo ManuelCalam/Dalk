@@ -1,5 +1,4 @@
 import '/auth/supabase_auth/auth_util.dart';
-
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -11,6 +10,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+
 import 'dog_owner_profile_model.dart';
 export 'dog_owner_profile_model.dart';
 
@@ -42,7 +42,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
     super.dispose();
   }
 
- @override
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
@@ -73,7 +73,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                 child: Container(
                   width: MediaQuery.sizeOf(context).width,
                   decoration: BoxDecoration(
-                    color: Color(0xFFE0ECFF),
+                    color: FlutterFlowTheme.of(context).tertiary,
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(0),
                       bottomRight: Radius.circular(0),
@@ -94,7 +94,6 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                           padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 0.9,
-                            height: double.infinity,
                             decoration: BoxDecoration(),
                             child: ListView(
                               padding: EdgeInsets.zero,
@@ -302,7 +301,8 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                     height: MediaQuery.sizeOf(context).height *
                                         0.047,
                                     decoration: BoxDecoration(
-                                      color: Color(0xFFCCDBFF),
+                                      color: FlutterFlowTheme.of(context)
+                                          .alternate,
                                       borderRadius: BorderRadius.only(
                                         bottomLeft: Radius.circular(5),
                                         bottomRight: Radius.circular(5),
@@ -311,29 +311,53 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                       ),
                                     ),
                                     child: Row(
-                                      mainAxisSize: MainAxisSize.max,
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
-                                        Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  8, 0, 0, 0),
-                                          child: Icon(
-                                            Icons.account_circle_sharp,
-                                            color: FlutterFlowTheme.of(context)
-                                                .primary,
-                                            size: 25,
+                                        Align(
+                                          alignment:
+                                              AlignmentDirectional(-1, 0),
+                                          child: Padding(
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    8, 0, 0, 0),
+                                            child: Icon(
+                                              Icons.account_circle_sharp,
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .primary,
+                                              size: 25,
+                                            ),
                                           ),
                                         ),
-                                        Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  8, 0, 0, 0),
-                                          child: Text(
-                                            'Mi perfil',
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  font: GoogleFonts.lexend(
+                                        Align(
+                                          alignment:
+                                              AlignmentDirectional(-1, 0),
+                                          child: Padding(
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    8, 0, 0, 0),
+                                            child: Text(
+                                              'Mi perfil',
+                                              style: FlutterFlowTheme.of(
+                                                      context)
+                                                  .bodyMedium
+                                                  .override(
+                                                    font: GoogleFonts.lexend(
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      fontStyle:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .bodyMedium
+                                                              .fontStyle,
+                                                    ),
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .secondaryBackground,
+                                                    fontSize: 16,
+                                                    letterSpacing: 0.0,
                                                     fontWeight: FontWeight.w500,
                                                     fontStyle:
                                                         FlutterFlowTheme.of(
@@ -341,18 +365,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                                             .bodyMedium
                                                             .fontStyle,
                                                   ),
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .secondaryBackground,
-                                                  fontSize: 16,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.w500,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
+                                            ),
                                           ),
                                         ),
                                         Flexible(
@@ -437,7 +450,8 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                     height: MediaQuery.sizeOf(context).height *
                                         0.047,
                                     decoration: BoxDecoration(
-                                      color: Color(0xFFCCDBFF),
+                                      color: FlutterFlowTheme.of(context)
+                                          .alternate,
                                       borderRadius: BorderRadius.only(
                                         bottomLeft: Radius.circular(5),
                                         bottomRight: Radius.circular(5),
@@ -571,7 +585,8 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                     height: MediaQuery.sizeOf(context).height *
                                         0.047,
                                     decoration: BoxDecoration(
-                                      color: Color(0xFFCCDBFF),
+                                      color: FlutterFlowTheme.of(context)
+                                          .alternate,
                                       borderRadius: BorderRadius.only(
                                         bottomLeft: Radius.circular(5),
                                         bottomRight: Radius.circular(5),
@@ -705,7 +720,8 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                     height: MediaQuery.sizeOf(context).height *
                                         0.047,
                                     decoration: BoxDecoration(
-                                      color: Color(0xFFCCDBFF),
+                                      color: FlutterFlowTheme.of(context)
+                                          .alternate,
                                       borderRadius: BorderRadius.only(
                                         bottomLeft: Radius.circular(5),
                                         bottomRight: Radius.circular(5),
@@ -872,7 +888,8 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                     height: MediaQuery.sizeOf(context).height *
                                         0.047,
                                     decoration: BoxDecoration(
-                                      color: Color(0xFFCCDBFF),
+                                      color: FlutterFlowTheme.of(context)
+                                          .alternate,
                                       borderRadius: BorderRadius.only(
                                         bottomLeft: Radius.circular(5),
                                         bottomRight: Radius.circular(5),
@@ -1006,7 +1023,8 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                     height: MediaQuery.sizeOf(context).height *
                                         0.047,
                                     decoration: BoxDecoration(
-                                      color: Color(0xFFCCDBFF),
+                                      color: FlutterFlowTheme.of(context)
+                                          .alternate,
                                       borderRadius: BorderRadius.only(
                                         bottomLeft: Radius.circular(5),
                                         bottomRight: Radius.circular(5),

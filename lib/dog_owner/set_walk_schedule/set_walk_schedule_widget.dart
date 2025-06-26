@@ -1,5 +1,6 @@
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
+import 'package:dalk/cards/pet_card/pet_card_widget.dart';
 import '/cards/address_card/address_card_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -19,9 +20,11 @@ class SetWalkScheduleWidget extends StatefulWidget {
   const SetWalkScheduleWidget({
     super.key,
     required this.selectedAddress,
+    required this.selectedPet
   });
 
   final int? selectedAddress;
+  final int? selectedPet;
   
 
   static String routeName = 'setWalkSchedule';
@@ -36,12 +39,14 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
   int? selectedAddressId;
+  int? selectedPetId;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => SetWalkScheduleModel());
     selectedAddressId = widget.selectedAddress;
+    selectedPetId = widget.selectedPet;
   }
 
   @override
@@ -708,211 +713,133 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                     ),
                                   ),
                                   
-                                  Container(
-                                    width:
-                                        MediaQuery.sizeOf(context).width * 1.0,
-                                    height: 110.0,
-                                    decoration: BoxDecoration(),
-                                    child: ListView(
-                                      padding: EdgeInsets.zero,
-                                      primary: false,
-                                      shrinkWrap: true,
-                                      scrollDirection: Axis.horizontal,
-                                      children: [
-                                        InkWell(
-                                          splashColor: Colors.transparent,
-                                          focusColor: Colors.transparent,
-                                          hoverColor: Colors.transparent,
-                                          highlightColor: Colors.transparent,
-                                          onTap: () async {
-                                            context.pushNamed(
-                                                AddPetWidget.routeName);
-                                          },
-                                          child: Container(
-                                            width: 100.0,
-                                            height: 110.0,
-                                            decoration: BoxDecoration(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .alternate,
-                                              borderRadius:
-                                                  BorderRadius.circular(20.0),
-                                            ),
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.max,
-                                              children: [
-                                                Container(
-                                                  width: 100.0,
-                                                  height: 70.0,
-                                                  decoration: BoxDecoration(),
-                                                  child: Icon(
-                                                    Icons.add_box,
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .primary,
-                                                    size: 45.0,
+                                  Padding(
+                                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
+                                    child: Container(
+                                      width: MediaQuery.sizeOf(context).width * 1.0,
+                                      height: 110.0,
+                                      decoration: BoxDecoration(),
+                                      child: StreamBuilder<List<Map<String, dynamic>>>(
+                                        stream: SupaFlow.client
+                                            .from("pets")
+                                            .stream(primaryKey: ['id'])
+                                            .eq('uuid', currentUserUid),
+                                        builder: (context, snapshot) {
+                                          if (!snapshot.hasData) {
+                                            return Center(
+                                              child: SizedBox(
+                                                width: 50.0,
+                                                height: 50.0,
+                                                child: CircularProgressIndicator(
+                                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                                    FlutterFlowTheme.of(context).primary,
                                                   ),
-                                                ),
-                                                Container(
-                                                  width: 100.0,
-                                                  height: 30.0,
-                                                  decoration: BoxDecoration(),
-                                                  child: Align(
-                                                    alignment:
-                                                        AlignmentDirectional(
-                                                            0.0, 0.0),
-                                                    child: AutoSizeText(
-                                                      'Agregar mascota',
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      maxLines: 3,
-                                                      minFontSize: 8.0,
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            font: GoogleFonts
-                                                                .lexend(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontStyle:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                            ),
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .secondaryBackground,
-                                                            fontSize: 12.0,
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Align(
-                                    alignment: AlignmentDirectional(-1.0, 0.0),
-                                    child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 10.0, 0.0, 0.0),
-                                      child: SingleChildScrollView(
-                                        scrollDirection: Axis.horizontal,
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.max,
-                                          children: [
-                                            Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
-                                                      0.0, 0.0, 10.0, 0.0),
-                                              child: Container(
-                                                width: 100.0,
-                                                height: 110.0,
-                                                decoration: BoxDecoration(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .alternate,
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          20.0),
-                                                ),
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  children: [
-                                                    Expanded(
-                                                      child: Container(
-                                                        width: 100.0,
-                                                        decoration:
-                                                            BoxDecoration(),
-                                                        child: Padding(
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                  10.0),
-                                                          child: ClipRRect(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        8.0),
-                                                            child: Image.asset(
-                                                              'assets/images/golden.jpg',
-                                                              width: 120.0,
-                                                              height: 100.0,
-                                                              fit: BoxFit
-                                                                  .contain,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Container(
-                                                      width: 100.0,
-                                                      height: 30.0,
-                                                      decoration:
-                                                          BoxDecoration(),
-                                                      child: Align(
-                                                        alignment:
-                                                            AlignmentDirectional(
-                                                                0.0, -1.0),
-                                                        child: AutoSizeText(
-                                                          'Maximiliano',
-                                                          maxLines: 1,
-                                                          minFontSize: 8.0,
-                                                          style: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                font:
-                                                                    GoogleFonts
-                                                                        .lexend(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w500,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                                color: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .secondaryBackground,
-                                                                fontSize: 12.0,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w500,
-                                                                fontStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                              ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
                                                 ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
+                                            );
+                                          }
+                                          final petsList = snapshot.data!;
+                                          return ListView.separated(
+                                            padding: EdgeInsets.zero,
+                                            primary: false,
+                                            shrinkWrap: true,
+                                            scrollDirection: Axis.horizontal,
+                                            itemCount: petsList.length + 1, // +1 para el botón extra
+                                            separatorBuilder: (_, __) => SizedBox(width: 10.0),
+                                            itemBuilder: (context, index) {
+                                              if (index < petsList.length) {
+                                                final pet = petsList[index];
+                                                return GestureDetector(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      if (selectedPetId == pet['id']) {
+                                                        selectedPetId = null; // Deselecciona si ya estaba seleccionada
+                                                      } else {
+                                                        selectedPetId = pet['id']; // Selecciona si era otra
+                                                      }
+                                                    });
+                                                  },
+                                                  child: PetCardWidget(
+                                                    key: Key('PetCard_${pet['id']}'),
+                                                    petName: pet['name'],
+                                                    id: pet['id'],
+                                                    selected: selectedPetId == pet['id'],
+                                                  ),
+                                                );
+                                              } else {
+                                                // Último elemento: botón para agregar mascota
+                                                return InkWell(
+                                                  splashColor: Colors.transparent,
+                                                  focusColor: Colors.transparent,
+                                                  hoverColor: Colors.transparent,
+                                                  highlightColor: Colors.transparent,
+                                                  onTap: () async {
+                                                    context.pushNamed(AddPetWidget.routeName);
+                                                  },
+                                                  child: Container(
+                                                    width: 100.0,
+                                                    height: 110.0,
+                                                    decoration: BoxDecoration(
+                                                      color: FlutterFlowTheme.of(context).alternate,
+                                                      borderRadius: BorderRadius.circular(20.0),
+                                                    ),
+                                                    child: Column(
+                                                      mainAxisSize: MainAxisSize.max,
+                                                      children: [
+                                                        Container(
+                                                          width: 100.0,
+                                                          height: 70.0,
+                                                          decoration: BoxDecoration(),
+                                                          child: Icon(
+                                                            Icons.add_box,
+                                                            color: FlutterFlowTheme.of(context).primary,
+                                                            size: 45.0,
+                                                          ),
+                                                        ),
+                                                        Container(
+                                                          width: 100.0,
+                                                          height: 30.0,
+                                                          decoration: BoxDecoration(),
+                                                          child: Align(
+                                                            alignment: AlignmentDirectional(0.0, 0.0),
+                                                            child: AutoSizeText(
+                                                              'Agregar mascota',
+                                                              textAlign: TextAlign.center,
+                                                              maxLines: 1,
+                                                              minFontSize: 8.0,
+                                                              style: FlutterFlowTheme.of(context)
+                                                                  .bodyMedium
+                                                                  .override(
+                                                                    font: GoogleFonts.lexend(
+                                                                      fontWeight: FontWeight.w500,
+                                                                      fontStyle: FlutterFlowTheme.of(context)
+                                                                          .bodyMedium
+                                                                          .fontStyle,
+                                                                    ),
+                                                                    color: FlutterFlowTheme.of(context)
+                                                                        .secondaryBackground,
+                                                                    fontSize: 12.0,
+                                                                    letterSpacing: 0.0,
+                                                                    fontWeight: FontWeight.w500,
+                                                                    fontStyle: FlutterFlowTheme.of(context)
+                                                                        .bodyMedium
+                                                                        .fontStyle,
+                                                                  ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                          );
+                                        },
                                       ),
                                     ),
                                   ),
+                                  
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         0.0, 20.0, 0.0, 0.0),

@@ -84,13 +84,13 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       refreshListenable: appStateNotifier,
       navigatorKey: appNavigatorKey,
       errorBuilder: (context, state) =>
-          appStateNotifier.loggedIn ? DogOwnerProfileWidget() : LoginWidget(),
+          appStateNotifier.loggedIn ? HomeDogOwnerWidget() : LoginWidget(),
       routes: [
         FFRoute(
           name: '_initialize',
           path: '/',
           builder: (context, _) => appStateNotifier.loggedIn
-              ? DogOwnerProfileWidget()
+              ? HomeDogOwnerWidget()
               : LoginWidget(),
         ),
         FFRoute(
@@ -106,6 +106,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               'selectedAddress',
               ParamType.int,
             ),
+            selectedPet: params.getParam('selectedPet', ParamType.int),
           ),
         ),
         FFRoute(
