@@ -7,6 +7,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+
 import 'find_dog_walker_card_model.dart';
 export 'find_dog_walker_card_model.dart';
 
@@ -43,31 +44,31 @@ class _FindDogWalkerCardWidgetState extends State<FindDogWalkerCardWidget> {
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: AlignmentDirectional(-1.0, -1.0),
+      alignment: AlignmentDirectional(-1, -1),
       child: Padding(
-        padding: EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 5.0),
+        padding: EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
         child: Container(
-          width: MediaQuery.sizeOf(context).width * 1.0,
+          width: MediaQuery.sizeOf(context).width,
           height: MediaQuery.sizeOf(context).height * 0.12,
           decoration: BoxDecoration(
             color: FlutterFlowTheme.of(context).alternate,
-            borderRadius: BorderRadius.circular(20.0),
+            borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.max,
             children: [
               Container(
                 width: MediaQuery.sizeOf(context).width * 0.2,
-                height: MediaQuery.sizeOf(context).height * 1.0,
+                height: MediaQuery.sizeOf(context).height,
                 decoration: BoxDecoration(),
                 child: Padding(
-                  padding: EdgeInsets.all(10.0),
+                  padding: EdgeInsets.all(10),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
+                    borderRadius: BorderRadius.circular(15),
                     child: Image.network(
                       'https://images.unsplash.com/photo-1633332755192-727a05c4013d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxfHx1c2VyfGVufDB8fHx8MTc0NjQ1OTI1OXww&ixlib=rb-4.0.3&q=80&w=1080',
-                      width: 200.0,
-                      height: 200.0,
+                      width: 200,
+                      height: 200,
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -83,12 +84,12 @@ class _FindDogWalkerCardWidgetState extends State<FindDogWalkerCardWidget> {
                   children: [
                     Expanded(
                       child: Align(
-                        alignment: AlignmentDirectional(-1.0, 1.0),
+                        alignment: AlignmentDirectional(-1, 1),
                         child: Container(
-                          width: MediaQuery.sizeOf(context).width * 1.0,
+                          width: MediaQuery.sizeOf(context).width,
                           decoration: BoxDecoration(),
                           child: Align(
-                            alignment: AlignmentDirectional(-1.0, 1.0),
+                            alignment: AlignmentDirectional(-1, 1),
                             child: InkWell(
                               splashColor: Colors.transparent,
                               focusColor: Colors.transparent,
@@ -112,7 +113,7 @@ class _FindDogWalkerCardWidgetState extends State<FindDogWalkerCardWidget> {
                                 'Maximiliano',
                                 textAlign: TextAlign.start,
                                 maxLines: 2,
-                                minFontSize: 12.0,
+                                minFontSize: 12,
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
                                     .override(
@@ -122,7 +123,9 @@ class _FindDogWalkerCardWidgetState extends State<FindDogWalkerCardWidget> {
                                             .bodyMedium
                                             .fontStyle,
                                       ),
-                                      fontSize: 18.0,
+                                      color:
+                                          FlutterFlowTheme.of(context).primary,
+                                      fontSize: 18,
                                       letterSpacing: 0.0,
                                       fontWeight: FontWeight.w600,
                                       fontStyle: FlutterFlowTheme.of(context)
@@ -138,18 +141,18 @@ class _FindDogWalkerCardWidgetState extends State<FindDogWalkerCardWidget> {
                     ),
                     Expanded(
                       child: Align(
-                        alignment: AlignmentDirectional(-1.0, -1.0),
+                        alignment: AlignmentDirectional(-1, -1),
                         child: Container(
-                          width: MediaQuery.sizeOf(context).width * 1.0,
-                          height: 40.0,
+                          width: MediaQuery.sizeOf(context).width,
+                          height: 40,
                           decoration: BoxDecoration(),
                           child: Align(
-                            alignment: AlignmentDirectional(-1.0, -1.0),
+                            alignment: AlignmentDirectional(-1, -1),
                             child: AutoSizeText(
                               '\$100',
                               textAlign: TextAlign.start,
                               maxLines: 1,
-                              minFontSize: 11.0,
+                              minFontSize: 11,
                               style: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .override(
@@ -161,7 +164,7 @@ class _FindDogWalkerCardWidgetState extends State<FindDogWalkerCardWidget> {
                                     ),
                                     color: FlutterFlowTheme.of(context)
                                         .secondaryBackground,
-                                    fontSize: 16.0,
+                                    fontSize: 16,
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.w500,
                                     fontStyle: FlutterFlowTheme.of(context)
@@ -178,30 +181,30 @@ class _FindDogWalkerCardWidgetState extends State<FindDogWalkerCardWidget> {
               ),
               Container(
                 width: MediaQuery.sizeOf(context).width * 0.17,
-                height: 100.0,
+                height: 100,
                 decoration: BoxDecoration(),
                 child: Row(
                   mainAxisSize: MainAxisSize.max,
                   children: [
                     Container(
-                      height: MediaQuery.sizeOf(context).height * 1.0,
+                      height: MediaQuery.sizeOf(context).height,
                       decoration: BoxDecoration(),
                       child: Icon(
                         Icons.star,
                         color: Color(0xFFE2B433),
-                        size: 24.0,
+                        size: 24,
                       ),
                     ),
                     Container(
-                      width: 38.0,
-                      height: MediaQuery.sizeOf(context).height * 1.0,
+                      width: 38,
+                      height: MediaQuery.sizeOf(context).height,
                       decoration: BoxDecoration(),
                       child: Align(
-                        alignment: AlignmentDirectional(-1.0, 0.0),
+                        alignment: AlignmentDirectional(-1, 0),
                         child: AutoSizeText(
                           '4.8',
                           maxLines: 1,
-                          minFontSize: 10.0,
+                          minFontSize: 10,
                           style:
                               FlutterFlowTheme.of(context).bodyMedium.override(
                                     font: GoogleFonts.lexend(
@@ -212,7 +215,7 @@ class _FindDogWalkerCardWidgetState extends State<FindDogWalkerCardWidget> {
                                     ),
                                     color: FlutterFlowTheme.of(context)
                                         .secondaryBackground,
-                                    fontSize: 20.0,
+                                    fontSize: 20,
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.w500,
                                     fontStyle: FlutterFlowTheme.of(context)
@@ -227,25 +230,22 @@ class _FindDogWalkerCardWidgetState extends State<FindDogWalkerCardWidget> {
               ),
               Container(
                 width: MediaQuery.sizeOf(context).width * 0.23,
-                height: MediaQuery.sizeOf(context).height * 1.0,
+                height: MediaQuery.sizeOf(context).height,
                 decoration: BoxDecoration(),
                 child: Align(
-                  alignment: AlignmentDirectional(0.0, 0.0),
+                  alignment: AlignmentDirectional(0, 0),
                   child: Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 10.0, 5.0),
+                    padding: EdgeInsetsDirectional.fromSTEB(0, 5, 10, 5),
                     child: FFButtonWidget(
                       onPressed: () {
                         print('requestDogWalker_btn pressed ...');
                       },
                       text: 'Solicitar',
                       options: FFButtonOptions(
-                        width: MediaQuery.sizeOf(context).width * 1.0,
+                        width: MediaQuery.sizeOf(context).width,
                         height: MediaQuery.sizeOf(context).height * 0.05,
-                        padding: EdgeInsetsDirectional.fromSTEB(
-                            10.0, 0.0, 10.0, 0.0),
-                        iconPadding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                        padding: EdgeInsetsDirectional.fromSTEB(10, 0, 10, 0),
+                        iconPadding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
                         color: FlutterFlowTheme.of(context).accent1,
                         textStyle:
                             FlutterFlowTheme.of(context).titleSmall.override(
@@ -262,8 +262,8 @@ class _FindDogWalkerCardWidgetState extends State<FindDogWalkerCardWidget> {
                                       .titleSmall
                                       .fontStyle,
                                 ),
-                        elevation: 0.0,
-                        borderRadius: BorderRadius.circular(8.0),
+                        elevation: 0,
+                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
                   ),

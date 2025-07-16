@@ -1,3 +1,10 @@
+import 'package:dalk/cards/current_walk_owner_card/current_walk_owner_card_widget.dart';
+import 'package:dalk/cards/non_reviewed_walk_card/non_reviewed_walk_card_widget.dart';
+import 'package:dalk/cards/reviewed_walk_card/reviewed_walk_card_widget.dart';
+
+import '/auth/supabase_auth/auth_util.dart';
+import '/backend/supabase/supabase.dart';
+import '/cards/requested_walk_owner_card/requested_walk_owner_card_widget.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
 import '/components/pop_up_add_review/pop_up_add_review_widget.dart';
@@ -14,6 +21,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+
 import 'walks_dog_owner_model.dart';
 export 'walks_dog_owner_model.dart';
 
@@ -64,100 +72,88 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
         backgroundColor: FlutterFlowTheme.of(context).secondary,
         body: SafeArea(
           top: true,
-          child: Stack(
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
             children: [
-              Column(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  Container(
-                    width: MediaQuery.sizeOf(context).width * 1.0,
-                    height: MediaQuery.sizeOf(context).height * 0.1,
-                    decoration: BoxDecoration(),
-                    child: wrapWithModel(
-                      model: _model.notificationContainerModel,
-                      updateCallback: () => safeSetState(() {}),
-                      child: NotificationContainerWidget(),
-                    ),
+              Container(
+                width: MediaQuery.sizeOf(context).width,
+                height: MediaQuery.sizeOf(context).height * 0.1,
+                decoration: BoxDecoration(),
+                child: wrapWithModel(
+                  model: _model.notificationContainerModel,
+                  updateCallback: () => safeSetState(() {}),
+                  child: NotificationContainerWidget(),
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  width: MediaQuery.sizeOf(context).width,
+                  decoration: BoxDecoration(
+                    color: FlutterFlowTheme.of(context).secondary,
                   ),
-                  Expanded(
-                    child: Container(
-                      width: MediaQuery.sizeOf(context).width * 1.0,
-                      height: 752.0,
-                      decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context).secondary,
+                  child: Container(
+                    width: MediaQuery.sizeOf(context).width,
+                    height: MediaQuery.sizeOf(context).height,
+                    decoration: BoxDecoration(
+                      color: FlutterFlowTheme.of(context).tertiary,
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(0),
+                        bottomRight: Radius.circular(0),
+                        topLeft: Radius.circular(50),
+                        topRight: Radius.circular(50),
                       ),
-                      child: Container(
-                        width: 393.0,
-                        height: 752.0,
-                        decoration: BoxDecoration(
-                          color: FlutterFlowTheme.of(context).tertiary,
-                          borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(0.0),
-                            bottomRight: Radius.circular(0.0),
-                            topLeft: Radius.circular(50.0),
-                            topRight: Radius.circular(50.0),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        wrapWithModel(
+                          model: _model.goBackContainerModel,
+                          updateCallback: () => safeSetState(() {}),
+                          child: GoBackContainerWidget(),
+                        ),
+                        Padding(
+                          padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 8),
+                          child: AutoSizeText(
+                            'Paseos',
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            minFontSize: 16,
+                            style: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .override(
+                                  font: GoogleFonts.lexend(
+                                    fontWeight: FontWeight.bold,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontStyle,
+                                  ),
+                                  color: FlutterFlowTheme.of(context).primary,
+                                  fontSize: 24,
+                                  letterSpacing: 0.0,
+                                  fontWeight: FontWeight.bold,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontStyle,
+                                ),
                           ),
                         ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            wrapWithModel(
-                              model: _model.goBackContainerModel,
-                              updateCallback: () => safeSetState(() {}),
-                              child: GoBackContainerWidget(),
-                            ),
-                            Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 0.0, 8.0),
-                              child: AutoSizeText(
-                                'Paseos',
-                                textAlign: TextAlign.center,
-                                maxLines: 1,
-                                minFontSize: 16.0,
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      font: GoogleFonts.lexend(
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .fontStyle,
-                                      ),
-                                      fontSize: 24.0,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Container(
-                                width: MediaQuery.sizeOf(context).width * 0.9,
-                                height: 520.0,
-                                decoration: BoxDecoration(),
-                                child: Column(
-                                  children: [
-                                    Align(
-                                      alignment: Alignment(0.0, 0),
-                                      child: FlutterFlowButtonTabBar(
-                                        useToggleButtonStyle: true,
-                                        labelStyle: FlutterFlowTheme.of(context)
-                                            .titleMedium
-                                            .override(
-                                              font: GoogleFonts.lexend(
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleMedium
-                                                        .fontStyle,
-                                              ),
-                                              fontSize: 16.0,
-                                              letterSpacing: 0.0,
+                        Expanded(
+                          child: Padding(
+                            padding:
+                                EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
+                            child: Container(
+                              width: MediaQuery.sizeOf(context).width * 0.9,
+                              decoration: BoxDecoration(),
+                              child: Column(
+                                children: [
+                                  Align(
+                                    alignment: Alignment(0, 0),
+                                    child: FlutterFlowButtonTabBar(
+                                      useToggleButtonStyle: true,
+                                      labelStyle: FlutterFlowTheme.of(context)
+                                          .titleMedium
+                                          .override(
+                                            font: GoogleFonts.lexend(
                                               fontWeight:
                                                   FlutterFlowTheme.of(context)
                                                       .titleMedium
@@ -167,22 +163,22 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                                       .titleMedium
                                                       .fontStyle,
                                             ),
-                                        unselectedLabelStyle: FlutterFlowTheme
-                                                .of(context)
-                                            .titleMedium
-                                            .override(
-                                              font: GoogleFonts.lexend(
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleMedium
-                                                        .fontStyle,
-                                              ),
-                                              fontSize: 16.0,
-                                              letterSpacing: 0.0,
+                                            fontSize: 16,
+                                            letterSpacing: 0.0,
+                                            fontWeight:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleMedium
+                                                    .fontWeight,
+                                            fontStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleMedium
+                                                    .fontStyle,
+                                          ),
+                                      unselectedLabelStyle: FlutterFlowTheme.of(
+                                              context)
+                                          .titleMedium
+                                          .override(
+                                            font: GoogleFonts.lexend(
                                               fontWeight:
                                                   FlutterFlowTheme.of(context)
                                                       .titleMedium
@@ -192,1736 +188,237 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                                       .titleMedium
                                                       .fontStyle,
                                             ),
-                                        labelColor: FlutterFlowTheme.of(context)
-                                            .accent1,
-                                        unselectedLabelColor: Color(0xFF383838),
-                                        backgroundColor:
-                                            FlutterFlowTheme.of(context)
-                                                .alternate,
-                                        unselectedBackgroundColor:
-                                            FlutterFlowTheme.of(context)
-                                                .alternate,
-                                        unselectedBorderColor:
-                                            FlutterFlowTheme.of(context)
-                                                .alternate,
-                                        borderWidth: 0.0,
-                                        borderRadius: 8.0,
-                                        elevation: 0.0,
-                                        labelPadding:
-                                            EdgeInsetsDirectional.fromSTEB(
-                                                3.0, 0.0, 7.0, 0.0),
-                                        buttonMargin:
-                                            EdgeInsetsDirectional.fromSTEB(
-                                                8.0, 0.0, 8.0, 0.0),
-                                        tabs: [
-                                          Tab(
-                                            text: 'Solicitados',
+                                            fontSize: 16,
+                                            letterSpacing: 0.0,
+                                            fontWeight:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleMedium
+                                                    .fontWeight,
+                                            fontStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleMedium
+                                                    .fontStyle,
                                           ),
-                                          Tab(
-                                            text: 'En Curso',
-                                          ),
-                                          Tab(
-                                            text: 'Completados',
-                                          ),
-                                        ],
-                                        controller: _model.tabBarController,
-                                        onTap: (i) async {
-                                          [
-                                            () async {},
-                                            () async {},
-                                            () async {}
-                                          ][i]();
-                                        },
-                                      ),
+                                      labelColor:
+                                          FlutterFlowTheme.of(context).accent1,
+                                      unselectedLabelColor: Color(0xFF717981),
+                                      backgroundColor:
+                                          FlutterFlowTheme.of(context)
+                                              .alternate,
+                                      unselectedBackgroundColor:
+                                          FlutterFlowTheme.of(context)
+                                              .alternate,
+                                      unselectedBorderColor:
+                                          FlutterFlowTheme.of(context)
+                                              .alternate,
+                                      borderWidth: 0,
+                                      borderRadius: 8,
+                                      elevation: 0,
+                                      labelPadding:
+                                          EdgeInsetsDirectional.fromSTEB(
+                                              3, 0, 7, 0),
+                                      buttonMargin:
+                                          EdgeInsetsDirectional.fromSTEB(
+                                              8, 0, 8, 0),
+                                      tabs: [
+                                        Tab(
+                                          text: 'Solicitados',
+                                        ),
+                                        Tab(
+                                          text: 'En Curso',
+                                        ),
+                                        Tab(
+                                          text: 'Completados',
+                                        ),
+                                      ],
+                                      controller: _model.tabBarController,
+                                      onTap: (i) async {
+                                        [
+                                          () async {},
+                                          () async {},
+                                          () async {}
+                                        ][i]();
+                                      },
                                     ),
-                                    Expanded(
-                                      child: TabBarView(
-                                        controller: _model.tabBarController,
-                                        children: [
-                                          Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 20.0, 0.0, 0.0),
-                                            child: SingleChildScrollView(
-                                              primary: false,
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.max,
-                                                children: [
-                                                  Expanded(
-                                                    child: Container(
-                                                      width: MediaQuery.sizeOf(
-                                                                  context)
-                                                              .width *
-                                                          1.0,
-                                                      decoration:
-                                                          BoxDecoration(),
-                                                      child:
-                                                          SingleChildScrollView(
-                                                        primary: false,
-                                                        child: Column(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          children: [
-                                                            Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          5.0,
-                                                                          0.0,
-                                                                          5.0),
-                                                              child: Container(
-                                                                width: MediaQuery.sizeOf(
-                                                                            context)
-                                                                        .width *
-                                                                    1.0,
-                                                                decoration:
-                                                                    BoxDecoration(
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .alternate,
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              5.0),
-                                                                ),
-                                                                child: Row(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .max,
-                                                                  children: [
-                                                                    Padding(
-                                                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                                                          10.0,
-                                                                          0.0,
-                                                                          5.0,
-                                                                          0.0),
-                                                                      child:
-                                                                          Container(
-                                                                        width: MediaQuery.sizeOf(context).width *
-                                                                            0.15,
-                                                                        height: MediaQuery.sizeOf(context).height *
-                                                                            0.1,
-                                                                        decoration:
-                                                                            BoxDecoration(),
-                                                                        child:
-                                                                            Align(
-                                                                          alignment: AlignmentDirectional(
-                                                                              0.0,
-                                                                              0.0),
-                                                                          child:
-                                                                              Container(
-                                                                            width:
-                                                                                70.0,
-                                                                            height:
-                                                                                70.0,
-                                                                            decoration:
-                                                                                BoxDecoration(),
-                                                                            child:
-                                                                                ClipRRect(
-                                                                              borderRadius: BorderRadius.circular(15.0),
-                                                                              child: Image.network(
-                                                                                'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxNHx8dXNlcnxlbnwwfHx8fDE3NDY1NTY1OTR8MA&ixlib=rb-4.1.0&q=80&w=1080',
-                                                                                width: MediaQuery.sizeOf(context).width * 1.0,
-                                                                                height: MediaQuery.sizeOf(context).height * 1.0,
-                                                                                fit: BoxFit.cover,
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    Expanded(
-                                                                      child:
-                                                                          Padding(
-                                                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                                                            0.0,
-                                                                            15.0,
-                                                                            0.0,
-                                                                            15.0),
-                                                                        child:
-                                                                            Container(
-                                                                          decoration:
-                                                                              BoxDecoration(),
-                                                                          child:
-                                                                              Align(
-                                                                            alignment:
-                                                                                AlignmentDirectional(0.0, 0.0),
-                                                                            child:
-                                                                                Column(
-                                                                              mainAxisSize: MainAxisSize.min,
-                                                                              children: [
-                                                                                Align(
-                                                                                  alignment: AlignmentDirectional(-1.0, 0.0),
-                                                                                  child: AutoSizeText(
-                                                                                    'Por confirmar',
-                                                                                    maxLines: 2,
-                                                                                    minFontSize: 10.0,
-                                                                                    style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                          font: GoogleFonts.lexend(
-                                                                                            fontWeight: FontWeight.bold,
-                                                                                            fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                          ),
-                                                                                          color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                          fontSize: 16.0,
-                                                                                          letterSpacing: 0.0,
-                                                                                          fontWeight: FontWeight.bold,
-                                                                                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                        ),
-                                                                                  ),
-                                                                                ),
-                                                                                Row(
-                                                                                  mainAxisSize: MainAxisSize.max,
-                                                                                  children: [
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        'Mascota:',
-                                                                                        maxLines: 1,
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w600,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w600,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(5.0, 2.0, 0.0, 0.0),
-                                                                                      child: InkWell(
-                                                                                        splashColor: Colors.transparent,
-                                                                                        focusColor: Colors.transparent,
-                                                                                        hoverColor: Colors.transparent,
-                                                                                        highlightColor: Colors.transparent,
-                                                                                        onTap: () async {
-                                                                                          await showModalBottomSheet(
-                                                                                            isScrollControlled: true,
-                                                                                            backgroundColor: Colors.transparent,
-                                                                                            enableDrag: false,
-                                                                                            context: context,
-                                                                                            builder: (context) {
-                                                                                              return GestureDetector(
-                                                                                                onTap: () {
-                                                                                                  FocusScope.of(context).unfocus();
-                                                                                                  FocusManager.instance.primaryFocus?.unfocus();
-                                                                                                },
-                                                                                                child: Padding(
-                                                                                                  padding: MediaQuery.viewInsetsOf(context),
-                                                                                                  child: PopUpDogProfileWidget(),
-                                                                                                ),
-                                                                                              );
-                                                                                            },
-                                                                                          ).then((value) => safeSetState(() {}));
-                                                                                        },
-                                                                                        child: AutoSizeText(
-                                                                                          'Max',
-                                                                                          style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                font: GoogleFonts.lexend(
-                                                                                                  fontWeight: FontWeight.w500,
-                                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                ),
-                                                                                                color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                                letterSpacing: 0.0,
-                                                                                                fontWeight: FontWeight.w500,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                decoration: TextDecoration.underline,
-                                                                                              ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                                Row(
-                                                                                  mainAxisSize: MainAxisSize.max,
-                                                                                  children: [
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        'Paseador:',
-                                                                                        textAlign: TextAlign.center,
-                                                                                        maxLines: 1,
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w600,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w600,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(5.0, 2.0, 0.0, 0.0),
-                                                                                      child: InkWell(
-                                                                                        splashColor: Colors.transparent,
-                                                                                        focusColor: Colors.transparent,
-                                                                                        hoverColor: Colors.transparent,
-                                                                                        highlightColor: Colors.transparent,
-                                                                                        onTap: () async {
-                                                                                          await showModalBottomSheet(
-                                                                                            isScrollControlled: true,
-                                                                                            backgroundColor: Colors.transparent,
-                                                                                            enableDrag: false,
-                                                                                            context: context,
-                                                                                            builder: (context) {
-                                                                                              return GestureDetector(
-                                                                                                onTap: () {
-                                                                                                  FocusScope.of(context).unfocus();
-                                                                                                  FocusManager.instance.primaryFocus?.unfocus();
-                                                                                                },
-                                                                                                child: Padding(
-                                                                                                  padding: MediaQuery.viewInsetsOf(context),
-                                                                                                  child: PopUpDogWalkerProfileWidget(),
-                                                                                                ),
-                                                                                              );
-                                                                                            },
-                                                                                          ).then((value) => safeSetState(() {}));
-                                                                                        },
-                                                                                        child: Text(
-                                                                                          'Juan',
-                                                                                          style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                font: GoogleFonts.lexend(
-                                                                                                  fontWeight: FontWeight.w500,
-                                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                ),
-                                                                                                color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                                letterSpacing: 0.0,
-                                                                                                fontWeight: FontWeight.w500,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                decoration: TextDecoration.underline,
-                                                                                              ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                                Row(
-                                                                                  mainAxisSize: MainAxisSize.max,
-                                                                                  children: [
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        'Fecha:',
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w600,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w600,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(5.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        '10/01/2025',
-                                                                                        textAlign: TextAlign.center,
-                                                                                        maxLines: 2,
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w500,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w500,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                                Row(
-                                                                                  mainAxisSize: MainAxisSize.max,
-                                                                                  children: [
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        'Hora:',
-                                                                                        maxLines: 1,
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w600,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w600,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(5.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        '10:30',
-                                                                                        textAlign: TextAlign.center,
-                                                                                        maxLines: 2,
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w500,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w500,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                              ],
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    Container(
-                                                                      width: MediaQuery.sizeOf(context)
-                                                                              .width *
-                                                                          0.25,
-                                                                      height:
-                                                                          90.0,
-                                                                      decoration:
-                                                                          BoxDecoration(),
-                                                                      child:
-                                                                          Align(
-                                                                        alignment: AlignmentDirectional(
-                                                                            0.0,
-                                                                            0.0),
-                                                                        child:
-                                                                            Row(
-                                                                          mainAxisSize:
-                                                                              MainAxisSize.min,
-                                                                          mainAxisAlignment:
-                                                                              MainAxisAlignment.center,
-                                                                          crossAxisAlignment:
-                                                                              CrossAxisAlignment.center,
-                                                                          children: [
-                                                                            Flexible(
-                                                                              child: Container(
-                                                                                width: 50.0,
-                                                                                height: MediaQuery.sizeOf(context).height * 1.0,
-                                                                                decoration: BoxDecoration(),
-                                                                                child: Align(
-                                                                                  alignment: AlignmentDirectional(0.0, 0.0),
-                                                                                  child: FlutterFlowIconButton(
-                                                                                    borderRadius: 0.0,
-                                                                                    buttonSize: MediaQuery.sizeOf(context).width * 0.18,
-                                                                                    icon: Icon(
-                                                                                      Icons.sms,
-                                                                                      color: FlutterFlowTheme.of(context).primary,
-                                                                                      size: 30.0,
-                                                                                    ),
-                                                                                    onPressed: () {
-                                                                                      print('openChat_btn pressed ...');
-                                                                                    },
-                                                                                  ),
-                                                                                ),
-                                                                              ),
-                                                                            ),
-                                                                            Flexible(
-                                                                              child: Container(
-                                                                                width: 50.0,
-                                                                                height: MediaQuery.sizeOf(context).height * 1.0,
-                                                                                decoration: BoxDecoration(),
-                                                                                child: Align(
-                                                                                  alignment: AlignmentDirectional(0.0, 0.0),
-                                                                                  child: FlutterFlowIconButton(
-                                                                                    borderRadius: 0.0,
-                                                                                    buttonSize: MediaQuery.sizeOf(context).width * 0.18,
-                                                                                    icon: Icon(
-                                                                                      Icons.cancel,
-                                                                                      color: Color(0xFFC40606),
-                                                                                      size: 32.0,
-                                                                                    ),
-                                                                                    onPressed: () {
-                                                                                      print('cancel_erase_btn pressed ...');
-                                                                                    },
-                                                                                  ),
-                                                                                ),
-                                                                              ),
-                                                                            ),
-                                                                          ],
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
+                                  ),
+                                  Expanded(
+                                    child: TabBarView(
+                                      controller: _model.tabBarController,
+                                      children: [
+                                        Padding(
+                                          padding:
+                                              EdgeInsetsDirectional.fromSTEB(
+                                                  0, 20, 0, 0),
+                                          child: 
+                                            StreamBuilder<List<Map<String, dynamic>>>(
+                                              stream: SupaFlow.client
+                                                .from('walks_with_names')
+                                                .stream(primaryKey: ['id'])
+                                                .eq('owner_id', currentUserUid),
+                                              builder: (context, snapshot) {
+                                                if (!snapshot.hasData) {
+                                                  return Center(child: CircularProgressIndicator());
+                                                }
+                                                final walksList = snapshot.data!
+                                                  .where((walk) =>
+                                                    walk['status'] == 'Por confirmar' ||
+                                                    walk['status'] == 'Aceptado' ||
+                                                    walk['status'] == 'Rechazado'
+                                                  ).toList();
+
+                                                for (final walk in snapshot.data!) {
+                                                  print(walk);
+                                                }
+
+                                                if (walksList.isEmpty) {
+                                                  return Center(child: Text('No hay paseos solicitados.'));
+                                                }
+
+                                                
+
+                                                return ListView.builder(
+                                                  padding: EdgeInsets.zero,
+                                                  shrinkWrap: true,
+                                                  itemCount: walksList.length,
+                                                  itemBuilder: (context, index) {
+                                                    final walk = walksList[index];
+                                                    print('walker_name: ${walk['walker_name']}');
+                                                    return RequestedWalkOwnerCardWidget(
+                                                      id: walk['id'],
+                                                      status: walk['status'] ?? '',
+                                                      petName: walk['pet_name'] ?? '',
+                                                      dogWalker: walk['walker_name'] ?? '',
+                                                      date: walk['startTime'] != null
+                                                          ? DateTime.tryParse(walk['startTime'])
+                                                          : null,
+                                                        time: walk['startTime'] != null
+                                                          ? DateTime.tryParse(walk['startTime'])
+                                                          : null,
+                                                    );
+                                                  },
+                                                );
+                                              },
+                                            )
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+                                          child: StreamBuilder<List<Map<String, dynamic>>>(
+                                            stream: SupaFlow.client
+                                              .from('walks_with_names')
+                                              .stream(primaryKey: ['id'])
+                                              .eq('owner_id', currentUserUid),
+                                            builder: (context, snapshot) {
+                                              if (!snapshot.hasData) {
+                                                return Center(child: CircularProgressIndicator());
+                                              }
+                                              final walksList = snapshot.data!
+                                                .where((walk) => walk['status'] == 'En curso')
+                                                .toList();
+
+                                              for (final walk in walksList) {
+                                                print(walk);
+                                              }
+
+                                              if (walksList.isEmpty) {
+                                                return Center(child: Text('No hay paseos en curso.'));
+                                              }
+
+                                              return ListView.builder(
+                                                padding: EdgeInsets.zero,
+                                                shrinkWrap: true,
+                                                itemCount: walksList.length,
+                                                itemBuilder: (context, index) {
+                                                  final walk = walksList[index];
+                                                  return CurrentWalkOwnerCardWidget(
+                                                    petName: walk['pet_name'] ?? '',
+                                                    dogWalker: walk['walker_name'] ?? '',
+                                                    time: walk['startTime'] != null
+                                                        ? DateTime.tryParse(walk['startTime'])
+                                                        : null,
+                                                    returnTime: walk['endTime'] != null
+                                                        ? DateTime.tryParse('1970-01-01T${walk['endTime']}')
+                                                        : null,
+                                                  );
+                                                },
+                                              );
+                                            },
                                           ),
-                                          Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 20.0, 0.0, 0.0),
-                                            child: SingleChildScrollView(
-                                              primary: false,
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.max,
-                                                children: [
-                                                  Expanded(
-                                                    child: Container(
-                                                      width: MediaQuery.sizeOf(
-                                                                  context)
-                                                              .width *
-                                                          1.0,
-                                                      decoration:
-                                                          BoxDecoration(),
-                                                      child:
-                                                          SingleChildScrollView(
-                                                        primary: false,
-                                                        child: Column(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          children: [
-                                                            Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          5.0,
-                                                                          0.0,
-                                                                          5.0),
-                                                              child: Container(
-                                                                width: MediaQuery.sizeOf(
-                                                                            context)
-                                                                        .width *
-                                                                    1.0,
-                                                                decoration:
-                                                                    BoxDecoration(
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .alternate,
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              5.0),
-                                                                ),
-                                                                child: Row(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .max,
-                                                                  children: [
-                                                                    Padding(
-                                                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                                                          10.0,
-                                                                          0.0,
-                                                                          5.0,
-                                                                          0.0),
-                                                                      child:
-                                                                          Container(
-                                                                        width: MediaQuery.sizeOf(context).width *
-                                                                            0.15,
-                                                                        height: MediaQuery.sizeOf(context).height *
-                                                                            0.1,
-                                                                        decoration:
-                                                                            BoxDecoration(),
-                                                                        child:
-                                                                            Align(
-                                                                          alignment: AlignmentDirectional(
-                                                                              0.0,
-                                                                              0.0),
-                                                                          child:
-                                                                              Container(
-                                                                            width:
-                                                                                70.0,
-                                                                            height:
-                                                                                70.0,
-                                                                            decoration:
-                                                                                BoxDecoration(),
-                                                                            child:
-                                                                                ClipRRect(
-                                                                              borderRadius: BorderRadius.circular(15.0),
-                                                                              child: Image.network(
-                                                                                'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxNHx8dXNlcnxlbnwwfHx8fDE3NDY1NTY1OTR8MA&ixlib=rb-4.1.0&q=80&w=1080',
-                                                                                width: MediaQuery.sizeOf(context).width * 1.0,
-                                                                                height: MediaQuery.sizeOf(context).height * 1.0,
-                                                                                fit: BoxFit.cover,
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    Expanded(
-                                                                      child:
-                                                                          Padding(
-                                                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                                                            0.0,
-                                                                            15.0,
-                                                                            0.0,
-                                                                            15.0),
-                                                                        child:
-                                                                            Container(
-                                                                          decoration:
-                                                                              BoxDecoration(),
-                                                                          child:
-                                                                              Align(
-                                                                            alignment:
-                                                                                AlignmentDirectional(0.0, 0.0),
-                                                                            child:
-                                                                                Column(
-                                                                              mainAxisSize: MainAxisSize.min,
-                                                                              children: [
-                                                                                Row(
-                                                                                  mainAxisSize: MainAxisSize.max,
-                                                                                  children: [
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        'Mascota:',
-                                                                                        maxLines: 1,
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w600,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w600,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(5.0, 2.0, 0.0, 0.0),
-                                                                                      child: InkWell(
-                                                                                        splashColor: Colors.transparent,
-                                                                                        focusColor: Colors.transparent,
-                                                                                        hoverColor: Colors.transparent,
-                                                                                        highlightColor: Colors.transparent,
-                                                                                        onTap: () async {
-                                                                                          await showModalBottomSheet(
-                                                                                            isScrollControlled: true,
-                                                                                            backgroundColor: Colors.transparent,
-                                                                                            enableDrag: false,
-                                                                                            context: context,
-                                                                                            builder: (context) {
-                                                                                              return GestureDetector(
-                                                                                                onTap: () {
-                                                                                                  FocusScope.of(context).unfocus();
-                                                                                                  FocusManager.instance.primaryFocus?.unfocus();
-                                                                                                },
-                                                                                                child: Padding(
-                                                                                                  padding: MediaQuery.viewInsetsOf(context),
-                                                                                                  child: PopUpDogProfileWidget(),
-                                                                                                ),
-                                                                                              );
-                                                                                            },
-                                                                                          ).then((value) => safeSetState(() {}));
-                                                                                        },
-                                                                                        child: AutoSizeText(
-                                                                                          'Max',
-                                                                                          style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                font: GoogleFonts.lexend(
-                                                                                                  fontWeight: FontWeight.w500,
-                                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                ),
-                                                                                                color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                                letterSpacing: 0.0,
-                                                                                                fontWeight: FontWeight.w500,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                decoration: TextDecoration.underline,
-                                                                                              ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                                Row(
-                                                                                  mainAxisSize: MainAxisSize.max,
-                                                                                  children: [
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        'Paseador:',
-                                                                                        textAlign: TextAlign.center,
-                                                                                        maxLines: 1,
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w600,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w600,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(5.0, 2.0, 0.0, 0.0),
-                                                                                      child: InkWell(
-                                                                                        splashColor: Colors.transparent,
-                                                                                        focusColor: Colors.transparent,
-                                                                                        hoverColor: Colors.transparent,
-                                                                                        highlightColor: Colors.transparent,
-                                                                                        onTap: () async {
-                                                                                          await showModalBottomSheet(
-                                                                                            isScrollControlled: true,
-                                                                                            backgroundColor: Colors.transparent,
-                                                                                            enableDrag: false,
-                                                                                            context: context,
-                                                                                            builder: (context) {
-                                                                                              return GestureDetector(
-                                                                                                onTap: () {
-                                                                                                  FocusScope.of(context).unfocus();
-                                                                                                  FocusManager.instance.primaryFocus?.unfocus();
-                                                                                                },
-                                                                                                child: Padding(
-                                                                                                  padding: MediaQuery.viewInsetsOf(context),
-                                                                                                  child: PopUpDogWalkerProfileWidget(),
-                                                                                                ),
-                                                                                              );
-                                                                                            },
-                                                                                          ).then((value) => safeSetState(() {}));
-                                                                                        },
-                                                                                        child: Text(
-                                                                                          'Juan',
-                                                                                          style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                font: GoogleFonts.lexend(
-                                                                                                  fontWeight: FontWeight.w500,
-                                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                ),
-                                                                                                color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                                letterSpacing: 0.0,
-                                                                                                fontWeight: FontWeight.w500,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                decoration: TextDecoration.underline,
-                                                                                              ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                                Row(
-                                                                                  mainAxisSize: MainAxisSize.max,
-                                                                                  children: [
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        'Tiempo:',
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w600,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w600,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(5.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        '30 min',
-                                                                                        textAlign: TextAlign.center,
-                                                                                        maxLines: 2,
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w500,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w500,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                                Row(
-                                                                                  mainAxisSize: MainAxisSize.max,
-                                                                                  children: [
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        'Hora de regreso:',
-                                                                                        maxLines: 1,
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w600,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w600,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(5.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        '10:30',
-                                                                                        textAlign: TextAlign.center,
-                                                                                        maxLines: 2,
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w500,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w500,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                              ],
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    Padding(
-                                                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          10.0,
-                                                                          0.0),
-                                                                      child:
-                                                                          Container(
-                                                                        width: MediaQuery.sizeOf(context).width *
-                                                                            0.2,
-                                                                        height:
-                                                                            90.0,
-                                                                        decoration:
-                                                                            BoxDecoration(),
-                                                                        child:
-                                                                            Align(
-                                                                          alignment: AlignmentDirectional(
-                                                                              0.0,
-                                                                              0.0),
-                                                                          child:
-                                                                              Row(
-                                                                            mainAxisSize:
-                                                                                MainAxisSize.min,
-                                                                            mainAxisAlignment:
-                                                                                MainAxisAlignment.center,
-                                                                            crossAxisAlignment:
-                                                                                CrossAxisAlignment.center,
-                                                                            children: [
-                                                                              Flexible(
-                                                                                child: Container(
-                                                                                  width: MediaQuery.sizeOf(context).width * 0.5,
-                                                                                  height: MediaQuery.sizeOf(context).height * 1.0,
-                                                                                  decoration: BoxDecoration(),
-                                                                                  child: Align(
-                                                                                    alignment: AlignmentDirectional(0.0, 0.0),
-                                                                                    child: FlutterFlowIconButton(
-                                                                                      borderRadius: 0.0,
-                                                                                      buttonSize: MediaQuery.sizeOf(context).width * 0.18,
-                                                                                      icon: Icon(
-                                                                                        Icons.open_in_new,
-                                                                                        color: FlutterFlowTheme.of(context).primary,
-                                                                                        size: 30.0,
-                                                                                      ),
-                                                                                      onPressed: () {
-                                                                                        print('goToCurrWalk_btn pressed ...');
-                                                                                      },
-                                                                                    ),
-                                                                                  ),
-                                                                                ),
-                                                                              ),
-                                                                              Flexible(
-                                                                                child: Container(
-                                                                                  width: MediaQuery.sizeOf(context).width * 0.5,
-                                                                                  height: MediaQuery.sizeOf(context).height * 1.0,
-                                                                                  decoration: BoxDecoration(),
-                                                                                  child: Align(
-                                                                                    alignment: AlignmentDirectional(0.0, 0.0),
-                                                                                    child: FlutterFlowIconButton(
-                                                                                      borderRadius: 0.0,
-                                                                                      buttonSize: MediaQuery.sizeOf(context).width * 0.18,
-                                                                                      icon: Icon(
-                                                                                        Icons.cancel,
-                                                                                        color: Color(0xFFC40606),
-                                                                                        size: 32.0,
-                                                                                      ),
-                                                                                      onPressed: () {
-                                                                                        print('cancel_erase_btn pressed ...');
-                                                                                      },
-                                                                                    ),
-                                                                                  ),
-                                                                                ),
-                                                                              ),
-                                                                            ],
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+                                          child: StreamBuilder<List<Map<String, dynamic>>>(
+                                            stream: SupaFlow.client
+                                              .from('walks_with_names')
+                                              .stream(primaryKey: ['id'])
+                                              .eq('owner_id', currentUserUid),
+                                            builder: (context, snapshot) {
+                                              if (!snapshot.hasData) {
+                                                return Center(child: CircularProgressIndicator());
+                                              }
+                                              final finishedWalks = snapshot.data!
+                                                .where((walk) => walk['status'] == 'Finalizado')
+                                                .toList();
+
+                                              if (finishedWalks.isEmpty) {
+                                                return Center(child: Text('No hay paseos finalizados.'));
+                                              }
+
+                                              return ListView.builder(
+                                                padding: EdgeInsets.zero,
+                                                shrinkWrap: true,
+                                                itemCount: finishedWalks.length,
+                                                itemBuilder: (context, index) {
+                                                  final walk = finishedWalks[index];
+                                                  return FutureBuilder<List<Map<String, dynamic>>>(
+                                                    future: SupaFlow.client
+                                                      .from('reviews')
+                                                      .select()
+                                                      .eq('walk_id', walk['id']),
+                                                    builder: (context, reviewSnapshot) {
+                                                      if (!reviewSnapshot.hasData) {
+                                                        return SizedBox();
+                                                      }
+                                                      final reviews = reviewSnapshot.data!;
+                                                      if (reviews.isNotEmpty) {
+                                                        final review = reviews.first;
+                                                        return ReviewedWalkCardWidget(
+                                                          dogName: walk['pet_name'] ?? '',
+                                                          dogWalker: walk['walker_name'] ?? '',
+                                                          time: walk['startTime'] != null
+                                                              ? DateTime.tryParse(walk['startTime'])
+                                                              : null,
+                                                          fee: walk['fee']?.toString() ?? '',
+                                                          rate: review['rating']?.toString() ?? '',
+                                                        );
+                                                      } else {
+                                                        return NonReviewedWalkCardWidget(
+                                                          petName: walk['pet_name'] ?? '',
+                                                          dogWalker: walk['walker_name'] ?? '',
+                                                          time: walk['startTime'] != null
+                                                              ? DateTime.tryParse(walk['startTime'])
+                                                              : null,
+                                                          fee: walk['fee']?.toString() ?? '',
+                                                        );
+                                                      }
+                                                    },
+                                                  );
+                                                },
+                                              );
+                                            },
                                           ),
-                                          Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 20.0, 0.0, 0.0),
-                                            child: SingleChildScrollView(
-                                              primary: false,
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.max,
-                                                children: [
-                                                  Expanded(
-                                                    child: Container(
-                                                      width: MediaQuery.sizeOf(
-                                                                  context)
-                                                              .width *
-                                                          1.0,
-                                                      decoration:
-                                                          BoxDecoration(),
-                                                      child:
-                                                          SingleChildScrollView(
-                                                        primary: false,
-                                                        child: Column(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          children: [
-                                                            Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          5.0,
-                                                                          0.0,
-                                                                          5.0),
-                                                              child: Container(
-                                                                width: MediaQuery.sizeOf(
-                                                                            context)
-                                                                        .width *
-                                                                    1.0,
-                                                                decoration:
-                                                                    BoxDecoration(
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .alternate,
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              5.0),
-                                                                ),
-                                                                child: Row(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .max,
-                                                                  children: [
-                                                                    Padding(
-                                                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                                                          10.0,
-                                                                          0.0,
-                                                                          5.0,
-                                                                          0.0),
-                                                                      child:
-                                                                          Container(
-                                                                        width: MediaQuery.sizeOf(context).width *
-                                                                            0.15,
-                                                                        height: MediaQuery.sizeOf(context).height *
-                                                                            0.1,
-                                                                        decoration:
-                                                                            BoxDecoration(),
-                                                                        child:
-                                                                            Align(
-                                                                          alignment: AlignmentDirectional(
-                                                                              0.0,
-                                                                              0.0),
-                                                                          child:
-                                                                              Container(
-                                                                            width:
-                                                                                70.0,
-                                                                            height:
-                                                                                70.0,
-                                                                            decoration:
-                                                                                BoxDecoration(),
-                                                                            child:
-                                                                                ClipRRect(
-                                                                              borderRadius: BorderRadius.circular(15.0),
-                                                                              child: Image.network(
-                                                                                'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxNHx8dXNlcnxlbnwwfHx8fDE3NDY1NTY1OTR8MA&ixlib=rb-4.1.0&q=80&w=1080',
-                                                                                width: MediaQuery.sizeOf(context).width * 1.0,
-                                                                                height: MediaQuery.sizeOf(context).height * 1.0,
-                                                                                fit: BoxFit.cover,
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    Expanded(
-                                                                      child:
-                                                                          Padding(
-                                                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                                                            0.0,
-                                                                            15.0,
-                                                                            0.0,
-                                                                            15.0),
-                                                                        child:
-                                                                            Container(
-                                                                          decoration:
-                                                                              BoxDecoration(),
-                                                                          child:
-                                                                              Align(
-                                                                            alignment:
-                                                                                AlignmentDirectional(0.0, 0.0),
-                                                                            child:
-                                                                                Column(
-                                                                              mainAxisSize: MainAxisSize.min,
-                                                                              children: [
-                                                                                Row(
-                                                                                  mainAxisSize: MainAxisSize.max,
-                                                                                  children: [
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        'Mascota:',
-                                                                                        maxLines: 1,
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w600,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w600,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(5.0, 2.0, 0.0, 0.0),
-                                                                                      child: InkWell(
-                                                                                        splashColor: Colors.transparent,
-                                                                                        focusColor: Colors.transparent,
-                                                                                        hoverColor: Colors.transparent,
-                                                                                        highlightColor: Colors.transparent,
-                                                                                        onTap: () async {
-                                                                                          await showModalBottomSheet(
-                                                                                            isScrollControlled: true,
-                                                                                            backgroundColor: Colors.transparent,
-                                                                                            enableDrag: false,
-                                                                                            context: context,
-                                                                                            builder: (context) {
-                                                                                              return GestureDetector(
-                                                                                                onTap: () {
-                                                                                                  FocusScope.of(context).unfocus();
-                                                                                                  FocusManager.instance.primaryFocus?.unfocus();
-                                                                                                },
-                                                                                                child: Padding(
-                                                                                                  padding: MediaQuery.viewInsetsOf(context),
-                                                                                                  child: PopUpDogProfileWidget(),
-                                                                                                ),
-                                                                                              );
-                                                                                            },
-                                                                                          ).then((value) => safeSetState(() {}));
-                                                                                        },
-                                                                                        child: AutoSizeText(
-                                                                                          'Max',
-                                                                                          style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                font: GoogleFonts.lexend(
-                                                                                                  fontWeight: FontWeight.w500,
-                                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                ),
-                                                                                                color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                                letterSpacing: 0.0,
-                                                                                                fontWeight: FontWeight.w500,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                decoration: TextDecoration.underline,
-                                                                                              ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                                Row(
-                                                                                  mainAxisSize: MainAxisSize.max,
-                                                                                  children: [
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        'Paseador:',
-                                                                                        maxLines: 1,
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w600,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w600,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(5.0, 2.0, 0.0, 0.0),
-                                                                                      child: InkWell(
-                                                                                        splashColor: Colors.transparent,
-                                                                                        focusColor: Colors.transparent,
-                                                                                        hoverColor: Colors.transparent,
-                                                                                        highlightColor: Colors.transparent,
-                                                                                        onTap: () async {
-                                                                                          await showModalBottomSheet(
-                                                                                            isScrollControlled: true,
-                                                                                            backgroundColor: Colors.transparent,
-                                                                                            enableDrag: false,
-                                                                                            context: context,
-                                                                                            builder: (context) {
-                                                                                              return GestureDetector(
-                                                                                                onTap: () {
-                                                                                                  FocusScope.of(context).unfocus();
-                                                                                                  FocusManager.instance.primaryFocus?.unfocus();
-                                                                                                },
-                                                                                                child: Padding(
-                                                                                                  padding: MediaQuery.viewInsetsOf(context),
-                                                                                                  child: PopUpDogWalkerProfileWidget(),
-                                                                                                ),
-                                                                                              );
-                                                                                            },
-                                                                                          ).then((value) => safeSetState(() {}));
-                                                                                        },
-                                                                                        child: Text(
-                                                                                          'Juan',
-                                                                                          style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                font: GoogleFonts.lexend(
-                                                                                                  fontWeight: FontWeight.w500,
-                                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                ),
-                                                                                                color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                                letterSpacing: 0.0,
-                                                                                                fontWeight: FontWeight.w500,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                decoration: TextDecoration.underline,
-                                                                                              ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                                Row(
-                                                                                  mainAxisSize: MainAxisSize.max,
-                                                                                  children: [
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        'Tiempo:',
-                                                                                        maxLines: 1,
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w600,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w600,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(5.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        '30min',
-                                                                                        maxLines: 1,
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w500,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w500,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                                Row(
-                                                                                  mainAxisSize: MainAxisSize.max,
-                                                                                  children: [
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        'Tarifa:',
-                                                                                        maxLines: 1,
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w600,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w600,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(5.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        '10:30',
-                                                                                        maxLines: 1,
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w500,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w500,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                              ],
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    Padding(
-                                                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          10.0,
-                                                                          0.0),
-                                                                      child:
-                                                                          Container(
-                                                                        width: MediaQuery.sizeOf(context).width *
-                                                                            0.3,
-                                                                        decoration:
-                                                                            BoxDecoration(),
-                                                                        child:
-                                                                            Align(
-                                                                          alignment: AlignmentDirectional(
-                                                                              0.0,
-                                                                              0.0),
-                                                                          child:
-                                                                              FFButtonWidget(
-                                                                            onPressed:
-                                                                                () async {
-                                                                              await showModalBottomSheet(
-                                                                                isScrollControlled: true,
-                                                                                backgroundColor: Colors.transparent,
-                                                                                enableDrag: false,
-                                                                                context: context,
-                                                                                builder: (context) {
-                                                                                  return GestureDetector(
-                                                                                    onTap: () {
-                                                                                      FocusScope.of(context).unfocus();
-                                                                                      FocusManager.instance.primaryFocus?.unfocus();
-                                                                                    },
-                                                                                    child: Padding(
-                                                                                      padding: MediaQuery.viewInsetsOf(context),
-                                                                                      child: PopUpAddReviewWidget(),
-                                                                                    ),
-                                                                                  );
-                                                                                },
-                                                                              ).then((value) => safeSetState(() {}));
-                                                                            },
-                                                                            text:
-                                                                                'Calificar',
-                                                                            options:
-                                                                                FFButtonOptions(
-                                                                              height: 40.0,
-                                                                              padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
-                                                                              iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                                                                              color: FlutterFlowTheme.of(context).accent1,
-                                                                              textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                                                                                    font: GoogleFonts.lexend(
-                                                                                      fontWeight: FontWeight.w500,
-                                                                                      fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
-                                                                                    ),
-                                                                                    color: Colors.white,
-                                                                                    fontSize: 17.0,
-                                                                                    letterSpacing: 0.0,
-                                                                                    fontWeight: FontWeight.w500,
-                                                                                    fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
-                                                                                  ),
-                                                                              elevation: 0.0,
-                                                                              borderRadius: BorderRadius.circular(8.0),
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          5.0,
-                                                                          0.0,
-                                                                          5.0),
-                                                              child: Container(
-                                                                width: MediaQuery.sizeOf(
-                                                                            context)
-                                                                        .width *
-                                                                    1.0,
-                                                                decoration:
-                                                                    BoxDecoration(
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .alternate,
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              5.0),
-                                                                ),
-                                                                child: Row(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .max,
-                                                                  children: [
-                                                                    Padding(
-                                                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                                                          10.0,
-                                                                          0.0,
-                                                                          5.0,
-                                                                          0.0),
-                                                                      child:
-                                                                          Container(
-                                                                        width: MediaQuery.sizeOf(context).width *
-                                                                            0.15,
-                                                                        height: MediaQuery.sizeOf(context).height *
-                                                                            0.1,
-                                                                        decoration:
-                                                                            BoxDecoration(),
-                                                                        child:
-                                                                            Align(
-                                                                          alignment: AlignmentDirectional(
-                                                                              0.0,
-                                                                              0.0),
-                                                                          child:
-                                                                              Container(
-                                                                            width:
-                                                                                70.0,
-                                                                            height:
-                                                                                70.0,
-                                                                            decoration:
-                                                                                BoxDecoration(),
-                                                                            child:
-                                                                                ClipRRect(
-                                                                              borderRadius: BorderRadius.circular(15.0),
-                                                                              child: Image.network(
-                                                                                'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxNHx8dXNlcnxlbnwwfHx8fDE3NDY1NTY1OTR8MA&ixlib=rb-4.1.0&q=80&w=1080',
-                                                                                width: MediaQuery.sizeOf(context).width * 1.0,
-                                                                                height: MediaQuery.sizeOf(context).height * 1.0,
-                                                                                fit: BoxFit.cover,
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    Expanded(
-                                                                      child:
-                                                                          Padding(
-                                                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                                                            0.0,
-                                                                            15.0,
-                                                                            0.0,
-                                                                            15.0),
-                                                                        child:
-                                                                            Container(
-                                                                          decoration:
-                                                                              BoxDecoration(),
-                                                                          child:
-                                                                              Align(
-                                                                            alignment:
-                                                                                AlignmentDirectional(0.0, 0.0),
-                                                                            child:
-                                                                                Column(
-                                                                              mainAxisSize: MainAxisSize.min,
-                                                                              children: [
-                                                                                Row(
-                                                                                  mainAxisSize: MainAxisSize.max,
-                                                                                  children: [
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        'Mascota:',
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w600,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w600,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(5.0, 2.0, 0.0, 0.0),
-                                                                                      child: InkWell(
-                                                                                        splashColor: Colors.transparent,
-                                                                                        focusColor: Colors.transparent,
-                                                                                        hoverColor: Colors.transparent,
-                                                                                        highlightColor: Colors.transparent,
-                                                                                        onTap: () async {
-                                                                                          await showModalBottomSheet(
-                                                                                            isScrollControlled: true,
-                                                                                            backgroundColor: Colors.transparent,
-                                                                                            enableDrag: false,
-                                                                                            context: context,
-                                                                                            builder: (context) {
-                                                                                              return GestureDetector(
-                                                                                                onTap: () {
-                                                                                                  FocusScope.of(context).unfocus();
-                                                                                                  FocusManager.instance.primaryFocus?.unfocus();
-                                                                                                },
-                                                                                                child: Padding(
-                                                                                                  padding: MediaQuery.viewInsetsOf(context),
-                                                                                                  child: PopUpDogProfileWidget(),
-                                                                                                ),
-                                                                                              );
-                                                                                            },
-                                                                                          ).then((value) => safeSetState(() {}));
-                                                                                        },
-                                                                                        child: AutoSizeText(
-                                                                                          'Max',
-                                                                                          style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                font: GoogleFonts.lexend(
-                                                                                                  fontWeight: FontWeight.w500,
-                                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                ),
-                                                                                                color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                                letterSpacing: 0.0,
-                                                                                                fontWeight: FontWeight.w500,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                decoration: TextDecoration.underline,
-                                                                                              ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                                Row(
-                                                                                  mainAxisSize: MainAxisSize.max,
-                                                                                  children: [
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 2.0, 0.0, 0.0),
-                                                                                      child: Text(
-                                                                                        'Paseador:',
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w600,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w600,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(5.0, 2.0, 0.0, 0.0),
-                                                                                      child: InkWell(
-                                                                                        splashColor: Colors.transparent,
-                                                                                        focusColor: Colors.transparent,
-                                                                                        hoverColor: Colors.transparent,
-                                                                                        highlightColor: Colors.transparent,
-                                                                                        onTap: () async {
-                                                                                          await showModalBottomSheet(
-                                                                                            isScrollControlled: true,
-                                                                                            backgroundColor: Colors.transparent,
-                                                                                            enableDrag: false,
-                                                                                            context: context,
-                                                                                            builder: (context) {
-                                                                                              return GestureDetector(
-                                                                                                onTap: () {
-                                                                                                  FocusScope.of(context).unfocus();
-                                                                                                  FocusManager.instance.primaryFocus?.unfocus();
-                                                                                                },
-                                                                                                child: Padding(
-                                                                                                  padding: MediaQuery.viewInsetsOf(context),
-                                                                                                  child: PopUpDogWalkerProfileWidget(),
-                                                                                                ),
-                                                                                              );
-                                                                                            },
-                                                                                          ).then((value) => safeSetState(() {}));
-                                                                                        },
-                                                                                        child: Text(
-                                                                                          'Juan',
-                                                                                          style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                font: GoogleFonts.lexend(
-                                                                                                  fontWeight: FontWeight.w500,
-                                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                ),
-                                                                                                color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                                letterSpacing: 0.0,
-                                                                                                fontWeight: FontWeight.w500,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                decoration: TextDecoration.underline,
-                                                                                              ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                                Row(
-                                                                                  mainAxisSize: MainAxisSize.max,
-                                                                                  children: [
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        'Tiempo:',
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w600,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w600,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(5.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        '30min',
-                                                                                        maxLines: 1,
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w500,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w500,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                                Row(
-                                                                                  mainAxisSize: MainAxisSize.max,
-                                                                                  children: [
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        'Tarifa:',
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w600,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w600,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(5.0, 2.0, 0.0, 0.0),
-                                                                                      child: AutoSizeText(
-                                                                                        '10:30',
-                                                                                        maxLines: 1,
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              font: GoogleFonts.lexend(
-                                                                                                fontWeight: FontWeight.w500,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                              color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w500,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                              ],
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    Padding(
-                                                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          10.0,
-                                                                          0.0),
-                                                                      child:
-                                                                          Container(
-                                                                        width: MediaQuery.sizeOf(context).width *
-                                                                            0.3,
-                                                                        decoration:
-                                                                            BoxDecoration(),
-                                                                        child:
-                                                                            Align(
-                                                                          alignment: AlignmentDirectional(
-                                                                              0.0,
-                                                                              0.0),
-                                                                          child:
-                                                                              Row(
-                                                                            mainAxisSize:
-                                                                                MainAxisSize.min,
-                                                                            mainAxisAlignment:
-                                                                                MainAxisAlignment.center,
-                                                                            crossAxisAlignment:
-                                                                                CrossAxisAlignment.center,
-                                                                            children: [
-                                                                              Expanded(
-                                                                                child: Container(
-                                                                                  height: 100.0,
-                                                                                  decoration: BoxDecoration(
-                                                                                    shape: BoxShape.rectangle,
-                                                                                  ),
-                                                                                  child: Column(
-                                                                                    mainAxisSize: MainAxisSize.min,
-                                                                                    children: [
-                                                                                      Flexible(
-                                                                                        child: Align(
-                                                                                          alignment: AlignmentDirectional(0.0, 0.0),
-                                                                                          child: Container(
-                                                                                            width: 100.0,
-                                                                                            decoration: BoxDecoration(),
-                                                                                            child: Row(
-                                                                                              mainAxisSize: MainAxisSize.max,
-                                                                                              mainAxisAlignment: MainAxisAlignment.end,
-                                                                                              children: [
-                                                                                                Icon(
-                                                                                                  Icons.star,
-                                                                                                  color: Color(0xFFFFB753),
-                                                                                                  size: 24.0,
-                                                                                                ),
-                                                                                                AutoSizeText(
-                                                                                                  '4.5',
-                                                                                                  textAlign: TextAlign.center,
-                                                                                                  maxLines: 11,
-                                                                                                  minFontSize: 10.0,
-                                                                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                        font: GoogleFonts.lexend(
-                                                                                                          fontWeight: FontWeight.w500,
-                                                                                                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                        ),
-                                                                                                        color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                                        fontSize: 17.0,
-                                                                                                        letterSpacing: 0.0,
-                                                                                                        fontWeight: FontWeight.w500,
-                                                                                                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                      ),
-                                                                                                ),
-                                                                                              ],
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
-                                                                                      ),
-                                                                                      Flexible(
-                                                                                        child: Align(
-                                                                                          alignment: AlignmentDirectional(0.0, -1.0),
-                                                                                          child: FFButtonWidget(
-                                                                                            onPressed: () async {
-                                                                                              await showModalBottomSheet(
-                                                                                                isScrollControlled: true,
-                                                                                                backgroundColor: Colors.transparent,
-                                                                                                enableDrag: false,
-                                                                                                context: context,
-                                                                                                builder: (context) {
-                                                                                                  return GestureDetector(
-                                                                                                    onTap: () {
-                                                                                                      FocusScope.of(context).unfocus();
-                                                                                                      FocusManager.instance.primaryFocus?.unfocus();
-                                                                                                    },
-                                                                                                    child: Padding(
-                                                                                                      padding: MediaQuery.viewInsetsOf(context),
-                                                                                                      child: PopUpReviewDetailsWidget(),
-                                                                                                    ),
-                                                                                                  );
-                                                                                                },
-                                                                                              ).then((value) => safeSetState(() {}));
-                                                                                            },
-                                                                                            text: 'Ver Reseña',
-                                                                                            options: FFButtonOptions(
-                                                                                              height: 40.0,
-                                                                                              padding: EdgeInsetsDirectional.fromSTEB(6.0, 0.0, 6.0, 0.0),
-                                                                                              iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                                                                                              color: FlutterFlowTheme.of(context).accent1,
-                                                                                              textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                                                                                                    font: GoogleFonts.lexend(
-                                                                                                      fontWeight: FontWeight.w500,
-                                                                                                      fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
-                                                                                                    ),
-                                                                                                    color: Colors.white,
-                                                                                                    fontSize: 17.0,
-                                                                                                    letterSpacing: 0.0,
-                                                                                                    fontWeight: FontWeight.w500,
-                                                                                                    fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
-                                                                                                  ),
-                                                                                              elevation: 0.0,
-                                                                                              borderRadius: BorderRadius.circular(8.0),
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ],
-                                                                                  ),
-                                                                                ),
-                                                                              ),
-                                                                            ],
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
             ],
           ),

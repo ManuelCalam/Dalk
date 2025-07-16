@@ -1,7 +1,6 @@
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +8,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+
 import 'pop_up_review_details_model.dart';
 export 'pop_up_review_details_model.dart';
 
@@ -45,37 +45,37 @@ class _PopUpReviewDetailsWidgetState extends State<PopUpReviewDetailsWidget> {
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: AlignmentDirectional(0.0, 0.0),
+      alignment: AlignmentDirectional(0, 0),
       child: Container(
-        width: MediaQuery.sizeOf(context).width * 1.0,
+        width: MediaQuery.sizeOf(context).width,
         height: MediaQuery.sizeOf(context).height * 0.45,
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).tertiary,
           borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(50.0),
-            bottomRight: Radius.circular(50.0),
-            topLeft: Radius.circular(50.0),
-            topRight: Radius.circular(50.0),
+            bottomLeft: Radius.circular(50),
+            bottomRight: Radius.circular(50),
+            topLeft: Radius.circular(50),
+            topRight: Radius.circular(50),
           ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.max,
           children: [
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(15.0, 20.0, 10.0, 0.0),
+              padding: EdgeInsetsDirectional.fromSTEB(15, 20, 10, 0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 children: [
                   Expanded(
                     child: Align(
-                      alignment: AlignmentDirectional(1.0, 0.0),
+                      alignment: AlignmentDirectional(1, 0),
                       child: FlutterFlowIconButton(
-                        borderRadius: 8.0,
-                        buttonSize: 40.0,
+                        borderRadius: 8,
+                        buttonSize: 40,
                         icon: FaIcon(
                           FontAwesomeIcons.angleDown,
                           color: FlutterFlowTheme.of(context).primary,
-                          size: 24.0,
+                          size: 24,
                         ),
                         onPressed: () async {
                           // Action 1
@@ -89,10 +89,10 @@ class _PopUpReviewDetailsWidgetState extends State<PopUpReviewDetailsWidget> {
             ),
             Expanded(
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 25.0),
+                padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 25),
                 child: Container(
                   width: MediaQuery.sizeOf(context).width * 0.9,
-                  height: 100.0,
+                  height: 100,
                   decoration: BoxDecoration(),
                   child: Form(
                     key: _model.formKey,
@@ -101,7 +101,7 @@ class _PopUpReviewDetailsWidgetState extends State<PopUpReviewDetailsWidget> {
                       mainAxisSize: MainAxisSize.max,
                       children: [
                         AutoSizeText(
-                          'Tu reseña',
+                          'Tu reseÃ±a',
                           textAlign: TextAlign.center,
                           maxLines: 3,
                           style:
@@ -112,7 +112,7 @@ class _PopUpReviewDetailsWidgetState extends State<PopUpReviewDetailsWidget> {
                                           .bodyMedium
                                           .fontStyle,
                                     ),
-                                    fontSize: 20.0,
+                                    fontSize: 20,
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.w600,
                                     fontStyle: FlutterFlowTheme.of(context)
@@ -121,8 +121,7 @@ class _PopUpReviewDetailsWidgetState extends State<PopUpReviewDetailsWidget> {
                                   ),
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              0.0, 18.0, 0.0, 0.0),
+                          padding: EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
                           child: RatingBar.builder(
                             onRatingUpdate: (newValue) => safeSetState(
                                 () => _model.ratingBarValue = newValue),
@@ -131,28 +130,28 @@ class _PopUpReviewDetailsWidgetState extends State<PopUpReviewDetailsWidget> {
                               color: FlutterFlowTheme.of(context).accent1,
                             ),
                             direction: Axis.horizontal,
-                            initialRating: _model.ratingBarValue ??= 0.0,
+                            initialRating: _model.ratingBarValue ??= 0,
                             unratedColor:
                                 FlutterFlowTheme.of(context).alternate,
                             itemCount: 5,
-                            itemSize: 55.0,
+                            itemSize: 55,
                             glowColor: FlutterFlowTheme.of(context).accent1,
                           ),
                         ),
                         Expanded(
                           child: Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                                0.0, 18.0, 0.0, 0.0),
+                            padding:
+                                EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
                             child: Container(
-                              width: MediaQuery.sizeOf(context).width * 1.0,
+                              width: MediaQuery.sizeOf(context).width,
                               decoration: BoxDecoration(
                                 color: FlutterFlowTheme.of(context).alternate,
-                                borderRadius: BorderRadius.circular(30.0),
+                                borderRadius: BorderRadius.circular(30),
                               ),
                               child: Padding(
-                                padding: EdgeInsets.all(12.0),
+                                padding: EdgeInsets.all(12),
                                 child: AutoSizeText(
-                                  'Más detalles',
+                                  'MÃ¡s detalles',
                                   textAlign: TextAlign.justify,
                                   style: FlutterFlowTheme.of(context)
                                       .bodyLarge
@@ -167,7 +166,7 @@ class _PopUpReviewDetailsWidgetState extends State<PopUpReviewDetailsWidget> {
                                                   .bodyLarge
                                                   .fontStyle,
                                         ),
-                                        fontSize: 16.0,
+                                        fontSize: 16,
                                         letterSpacing: 0.0,
                                         fontWeight: FlutterFlowTheme.of(context)
                                             .bodyLarge
@@ -178,47 +177,6 @@ class _PopUpReviewDetailsWidgetState extends State<PopUpReviewDetailsWidget> {
                                       ),
                                 ),
                               ),
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              0.0, 18.0, 0.0, 0.0),
-                          child: FFButtonWidget(
-                            onPressed: () {
-                              print('sendReview_Btn pressed ...');
-                            },
-                            text: 'Envíar',
-                            options: FFButtonOptions(
-                              width: MediaQuery.sizeOf(context).width * 1.0,
-                              height: MediaQuery.sizeOf(context).height * 0.045,
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  16.0, 0.0, 16.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 0.0, 0.0),
-                              color: FlutterFlowTheme.of(context).accent1,
-                              textStyle: FlutterFlowTheme.of(context)
-                                  .titleSmall
-                                  .override(
-                                    font: GoogleFonts.lexend(
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontStyle,
-                                    ),
-                                    color: Colors.white,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontStyle,
-                                  ),
-                              elevation: 0.0,
-                              borderRadius: BorderRadius.circular(8.0),
                             ),
                           ),
                         ),
