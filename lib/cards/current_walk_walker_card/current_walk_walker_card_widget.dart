@@ -1,7 +1,5 @@
 import 'package:dalk/backend/supabase/supabase.dart';
-
 import '/components/pop_up_dog_profile/pop_up_dog_profile_widget.dart';
-import '/components/pop_up_dog_walker_profile/pop_up_dog_walker_profile_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -11,34 +9,35 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import 'current_walk_owner_card_model.dart';
-export 'current_walk_owner_card_model.dart';
+import 'current_walk_walker_card_model.dart';
+export 'current_walk_walker_card_model.dart';
 
-class CurrentWalkOwnerCardWidget extends StatefulWidget {
-  const CurrentWalkOwnerCardWidget({
+class CurrentWalkWalkerCardWidget extends StatefulWidget {
+  const CurrentWalkWalkerCardWidget({
     super.key,
-    String? petName,
-    String? dogWalker,
     required this.id,
+    String? petName,
+    String? dogOwner,
     required this.time,
     required this.returnTime,
   })  : this.petName = petName ?? '[petName]',
-        this.dogWalker = dogWalker ?? '[walkerName]';
+        this.dogOwner = dogOwner ?? '[dogOwner]';
 
   final int id;
   final String petName;
-  final String dogWalker;
+  final String dogOwner;
   final DateTime? time;
   final DateTime? returnTime;
 
+
   @override
-  State<CurrentWalkOwnerCardWidget> createState() =>
-      _CurrentWalkOwnerCardWidgetState();
+  State<CurrentWalkWalkerCardWidget> createState() =>
+      _CurrentWalkWalkerCardWidgetState();
 }
 
-class _CurrentWalkOwnerCardWidgetState
-    extends State<CurrentWalkOwnerCardWidget> {
-  late CurrentWalkOwnerCardModel _model;
+class _CurrentWalkWalkerCardWidgetState
+    extends State<CurrentWalkWalkerCardWidget> {
+  late CurrentWalkWalkerCardModel _model;
 
   @override
   void setState(VoidCallback callback) {
@@ -49,7 +48,7 @@ class _CurrentWalkOwnerCardWidgetState
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => CurrentWalkOwnerCardModel());
+    _model = createModel(context, () => CurrentWalkWalkerCardModel());
   }
 
   @override
@@ -191,7 +190,7 @@ class _CurrentWalkOwnerCardWidgetState
                               padding:
                                   EdgeInsetsDirectional.fromSTEB(0, 2, 0, 0),
                               child: AutoSizeText(
-                                'Paseador:',
+                                'Dueño:',
                                 textAlign: TextAlign.center,
                                 maxLines: 1,
                                 style: FlutterFlowTheme.of(context)
@@ -216,48 +215,25 @@ class _CurrentWalkOwnerCardWidgetState
                             Padding(
                               padding:
                                   EdgeInsetsDirectional.fromSTEB(5, 2, 0, 0),
-                              child: InkWell(
-                                splashColor: Colors.transparent,
-                                focusColor: Colors.transparent,
-                                hoverColor: Colors.transparent,
-                                highlightColor: Colors.transparent,
-                                onTap: () async {
-                                  await showModalBottomSheet(
-                                    isScrollControlled: true,
-                                    backgroundColor: Colors.transparent,
-                                    enableDrag: false,
-                                    context: context,
-                                    builder: (context) {
-                                      return Padding(
-                                        padding:
-                                            MediaQuery.viewInsetsOf(context),
-                                        child: PopUpDogWalkerProfileWidget(),
-                                      );
-                                    },
-                                  ).then((value) => safeSetState(() {}));
-                                },
-                                child: Text(
-                                  widget!.dogWalker,
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        font: GoogleFonts.lexend(
-                                          fontWeight: FontWeight.w500,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontStyle,
-                                        ),
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryBackground,
-                                        letterSpacing: 0.0,
+                              child: Text(
+                                widget!.dogOwner,
+                                style: FlutterFlowTheme.of(context)
+                                    .bodyMedium
+                                    .override(
+                                      font: GoogleFonts.lexend(
                                         fontWeight: FontWeight.w500,
                                         fontStyle: FlutterFlowTheme.of(context)
                                             .bodyMedium
                                             .fontStyle,
-                                        decoration: TextDecoration.underline,
                                       ),
-                                ),
+                                      color: FlutterFlowTheme.of(context)
+                                          .secondaryBackground,
+                                      letterSpacing: 0.0,
+                                      fontWeight: FontWeight.w500,
+                                      fontStyle: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .fontStyle,
+                                    ),
                               ),
                             ),
                           ],

@@ -38,7 +38,7 @@ export '/common/change_password/change_password_widget.dart'
     show ChangePasswordWidget;
 export '/dog_walker/home_dog_walker/home_dog_walker_widget.dart'
     show HomeDogWalkerWidget;
-export '/dog_walker/walk_dog_walker/walk_dog_walker_widget.dart'
+export '/dog_walker/walks_dog_walker/walks_dog_walker_widget.dart'
     show WalkDogWalkerWidget;
 export '/dog_walker/dog_walker_profile/dog_walker_profile_widget.dart'
     show DogWalkerProfileWidget;

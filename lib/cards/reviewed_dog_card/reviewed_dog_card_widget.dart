@@ -1,44 +1,43 @@
-import 'package:dalk/backend/supabase/supabase.dart';
-
 import '/components/pop_up_dog_profile/pop_up_dog_profile_widget.dart';
 import '/components/pop_up_dog_walker_profile/pop_up_dog_walker_profile_widget.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
+import '/components/pop_up_review_details/pop_up_review_details_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_widgets.dart';
 import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import 'current_walk_owner_card_model.dart';
-export 'current_walk_owner_card_model.dart';
+import 'reviewed_dog_card_model.dart';
+export 'reviewed_dog_card_model.dart';
 
-class CurrentWalkOwnerCardWidget extends StatefulWidget {
-  const CurrentWalkOwnerCardWidget({
+class ReviewedDogCardWidget extends StatefulWidget {
+  const ReviewedDogCardWidget({
     super.key,
-    String? petName,
-    String? dogWalker,
-    required this.id,
+    String? dogName,
+    String? dogOwner,
     required this.time,
-    required this.returnTime,
-  })  : this.petName = petName ?? '[petName]',
-        this.dogWalker = dogWalker ?? '[walkerName]';
+    String? fee,
+    String? rate,
+  })  : this.dogName = dogName ?? '[dogName]',
+        this.dogOwner = dogOwner ?? '[dogOwner]',
+        this.fee = fee ?? '[fee]',
+        this.rate = rate ?? '[rate]';
 
-  final int id;
-  final String petName;
-  final String dogWalker;
+  final String dogName;
+  final String dogOwner;
   final DateTime? time;
-  final DateTime? returnTime;
+  final String fee;
+  final String rate;
 
   @override
-  State<CurrentWalkOwnerCardWidget> createState() =>
-      _CurrentWalkOwnerCardWidgetState();
+  State<ReviewedDogCardWidget> createState() => _ReviewedDogCardWidgetState();
 }
 
-class _CurrentWalkOwnerCardWidgetState
-    extends State<CurrentWalkOwnerCardWidget> {
-  late CurrentWalkOwnerCardModel _model;
+class _ReviewedDogCardWidgetState extends State<ReviewedDogCardWidget> {
+  late ReviewedDogCardModel _model;
 
   @override
   void setState(VoidCallback callback) {
@@ -49,7 +48,7 @@ class _CurrentWalkOwnerCardWidgetState
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => CurrentWalkOwnerCardModel());
+    _model = createModel(context, () => ReviewedDogCardModel());
   }
 
   @override
@@ -115,7 +114,6 @@ class _CurrentWalkOwnerCardWidgetState
                                   EdgeInsetsDirectional.fromSTEB(0, 2, 0, 0),
                               child: AutoSizeText(
                                 'Mascota:',
-                                maxLines: 1,
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
                                     .override(
@@ -159,7 +157,7 @@ class _CurrentWalkOwnerCardWidgetState
                                   ).then((value) => safeSetState(() {}));
                                 },
                                 child: AutoSizeText(
-                                  widget!.petName,
+                                  widget!.dogName,
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
                                       .override(
@@ -190,10 +188,8 @@ class _CurrentWalkOwnerCardWidgetState
                             Padding(
                               padding:
                                   EdgeInsetsDirectional.fromSTEB(0, 2, 0, 0),
-                              child: AutoSizeText(
-                                'Paseador:',
-                                textAlign: TextAlign.center,
-                                maxLines: 1,
+                              child: Text(
+                                'Dueño:',
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
                                     .override(
@@ -237,7 +233,7 @@ class _CurrentWalkOwnerCardWidgetState
                                   ).then((value) => safeSetState(() {}));
                                 },
                                 child: Text(
-                                  widget!.dogWalker,
+                                  widget!.dogOwner,
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
                                       .override(
@@ -294,8 +290,7 @@ class _CurrentWalkOwnerCardWidgetState
                                   EdgeInsetsDirectional.fromSTEB(5, 2, 0, 0),
                               child: AutoSizeText(
                                 dateTimeFormat("Hm", widget!.time),
-                                textAlign: TextAlign.center,
-                                maxLines: 2,
+                                maxLines: 1,
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
                                     .override(
@@ -324,8 +319,7 @@ class _CurrentWalkOwnerCardWidgetState
                               padding:
                                   EdgeInsetsDirectional.fromSTEB(0, 2, 0, 0),
                               child: AutoSizeText(
-                                'Hora de regreso:',
-                                maxLines: 1,
+                                'Tarifa:',
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
                                     .override(
@@ -349,9 +343,8 @@ class _CurrentWalkOwnerCardWidgetState
                               padding:
                                   EdgeInsetsDirectional.fromSTEB(5, 2, 0, 0),
                               child: AutoSizeText(
-                                dateTimeFormat("Hm", widget!.returnTime),
-                                textAlign: TextAlign.center,
-                                maxLines: 2,
+                                widget!.fee,
+                                maxLines: 1,
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
                                     .override(
@@ -379,65 +372,135 @@ class _CurrentWalkOwnerCardWidgetState
                 ),
               ),
             ),
-            Container(
-              width: MediaQuery.sizeOf(context).width * 0.25,
-              height: 90,
-              decoration: BoxDecoration(),
-              child: Align(
-                alignment: AlignmentDirectional(0, 0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Flexible(
-                      child: Container(
-                        width: 50,
-                        height: MediaQuery.sizeOf(context).height,
-                        decoration: BoxDecoration(),
-                        child: Align(
-                          alignment: AlignmentDirectional(0, 0),
-                          child: FlutterFlowIconButton(
-                            borderRadius: 0,
-                            buttonSize: MediaQuery.sizeOf(context).width * 0.18,
-                            icon: Icon(
-                              Icons.open_in_new,
-                              color: FlutterFlowTheme.of(context).primary,
-                              size: 30,
-                            ),
-                            onPressed: () {
-                              print('openChat_btn pressed ...');
-                            },
+            Padding(
+              padding: EdgeInsetsDirectional.fromSTEB(0, 0, 10, 0),
+              child: Container(
+                width: MediaQuery.sizeOf(context).width * 0.3,
+                decoration: BoxDecoration(),
+                child: Align(
+                  alignment: AlignmentDirectional(0, 0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Container(
+                          height: 100,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.rectangle,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: Align(
+                                  alignment: AlignmentDirectional(0, 0),
+                                  child: Container(
+                                    width: 100,
+                                    decoration: BoxDecoration(),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.max,
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Icon(
+                                          Icons.star,
+                                          color: Color(0xFFFFB753),
+                                          size: 24,
+                                        ),
+                                        AutoSizeText(
+                                          widget!.rate,
+                                          textAlign: TextAlign.center,
+                                          maxLines: 11,
+                                          minFontSize: 10,
+                                          style: FlutterFlowTheme.of(context)
+                                              .bodyMedium
+                                              .override(
+                                                font: GoogleFonts.lexend(
+                                                  fontWeight: FontWeight.w500,
+                                                  fontStyle:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .bodyMedium
+                                                          .fontStyle,
+                                                ),
+                                                color:
+                                                    FlutterFlowTheme.of(context)
+                                                        .secondaryBackground,
+                                                fontSize: 17,
+                                                letterSpacing: 0.0,
+                                                fontWeight: FontWeight.w500,
+                                                fontStyle:
+                                                    FlutterFlowTheme.of(context)
+                                                        .bodyMedium
+                                                        .fontStyle,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Flexible(
+                                child: Align(
+                                  alignment: AlignmentDirectional(0, -1),
+                                  child: FFButtonWidget(
+                                    onPressed: () async {
+                                      await showModalBottomSheet(
+                                        isScrollControlled: true,
+                                        backgroundColor: Colors.transparent,
+                                        enableDrag: false,
+                                        context: context,
+                                        builder: (context) {
+                                          return Padding(
+                                            padding: MediaQuery.viewInsetsOf(
+                                                context),
+                                            child: PopUpReviewDetailsWidget(),
+                                          );
+                                        },
+                                      ).then((value) => safeSetState(() {}));
+                                    },
+                                    text: 'Ver Reseña',
+                                    options: FFButtonOptions(
+                                      height: 40,
+                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                          6, 0, 6, 0),
+                                      iconPadding:
+                                          EdgeInsetsDirectional.fromSTEB(
+                                              0, 0, 0, 0),
+                                      color:
+                                          FlutterFlowTheme.of(context).accent1,
+                                      textStyle: FlutterFlowTheme.of(context)
+                                          .titleSmall
+                                          .override(
+                                            font: GoogleFonts.lexend(
+                                              fontWeight: FontWeight.w500,
+                                              fontStyle:
+                                                  FlutterFlowTheme.of(context)
+                                                      .titleSmall
+                                                      .fontStyle,
+                                            ),
+                                            color: Colors.white,
+                                            fontSize: 17,
+                                            letterSpacing: 0.0,
+                                            fontWeight: FontWeight.w500,
+                                            fontStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .fontStyle,
+                                          ),
+                                      elevation: 0,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                    ),
-                    Flexible(
-                      child: Container(
-                        width: 50,
-                        height: MediaQuery.sizeOf(context).height,
-                        decoration: BoxDecoration(),
-                        child: Align(
-                          alignment: AlignmentDirectional(0, 0),
-                          child: FlutterFlowIconButton(
-                            borderRadius: 0,
-                            buttonSize: MediaQuery.sizeOf(context).width * 0.18,
-                            icon: Icon(
-                              Icons.cancel,
-                              color: Color(0xFFC40606),
-                              size: 32,
-                            ),
-                            onPressed: () async {
-                              await SupaFlow.client
-                              .from('walks')
-                              .update({'status': 'Cancelado'})
-                              .eq('id', widget.id); 
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

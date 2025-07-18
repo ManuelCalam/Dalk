@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dalk/dog_walker/walks_dog_walker/walks_dog_walker_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:page_transition/page_transition.dart';
@@ -210,9 +211,9 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => HomeDogWalkerWidget(),
         ),
         FFRoute(
-          name: WalkDogWalkerWidget.routeName,
-          path: WalkDogWalkerWidget.routePath,
-          builder: (context, params) => WalkDogWalkerWidget(),
+          name: WalksDogWalkerWidget.routeName,
+          path: WalksDogWalkerWidget.routePath,
+          builder: (context, params) => WalksDogWalkerWidget(),
         ),
         FFRoute(
           name: DogWalkerProfileWidget.routeName,

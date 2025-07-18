@@ -1,5 +1,4 @@
 import 'package:dalk/backend/supabase/supabase.dart';
-
 import '/components/pop_up_dog_profile/pop_up_dog_profile_widget.dart';
 import '/components/pop_up_dog_walker_profile/pop_up_dog_walker_profile_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -457,12 +456,35 @@ class _RequestedWalkOwnerCardWidgetState
                               size: 32,
                             ),
                             onPressed: () async {
-                              await SupaFlow.client
-                              .from('walks')
-                              .delete()
-                              .eq('id', widget.id);
+                              final response = await SupaFlow.client
+                                  .from('walks')
+                                  .select('status')
+                                  .eq('id', widget.id)
+                                  .single();
 
-                              if (mounted) setState(() {});                            },
+                              if (response != null) {
+                                  final currentStatus = response['status'];
+                                  if (currentStatus == 'Por confirmar') {
+                                      await SupaFlow.client
+                                          .from('walks')
+                                          .update({'status': 'Cancelado'})
+                                          .eq('id', widget.id);
+                                  }
+                                  else if(currentStatus == 'Aceptado'){
+                                     await SupaFlow.client
+                                          .from('walks')
+                                          .update({'status': 'Cancelado'})
+                                          .eq('id', widget.id); 
+                                  }
+                                  else if (currentStatus == 'Rechazado' || currentStatus == 'Cancelado'){
+                                      await SupaFlow.client
+                                        .from('walks')
+                                        .delete()
+                                        .eq('id', widget.id);
+                                  }
+                              }
+
+                            },
                           ),
                         ),
                       ),
