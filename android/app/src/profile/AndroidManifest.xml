@@ -10,10 +10,6 @@
         android:label="dalk"
         android:icon="@mipmap/ic_launcher">
 
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyD4pVFgSXXmGSrPZud-l-Zc2g_HLmnzaFA" />
-
     </application>
 
 </manifest>
