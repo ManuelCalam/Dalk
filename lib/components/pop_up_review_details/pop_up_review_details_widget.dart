@@ -101,7 +101,7 @@ class _PopUpReviewDetailsWidgetState extends State<PopUpReviewDetailsWidget> {
                       mainAxisSize: MainAxisSize.max,
                       children: [
                         AutoSizeText(
-                          'Tu reseÃ±a',
+                          'Tu reseña',
                           textAlign: TextAlign.center,
                           maxLines: 3,
                           style:
@@ -151,7 +151,7 @@ class _PopUpReviewDetailsWidgetState extends State<PopUpReviewDetailsWidget> {
                               child: Padding(
                                 padding: EdgeInsets.all(12),
                                 child: AutoSizeText(
-                                  'MÃ¡s detalles',
+                                  'Más detalles',
                                   textAlign: TextAlign.justify,
                                   style: FlutterFlowTheme.of(context)
                                       .bodyLarge

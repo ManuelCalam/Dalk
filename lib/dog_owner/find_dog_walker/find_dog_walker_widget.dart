@@ -1,3 +1,4 @@
+import '/backend/supabase/supabase.dart';
 import '/cards/find_dog_walker_card/find_dog_walker_card_widget.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
@@ -8,9 +9,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-
 import 'find_dog_walker_model.dart';
 export 'find_dog_walker_model.dart';
+
 
 class FindDogWalkerWidget extends StatefulWidget {
   const FindDogWalkerWidget({super.key});
@@ -59,15 +60,15 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
             mainAxisSize: MainAxisSize.max,
             children: [
               Container(
-                width: MediaQuery.sizeOf(context).width,
+                width: MediaQuery.sizeOf(context).width * 1.0,
                 height: MediaQuery.sizeOf(context).height * 0.1,
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).secondary,
                   borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(0),
-                    bottomRight: Radius.circular(0),
-                    topLeft: Radius.circular(0),
-                    topRight: Radius.circular(0),
+                    bottomLeft: Radius.circular(0.0),
+                    bottomRight: Radius.circular(0.0),
+                    topLeft: Radius.circular(0.0),
+                    topRight: Radius.circular(0.0),
                   ),
                 ),
                 child: wrapWithModel(
@@ -78,21 +79,21 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
               ),
               Expanded(
                 child: Container(
-                  width: MediaQuery.sizeOf(context).width,
+                  width: MediaQuery.sizeOf(context).width * 1.0,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).tertiary,
                     borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(0),
-                      bottomRight: Radius.circular(0),
-                      topLeft: Radius.circular(50),
-                      topRight: Radius.circular(50),
+                      bottomLeft: Radius.circular(0.0),
+                      bottomRight: Radius.circular(0.0),
+                      topLeft: Radius.circular(50.0),
+                      topRight: Radius.circular(50.0),
                     ),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       Align(
-                        alignment: AlignmentDirectional(0, 0),
+                        alignment: AlignmentDirectional(0.0, 0.0),
                         child: wrapWithModel(
                           model: _model.goBackContainerModel,
                           updateCallback: () => safeSetState(() {}),
@@ -100,7 +101,8 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 10),
+                        padding:
+                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 10.0),
                         child: Text(
                           'Paseadores encontrados',
                           textAlign: TextAlign.center,
@@ -112,8 +114,7 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                                           .bodyMedium
                                           .fontStyle,
                                     ),
-                                    color: FlutterFlowTheme.of(context).primary,
-                                    fontSize: 24,
+                                    fontSize: 24.0,
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.bold,
                                     fontStyle: FlutterFlowTheme.of(context)
@@ -123,33 +124,33 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                         ),
                       ),
                       Align(
-                        alignment: AlignmentDirectional(0, -1),
+                        alignment: AlignmentDirectional(0.0, -1.0),
                         child: Container(
                           width: MediaQuery.sizeOf(context).width * 0.9,
                           height: MediaQuery.sizeOf(context).height * 0.055,
                           decoration: BoxDecoration(
                             color:
                                 FlutterFlowTheme.of(context).primaryBackground,
-                            borderRadius: BorderRadius.circular(15),
+                            borderRadius: BorderRadius.circular(15.0),
                           ),
                           child: Padding(
-                            padding:
-                                EdgeInsetsDirectional.fromSTEB(15, 0, 0, 0),
+                            padding: EdgeInsetsDirectional.fromSTEB(
+                                15.0, 0.0, 0.0, 0.0),
                             child: Row(
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Expanded(
                                   child: Container(
-                                    width: 170,
+                                    width: 170.0,
                                     child: TextFormField(
-                                      controller: _model
-                                          .findDogWalkerInputTextController,
-                                      focusNode:
-                                          _model.findDogWalkerInputFocusNode,
+                                      controller: _model.findDogWalkerInputTextController,
+                                      focusNode: _model.findDogWalkerInputFocusNode,
                                       autofocus: false,
                                       obscureText: false,
+                                      onChanged: (_) => setState(() {}),
                                       decoration: InputDecoration(
                                         isDense: true,
+                                        labelText: 'Buscar paseador',
                                         labelStyle: FlutterFlowTheme.of(context)
                                             .titleSmall
                                             .override(
@@ -163,9 +164,6 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                                                         .titleSmall
                                                         .fontStyle,
                                               ),
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .secondaryBackground,
                                               letterSpacing: 0.0,
                                               fontWeight:
                                                   FlutterFlowTheme.of(context)
@@ -176,7 +174,6 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                                                       .titleSmall
                                                       .fontStyle,
                                             ),
-                                        hintText: 'Buscar paseador',
                                         hintStyle: FlutterFlowTheme.of(context)
                                             .labelMedium
                                             .override(
@@ -187,8 +184,10 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                                                         .labelMedium
                                                         .fontStyle,
                                               ),
-                                              color: Color(0xFF484848),
-                                              fontSize: 15,
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .primary,
+                                              fontSize: 15.0,
                                               letterSpacing: 0.0,
                                               fontWeight: FontWeight.w500,
                                               fontStyle:
@@ -199,36 +198,36 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
                                             color: Color(0x00000000),
-                                            width: 1,
+                                            width: 1.0,
                                           ),
                                           borderRadius:
-                                              BorderRadius.circular(8),
+                                              BorderRadius.circular(8.0),
                                         ),
                                         focusedBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
                                             color: Color(0x00000000),
-                                            width: 1,
+                                            width: 1.0,
                                           ),
                                           borderRadius:
-                                              BorderRadius.circular(8),
+                                              BorderRadius.circular(8.0),
                                         ),
                                         errorBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
                                             color: FlutterFlowTheme.of(context)
                                                 .error,
-                                            width: 1,
+                                            width: 1.0,
                                           ),
                                           borderRadius:
-                                              BorderRadius.circular(8),
+                                              BorderRadius.circular(8.0),
                                         ),
                                         focusedErrorBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
                                             color: FlutterFlowTheme.of(context)
                                                 .error,
-                                            width: 1,
+                                            width: 1.0,
                                           ),
                                           borderRadius:
-                                              BorderRadius.circular(8),
+                                              BorderRadius.circular(8.0),
                                         ),
                                       ),
                                       style: FlutterFlowTheme.of(context)
@@ -244,8 +243,6 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                                                       .bodyMedium
                                                       .fontStyle,
                                             ),
-                                            color: FlutterFlowTheme.of(context)
-                                                .secondaryBackground,
                                             letterSpacing: 0.0,
                                             fontWeight:
                                                 FlutterFlowTheme.of(context)
@@ -256,7 +253,7 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                                                     .bodyMedium
                                                     .fontStyle,
                                           ),
-                                      textAlign: TextAlign.start,
+                                      textAlign: TextAlign.center,
                                       cursorColor: FlutterFlowTheme.of(context)
                                           .primaryText,
                                       validator: _model
@@ -267,11 +264,11 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                                 ),
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
-                                      0, 0, 10, 0),
+                                      0.0, 0.0, 10.0, 0.0),
                                   child: Icon(
                                     Icons.search_sharp,
                                     color: Color(0xFF8C8C8C),
-                                    size: 32,
+                                    size: 32.0,
                                   ),
                                 ),
                               ],
@@ -281,29 +278,58 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                       ),
                       Expanded(
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 20, 0, 15),
+                          padding: EdgeInsetsDirectional.fromSTEB(
+                              0.0, 20.0, 0.0, 15.0),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 0.9,
                             height: double.infinity,
                             decoration: BoxDecoration(),
-                            child: ListView(
-                              padding: EdgeInsets.zero,
-                              shrinkWrap: true,
-                              scrollDirection: Axis.vertical,
-                              children: [
-                                Align(
-                                  alignment: AlignmentDirectional(-1, -1),
-                                  child: wrapWithModel(
-                                    model: _model.findDogWalkerCardModel,
-                                    updateCallback: () => safeSetState(() {}),
-                                    child: FindDogWalkerCardWidget(),
-                                  ),
-                                ),
-                              ],
+                            
+                            child: FutureBuilder<List<dynamic>>(
+  future: Supabase.instance.client
+  //SELECT * FROM users WHERE usertype = 'Paseador';
+      .from('users')
+      .select()
+      .eq('usertype', 'Paseador')
+      .ilike(
+        'name',
+        _model.findDogWalkerInputTextController.text.isEmpty
+            ? '%' // esto devuelve todos
+            : '%${_model.findDogWalkerInputTextController.text}%',
+      ),
+  builder: (context, snapshot) {
+    if (snapshot.hasError) {
+      return Center(child: Text('Error: ${snapshot.error}'));
+    }
+
+    if (!snapshot.hasData) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final paseadores = snapshot.data!;
+    print('Paseadores encontrados: ${paseadores.length}');
+    print(paseadores);
+    if (paseadores.isEmpty) {
+      return const Center(child: Text('No se encontraron paseadores.'));
+    }
+
+    return ListView.builder(
+      itemCount: paseadores.length,
+      itemBuilder: (context, index) {
+        final paseador = paseadores[index];
+        return FindDogWalkerCardWidget(
+          nombre: paseador['name'] ?? 'Sin nombre',
+          precio: paseador['houseNumber']?.toString() ?? '0',
+          calificacion: paseador['Rating']?.toString() ?? '0',
+          fotoUrl: paseador['photoUrl'] ?? '',
+        );
+      },
+    );
+  },
+),
                             ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ),
