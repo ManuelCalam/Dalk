@@ -1,0 +1,7 @@
+firebase_functions~=0.1.0
+flask
+pandas
+joblib
+scikit-learn==1.6.1
+xgboost
+functions-framework

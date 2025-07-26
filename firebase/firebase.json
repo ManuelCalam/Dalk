@@ -6,7 +6,7 @@
   "functions": [
     {
       "source": "functions",
-      "codebase": "functions"
+      "runtime": "python311"
     }
   ],
   "storage": {
