@@ -1,5 +1,5 @@
 import 'package:dalk/components/not_scheduled_walk_container/not_scheduled_walk_container_widget.dart';
-import 'package:dalk/components/scheduled_walk_container/scheduled_walk_container_widget.dart';
+//import 'package:dalk/components/scheduled_walk_container/scheduled_walk_container_widget.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/go_back_container/go_back_container_widget.dart';

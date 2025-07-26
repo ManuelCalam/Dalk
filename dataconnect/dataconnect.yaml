@@ -1,0 +1,12 @@
+specVersion: "v1"
+serviceId: "dalk"
+location: "us-central1"
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "fdcdb"
+      cloudSql:
+        instanceId: "dalk-fdc"
+      # schemaValidation: "COMPATIBLE"
+connectorDirs: ["./connector"]
