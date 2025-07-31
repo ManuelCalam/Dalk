@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_util.dart' hide LatLng;
 import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +14,13 @@ import 'scheduled_walk_container_model.dart';
 export 'scheduled_walk_container_model.dart';
 
 class ScheduledWalkContainerWidget extends StatefulWidget {
-  const ScheduledWalkContainerWidget({super.key});
+  final String walkId;
+  final String userType;
+  const ScheduledWalkContainerWidget({
+    required this.walkId,
+    required this.userType,
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<ScheduledWalkContainerWidget> createState() =>
@@ -22,25 +30,125 @@ class ScheduledWalkContainerWidget extends StatefulWidget {
 class _ScheduledWalkContainerWidgetState
     extends State<ScheduledWalkContainerWidget> {
   late ScheduledWalkContainerModel _model;
+  
+  Marker? _walkerMarker;
+  StreamSubscription<DatabaseEvent>? _locationSubscription;
 
   @override
   void setState(VoidCallback callback) {
     super.setState(callback);
     _model.onUpdate();
   }
+        
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => ScheduledWalkContainerModel());
+
+
+    if (widget.userType == 'Paseador') {
+      _startSendingLocation();
+    } else if (widget.userType == 'Dueño') {
+      _listenToWalkerLocation();
+    }
+
   }
+
+
+  Timer? _locationTimer;
+
+  // Método aplicado al paseador para mandar su ubicación
+  void _startSendingLocation() {
+    const interval = Duration(seconds: 6);
+    final ref = FirebaseDatabase.instance.ref('walk_locations/${widget.walkId}');
+
+    _locationTimer = Timer.periodic(interval, (timer) async {
+      final hasPermission = await _handleLocationPermission();
+      if (!hasPermission) return;
+
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      await ref.set({
+        'lat': position.latitude,
+        'lng': position.longitude,
+      });
+
+      final currentLatLng = LatLng(position.latitude, position.longitude);
+      final controller = await _model.googleMapsController.future;
+
+      setState(() {
+        _walkerMarker = Marker(
+          markerId: MarkerId("walker"),
+          position: currentLatLng,
+          infoWindow: InfoWindow(title: 'Tú estás aquí'),
+        );
+        _model.googleMapsCenter = currentLatLng;
+      });
+
+      controller.animateCamera(CameraUpdate.newLatLng(currentLatLng));
+    });
+  }
+
+
+  Future<bool> _handleLocationPermission() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return false;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return false;
+    }
+
+    return true;
+  }
+
+
+
+  // Método aplicado para el dueño para obtener la ubicación del paseador
+  void _listenToWalkerLocation() {
+    final ref = FirebaseDatabase.instance.ref('walk_locations/${widget.walkId}');
+
+    _locationSubscription = ref.onValue.listen((event) async {
+      final data = event.snapshot.value as Map?;
+      if (data != null && data.containsKey('lat') && data.containsKey('lng')) {
+        final lat = (data['lat'] as num).toDouble();
+        final lng = (data['lng'] as num).toDouble();
+        final position = LatLng(lat, lng);
+
+        final controller = await _model.googleMapsController.future;
+
+        setState(() {
+          _walkerMarker = Marker(
+            markerId: MarkerId("walker"),
+            position: position,
+            infoWindow: InfoWindow(title: 'Paseador'),
+          );
+          _model.googleMapsCenter = position;
+        });
+
+        controller.animateCamera(CameraUpdate.newLatLng(position));
+      }
+    });
+  }
+
 
   @override
   void dispose() {
+    _locationTimer?.cancel();
+    _locationSubscription?.cancel();
     _model.maybeDispose();
-
     super.dispose();
   }
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -71,6 +179,7 @@ class _ScheduledWalkContainerWidgetState
               myLocationButtonEnabled: true,
               mapType: MapType.normal,
               markers: {
+                if (_walkerMarker != null) _walkerMarker!,
                 Marker(
                   markerId: MarkerId("inicio"),
                   position: _model.googleMapsCenter,
@@ -80,17 +189,17 @@ class _ScheduledWalkContainerWidgetState
               },
             ),
           ),
-          Flexible(
+          Container(
             child: Padding(
               padding: EdgeInsetsDirectional.fromSTEB(0, 15, 0, 0),
-              child: Container(
+              child: SizedBox(
                 width: MediaQuery.sizeOf(context).width * 0.8,
                 height: MediaQuery.sizeOf(context).height * 0.1,
-                decoration: BoxDecoration(
+                child: Container(
+                  decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).alternate,
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(10, 0, 0, 0),
                   child: Row(
                     mainAxisSize: MainAxisSize.max,

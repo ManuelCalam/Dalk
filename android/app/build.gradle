@@ -33,7 +33,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace "com.dalk.app"
-    compileSdkVersion 34
+    compileSdkVersion 35
     
 
     compileOptions {
@@ -58,9 +58,12 @@ android {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.dalk.app"
         minSdkVersion 23
-        targetSdkVersion 34
+        targetSdkVersion 35
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+
+        file("../local.properties").withInputStream { localProperties.load(it) }
+        manifestPlaceholders = [mapsApiKey: localProperties.getProperty("MAPS_API_KEY", "")]
     }
 
    signingConfigs {
