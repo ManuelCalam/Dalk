@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:dalk/dog_walker/background_service/background_service.dart';
+import 'package:dalk/dog_walker/background_service/on_ios_background';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_background_service/flutter_background_service.dart' show AndroidConfiguration, FlutterBackgroundService, IosConfiguration, ServiceInstance;
 import 'package:geolocator/geolocator.dart';
@@ -53,8 +54,11 @@ class _ScheduledWalkContainerWidgetState
     WidgetsBinding.instance.addObserver(this);
 
     if (widget.userType == 'Paseador') {
-      _startSendingLocation();
-      _startBackgroundService();
+      if (WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
+        _startSendingLocation(); // Primer plano
+      } else {
+        _startBackgroundService(); // Segundo plano
+      }
     } else if (widget.userType == 'Dueño') {
       _listenToWalkerLocation();
     }
@@ -103,7 +107,7 @@ class _ScheduledWalkContainerWidgetState
       iosConfiguration: IosConfiguration(
           autoStart: true,
           onForeground: onStart,
-          // onBackground: onIosBackground, 
+          onBackground: onIosBackground, 
       ), 
     );
 
