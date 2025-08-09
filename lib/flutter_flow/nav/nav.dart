@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dalk/RootNavWidget.dart';
 import 'package:dalk/dog_walker/walks_dog_walker/walks_dog_walker_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -85,14 +86,14 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       refreshListenable: appStateNotifier,
       navigatorKey: appNavigatorKey,
       errorBuilder: (context, state) =>
-          appStateNotifier.loggedIn ? HomeDogOwnerWidget() : LoginWidget(),
+          appStateNotifier.loggedIn ? RootNavWidget() : LoginWidget(),
       routes: [
         FFRoute(
           name: '_initialize',
           path: '/',
-          builder: (context, _) => appStateNotifier.loggedIn
-              ? HomeDogOwnerWidget()
-              : LoginWidget(),
+          builder: (context, params) => RootNavWidget(
+            initialPage: params.getParam('initialPage', ParamType.String),
+          ),
         ),
         FFRoute(
           name: HomeDogOwnerWidget.routeName,

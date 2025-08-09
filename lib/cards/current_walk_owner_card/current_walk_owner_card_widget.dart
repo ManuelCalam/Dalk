@@ -407,8 +407,10 @@ class _CurrentWalkOwnerCardWidgetState
                               size: 30,
                             ),
                             onPressed: () {
-                                  context.goNamedAuth(CurrentWalkWidget.routeName, context.mounted);
-                            },
+                              context.goNamed(
+                                '_initialize', 
+                                queryParameters: {'initialPage': 'CurrentWalk'},
+                              );                            },
                           ),
                         ),
                       ),

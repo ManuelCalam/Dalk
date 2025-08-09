@@ -1,3 +1,4 @@
+import 'package:dalk/common/notifications/notifications_widget.dart';
 import 'package:dalk/components/not_scheduled_walk_container/not_scheduled_walk_container_widget.dart';
 import 'package:dalk/components/scheduled_walk_container/scheduled_walk_container_widget.dart';
 
@@ -7,11 +8,9 @@ import '/components/go_back_container/go_back_container_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 import 'current_walk_model.dart';
 export 'current_walk_model.dart';
@@ -131,7 +130,7 @@ class _CurrentWalkWidgetState extends State<CurrentWalkWidget> {
                                 size: 26,
                               ),
                               onPressed: () {
-                                print('IconButton pressed ...');
+                                context.pushNamed(NotificationsWidget.routeName);
                               },
                             ),
                           ),

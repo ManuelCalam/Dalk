@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'package:dalk/dog_walker/background_service/background_service.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter_background_service/flutter_background_service.dart' show AndroidConfiguration, FlutterBackgroundService, IosConfiguration, ServiceInstance;
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -8,7 +10,6 @@ import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 import 'scheduled_walk_container_model.dart';
 export 'scheduled_walk_container_model.dart';
@@ -28,11 +29,14 @@ class ScheduledWalkContainerWidget extends StatefulWidget {
 }
 
 class _ScheduledWalkContainerWidgetState
-    extends State<ScheduledWalkContainerWidget> {
+    extends State<ScheduledWalkContainerWidget> with WidgetsBindingObserver{
   late ScheduledWalkContainerModel _model;
   
+  Timer? _locationTimer;
   Marker? _walkerMarker;
   StreamSubscription<DatabaseEvent>? _locationSubscription;
+  bool _isForeground = true;
+
 
   @override
   void setState(VoidCallback callback) {
@@ -46,20 +50,71 @@ class _ScheduledWalkContainerWidgetState
     super.initState();
     _model = createModel(context, () => ScheduledWalkContainerModel());
 
+    WidgetsBinding.instance.addObserver(this);
 
     if (widget.userType == 'Paseador') {
       _startSendingLocation();
+      _startBackgroundService();
     } else if (widget.userType == 'Dueño') {
       _listenToWalkerLocation();
     }
 
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (widget.userType != 'Paseador') return;
 
-  Timer? _locationTimer;
+    if (state == AppLifecycleState.paused) {
+      // App en segundo plano
+      print("App en segundo plano. Deteniendo Timer, background continúa...");
+      _locationTimer?.cancel();
+      _isForeground = false;
+    }
+
+    if (state == AppLifecycleState.resumed) {
+      // App vuelve al primer plano
+      print("App en primer plano. Activando envío con Timer...");
+      _isForeground = true;
+      _stopBackgroundService(); 
+      _startSendingLocation();
+    }
+  }
+
+
+  void _stopSendingLocation() {
+    _locationTimer?.cancel();
+    _locationTimer = null;
+  }
+
+  void _stopBackgroundService() {
+    FlutterBackgroundService().invoke("stopService");
+  }
+
+
+  void _startBackgroundService() async {
+    final service = FlutterBackgroundService();
+
+    await service.configure(
+      androidConfiguration: AndroidConfiguration(
+        onStart: onStart, 
+        isForegroundMode: true,
+        autoStart: true,),
+      iosConfiguration: IosConfiguration(
+          autoStart: true,
+          onForeground: onStart,
+          // onBackground: onIosBackground, 
+      ), 
+    );
+
+    await service.startService();
+    service.invoke("setData", {"walkId": widget.walkId});
+  }
+
+
 
   // Método aplicado al paseador para mandar su ubicación
-  void _startSendingLocation() {
+  void _startSendingLocation() async {
     const interval = Duration(seconds: 6);
     final ref = FirebaseDatabase.instance.ref('walk_locations/${widget.walkId}');
 
@@ -71,7 +126,8 @@ class _ScheduledWalkContainerWidgetState
         desiredAccuracy: LocationAccuracy.high,
       );
 
-      await ref.set({
+      // Enviamos ubicación a Firebase
+      await ref.update({
         'lat': position.latitude,
         'lng': position.longitude,
       });
@@ -79,11 +135,12 @@ class _ScheduledWalkContainerWidgetState
       final currentLatLng = LatLng(position.latitude, position.longitude);
       final controller = await _model.googleMapsController.future;
 
+      // Actualizamos el mapa y el marcador localmente
       setState(() {
         _walkerMarker = Marker(
-          markerId: MarkerId("walker"),
+          markerId: const MarkerId("walker"),
           position: currentLatLng,
-          infoWindow: InfoWindow(title: 'Tú estás aquí'),
+          infoWindow: const InfoWindow(title: 'Tú estás aquí'),
         );
         _model.googleMapsCenter = currentLatLng;
       });
@@ -107,6 +164,10 @@ class _ScheduledWalkContainerWidgetState
       return false;
     }
 
+    if (permission == LocationPermission.whileInUse) {
+      permission = await Geolocator.requestPermission();
+    }
+
     return true;
   }
 
@@ -127,9 +188,9 @@ class _ScheduledWalkContainerWidgetState
 
         setState(() {
           _walkerMarker = Marker(
-            markerId: MarkerId("walker"),
+            markerId: const MarkerId("walker"),
             position: position,
-            infoWindow: InfoWindow(title: 'Paseador'),
+            infoWindow: const InfoWindow(title: 'Paseador'),
           );
           _model.googleMapsCenter = position;
         });
@@ -142,8 +203,10 @@ class _ScheduledWalkContainerWidgetState
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _locationTimer?.cancel();
     _locationSubscription?.cancel();
+    _stopBackgroundService();
     _model.maybeDispose();
     super.dispose();
   }
@@ -181,9 +244,9 @@ class _ScheduledWalkContainerWidgetState
               markers: {
                 if (_walkerMarker != null) _walkerMarker!,
                 Marker(
-                  markerId: MarkerId("inicio"),
+                  markerId: const MarkerId("inicio"),
                   position: _model.googleMapsCenter,
-                  infoWindow: InfoWindow(title: "Punto de inicio"),
+                  infoWindow: const InfoWindow(title: "Punto de inicio"),
                   icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet),
                 ),
               },
@@ -460,3 +523,7 @@ class _ScheduledWalkContainerWidgetState
     );
   }
 }
+
+
+
+

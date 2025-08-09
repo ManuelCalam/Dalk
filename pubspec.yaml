@@ -110,6 +110,7 @@ dependencies:
   firebase_database: ^11.1.6
   firebase_data_connect: ^0.1.0
   flutter_dotenv: ^5.2.1
+  flutter_background_service: ^5.1.0
 
 #dependency_overrides:
  # http: 1.2.2
