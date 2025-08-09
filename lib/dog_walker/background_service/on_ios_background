@@ -5,50 +5,40 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:geolocator/geolocator.dart';
 
 Future<bool> onIosBackground(ServiceInstance service) async {
-  // Esto es OBLIGATORIO para que los plugins funcionen en background
   DartPluginRegistrant.ensureInitialized();
 
   String? walkId;
 
-  // Escuchar datos enviados desde el primer plano
   service.on('setData').listen((event) {
     walkId = event?['walkId'];
   });
 
-  // Permitir detener el servicio desde foreground
   service.on('stopService').listen((event) {
     service.stopSelf();
   });
 
-  // Comenzar a enviar ubicación cada 6 segundos
   Timer.periodic(const Duration(seconds: 6), (timer) async {
     if (walkId == null) return;
 
-    // Verificar que el servicio de ubicación esté activo
     if (!(await Geolocator.isLocationServiceEnabled())) return;
 
-    // Verificar permisos
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied || 
         permission == LocationPermission.deniedForever) {
       return;
     }
 
-    // Obtener ubicación actual
     final position = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
 
-    // Enviar ubicación a Firebase
     final ref = FirebaseDatabase.instance.ref('walk_locations/$walkId');
     await ref.update({
       'lat': position.latitude,
       'lng': position.longitude,
     });
 
-    print("📍 (iOS Background) Ubicación enviada: "
-          "${position.latitude}, ${position.longitude}");
   });
 
-  return true; // Esto indica que el background task se configuró correctamente
+  return true;
 }

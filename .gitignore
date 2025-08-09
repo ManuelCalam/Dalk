@@ -80,7 +80,8 @@ ios/ServiceDefinitions.json
 ios/Runner/GeneratedPluginRegistrant.*
 ios/Flutter/Debug.xcconfig
 ios/Flutter/Release.xcconfig
-
+ios\Flutter\Release.xcconfig
+ios\Flutter\Debug.xcconfig
 # ----------------------------
 # 🌐 Web
 # ----------------------------
