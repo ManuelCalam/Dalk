@@ -1,0 +1,44 @@
+import 'dart:async';
+import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:flutter_background_service_ios/flutter_background_service_ios.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:geolocator/geolocator.dart';
+
+Future<bool> onIosBackground(ServiceInstance service) async {
+  DartPluginRegistrant.ensureInitialized();
+
+  String? walkId;
+
+  service.on('setData').listen((event) {
+    walkId = event?['walkId'];
+  });
+
+  service.on('stopService').listen((event) {
+    service.stopSelf();
+  });
+
+  Timer.periodic(const Duration(seconds: 6), (timer) async {
+    if (walkId == null) return;
+
+    if (!(await Geolocator.isLocationServiceEnabled())) return;
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied || 
+        permission == LocationPermission.deniedForever) {
+      return;
+    }
+
+    final position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    final ref = FirebaseDatabase.instance.ref('walk_locations/$walkId');
+    await ref.update({
+      'lat': position.latitude,
+      'lng': position.longitude,
+    });
+
+  });
+
+  return true;
+}

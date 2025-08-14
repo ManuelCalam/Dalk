@@ -1,3 +1,5 @@
+import 'package:dalk/common/password_recovery/password_recovery_widget.dart';
+
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -371,9 +373,12 @@ class _LoginWidgetState extends State<LoginWidget> {
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 10.0, 0.0, 0.0),
                             child: FFButtonWidget(
-                              onPressed: () {
-                                print('Recover_Pass_Btn pressed ...');
-                              },
+                              onPressed: () async {
+                                Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => PasswordRecoveryWidget()),
+                                    );
+                                          },
                               text: '¿Olvidaste tu contraseña?',
                               options: FFButtonOptions(
                                 width: MediaQuery.sizeOf(context).width * 0.9,
@@ -459,17 +464,8 @@ class _LoginWidgetState extends State<LoginWidget> {
                                 }
 
                                 // Redirige según el tipo de usuario
-                                if (userData['usertype'] == 'Dueño') {
-                                  context.goNamedAuth(HomeDogOwnerWidget.routeName, context.mounted);
-                                } else if (userData['usertype'] == 'Paseador') {
-                                  context.goNamedAuth(HomeDogWalkerWidget.routeName, context.mounted);
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Tipo de usuario desconocido.'),
-                                    ),
-                                  );
-                                }
+                                context.go('/');
+                                
                               } catch (e, st) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(

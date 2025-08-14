@@ -59,7 +59,7 @@ dependencies:
   google_sign_in_web: 0.12.4+2
   gotrue: 2.8.4
   hive: 2.2.3
-  intl: 0.19.0
+  intl: ^0.19.0
   json_path: 0.7.2
   page_transition: 2.1.0
   path_provider: 2.1.4
@@ -88,7 +88,7 @@ dependencies:
   storage_client: 2.0.3
   supabase: 2.3.0
   supabase_flutter: 2.6.0
-  timeago: 3.6.1
+  timeago: ^3.7.1
   url_launcher: 6.3.0
   url_launcher_android: 6.3.10
   url_launcher_ios: 6.3.1
@@ -105,7 +105,12 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.0
-  firebase_data_connect: ^0.1.2+4
+  google_maps_flutter: ^2.12.3
+  geolocator: ^14.0.2
+  firebase_database: ^11.1.6
+  firebase_data_connect: ^0.1.0
+  flutter_dotenv: ^5.2.1
+  flutter_background_service: ^5.1.0
 
 #dependency_overrides:
  # http: 1.2.2
@@ -138,6 +143,7 @@ flutter:
     - assets/rive_animations/
     - assets/pdfs/
     - assets/jsons/
+    - .env
 
 
 
