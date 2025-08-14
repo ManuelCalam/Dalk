@@ -14,7 +14,21 @@ export 'find_dog_walker_model.dart';
 
 
 class FindDogWalkerWidget extends StatefulWidget {
-  const FindDogWalkerWidget({super.key});
+  const FindDogWalkerWidget({
+    Key? key,
+    required this.selectedAddress,
+    required this.selectedPet,
+    required this.scheduledDate,
+    required this.scheduledTime,
+    required this.duration,
+  }) : super(key: key);
+
+  final int? selectedAddress;
+  final int? selectedPet;
+  final DateTime? scheduledDate;
+  final DateTime? scheduledTime;
+  final int duration;
+
 
   static String routeName = 'findDogWalker';
   static String routePath = '/findDogWalker';
@@ -322,6 +336,12 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
           precio: paseador['houseNumber']?.toString() ?? '0',
           calificacion: paseador['Rating']?.toString() ?? '0',
           fotoUrl: paseador['photoUrl'] ?? '',
+          selectedAddress: widget.selectedAddress ?? 0,
+          selectedPet: widget.selectedPet ?? 0,
+          scheduledDate: widget.scheduledDate ?? DateTime.now(),
+          scheduledTime: widget.scheduledTime ?? DateTime.now(),
+          duration: widget.duration,
+          walkerId: '5e2e1b04-b345-41f8-8688-60702cb60550'
         );
       },
     );

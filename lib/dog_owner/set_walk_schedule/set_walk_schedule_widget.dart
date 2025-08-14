@@ -845,8 +845,26 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                         0.0, 20.0, 0.0, 0.0),
                                     child: FFButtonWidget(
                                       onPressed: () async {
-                                        context.pushNamed(
-                                            FindDogWalkerWidget.routeName);
+                                        if (selectedAddressId != null &&
+                                            selectedPetId != null &&
+                                            _model.datePicked1 != null &&
+                                            _model.datePicked2 != null) {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => FindDogWalkerWidget(
+                                                selectedAddress: selectedAddressId!,
+                                                selectedPet: selectedPetId!,
+                                                scheduledDate: _model.datePicked1!,
+                                                scheduledTime: _model.datePicked2!,
+                                                duration: 1,
+                                              ),
+                                            ),
+                                          );
+                                        } else {
+                                          // Maneja el caso en el que alguna variable sea null
+                                          print('Faltan datos para navegar a FindDogWalkerWidget');
+                                        }
                                       },
                                       text: 'Buscar paseador',
                                       options: FFButtonOptions(

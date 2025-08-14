@@ -1,5 +1,6 @@
 import 'dart:async';
 
+
 import 'package:dalk/dog_walker/walks_dog_walker/walks_dog_walker_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -118,7 +119,26 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: FindDogWalkerWidget.routeName,
           path: FindDogWalkerWidget.routePath,
-          builder: (context, params) => FindDogWalkerWidget(),
+          builder: (context, params) => FindDogWalkerWidget(
+            selectedAddress: params.getParam(
+              'selectedAddress',
+              ParamType.int,
+            ),
+            selectedPet: params.getParam('selectedPet', ParamType.int),
+            scheduledDate: params.getParam(
+              'scheduledDate',
+              ParamType.DateTime,
+            ),
+            scheduledTime: params.getParam(
+              'scheduledTime',
+              ParamType.DateTime,
+            ),
+            duration: params.getParam(
+              'duration',
+              ParamType.int,
+            )
+            
+          ),
         ),
         FFRoute(
           name: AddPetWidget.routeName,
@@ -219,7 +239,8 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: DogWalkerProfileWidget.routeName,
           path: DogWalkerProfileWidget.routePath,
           builder: (context, params) => DogWalkerProfileWidget(),
-        )
+        ),
+          
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
 

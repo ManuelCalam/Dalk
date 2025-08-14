@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'find_dog_walker_card_model.dart';
 export 'find_dog_walker_card_model.dart';
+import '/backend/supabase/supabase.dart';
 
 
 class FindDogWalkerCardWidget extends StatelessWidget {
@@ -16,12 +17,24 @@ class FindDogWalkerCardWidget extends StatelessWidget {
   final String precio;
   final String calificacion;
   final String fotoUrl;
+  final int selectedAddress;
+  final int selectedPet;
+  final DateTime scheduledDate;
+  final DateTime scheduledTime;
+  final int duration;
+  final String walkerId;
 
   const FindDogWalkerCardWidget({
     required this.nombre,
     required this.precio,
     required this.calificacion,
     required this.fotoUrl,
+    required this.selectedAddress,
+    required this.selectedPet,
+    required this.scheduledDate,
+    required this.scheduledTime,
+    required this.duration,
+    required this.walkerId,
     Key? key,
   }) : super(key: key);
 
@@ -149,8 +162,35 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     child: FFButtonWidget(
-                      onPressed: () {
-                        print('Solicitar a $nombre');
+                      onPressed: () async {
+                        final startDateTime = DateTime(
+                        scheduledDate.year,
+                        scheduledDate.month,
+                        scheduledDate.day,
+                        scheduledTime.hour,
+                        scheduledTime.minute,
+                      );
+
+                      final endDateTime = startDateTime.add(Duration(minutes: duration));
+
+                      final result = await Supabase.instance.client.from('walks').insert({
+                        'dog_id': selectedPet,
+                        'walker_id': walkerId,
+                        'owner_id': Supabase.instance.client.auth.currentUser?.id, // o pásalo como prop si no estás logueado
+                        'address_id': selectedAddress,
+                        'startTime': '2025-07-17 10:30:00',
+                        'endTime': '11:00:00',
+                        'status': 'pendiente', // o el que uses por defecto
+                        'notes': '', // si tienes campo de notas
+                      });
+
+                        // Opcional: feedback al usuario
+                        if (result != null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('¡Paseo agendado con éxito!')),
+                          );
+                          Navigator.pop(context);
+                        }
                       },
                       text: 'Solicitar',
                       options: FFButtonOptions(

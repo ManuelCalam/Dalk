@@ -166,9 +166,9 @@ class _CurrentWalkWidgetState extends State<CurrentWalkWidget> {
 
                             return SizedBox(
                               height: MediaQuery.of(context).size.height * 0.7,
-                              child: hasActiveWalk
-                                  ? ScheduledWalkContainerWidget()
-                                  : NotScheduledWalkContainerWidget(),
+                              //child: hasActiveWalk
+                                //  ? ScheduledWalkContainerWidget()
+                                  //: NotScheduledWalkContainerWidget(),
                             );
                             }
                           },
