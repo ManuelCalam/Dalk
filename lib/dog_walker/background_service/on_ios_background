@@ -5,7 +5,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:geolocator/geolocator.dart';
 
 Future<bool> onIosBackground(ServiceInstance service) async {
-  DartPluginRegistrant.ensureInitialized();
+  //DartPluginRegistrant.ensureInitialized();
 
   String? walkId;
 
