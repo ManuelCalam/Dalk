@@ -12,7 +12,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'set_walk_schedule_model.dart';
 export 'set_walk_schedule_model.dart';
 
@@ -846,7 +845,14 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                     child: FFButtonWidget(
                                       onPressed: () async {
                                         context.pushNamed(
-                                            FindDogWalkerWidget.routeName);
+                                          FindDogWalkerWidget.routeName,
+                                            queryParameters: {
+                                              'date': _model.datePicked1?.toIso8601String(),
+                                              'time': _model.datePicked2?.toIso8601String(),
+                                              'addressId': selectedAddressId?.toString(),
+                                              'petId': selectedPetId?.toString(),
+                                            },
+                                          );
                                       },
                                       text: 'Buscar paseador',
                                       options: FFButtonOptions(

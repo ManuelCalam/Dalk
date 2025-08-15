@@ -9,7 +9,6 @@ import '/index.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 import 'dog_owner_profile_model.dart';
 export 'dog_owner_profile_model.dart';
