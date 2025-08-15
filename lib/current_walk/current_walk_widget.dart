@@ -182,29 +182,37 @@ class _CurrentWalkWidgetState extends State<CurrentWalkWidget> {
                                   ),
                         ),
                       ),
-                      Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
-                        child: Container(
-                          width: MediaQuery.sizeOf(context).width * 0.9,
-                          height: MediaQuery.sizeOf(context).height * 0.68,
-                          decoration: BoxDecoration(),
-                          child: isLoading
-                          ? const Center(child: CircularProgressIndicator())
-                          : ListView(
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
+                          child: Container(
+                            width: MediaQuery.sizeOf(context).width * 0.9,
+                            decoration: BoxDecoration(),
+                            child: ListView(
                               padding: EdgeInsets.zero,
                               shrinkWrap: true,
                               scrollDirection: Axis.vertical,
                               children: [
-                                if (walkId != null && userType != null)
-                                  ScheduledWalkContainerWidget(
-                                    walkId: walkId!,
-                                    userType: userType!,
-                                  )
-                                else
-                                  const NotScheduledWalkContainerWidget(),
+                                isLoading
+                                ? const Center(child: CircularProgressIndicator())
+                                : ListView(
+                                    padding: EdgeInsets.zero,
+                                    shrinkWrap: true,
+                                    scrollDirection: Axis.vertical,
+                                    children: [
+                                      if (walkId != null && userType != null)
+                                        ScheduledWalkContainerWidget(
+                                          walkId: walkId!,
+                                          userType: userType!,
+                                        )
+                                      else
+                                        const NotScheduledWalkContainerWidget(),
+                                    ],
+                                  ),
+
                               ],
                             ),
-
+                          ),
                         ),
                       ),
                     ],

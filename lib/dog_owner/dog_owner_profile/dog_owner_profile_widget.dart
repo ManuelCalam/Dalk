@@ -510,8 +510,10 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                     hoverColor: Colors.transparent,
                                     highlightColor: Colors.transparent,
                                     onTap: () async {
-                                      context
-                                          .pushNamed(PetListWidget.routeName);
+                                      context.goNamed(
+                                        '_initialize', 
+                                        queryParameters: {'initialPage': 'petList'},
+                                      );  
                                     },
                                     child: Container(
                                       width: MediaQuery.sizeOf(context).width,
@@ -596,8 +598,10 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                                 highlightColor:
                                                     Colors.transparent,
                                                 onTap: () async {
-                                                  context.pushNamed(
-                                                      PetListWidget.routeName);
+                                                  context.pushReplacementNamed(
+                                                    '_initialize', 
+                                                    queryParameters: {'initialPage': 'petList'},
+                                                  );  
                                                 },
                                                 child: Icon(
                                                   Icons.arrow_forward_ios,

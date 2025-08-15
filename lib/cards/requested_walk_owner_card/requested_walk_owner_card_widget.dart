@@ -462,6 +462,9 @@ class _RequestedWalkOwnerCardWidgetState
                                   .eq('id', widget.id)
                                   .single();
 
+                              print("El id del paseo es: ");
+                              print(widget.id);
+
                               if (response != null) {
                                   final currentStatus = response['status'];
                                   if (currentStatus == 'Por confirmar') {
@@ -482,6 +485,7 @@ class _RequestedWalkOwnerCardWidgetState
                                         .delete()
                                         .eq('id', widget.id);
                                   }
+                                print("Esta fue la respuesta: $response");
                               }
 
                             },

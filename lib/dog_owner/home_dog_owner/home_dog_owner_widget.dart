@@ -503,7 +503,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                         focusColor: Colors.transparent,
                                         hoverColor: Colors.transparent,
                                         highlightColor: Colors.transparent,
-                                        onTap: () async {
+                                        onTap: () {
                                           context.pushNamed(
                                               AddPetWidget.routeName);
                                         },

@@ -40,15 +40,16 @@ class _NavBarPageState extends State<NavBarOwnerPage> {
     _currentPage = widget.page;
   }
   
+  @override
   void didUpdateWidget(covariant NavBarOwnerPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.initialPage != null && widget.initialPage != _currentPageName) {
+    if (widget.initialPage != null) {
       setState(() {
         _currentPageName = widget.initialPage!;
         _currentPage = null;
       });
     }
-  }
+}
 
   @override
   Widget build(BuildContext context) {
