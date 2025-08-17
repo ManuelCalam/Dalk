@@ -85,8 +85,21 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       debugLogDiagnostics: true,
       refreshListenable: appStateNotifier,
       navigatorKey: appNavigatorKey,
-      errorBuilder: (context, state) =>
-          appStateNotifier.loggedIn ? RootNavWidget() : LoginWidget(),
+      redirect: (context, state) {
+        final loggedIn = appStateNotifier.loggedIn;
+
+        // Si no está logeado mandar al usuario a la ventana del login
+        if (!loggedIn && state.matchedLocation != LoginWidget.routePath) {
+          return LoginWidget.routePath;
+        }
+
+        // Si está logeado y trata de entrar, mándalo a raíz con navBar
+        if (loggedIn && state.matchedLocation == LoginWidget.routePath) {
+          return '/';
+        }
+
+        return null; // sin redirección
+      },
       routes: [
         FFRoute(
           name: '_initialize',
