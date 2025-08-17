@@ -1,5 +1,6 @@
 import 'package:dalk/NavBar/nav_bar_dog_walker.dart';
 import 'package:dalk/backend/supabase/database/database.dart';
+import 'package:dalk/landing_pages/login/login_widget.dart';
 import 'package:flutter/material.dart';
 import 'NavBar/nav_bar_dog_owner.dart';
 
@@ -22,7 +23,7 @@ class RootNavWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-      print('InitialPage recibido: $initialPage');
+    // print('InitialPage recibido: $initialPage');
 
     return FutureBuilder<String?>(
       future: getUserType(),
@@ -32,6 +33,11 @@ class RootNavWidget extends StatelessWidget {
         }
 
         final userType = snapshot.data;
+
+        if (userType == null) {
+          return LoginWidget();
+        }
+
         if(userType == 'Dueño') {
             print('NavBarOwnerPage initialPage from RootNav: $initialPage');
             return NavBarOwnerPage(

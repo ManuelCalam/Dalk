@@ -1,13 +1,12 @@
+import 'package:dalk/auth/supabase_auth/auth_util.dart';
+import 'package:dalk/backend/supabase/supabase.dart';
 import '/components/pop_up_dog_walker_profile/pop_up_dog_walker_profile_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
-import 'find_dog_walker_card_model.dart';
 export 'find_dog_walker_card_model.dart';
 import '/backend/supabase/supabase.dart';
 
@@ -17,24 +16,22 @@ class FindDogWalkerCardWidget extends StatelessWidget {
   final String precio;
   final String calificacion;
   final String fotoUrl;
-  final int selectedAddress;
-  final int selectedPet;
-  final DateTime scheduledDate;
-  final DateTime scheduledTime;
-  final int duration;
-  final String walkerId;
+  final DateTime? date;
+  final DateTime? time;
+  final int? addressId;
+  final int? petId;
+  final String uuidPaseador;
 
   const FindDogWalkerCardWidget({
     required this.nombre,
     required this.precio,
     required this.calificacion,
     required this.fotoUrl,
-    required this.selectedAddress,
-    required this.selectedPet,
-    required this.scheduledDate,
-    required this.scheduledTime,
-    required this.duration,
-    required this.walkerId,
+    required this.date,
+    required this.time,
+    required this.addressId,
+    required this.petId,
+    required this.uuidPaseador,
     Key? key,
   }) : super(key: key);
 
@@ -163,33 +160,42 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     child: FFButtonWidget(
                       onPressed: () async {
-                        final startDateTime = DateTime(
-                        scheduledDate.year,
-                        scheduledDate.month,
-                        scheduledDate.day,
-                        scheduledTime.hour,
-                        scheduledTime.minute,
-                      );
+                        // Unir fecha y hora para el registro de startTime como timestamp
+                          final DateTime? startDateTime = (date != null && time != null)
+                          ? DateTime(
+                              date!.year,
+                              date!.month,
+                              date!.day,
+                              time!.hour,
+                              time!.minute,
+                              time!.second,
+                            )
+                          : null;
 
-                      final endDateTime = startDateTime.add(Duration(minutes: duration));
 
-                      final result = await Supabase.instance.client.from('walks').insert({
-                        'dog_id': selectedPet,
-                        'walker_id': walkerId,
-                        'owner_id': Supabase.instance.client.auth.currentUser?.id, // o pásalo como prop si no estás logueado
-                        'address_id': selectedAddress,
-                        'startTime': '2025-07-17 10:30:00',
-                        'endTime': '11:00:00',
-                        'status': 'pendiente', // o el que uses por defecto
-                        'notes': '', // si tienes campo de notas
-                      });
+                        try{
+                          final response = await Supabase.instance.client
+                          .from('walks')
+                          .insert({
+                              'dog_id': petId,
+                              'walker_id': uuidPaseador,
+                              'owner_id': currentUserUid,
+                              'address_id': addressId,
+                              'status': 'Por confirmar',
+                              'startTime': startDateTime?.toIso8601String(),
+                              'endTime': time != null
+                                  ? '${time!.hour.toString().padLeft(2, '0')}:${time!.minute.toString().padLeft(2, '0')}:00'
+                                  : null,                           });
 
-                        // Opcional: feedback al usuario
-                        if (result != null) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('¡Paseo agendado con éxito!')),
+                                    SnackBar(content: Text('¡Paseo solicitado!')),
                           );
-                          Navigator.pop(context);
+                        } catch (e, st) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Error al registrar solicitud: $e')),
+                                    
+                            );
+                          print(e);
                         }
                       },
                       text: 'Solicitar',

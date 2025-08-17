@@ -12,7 +12,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'set_walk_schedule_model.dart';
 export 'set_walk_schedule_model.dart';
 
@@ -845,26 +844,15 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                         0.0, 20.0, 0.0, 0.0),
                                     child: FFButtonWidget(
                                       onPressed: () async {
-                                        if (selectedAddressId != null &&
-                                            selectedPetId != null &&
-                                            _model.datePicked1 != null &&
-                                            _model.datePicked2 != null) {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => FindDogWalkerWidget(
-                                                selectedAddress: selectedAddressId!,
-                                                selectedPet: selectedPetId!,
-                                                scheduledDate: _model.datePicked1!,
-                                                scheduledTime: _model.datePicked2!,
-                                                duration: 1,
-                                              ),
-                                            ),
+                                        context.pushNamed(
+                                          FindDogWalkerWidget.routeName,
+                                            queryParameters: {
+                                              'date': _model.datePicked1?.toIso8601String(),
+                                              'time': _model.datePicked2?.toIso8601String(),
+                                              'addressId': selectedAddressId?.toString(),
+                                              'petId': selectedPetId?.toString(),
+                                            },
                                           );
-                                        } else {
-                                          // Maneja el caso en el que alguna variable sea null
-                                          print('Faltan datos para navegar a FindDogWalkerWidget');
-                                        }
                                       },
                                       text: 'Buscar paseador',
                                       options: FFButtonOptions(

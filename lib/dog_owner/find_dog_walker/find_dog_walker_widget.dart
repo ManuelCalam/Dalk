@@ -4,31 +4,26 @@ import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'find_dog_walker_model.dart';
 export 'find_dog_walker_model.dart';
 
 
 class FindDogWalkerWidget extends StatefulWidget {
   const FindDogWalkerWidget({
-    Key? key,
-    required this.selectedAddress,
-    required this.selectedPet,
-    required this.scheduledDate,
-    required this.scheduledTime,
-    required this.duration,
-  }) : super(key: key);
+    super.key,
+    required this.date,
+    required this.time,
+    required this.addressId,
+    required this.petId
+  });
 
-  final int? selectedAddress;
-  final int? selectedPet;
-  final DateTime? scheduledDate;
-  final DateTime? scheduledTime;
-  final int duration;
-
+  final DateTime? date;
+  final DateTime? time;
+  final int? addressId;
+  final int? petId;
 
   static String routeName = 'findDogWalker';
   static String routePath = '/findDogWalker';
@@ -300,53 +295,49 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                             decoration: BoxDecoration(),
                             
                             child: FutureBuilder<List<dynamic>>(
-  future: Supabase.instance.client
-  //SELECT * FROM users WHERE usertype = 'Paseador';
-      .from('users')
-      .select()
-      .eq('usertype', 'Paseador')
-      .ilike(
-        'name',
-        _model.findDogWalkerInputTextController.text.isEmpty
-            ? '%' // esto devuelve todos
-            : '%${_model.findDogWalkerInputTextController.text}%',
-      ),
-  builder: (context, snapshot) {
-    if (snapshot.hasError) {
-      return Center(child: Text('Error: ${snapshot.error}'));
-    }
+                                future: Supabase.instance.client
+                                    .from('users')
+                                    .select()
+                                    .eq('usertype', 'Paseador')
+                                    .ilike(
+                                      'name',
+                                      _model.findDogWalkerInputTextController.text.isEmpty
+                                          ? '%' // esto devuelve todos
+                                          : '%${_model.findDogWalkerInputTextController.text}%',
+                                    ),
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasError) {
+                                    return Center(child: Text('Error: ${snapshot.error}'));
+                                  }
 
-    if (!snapshot.hasData) {
-      return const Center(child: CircularProgressIndicator());
-    }
+                                  if (!snapshot.hasData) {
+                                    return const Center(child: CircularProgressIndicator());
+                                  }
 
-    final paseadores = snapshot.data!;
-    print('Paseadores encontrados: ${paseadores.length}');
-    print(paseadores);
-    if (paseadores.isEmpty) {
-      return const Center(child: Text('No se encontraron paseadores.'));
-    }
+                                  final paseadores = snapshot.data!;
+                                  if (paseadores.isEmpty) {
+                                    return const Center(child: Text('No se encontraron paseadores.'));
+                                  }
 
-    return ListView.builder(
-      itemCount: paseadores.length,
-      itemBuilder: (context, index) {
-        final paseador = paseadores[index];
-        return FindDogWalkerCardWidget(
-          nombre: paseador['name'] ?? 'Sin nombre',
-          precio: paseador['houseNumber']?.toString() ?? '0',
-          calificacion: paseador['Rating']?.toString() ?? '0',
-          fotoUrl: paseador['photoUrl'] ?? '',
-          selectedAddress: widget.selectedAddress ?? 0,
-          selectedPet: widget.selectedPet ?? 0,
-          scheduledDate: widget.scheduledDate ?? DateTime.now(),
-          scheduledTime: widget.scheduledTime ?? DateTime.now(),
-          duration: widget.duration,
-          walkerId: '5e2e1b04-b345-41f8-8688-60702cb60550'
-        );
-      },
-    );
-  },
-),
+                                  return ListView.builder(
+                                    itemCount: paseadores.length,
+                                    itemBuilder: (context, index) {
+                                      final paseador = paseadores[index];
+                                      return FindDogWalkerCardWidget(
+                                        nombre: paseador['name'] ?? 'Sin nombre',
+                                        precio: paseador['houseNumber']?.toString() ?? '0',
+                                        calificacion: paseador['Rating']?.toString() ?? '0',
+                                        fotoUrl: paseador['photoUrl'] ?? '',
+                                        date: widget.date,
+                                        time: widget.time,
+                                        addressId: widget.addressId,
+                                        petId: widget.petId,
+                                        uuidPaseador: paseador['uuid'],
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
                             ),
                           ),
                         ),

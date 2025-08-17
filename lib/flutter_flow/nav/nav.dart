@@ -85,8 +85,21 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       debugLogDiagnostics: true,
       refreshListenable: appStateNotifier,
       navigatorKey: appNavigatorKey,
-      errorBuilder: (context, state) =>
-          appStateNotifier.loggedIn ? RootNavWidget() : LoginWidget(),
+      redirect: (context, state) {
+        final loggedIn = appStateNotifier.loggedIn;
+
+        // Si no está logeado mandar al usuario a la ventana del login
+        if (!loggedIn && state.matchedLocation != LoginWidget.routePath) {
+          return LoginWidget.routePath;
+        }
+
+        // Si está logeado y trata de entrar, mándalo a raíz con navBar
+        if (loggedIn && state.matchedLocation == LoginWidget.routePath) {
+          return '/';
+        }
+
+        return null; // sin redirección
+      },
       routes: [
         FFRoute(
           name: '_initialize',
@@ -120,24 +133,10 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: FindDogWalkerWidget.routeName,
           path: FindDogWalkerWidget.routePath,
           builder: (context, params) => FindDogWalkerWidget(
-            selectedAddress: params.getParam(
-              'selectedAddress',
-              ParamType.int,
-            ),
-            selectedPet: params.getParam('selectedPet', ParamType.int),
-            scheduledDate: params.getParam(
-              'scheduledDate',
-              ParamType.DateTime,
-            ),
-            scheduledTime: params.getParam(
-              'scheduledTime',
-              ParamType.DateTime,
-            ),
-            duration: params.getParam(
-              'duration',
-              ParamType.int,
-            )
-            
+            date: DateTime.tryParse(params.getParam('date', ParamType.String) ?? ''),
+            time: DateTime.tryParse(params.getParam('time', ParamType.String) ?? ''),
+            addressId: int.tryParse(params.getParam('addressId', ParamType.String) ?? ''),
+            petId: int.tryParse(params.getParam('petId', ParamType.String) ?? ''),
           ),
         ),
         FFRoute(
