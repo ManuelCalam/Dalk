@@ -12,6 +12,9 @@ import '/backend/supabase/supabase.dart';
 import 'backend/firebase/firebase_config.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
          
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -104,4 +107,15 @@ class _MyAppState extends State<MyApp> {
       routerConfig: _router,
     );
   }
+  
+  Future<void> updateFcmToken(String userId) async {
+    final token = await FirebaseMessaging.instance.getToken();
+    if (token != null) {
+      await Supabase.instance.client
+        .from('users')
+        .update({'fcm_token': token})
+        .eq('uuid', userId);
+    }
+  }
+
 }
