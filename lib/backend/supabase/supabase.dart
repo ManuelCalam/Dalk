@@ -5,7 +5,7 @@ export 'database/database.dart';
 
 String _kSupabaseUrl = 'https://bsactypehgxluqyaymui.supabase.co';
 String _kSupabaseAnonKey =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzYWN0eXBlaGd4bHVxeWF5bXVpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODMxNDA2MiwiZXhwIjoyMDYzODkwMDYyfQ.AyydXU9oFcMVnWuj09bnhJWwcSOg3lDEJCSOl9S0oxc';
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzYWN0eXBlaGd4bHVxeWF5bXVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzMTQwNjIsImV4cCI6MjA2Mzg5MDA2Mn0.OLLhOOzrxs27aVpChYIxCg8gDXc7PZ7DxEsex9zn324';
 
 class SupaFlow {
   SupaFlow._();

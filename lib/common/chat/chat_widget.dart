@@ -6,6 +6,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'chat_model.dart';
 export 'chat_model.dart';
@@ -30,8 +31,37 @@ class ChatWidget extends StatefulWidget {
 
 class _ChatWidgetState extends State<ChatWidget> {
   late ChatModel _model;
+  final _supabase = Supabase.instance.client;
+  final _scrollCtrl = ScrollController();
+  String? _conversationId;
+  String? _myUserId;
+  RealtimeChannel? _channel;
+  final List<Map<String, dynamic>> _messages = [];
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  _boot() async {
+    _myUserId = _supabase.auth.currentUser?.id;
+    // 1) Define/obtén _conversationId
+    _conversationId = ModalRoute.of(context)?.settings.arguments is Map
+        ? (ModalRoute.of(context)!.settings.arguments as Map)['conversationId'] as String?
+        : _conversationId;
+
+    final args = ModalRoute.of(context)?.settings.arguments as Map?;
+    final otherUserId = args?['otherUserId'] as String?;
+
+    if (_conversationId == null && otherUserId != null) {
+      final conv = await _supabase.rpc('create_or_get_conversation', params: {
+        'other_user': otherUserId,
+      });
+      _conversationId = conv as String?;
+    }
+
+    if (_conversationId == null) return;
+
+    await _loadInitial();
+    _subscribeRealtime();
+  }
 
   @override
   void initState() {
@@ -40,8 +70,59 @@ class _ChatWidgetState extends State<ChatWidget> {
 
     _model.textController ??= TextEditingController();
     _model.textFieldFocusNode ??= FocusNode();
+     WidgetsBinding.instance.addPostFrameCallback((_) => _boot());
+  }
+  
+
+  Future<void> _loadInitial() async {
+    final rows = await _supabase
+        .from('messages')
+        .select()
+        .eq('conversation_id', _conversationId!)
+        .order('created_at', ascending: true)
+        .limit(500);
+    _messages
+      ..clear()
+      ..addAll(List<Map<String, dynamic>>.from(rows as List));
+    if (mounted) setState(() {});
+    _jumpToBottom();
   }
 
+  void _subscribeRealtime() {
+    _channel = _supabase
+        .channel('public:messages:conversation_id=eq.${_conversationId}')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'messages',
+          filter: PostgresChangeFilter(
+            column: 'conversation_id',
+            // operator: 'eq',
+            value: _conversationId!, type: PostgresChangeFilterType.eq,
+          ),
+          callback: (payload) {
+            final newRow = payload.newRecord;
+            if (newRow != null) {
+              _messages.add(Map<String, dynamic>.from(newRow));
+              if (mounted) setState(() {});
+              _jumpToBottom();
+            }
+          },
+        )
+        .subscribe();
+  }
+
+  void _jumpToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollCtrl.hasClients) {
+        _scrollCtrl.animateTo(
+          _scrollCtrl.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
   @override
   void dispose() {
     _model.dispose();
@@ -253,10 +334,23 @@ class _ChatWidgetState extends State<ChatWidget> {
                       height: MediaQuery.sizeOf(context).height * 0.8,
                       decoration: BoxDecoration(),
                       child: ListView(
+                        controller: _scrollCtrl,
                         padding: EdgeInsets.zero,
-                        shrinkWrap: true,
-                        scrollDirection: Axis.vertical,
-                        children: [],
+                        children: _messages.map((msg) {
+                          final isMine = msg['user_id'] == _myUserId;
+                          return Align(
+                            alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
+                            child: Container(
+                              padding: EdgeInsets.all(10),
+                              margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                              decoration: BoxDecoration(
+                                color: isMine ? Colors.blue : Colors.grey[300],
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(msg['content']),
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ),
                   ),
@@ -406,9 +500,17 @@ class _ChatWidgetState extends State<ChatWidget> {
                               color: FlutterFlowTheme.of(context).info,
                               size: 23,
                             ),
-                            onPressed: () {
-                              print('IconButton pressed ...');
-                              
+                            onPressed: () async {
+                              final text = _model.textController.text;
+                              if (text.isEmpty || _conversationId == null) return;
+
+                              await _supabase.from('messages').insert({
+                                'conversation_id': _conversationId,
+                                'user_id': _myUserId,
+                                'content': text,
+                              });
+
+                              _model.textController?.clear();
                             },
                           ),
                         ),
