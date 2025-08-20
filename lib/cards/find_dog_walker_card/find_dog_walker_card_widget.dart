@@ -1,13 +1,12 @@
+import 'package:dalk/auth/supabase_auth/auth_util.dart';
+import 'package:dalk/backend/supabase/supabase.dart';
 import '/components/pop_up_dog_walker_profile/pop_up_dog_walker_profile_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
-import 'find_dog_walker_card_model.dart';
 export 'find_dog_walker_card_model.dart';
 
 
@@ -16,12 +15,22 @@ class FindDogWalkerCardWidget extends StatelessWidget {
   final String precio;
   final String calificacion;
   final String fotoUrl;
+  final DateTime? date;
+  final DateTime? time;
+  final int? addressId;
+  final int? petId;
+  final String uuidPaseador;
 
   const FindDogWalkerCardWidget({
     required this.nombre,
     required this.precio,
     required this.calificacion,
     required this.fotoUrl,
+    required this.date,
+    required this.time,
+    required this.addressId,
+    required this.petId,
+    required this.uuidPaseador,
     Key? key,
   }) : super(key: key);
 
@@ -149,8 +158,44 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     child: FFButtonWidget(
-                      onPressed: () {
-                        print('Solicitar a $nombre');
+                      onPressed: () async {
+                        // Unir fecha y hora para el registro de startTime como timestamp
+                          final DateTime? startDateTime = (date != null && time != null)
+                          ? DateTime(
+                              date!.year,
+                              date!.month,
+                              date!.day,
+                              time!.hour,
+                              time!.minute,
+                              time!.second,
+                            )
+                          : null;
+
+
+                        try{
+                          final response = await Supabase.instance.client
+                          .from('walks')
+                          .insert({
+                              'dog_id': petId,
+                              'walker_id': uuidPaseador,
+                              'owner_id': currentUserUid,
+                              'address_id': addressId,
+                              'status': 'Por confirmar',
+                              'startTime': startDateTime?.toIso8601String(),
+                              'endTime': time != null
+                                  ? '${time!.hour.toString().padLeft(2, '0')}:${time!.minute.toString().padLeft(2, '0')}:00'
+                                  : null,                           });
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('¡Paseo solicitado!')),
+                          );
+                        } catch (e, st) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Error al registrar solicitud: $e')),
+                                    
+                            );
+                          print(e);
+                        }
                       },
                       text: 'Solicitar',
                       options: FFButtonOptions(

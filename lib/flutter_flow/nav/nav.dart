@@ -132,7 +132,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: FindDogWalkerWidget.routeName,
           path: FindDogWalkerWidget.routePath,
-          builder: (context, params) => FindDogWalkerWidget(),
+          builder: (context, params) => FindDogWalkerWidget(
+            date: DateTime.tryParse(params.getParam('date', ParamType.String) ?? ''),
+            time: DateTime.tryParse(params.getParam('time', ParamType.String) ?? ''),
+            addressId: int.tryParse(params.getParam('addressId', ParamType.String) ?? ''),
+            petId: int.tryParse(params.getParam('petId', ParamType.String) ?? ''),
+          ),
         ),
         FFRoute(
           name: AddPetWidget.routeName,
