@@ -15,6 +15,9 @@ import 'flutter_flow/flutter_flow_util.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+
          
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -117,5 +120,8 @@ class _MyAppState extends State<MyApp> {
         .eq('uuid', userId);
     }
   }
+  Future<void> requestNotificationPermission() async {
+  await FirebaseMessaging.instance.requestPermission();
+}
 
 }

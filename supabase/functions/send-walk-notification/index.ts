@@ -88,53 +88,78 @@ Deno.serve(async (req) => {
     });
   }
 
-  const { userUuid, title, message, eventType } = body;
+  // Espera body: { walk_id, new_status }
+  const { walk_id, new_status } = body;
+  console.log("[LOG] Payload recibido:", body);
 
-  if (!userUuid || !title || !message) {
-    console.error("⚠️ Payload incompleto:", body);
+  if (!walk_id || !new_status) {
+    console.error("⚠️ Payload incompleto. Se esperaba walk_id y new_status. Recibido:", body);
     return new Response(JSON.stringify({ error: "Datos faltantes", recibido: body }), {
       status: 400,
     });
   }
 
   try {
-    console.log(`🔍 [NOTIFICACIÓN] Buscando token FCM para usuario: ${userUuid}`);
-    
-    const { data: user, error } = await supabase
-      .from("users")
-      .select("fcm_token")
-      .eq("uuid", userUuid)
+    // Buscar datos del paseo y usuarios involucrados
+    const { data: walk, error: walkError } = await supabase
+      .from("walks")
+      .select("id, owner_id, walker_id")
+      .eq("id", walk_id)
       .maybeSingle();
 
-    if (error) {
-      console.error("❌ Error al obtener usuario:", error);
-      return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    if (walkError) {
+      console.error("❌ Error al obtener walk:", walkError);
+      return new Response(JSON.stringify({ error: walkError.message }), { status: 500 });
+    }
+    if (!walk) {
+      console.error("❌ Walk no encontrado para id:", walk_id);
+      return new Response(JSON.stringify({ error: "Walk no encontrado", walk_id }), { status: 404 });
     }
 
-    if (!user?.fcm_token) {
-      console.warn(`⚠️ Usuario ${userUuid} sin token FCM válido`);
-      return new Response(JSON.stringify({ error: "Token FCM no encontrado" }), { status: 404 });
+    // Buscar tokens FCM de owner y walker
+    const { data: users, error: usersError } = await supabase
+      .from("users")
+      .select("uuid, fcm_token")
+      .in("uuid", [walk.owner_id, walk.walker_id]);
+
+    if (usersError) {
+      console.error("❌ Error al obtener usuarios:", usersError);
+      return new Response(JSON.stringify({ error: usersError.message }), { status: 500 });
     }
 
-    console.log(`📤 Enviando notificación a ${userUuid}`);
+    // Mensaje de notificación
+    const title = "Actualización de paseo";
+    const bodyMsg = `El estado del paseo ha cambiado a: ${new_status}`;
 
-    const fcmResponse = await admin.messaging().send({
-      token: user.fcm_token,
-      notification: {
-        title,
-        body: message,
-      },
-      data: {
-        event_type: eventType ?? "walk_status",
-        timestamp: timestamp,
-      },
-    });
-
-    console.log(`✅ Notificación enviada:`, fcmResponse);
+    // Enviar notificación a ambos usuarios
+    for (const user of users) {
+      if (!user.fcm_token) {
+        console.warn(`⚠️ Usuario ${user.uuid} sin token FCM válido, se omite notificación.`);
+        continue;
+      }
+      try {
+        console.log(`📤 Enviando notificación a usuario: ${user.uuid}`);
+        const fcmResponse = await admin.messaging().send({
+          token: user.fcm_token,
+          notification: {
+            title,
+            body: bodyMsg,
+          },
+          data: {
+            event_type: new_status,
+            timestamp: timestamp,
+          },
+        });
+        console.log(`✅ Notificación enviada a ${user.uuid}:`, fcmResponse);
+      } catch (err) {
+        console.error(`🔥 Error enviando notificación a ${user.uuid}:`, err);
+      }
+    }
 
     return new Response(JSON.stringify({ 
-      success: true, 
-      messageId: fcmResponse,
+      success: true,
+      walk_id,
+      new_status,
       timestamp: timestamp
     }), { status: 200 });
   } catch (err) {
