@@ -16,6 +16,7 @@ export 'non_reviewed_walk_card_model.dart';
 class NonReviewedWalkCardWidget extends StatefulWidget {
   const NonReviewedWalkCardWidget({
     super.key,
+    required this.walkId,
     String? petName,
     String? dogWalker,
     required this.time,
@@ -24,6 +25,7 @@ class NonReviewedWalkCardWidget extends StatefulWidget {
         this.dogWalker = dogWalker ?? '[dogWalker]',
         this.fee = fee ?? '[Fee]';
 
+  final int walkId;
   final String petName;
   final String dogWalker;
   final DateTime? time;
@@ -345,7 +347,7 @@ class _NonReviewedWalkCardWidgetState extends State<NonReviewedWalkCardWidget> {
                               padding:
                                   EdgeInsetsDirectional.fromSTEB(5, 2, 0, 0),
                               child: AutoSizeText(
-                                widget!.fee,
+                                "\$${widget!.fee}",
                                 maxLines: 1,
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
@@ -386,12 +388,16 @@ class _NonReviewedWalkCardWidgetState extends State<NonReviewedWalkCardWidget> {
                       await showModalBottomSheet(
                         isScrollControlled: true,
                         backgroundColor: Colors.transparent,
-                        enableDrag: false,
+                        enableDrag: true,
                         context: context,
                         builder: (context) {
                           return Padding(
                             padding: MediaQuery.viewInsetsOf(context),
-                            child: PopUpAddReviewWidget(),
+                            child: PopUpAddReviewWidget(
+                              walkId: widget.walkId,
+                              userTypeName: widget.dogWalker,
+                              reviewType: 'Paseador'
+                            ),
                           );
                         },
                       ).then((value) => safeSetState(() {}));

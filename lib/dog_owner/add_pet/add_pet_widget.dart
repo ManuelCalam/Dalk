@@ -1287,7 +1287,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                               ScaffoldMessenger.of(context).showSnackBar(
                                                         SnackBar(content: Text('¡Registro exitoso!')),
                                               );
-                                            } catch (e, st) {
+                                            } catch (e) {
                                                 ScaffoldMessenger.of(context).showSnackBar(
                                                         SnackBar(content: Text('Error al registrar la dirección: $e')),
                                                 );

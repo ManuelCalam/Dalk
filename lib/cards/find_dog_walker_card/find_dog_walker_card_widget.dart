@@ -189,7 +189,7 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                           ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(content: Text('¡Paseo solicitado!')),
                           );
-                        } catch (e, st) {
+                        } catch (e) {
                             ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(content: Text('Error al registrar solicitud: $e')),
                                     

@@ -16,6 +16,7 @@ export 'non_reviewed_dog_card_model.dart';
 class NonReviewedDogCardWidget extends StatefulWidget {
   const NonReviewedDogCardWidget({
     super.key,
+    required this.walkId,
     String? petName,
     String? dogOwner,
     required this.time,
@@ -24,6 +25,7 @@ class NonReviewedDogCardWidget extends StatefulWidget {
         this.dogOwner = dogOwner ?? '[dogOwner]',
         this.fee = fee ?? '[Fee]';
 
+  final int walkId;
   final String petName;
   final String dogOwner;
   final DateTime? time;
@@ -345,7 +347,7 @@ class _NonReviewedDogCardWidgetState extends State<NonReviewedDogCardWidget> {
                               padding:
                                   EdgeInsetsDirectional.fromSTEB(5, 2, 0, 0),
                               child: AutoSizeText(
-                                widget!.fee,
+                                "\$${widget!.fee}",
                                 maxLines: 1,
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
@@ -391,7 +393,11 @@ class _NonReviewedDogCardWidgetState extends State<NonReviewedDogCardWidget> {
                         builder: (context) {
                           return Padding(
                             padding: MediaQuery.viewInsetsOf(context),
-                            child: PopUpAddReviewWidget(),
+                            child: PopUpAddReviewWidget(
+                              walkId: widget.walkId,
+                              userTypeName: widget.petName,
+                              reviewType: 'Perro'
+                            ),
                           );
                         },
                       ).then((value) => safeSetState(() {}));

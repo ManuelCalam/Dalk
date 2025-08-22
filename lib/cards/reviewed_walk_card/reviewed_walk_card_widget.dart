@@ -16,6 +16,7 @@ export 'reviewed_walk_card_model.dart';
 class ReviewedWalkCardWidget extends StatefulWidget {
   const ReviewedWalkCardWidget({
     super.key,
+    required this.walkId,
     String? dogName,
     String? dogWalker,
     required this.time,
@@ -26,6 +27,7 @@ class ReviewedWalkCardWidget extends StatefulWidget {
         this.fee = fee ?? '[fee]',
         this.rate = rate ?? '[rate]';
 
+  final int walkId;
   final String dogName;
   final String dogWalker;
   final DateTime? time;
@@ -343,7 +345,7 @@ class _ReviewedWalkCardWidgetState extends State<ReviewedWalkCardWidget> {
                               padding:
                                   EdgeInsetsDirectional.fromSTEB(5, 2, 0, 0),
                               child: AutoSizeText(
-                                widget!.fee,
+                                "\$${widget!.fee}",
                                 maxLines: 1,
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
@@ -455,7 +457,9 @@ class _ReviewedWalkCardWidgetState extends State<ReviewedWalkCardWidget> {
                                           return Padding(
                                             padding: MediaQuery.viewInsetsOf(
                                                 context),
-                                            child: PopUpReviewDetailsWidget(),
+                                            child: PopUpReviewDetailsWidget(
+                                              walkId: widget.walkId,
+                                            ),
                                           );
                                         },
                                       ).then((value) => safeSetState(() {}));
