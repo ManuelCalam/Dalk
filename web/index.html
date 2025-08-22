@@ -50,6 +50,24 @@
 
   <link rel="manifest" href="manifest.json">
   
+  <!-- Firebase Configuration -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js"></script>
+  <script>
+    // Initialize Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDSL_W5W7zKQKIImS-fKFKNJ5o4NDC_IeU",
+      authDomain: "dalk-da4ba.firebaseapp.com",
+      databaseURL: "https://dalk-da4ba-default-rtdb.firebaseio.com",
+      projectId: "dalk-da4ba",
+      storageBucket: "dalk-da4ba.firebasestorage.app",
+      messagingSenderId: "476827936354",
+      appId: "1:476827936354:web:dc03e7b3dce6ceed3b8c82",
+      measurementId: "G-Y6X8WCHBMG"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+  
 </head>
 <body>
   
