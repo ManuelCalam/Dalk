@@ -118,8 +118,9 @@ Deno.serve(async (req) => {
 
     console.log("📊 Datos del paseo obtenidos:", walkData);
 
-    // Determinar destinatario y mensaje según el status
+    // Determinar destinatario, tipo de usuario y mensaje según el status
     let targetUserId: string;
+    let targetUserType: string;
     let notificationTitle: string;
     let notificationBody: string;
 
@@ -127,6 +128,7 @@ Deno.serve(async (req) => {
       case "Solicitado":
         // Notificar al walker que hay una nueva solicitud
         targetUserId = walkData.walker_id;
+        targetUserType = "walker";
         notificationTitle = "¡Nuevo paseo!";
         notificationBody = `${walkData.owner_name} está solicitando un paseo para ${walkData.pet_name}${date ? ` el día ${date}` : ''}`;
         break;
@@ -134,6 +136,7 @@ Deno.serve(async (req) => {
       case "Aceptado":
         // Notificar al owner que su solicitud fue aceptada
         targetUserId = walkData.owner_id;
+        targetUserType = "owner";
         notificationTitle = "¡Paseo aceptado!";
         notificationBody = `${walkData.walker_name} ha aceptado el paseo de ${walkData.pet_name}`;
         break;
@@ -141,6 +144,7 @@ Deno.serve(async (req) => {
       case "Rechazado":
         // Notificar al owner que su solicitud fue rechazada
         targetUserId = walkData.owner_id;
+        targetUserType = "owner";
         notificationTitle = "Paseo rechazado";
         notificationBody = `${walkData.walker_name} no puede realizar el paseo de ${walkData.pet_name}`;
         break;
@@ -149,6 +153,7 @@ Deno.serve(async (req) => {
         // Notificar a la otra parte que el paseo fue cancelado
         // Si cancela el owner, notificar al walker. Si cancela el walker, notificar al owner
         targetUserId = walkData.owner_id === actor_name ? walkData.walker_id : walkData.owner_id;
+        targetUserType = walkData.owner_id === actor_name ? "walker" : "owner";
         const cancelerName = walkData.owner_id === actor_name ? walkData.owner_name : walkData.walker_name;
         notificationTitle = "Paseo cancelado";
         notificationBody = `${cancelerName} ha cancelado el paseo de ${walkData.pet_name}`;
@@ -158,6 +163,10 @@ Deno.serve(async (req) => {
         console.error("❌ Estado no reconocido:", new_status);
         return new Response(JSON.stringify({ error: "Estado no válido", status: new_status }), { status: 400 });
     }
+
+    console.log(`🎯 Destinatario: ${targetUserId} (${targetUserType})`);
+    console.log(`📢 Título: ${notificationTitle}`);
+    console.log(`📝 Mensaje: ${notificationBody}`);
 
     // Buscar token FCM del usuario destinatario
     const { data: userData, error: userError } = await supabase
@@ -183,13 +192,16 @@ Deno.serve(async (req) => {
         message: "Usuario sin token FCM",
         walk_id,
         new_status,
+        target_user: targetUserId,
+        target_user_type: targetUserType,
         timestamp: timestamp
       }), { status: 200 });
     }
 
     // Enviar notificación
     try {
-      console.log(`📤 Enviando notificación a usuario: ${targetUserId}`);
+      console.log(`📤 Enviando notificación a usuario: ${targetUserId} (${targetUserType})`);
+      
       const fcmResponse = await admin.messaging().send({
         token: userData.fcm_token,
         notification: {
@@ -199,6 +211,8 @@ Deno.serve(async (req) => {
         data: {
           event_type: new_status,
           walk_id: walk_id.toString(),
+          target_user_type: targetUserType,
+          target_user_id: targetUserId,
           timestamp: timestamp,
         },
         android: {
@@ -208,6 +222,7 @@ Deno.serve(async (req) => {
             defaultSound: true,
             defaultVibrateTimings: true,
             defaultLightSettings: true,
+            clickAction: "FLUTTER_NOTIFICATION_CLICK",
           },
         },
         apns: {
@@ -219,17 +234,20 @@ Deno.serve(async (req) => {
               },
               sound: "default",
               badge: 1,
+              category: "WALK_NOTIFICATION",
             },
           },
         },
       });
-      console.log(`✅ Notificación enviada:`, fcmResponse);
+      
+      console.log(`✅ Notificación enviada exitosamente:`, fcmResponse);
 
       return new Response(JSON.stringify({ 
         success: true,
         walk_id,
         new_status,
         target_user: targetUserId,
+        target_user_type: targetUserType,
         notification_sent: true,
         fcm_response: fcmResponse,
         timestamp: timestamp
@@ -243,6 +261,8 @@ Deno.serve(async (req) => {
         details: String(fcmError),
         walk_id,
         new_status,
+        target_user: targetUserId,
+        target_user_type: targetUserType,
         timestamp: timestamp
       }), { status: 500 });
     }

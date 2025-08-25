@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -14,11 +15,14 @@ import 'flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/nav/nav.dart';
 import '/services/notification_service.dart';
 
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
 // GlobalKey para el ScaffoldMessenger 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
+// ✅ HANDLER TOP-LEVEL SIMPLE (REQUERIDO)
+@pragma('vm:entry-point')
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("📱 Background notification: ${message.notification?.title}");
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,31 +30,17 @@ void main() async {
   usePathUrlStrategy();
 
   await initFirebase();
-
   await SupaFlow.initialize();
-
   await FlutterFlowTheme.initialize();
-
   await dotenv.load(fileName: ".env"); 
 
-  // Inicializar el servicio de notificaciones
-  final notificationService = NotificationService();
-  notificationService.initialize(
-    scaffoldKey: scaffoldMessengerKey,
-    navKey: appNavigatorKey,
-  );
-  
-  // Inicializar notificaciones locales
-  await notificationService.initializeLocalNotifications();
-
-  // Configurar handler para notificaciones en background
-  FirebaseMessaging.onBackgroundMessage(NotificationService.firebaseMessagingBackgroundHandler);
+  // ✅ REGISTRAR HANDLER DE BACKGROUND (REQUERIDO)
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {
-  // This widget is the root of your application.
   @override
   State<MyApp> createState() => _MyAppState();
 
@@ -82,29 +72,26 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    
+    // ✅ INICIALIZAR NOTIFICATIONSERVICE (TODO EN EL SERVICIO)
     final notificationService = NotificationService();
-    notificationService.requestNotificationPermission();
-    notificationService.setupFirebaseMessaging(); // Usar servicio de notificaciones
-
+    notificationService.initialize(
+      scaffoldKey: scaffoldMessengerKey,
+      navKey: appNavigatorKey,
+    );
+    
     _appStateNotifier = AppStateNotifier.instance;
     _router = createRouter(_appStateNotifier);
     userStream = dalkSupabaseUserStream()
-  ..listen((user) {
-    _appStateNotifier.update(user);
-    // ACTUALIZA EL TOKEN FCM SIEMPRE QUE HAYA USUARIO LOGUEADO
-    if (user.uid != null) {
-      notificationService.updateFcmToken(user.uid!);
-    }
-  });
+      ..listen((user) {
+        _appStateNotifier.update(user);
+        // Actualizar token FCM cuando hay usuario logueado
+        if (user.uid != null) {
+          notificationService.updateFcmToken(user.uid!);
+        }
+      });
     jwtTokenStream.listen((_) {});
     
-    // Forzar actualización del token FCM si ya hay un usuario logueado
-    Future.delayed(Duration(seconds: 2), () async {
-      final currentUser = Supabase.instance.client.auth.currentUser;
-      if (currentUser != null) {
-        print('🔄 Verificando y actualizando token FCM para usuario actual');
-      }
-    });
     Future.delayed(
       Duration(milliseconds: 1000),
       () => _appStateNotifier.stopShowingSplashImage(),
@@ -140,5 +127,4 @@ class _MyAppState extends State<MyApp> {
       routerConfig: _router,
     );
   }
-
 }
