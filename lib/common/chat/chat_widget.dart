@@ -16,11 +16,37 @@ class ChatWidget extends StatefulWidget {
     super.key,
     String? userName,
     String? status,
-  })  : this.userName = userName ?? '[userName]',
-        this.status = status ?? '[status]';
+    required this.walkerId,
+    required this.ownerId,
+  })  : userName = userName ?? '[userName]',
+        status = status ?? '[status]';
 
   final String userName;
   final String status;
+  final String walkerId;
+  final String ownerId;
+
+  static String routeName = 'chat';
+  static String routePath = '/chat';
+
+  @override
+  State<ChatWidget> createState() => _ChatWidgetState();
+}
+
+class chatWidget extends StatefulWidget {
+  const chatWidget({
+    super.key,
+    String? userName,
+    String? status,
+    required this.walkerId,
+    required this.ownerId,
+  })  : userName = userName ?? '[userName]',
+        status = status ?? '[status]';
+
+  final String userName;
+  final String status;
+  final String walkerId;
+  final String ownerId;
 
   static String routeName = 'chat';
   static String routePath = '/chat';
@@ -30,86 +56,99 @@ class ChatWidget extends StatefulWidget {
 }
 
 class _ChatWidgetState extends State<ChatWidget> {
-  late ChatModel _model;
   final _supabase = Supabase.instance.client;
   final _scrollCtrl = ScrollController();
-  String? _conversationId;
-  String? _myUserId;
-  RealtimeChannel? _channel;
   final List<Map<String, dynamic>> _messages = [];
 
-  final scaffoldKey = GlobalKey<ScaffoldState>();
+  RealtimeChannel? _channel;
+  late TextEditingController _textController;
+  String? _myUserId;
 
-  _boot() async {
-    _myUserId = _supabase.auth.currentUser?.id;
-    // 1) Define/obtén _conversationId
-    _conversationId = ModalRoute.of(context)?.settings.arguments is Map
-        ? (ModalRoute.of(context)!.settings.arguments as Map)['conversationId'] as String?
-        : _conversationId;
-
-    final args = ModalRoute.of(context)?.settings.arguments as Map?;
-    final otherUserId = args?['otherUserId'] as String?;
-
-    if (_conversationId == null && otherUserId != null) {
-      final conv = await _supabase.rpc('create_or_get_conversation', params: {
-        'other_user': otherUserId,
-      });
-      _conversationId = conv as String?;
-    }
-
-    if (_conversationId == null) return;
-
-    await _loadInitial();
-    _subscribeRealtime();
-  }
-
+  // datos del otro usuario (dueño o paseador según corresponda)
+  String? otherUserName;
+  String? otherUserPhotoUrl;
+  
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => ChatModel());
-
-    _model.textController ??= TextEditingController();
-    _model.textFieldFocusNode ??= FocusNode();
-     WidgetsBinding.instance.addPostFrameCallback((_) => _boot());
+    _myUserId = _supabase.auth.currentUser?.id;
+    _textController = TextEditingController();
+    _loadOtherUserInfo();
+    _loadInitial();
+    _subscribeRealtime();
   }
-  
+
+  Future<void> _loadOtherUserInfo() async {
+    // si yo soy el paseador, cargo la info del dueño
+    final String otherId = (_myUserId == widget.walkerId)
+        ? widget.ownerId
+        : widget.walkerId;
+
+    final data = await _supabase
+        .from('users')
+        .select('name, photoUrl')
+        .eq('uuid', otherId)
+        .maybeSingle();
+
+    if (data != null) {
+      setState(() {
+        otherUserName = data['name'];
+        otherUserPhotoUrl = data['photoUrl'];
+      });
+    }
+  }
+  final scaffoldKey = GlobalKey<ScaffoldState>();
 
   Future<void> _loadInitial() async {
     final rows = await _supabase
         .from('messages')
         .select()
-        .eq('conversation_id', _conversationId!)
-        .order('created_at', ascending: true)
-        .limit(500);
+        .or('and(owner_id.eq.${widget.ownerId},walker_id.eq.${widget.walkerId})')
+        .order('created_at', ascending: true);
+
     _messages
       ..clear()
-      ..addAll(List<Map<String, dynamic>>.from(rows as List));
+      ..addAll(List<Map<String, dynamic>>.from(rows));
+
     if (mounted) setState(() {});
     _jumpToBottom();
   }
 
   void _subscribeRealtime() {
-    _channel = _supabase
-        .channel('public:messages:conversation_id=eq.${_conversationId}')
-        .onPostgresChanges(
-          event: PostgresChangeEvent.insert,
-          schema: 'public',
-          table: 'messages',
-          filter: PostgresChangeFilter(
-            column: 'conversation_id',
-            // operator: 'eq',
-            value: _conversationId!, type: PostgresChangeFilterType.eq,
-          ),
-          callback: (payload) {
-            final newRow = payload.newRecord;
-            if (newRow != null) {
-              _messages.add(Map<String, dynamic>.from(newRow));
-              if (mounted) setState(() {});
-              _jumpToBottom();
-            }
-          },
-        )
-        .subscribe();
+    _channel = _supabase.channel('public:messages')
+      ..onPostgresChanges(
+        event: PostgresChangeEvent.insert,
+        schema: 'public',
+        table: 'messages',
+        callback: (payload) {
+          final newMessage = payload.newRecord;
+          // Verificamos que pertenezca al par owner-walker de este chat
+          if ((newMessage['owner_id'] == widget.ownerId &&
+                  newMessage['walker_id'] == widget.walkerId) ||
+              (newMessage['owner_id'] == widget.walkerId &&
+                  newMessage['walker_id'] == widget.ownerId)) {
+            setState(() {
+              _messages.add(newMessage);
+            });
+            _jumpToBottom();
+          }
+        },
+      )
+      ..subscribe();
+  }
+
+  void _sendMessage() async {
+    final text = _textController.text.trim();
+    if (text.isEmpty || _myUserId == null) return;
+
+    await _supabase.from('messages').insert({
+      'owner_id': widget.ownerId,
+      'walker_id': widget.walkerId,
+      'sender_id': _myUserId,
+      'content': text,
+    });
+
+    _textController.clear();
   }
 
   void _jumpToBottom() {
@@ -123,12 +162,17 @@ class _ChatWidgetState extends State<ChatWidget> {
       }
     });
   }
+
   @override
   void dispose() {
-    _model.dispose();
-
+    _textController.dispose();
+    if (_channel != null) {
+      _channel!.unsubscribe();
+      _supabase.removeChannel(_channel!);
+    }
     super.dispose();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -151,368 +195,184 @@ class _ChatWidgetState extends State<ChatWidget> {
             child: Column(
               mainAxisSize: MainAxisSize.max,
               children: [
+                /// HEADER
                 Container(
                   width: MediaQuery.sizeOf(context).width,
                   height: MediaQuery.sizeOf(context).height * 0.2,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).secondary,
                     boxShadow: [
-                      BoxShadow(
+                      const BoxShadow(
                         blurRadius: 4,
                         color: Color(0xFF162C43),
-                        offset: Offset(
-                          0,
-                          2,
-                        ),
+                        offset: Offset(0, 2),
                       )
                     ],
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(40),
                       bottomRight: Radius.circular(40),
-                      topLeft: Radius.circular(0),
-                      topRight: Radius.circular(0),
                     ),
                   ),
                   child: Column(
-                    mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Flexible(
-                        child: Container(
-                          width: MediaQuery.sizeOf(context).width,
-                          height: MediaQuery.sizeOf(context).height * 0.5,
-                          decoration: BoxDecoration(),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
-                              Align(
-                                alignment: AlignmentDirectional(-1, 0),
-                                child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      15, 0, 0, 0),
-                                  child: InkWell(
-                                    splashColor: Colors.transparent,
-                                    focusColor: Colors.transparent,
-                                    hoverColor: Colors.transparent,
-                                    highlightColor: Colors.transparent,
-                                    onTap: () async {
-                                      context.safePop();
-                                    },
-                                    child: Icon(
-                                      Icons.chevron_left_outlined,
-                                      color:
-                                          FlutterFlowTheme.of(context).accent2,
-                                      size: 32,
-                                    ),
-                                  ),
-                                ),
+                      /// Back + Title + Notifications
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 15),
+                            child: InkWell(
+                              onTap: () => context.safePop(),
+                              child: Icon(
+                                Icons.chevron_left_outlined,
+                                color: FlutterFlowTheme.of(context).accent2,
+                                size: 32,
                               ),
-                              Expanded(
-                                child: Align(
-                                  alignment: AlignmentDirectional(0, 0),
-                                  child: Text(
-                                    'Chat',
-                                    textAlign: TextAlign.center,
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          font: GoogleFonts.lexend(
-                                            fontWeight: FontWeight.bold,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
-                                          ),
-                                          color: FlutterFlowTheme.of(context)
-                                              .accent2,
-                                          fontSize: 18,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.bold,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontStyle,
-                                        ),
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding:
-                                    EdgeInsetsDirectional.fromSTEB(0, 0, 15, 0),
-                                child: Icon(
-                                  Icons.notifications_sharp,
-                                  color: FlutterFlowTheme.of(context).accent2,
-                                  size: 32,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Flexible(
-                        child: Container(
-                          width: MediaQuery.sizeOf(context).width,
-                          height: MediaQuery.sizeOf(context).height * 0.5,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.only(
-                              bottomLeft: Radius.circular(40),
-                              bottomRight: Radius.circular(40),
-                              topLeft: Radius.circular(0),
-                              topRight: Radius.circular(0),
                             ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
-                              Container(
-                                width: MediaQuery.sizeOf(context).width * 0.25,
-                                height:
-                                    MediaQuery.sizeOf(context).height * 0.07,
-                                decoration: BoxDecoration(),
-                                alignment: AlignmentDirectional(1, 0),
-                                child: Container(
-                                  width: 70,
-                                  height: 70,
-                                  clipBehavior: Clip.antiAlias,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
+                          Text(
+                            'Chat',
+                            style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                  font: GoogleFonts.lexend(
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  child: Image.network(
-                                    'https://images.unsplash.com/photo-1465101162946-4377e57745c3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxfHxuaWdodCUyMHNreXxlbnwwfHx8fDE3NTMzOTc4Njd8MA&ixlib=rb-4.1.0&q=80&w=1080',
-                                    fit: BoxFit.cover,
-                                  ),
+                                  color: FlutterFlowTheme.of(context).accent2,
+                                  fontSize: 18,
                                 ),
-                              ),
-                              Container(
-                                width: MediaQuery.sizeOf(context).width * 0.75,
-                                height: MediaQuery.sizeOf(context).height,
-                                decoration: BoxDecoration(),
-                                child: Align(
-                                  alignment: AlignmentDirectional(-1, 0),
-                                  child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        10, 0, 0, 0),
-                                    child: Text(
-                                      widget!.userName,
-                                      textAlign: TextAlign.center,
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            font: GoogleFonts.lexend(
-                                              fontWeight: FontWeight.w600,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                            ),
-                                            color: FlutterFlowTheme.of(context)
-                                                .primaryBackground,
-                                            fontSize: 20,
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.w600,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
                           ),
-                        ),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 15),
+                            child: Icon(
+                              Icons.notifications_sharp,
+                              color: FlutterFlowTheme.of(context).accent2,
+                              size: 32,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      /// Avatar + Nombre
+                      Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 20),
+                            child: CircleAvatar(
+                              radius: 35,
+                              backgroundImage: otherUserPhotoUrl != null
+                                  ? NetworkImage(otherUserPhotoUrl!)
+                                  : null,
+                              child: otherUserPhotoUrl == null
+                                  ? const Icon(Icons.person, size: 35)
+                                  : null,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              otherUserName ?? 'Cargando...',
+                              style: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .override(
+                                    font: GoogleFonts.lexend(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    color: FlutterFlowTheme.of(context)
+                                        .primaryBackground,
+                                    fontSize: 20,
+                                  ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
+
+                /// MENSAJES
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(0, 15, 0, 15),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
                     child: Container(
                       width: MediaQuery.sizeOf(context).width * 0.9,
-                      height: MediaQuery.sizeOf(context).height * 0.8,
-                      decoration: BoxDecoration(),
-                      child: ListView(
+                      child: ListView.builder(
                         controller: _scrollCtrl,
-                        padding: EdgeInsets.zero,
-                        children: _messages.map((msg) {
-                          final isMine = msg['user_id'] == _myUserId;
+                        itemCount: _messages.length,
+                        itemBuilder: (context, index) {
+                          final msg = _messages[index];
+                          final isMine = msg['sender_id'] == _myUserId;
                           return Align(
-                            alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
+                            alignment:
+                                isMine ? Alignment.centerRight : Alignment.centerLeft,
                             child: Container(
-                              padding: EdgeInsets.all(10),
-                              margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                              padding: const EdgeInsets.all(10),
+                              margin: const EdgeInsets.symmetric(
+                                  vertical: 5, horizontal: 10),
                               decoration: BoxDecoration(
-                                color: isMine ? Colors.blue : Colors.grey[300],
-                                borderRadius: BorderRadius.circular(10),
+                                color: isMine
+                                    ? FlutterFlowTheme.of(context).primary
+                                    : Colors.grey[300],
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              child: Text(msg['content']),
+                              child: Text(
+                                msg['content'],
+                                style: TextStyle(
+                                  color: isMine
+                                      ? FlutterFlowTheme.of(context).info
+                                      : Colors.black,
+                                ),
+                              ),
                             ),
                           );
-                        }).toList(),
+                        },
                       ),
                     ),
                   ),
                 ),
+
+                /// INPUT
                 Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
+                  padding: const EdgeInsets.only(bottom: 15),
                   child: Container(
                     width: MediaQuery.sizeOf(context).width * 0.95,
                     height: MediaQuery.sizeOf(context).height * 0.065,
-                    decoration: BoxDecoration(),
                     child: Row(
-                      mainAxisSize: MainAxisSize.max,
                       children: [
-                        Flexible(
-                          child: Padding(
-                            padding:
-                                EdgeInsetsDirectional.fromSTEB(0, 0, 10, 0),
-                            child: Container(
-                              width: MediaQuery.sizeOf(context).width * 0.8,
-                              height: MediaQuery.sizeOf(context).height,
-                              decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context).alternate,
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              child: Align(
-                                alignment: AlignmentDirectional(-1, 0),
-                                child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      5, 2, 5, 2),
-                                  child: Container(
-                                    width: MediaQuery.sizeOf(context).width,
-                                    child: TextFormField(
-                                      controller: _model.textController,
-                                      focusNode: _model.textFieldFocusNode,
-                                      autofocus: false,
-                                      obscureText: false,
-                                      decoration: InputDecoration(
-                                        isDense: true,
-                                        labelStyle: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              font: GoogleFonts.lexend(
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .secondaryBackground,
-                                              letterSpacing: 0.0,
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                            ),
-                                        hintText: 'Mensaje',
-                                        hintStyle: FlutterFlowTheme.of(context)
-                                            .labelMedium
-                                            .override(
-                                              font: GoogleFonts.lexend(
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .labelMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .labelMedium
-                                                        .fontStyle,
-                                              ),
-                                              color: Color(0xB2888888),
-                                              fontSize: 16,
-                                              letterSpacing: 0.0,
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelMedium
-                                                      .fontStyle,
-                                            ),
-                                        enabledBorder: InputBorder.none,
-                                        focusedBorder: InputBorder.none,
-                                        errorBorder: InputBorder.none,
-                                        focusedErrorBorder: InputBorder.none,
-                                        contentPadding:
-                                            EdgeInsetsDirectional.fromSTEB(
-                                                10, 10, 10, 10),
-                                      ),
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            font: GoogleFonts.lexend(
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                            ),
-                                            color: FlutterFlowTheme.of(context)
-                                                .secondaryBackground,
-                                            fontSize: 16,
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
-                                          ),
-                                      maxLines: null,
-                                      cursorColor: FlutterFlowTheme.of(context)
-                                          .primaryText,
-                                      validator: _model.textControllerValidator
-                                          .asValidator(context),
-                                    ),
-                                  ),
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: FlutterFlowTheme.of(context).alternate,
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 10),
+                              child: TextField(
+                                controller: _textController,
+                                decoration: const InputDecoration(
+                                  hintText: 'Mensaje',
+                                  border: InputBorder.none,
                                 ),
+                                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                      font: GoogleFonts.lexend(),
+                                      color: FlutterFlowTheme.of(context)
+                                          .secondaryBackground,
+                                    ),
                               ),
                             ),
                           ),
                         ),
-                        Container(
-                          width: MediaQuery.sizeOf(context).width * 0.13,
-                          height: MediaQuery.sizeOf(context).height * 0.9,
-                          decoration: BoxDecoration(),
-                          child: FlutterFlowIconButton(
-                            borderRadius: 35,
-                            buttonSize: 35,
-                            fillColor: FlutterFlowTheme.of(context).primary,
-                            icon: Icon(
-                              Icons.send,
-                              color: FlutterFlowTheme.of(context).info,
-                              size: 23,
-                            ),
-                            onPressed: () async {
-                              final text = _model.textController.text;
-                              if (text.isEmpty || _conversationId == null) return;
-
-                              await _supabase.from('messages').insert({
-                                'conversation_id': _conversationId,
-                                'user_id': _myUserId,
-                                'content': text,
-                              });
-
-                              _model.textController?.clear();
-                            },
+                        const SizedBox(width: 10),
+                        FlutterFlowIconButton(
+                          borderRadius: 35,
+                          buttonSize: 45,
+                          fillColor: FlutterFlowTheme.of(context).primary,
+                          icon: Icon(
+                            Icons.send,
+                            color: FlutterFlowTheme.of(context).info,
+                            size: 23,
                           ),
+                          onPressed: _sendMessage,
                         ),
                       ],
                     ),

@@ -20,11 +20,22 @@ void main() async {
 
   await initFirebase();
 
-  await SupaFlow.initialize();
+  //await SupaFlow.initialize();
 
   await FlutterFlowTheme.initialize();
 
   await dotenv.load(fileName: ".env"); 
+
+  //  Inicializar Supabase con Realtime
+  // print("SUPABASE_URL => ${dotenv.env['SUPABASE_URL']}");
+  // print("SUPABASE_ANON_KEY => ${dotenv.env['SUPABASE_ANON_KEY']}");
+  await Supabase.initialize(
+    url: "${dotenv.env['SUPABASE_URL']}",
+    anonKey: "${dotenv.env['SUPABASE_ANON_KEY']}",
+    realtimeClientOptions: const RealtimeClientOptions(
+      eventsPerSecond: 10,
+    ),
+  );
 
   runApp(MyApp());
 }

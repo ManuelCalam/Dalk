@@ -308,6 +308,8 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                                             ? DateTime.tryParse(fullWalkData['startTime'])
                                                             : null,
                                                         status: fullWalkData['status'] ?? '',
+                                                        walkerId: fullWalkData['walker_id'],
+                                                        ownerId: fullWalkData['owner_id'],
                                                       );
                                                     },
                                                   );

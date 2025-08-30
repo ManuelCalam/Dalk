@@ -1,4 +1,5 @@
 import 'package:dalk/backend/supabase/supabase.dart';
+import 'package:dalk/common/chat/chat_widget.dart';
 import '/components/pop_up_dog_profile/pop_up_dog_profile_widget.dart';
 import '/components/pop_up_dog_walker_profile/pop_up_dog_walker_profile_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -22,6 +23,8 @@ class RequestedWalkOwnerCardWidget extends StatefulWidget {
     String? dogWalker,
     required this.date,
     required this.time,
+    required this.walkerId,
+    required this.ownerId,
   })  : this.status = status ?? '[status]',
         this.petName = petName ?? '[petName]',
         this.dogWalker = dogWalker ?? '[walkerName]';
@@ -32,6 +35,10 @@ class RequestedWalkOwnerCardWidget extends StatefulWidget {
   final String dogWalker;
   final DateTime? date;
   final DateTime? time;
+  //chat
+  final String walkerId;
+  final String ownerId;
+
 
   @override
   State<RequestedWalkOwnerCardWidget> createState() =>
@@ -433,8 +440,19 @@ class _RequestedWalkOwnerCardWidgetState
                               color: FlutterFlowTheme.of(context).primary,
                               size: 30,
                             ),
-                            onPressed: () {
-                              print('openChat_btn pressed ...');
+
+                            onPressed: () async {
+                              
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ChatWidget(
+                                    walkerId: widget.walkerId,
+                                    ownerId: widget.ownerId,   // <-- el del paseo
+                                  ),
+                                ),
+                              );
+                              
                             },
                           ),
                         ),
