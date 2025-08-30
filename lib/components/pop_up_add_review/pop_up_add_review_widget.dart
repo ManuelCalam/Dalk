@@ -1,3 +1,6 @@
+import 'package:dalk/auth/supabase_auth/auth_util.dart';
+import 'package:dalk/backend/supabase/supabase.dart';
+
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -13,7 +16,17 @@ import 'pop_up_add_review_model.dart';
 export 'pop_up_add_review_model.dart';
 
 class PopUpAddReviewWidget extends StatefulWidget {
-  const PopUpAddReviewWidget({super.key});
+  final int walkId;
+  final String userTypeName;
+  final String reviewType;
+  
+
+  const PopUpAddReviewWidget({
+    super.key,
+    required this.walkId,
+    required this.userTypeName,
+    required this.reviewType,
+  });
 
   @override
   State<PopUpAddReviewWidget> createState() => _PopUpAddReviewWidgetState();
@@ -21,6 +34,8 @@ class PopUpAddReviewWidget extends StatefulWidget {
 
 class _PopUpAddReviewWidgetState extends State<PopUpAddReviewWidget> {
   late PopUpAddReviewModel _model;
+
+  
 
   @override
   void setState(VoidCallback callback) {
@@ -32,9 +47,9 @@ class _PopUpAddReviewWidgetState extends State<PopUpAddReviewWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => PopUpAddReviewModel());
-
     _model.dogWalkerInfoInputTextController ??= TextEditingController();
     _model.dogWalkerInfoInputFocusNode ??= FocusNode();
+    _model.ratingBarValue = 1.0;
   }
 
   @override
@@ -44,8 +59,18 @@ class _PopUpAddReviewWidgetState extends State<PopUpAddReviewWidget> {
     super.dispose();
   }
 
+  Future<int?> getWalkerId(int walkId) async {
+    final response = await SupaFlow.client
+        .from('walks_with_names')
+        .select('walker_id')
+        .eq('id', walkId)
+        .maybeSingle();
+    return response?['walker_id'];
+  }
+
   @override
   Widget build(BuildContext context) {
+
     return Align(
       alignment: AlignmentDirectional(0.0, 0.0),
       child: Container(
@@ -128,7 +153,7 @@ class _PopUpAddReviewWidgetState extends State<PopUpAddReviewWidget> {
                                   ),
                             ),
                             AutoSizeText(
-                              '[userType]',
+                              widget.userTypeName,
                               textAlign: TextAlign.center,
                               maxLines: 3,
                               style: FlutterFlowTheme.of(context)
@@ -294,13 +319,61 @@ class _PopUpAddReviewWidgetState extends State<PopUpAddReviewWidget> {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 18.0, 0.0, 0.0),
                           child: FFButtonWidget(
-                            onPressed: () {
-                              print('sendReview_Btn pressed ...');
-                            },
-                            text: 'Envíar',
+                              onPressed: () async {
+                                final rating = _model.ratingBarValue ?? 1.0;
+                                if (rating < 1) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Debes colocar al menos 1 estrella.')),
+                                  );
+                                  return;
+                                }
+
+                                String? targetId;
+                                if (widget.reviewType == 'Paseador') {
+                                  final response = await SupaFlow.client
+                                      .from('walks_with_names')
+                                      .select('walker_id')
+                                      .eq('id', widget.walkId)
+                                      .maybeSingle();
+                                  targetId = response?['walker_id'];
+                                } else if (widget.reviewType == 'Perro') {
+                                  final response = await SupaFlow.client
+                                      .from('walks_with_names')
+                                      .select('dog_id')
+                                      .eq('id', widget.walkId)
+                                      .maybeSingle();
+                                  targetId = response?['dog_id'];
+                                }
+
+                                print("Target id: ${targetId}");
+
+                                if (targetId == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('No se encontró el usuario a calificar.')),
+                                  );
+                                  return;
+                                }
+
+                                 await Supabase.instance.client
+                                  .from('reviews')
+                                  .insert({
+                                    'reviewType': widget.reviewType,
+                                    'walk_id': widget.walkId,
+                                    'rating': rating.toInt(),
+                                    'comments': _model.dogWalkerInfoInputTextController.text,
+                                    'author_id': currentUserUid,
+                                    'reviewed_id': targetId, 
+                                });
+
+                                Navigator.of(context).pop();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('¡Reseña guardada!')),
+                                );
+                              },
+                              text: 'Guardar reseña',
                             options: FFButtonOptions(
                               width: MediaQuery.sizeOf(context).width * 1.0,
                               height: MediaQuery.sizeOf(context).height * 0.045,

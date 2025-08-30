@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dalk/backend/supabase/supabase.dart' show SupaFlow;
 import 'package:dalk/dog_walker/background_service/background_service.dart';
 import 'package:dalk/dog_walker/background_service/on_ios_background';
 import 'package:firebase_database/firebase_database.dart';
@@ -7,7 +8,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart' hide LatLng;
-import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -16,18 +16,23 @@ import 'scheduled_walk_container_model.dart';
 export 'scheduled_walk_container_model.dart';
 
 class ScheduledWalkContainerWidget extends StatefulWidget {
+
+  
   final String walkId;
   final String userType;
   const ScheduledWalkContainerWidget({
     required this.walkId,
     required this.userType,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<ScheduledWalkContainerWidget> createState() =>
       _ScheduledWalkContainerWidgetState();
 }
+
+
+
 
 class _ScheduledWalkContainerWidgetState
     extends State<ScheduledWalkContainerWidget> with WidgetsBindingObserver{
@@ -146,7 +151,7 @@ class _ScheduledWalkContainerWidgetState
           position: currentLatLng,
           infoWindow: const InfoWindow(title: 'Tú estás aquí'),
         );
-        _model.googleMapsCenter = currentLatLng;
+        // _model.googleMapsCenter = currentLatLng; Esto cambia el punto rojo del destino
       });
 
       controller.animateCamera(CameraUpdate.newLatLng(currentLatLng));
@@ -196,7 +201,7 @@ class _ScheduledWalkContainerWidgetState
             position: position,
             infoWindow: const InfoWindow(title: 'Paseador'),
           );
-          _model.googleMapsCenter = position;
+          // _model.googleMapsCenter = position;
         });
 
         controller.animateCamera(CameraUpdate.newLatLng(position));
@@ -215,13 +220,26 @@ class _ScheduledWalkContainerWidgetState
     super.dispose();
   }
 
+  Future<Map<String, dynamic>?> fetchWalkInfoFromView(String walkId) async {
+    final response = await SupaFlow.client
+        .from('walks_with_names')
+        .select()
+        .eq('id', walkId)
+        .limit(1)
+        .maybeSingle();
+    return response;
+  } 
+  
+
+  
+  
   
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: MediaQuery.sizeOf(context).width,
-      decoration: BoxDecoration(),
+      decoration: const BoxDecoration(),
       child: Column(
         mainAxisSize: MainAxisSize.max,
         children: [
@@ -256,272 +274,245 @@ class _ScheduledWalkContainerWidgetState
               },
             ),
           ),
-          Container(
-            child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0, 15, 0, 0),
-              child: SizedBox(
-                width: MediaQuery.sizeOf(context).width * 0.8,
-                height: MediaQuery.sizeOf(context).height * 0.1,
-                child: Container(
-                  decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context).alternate,
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                  padding: EdgeInsetsDirectional.fromSTEB(10, 0, 0, 0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Container(
-                        width: MediaQuery.sizeOf(context).width * 0.17,
-                        height: MediaQuery.sizeOf(context).height * 0.1,
-                        decoration: BoxDecoration(),
-                        child: Padding(
-                          padding: EdgeInsets.all(10),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.network(
-                              'https://images.unsplash.com/photo-1633332755192-727a05c4013d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxfHx1c2VyfGVufDB8fHx8MTc0NjQ1OTI1OXww&ixlib=rb-4.0.3&q=80&w=1080',
-                              width: 200,
-                              height: 200,
-                              fit: BoxFit.cover,
+          Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(0, 15, 0, 0),
+            child: FutureBuilder<Map<String, dynamic>?>(
+              future: fetchWalkInfoFromView(widget.walkId),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return SizedBox(
+                    width: MediaQuery.sizeOf(context).width * 0.9,
+                    height: MediaQuery.sizeOf(context).height * 0.1,
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                final walkData = snapshot.data!;
+                return SizedBox(
+                  width: MediaQuery.sizeOf(context).width * 0.9,
+                  height: MediaQuery.sizeOf(context).height * 0.1,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: FlutterFlowTheme.of(context).alternate,
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 0, 0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Container(
+                          width: MediaQuery.sizeOf(context).width * 0.17,
+                          height: MediaQuery.sizeOf(context).height * 0.1,
+                          decoration: const BoxDecoration(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                walkData['pet_photo_url'] ?? 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxfHx1c2VyfGVufDB8fHx8MTc0NjQ1OTI1OXww&ixlib=rb-4.0.3&q=80&w=1080',
+                                width: 200,
+                                height: 200,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      Container(
-                        width: MediaQuery.sizeOf(context).width * 0.6,
-                        height: 70,
-                        decoration: BoxDecoration(),
-                        child: Align(
-                          alignment: AlignmentDirectional(-1, 0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Align(
-                                alignment: AlignmentDirectional(-1, -1),
-                                child: Container(
-                                  width: MediaQuery.sizeOf(context).width,
-                                  height: 35,
-                                  decoration: BoxDecoration(),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                      Container(
-                                        width: 140,
-                                        height: 100,
-                                        decoration: BoxDecoration(),
-                                        child: Align(
-                                          alignment:
-                                              AlignmentDirectional(-1, 0),
-                                          child: AutoSizeText(
-                                            'Nombre',
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  font: GoogleFonts.lexend(
-                                                    fontWeight: FontWeight.w600,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontStyle,
-                                                  ),
-                                                  fontSize: 18,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.w600,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
+                        Container(
+                          width: MediaQuery.sizeOf(context).width * 0.6,
+                          height: 70,
+                          decoration: const BoxDecoration(),
+                          child: Align(
+                            alignment: const AlignmentDirectional(-1, 0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Align(
+                                  alignment: const AlignmentDirectional(-1, -1),
+                                  child: Container(
+                                    width: MediaQuery.sizeOf(context).width,
+                                    height: 35,
+                                    decoration: const BoxDecoration(),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.max,
+                                      children: [
+                                        Container(
+                                          width: 140,
+                                          height: 100,
+                                          decoration: const BoxDecoration(),
+                                          child: Align(
+                                            alignment: const AlignmentDirectional(-1, 0),
+                                            child: AutoSizeText(
+                                              walkData['pet_name'] ?? 'Nombre',
+                                              style: FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .override(
+                                                    font: GoogleFonts.lexend(
+                                                      fontWeight: FontWeight.w600,
+                                                      fontStyle: FlutterFlowTheme.of(context)
                                                           .bodyMedium
                                                           .fontStyle,
-                                                ),
-                                          ),
-                                        ),
-                                      ),
-                                      Flexible(
-                                        child: Align(
-                                          alignment: AlignmentDirectional(1, 0),
-                                          child: Container(
-                                            height: 100,
-                                            decoration: BoxDecoration(),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.max,
-                                              children: [
-                                                Flexible(
-                                                  child: Align(
-                                                    alignment:
-                                                        AlignmentDirectional(
-                                                            1, 0),
-                                                    child: Icon(
-                                                      Icons.star,
-                                                      color: Color(0xFFE2B433),
-                                                      size: 24,
                                                     ),
+                                                    fontSize: 18,
+                                                    letterSpacing: 0.0,
+                                                    fontWeight: FontWeight.w600,
+                                                    fontStyle: FlutterFlowTheme.of(context)
+                                                        .bodyMedium
+                                                        .fontStyle,
                                                   ),
-                                                ),
-                                                Align(
-                                                  alignment:
-                                                      AlignmentDirectional(
-                                                          1, 0),
-                                                  child: Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(
-                                                                0, 0, 10, 0),
-                                                    child: AutoSizeText(
-                                                      '4.8',
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      maxLines: 1,
-                                                      minFontSize: 10,
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            font: GoogleFonts
-                                                                .lexend(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontStyle:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                            ),
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .secondaryBackground,
-                                                            fontSize: 20,
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                        Flexible(
+                                          child: Align(
+                                            alignment: const AlignmentDirectional(1, 0),
+                                            child: Container(
+                                              height: 100,
+                                              decoration: const BoxDecoration(),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.max,
+                                                children: [
+                                                  const Flexible(
+                                                    child: Align(
+                                                      alignment: AlignmentDirectional(1, 0),
+                                                      child: Icon(
+                                                        Icons.star,
+                                                        color: Color(0xFFE2B433),
+                                                        size: 24,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Align(
+                                                    alignment: const AlignmentDirectional(1, 0),
+                                                    child: Padding(
+                                                      padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 10, 0),
+                                                      child: AutoSizeText(
+                                                        (walkData['pet_rating']?.toString() ?? '4.8'),
+                                                        textAlign: TextAlign.center,
+                                                        maxLines: 1,
+                                                        minFontSize: 10,
+                                                        style: FlutterFlowTheme.of(context)
+                                                            .bodyMedium
+                                                            .override(
+                                                              font: GoogleFonts.lexend(
+                                                                fontWeight: FontWeight.w500,
+                                                                fontStyle: FlutterFlowTheme.of(context)
+                                                                    .bodyMedium
+                                                                    .fontStyle,
+                                                              ),
+                                                              color: FlutterFlowTheme.of(context)
+                                                                  .secondaryBackground,
+                                                              fontSize: 20,
+                                                              letterSpacing: 0.0,
+                                                              fontWeight: FontWeight.w500,
+                                                              fontStyle: FlutterFlowTheme.of(context)
+                                                                  .bodyMedium
+                                                                  .fontStyle,
+                                                            ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                              Align(
-                                alignment: AlignmentDirectional(-1, -1),
-                                child: Container(
-                                  height: 35,
-                                  decoration: BoxDecoration(),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Align(
-                                        alignment: AlignmentDirectional(-1, 0),
-                                        child: AutoSizeText(
-                                          'Tiempo:',
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                font: GoogleFonts.lexend(
-                                                  fontWeight: FontWeight.w500,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                                fontSize: 16,
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.w500,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ),
-                                      Align(
-                                        alignment: AlignmentDirectional(1, 0),
-                                        child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  5, 0, 10, 0),
+                                Align(
+                                  alignment: const AlignmentDirectional(-1, -1),
+                                  child: Container(
+                                    height: 35,
+                                    decoration: const BoxDecoration(),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Align(
+                                          alignment: const AlignmentDirectional(-1, 0),
                                           child: AutoSizeText(
-                                            '10:30',
+                                            'Tiempo:',
                                             style: FlutterFlowTheme.of(context)
                                                 .bodyMedium
                                                 .override(
                                                   font: GoogleFonts.lexend(
                                                     fontWeight: FontWeight.w500,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontStyle,
+                                                    fontStyle: FlutterFlowTheme.of(context)
+                                                        .bodyMedium
+                                                        .fontStyle,
                                                   ),
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .secondaryBackground,
-                                                  fontSize: 20,
+                                                  fontSize: 16,
                                                   letterSpacing: 0.0,
                                                   fontWeight: FontWeight.w500,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
+                                                  fontStyle: FlutterFlowTheme.of(context)
+                                                      .bodyMedium
+                                                      .fontStyle,
                                                 ),
                                           ),
                                         ),
-                                      ),
-                                      Expanded(
-                                        child: Align(
-                                          alignment: AlignmentDirectional(1, 0),
+                                        Align(
+                                          alignment: const AlignmentDirectional(1, 0),
                                           child: Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0, 0, 3, 0),
-                                            child: Container(
-                                              width: MediaQuery.sizeOf(context)
-                                                      .width *
-                                                  0.1,
-                                              decoration: BoxDecoration(),
-                                              child: Icon(
-                                                Icons.chat,
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                                size: 32,
+                                            padding: const EdgeInsetsDirectional.fromSTEB(5, 0, 10, 0),
+                                            child: AutoSizeText(
+                                              walkData['startTime'] != null
+                                                  ? DateTime.tryParse(walkData['startTime'])?.toLocal().toString().substring(11, 16) ?? ''
+                                                  : '',
+                                              style: FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .override(
+                                                    font: GoogleFonts.lexend(
+                                                      fontWeight: FontWeight.w500,
+                                                      fontStyle: FlutterFlowTheme.of(context)
+                                                          .bodyMedium
+                                                          .fontStyle,
+                                                    ),
+                                                    color: FlutterFlowTheme.of(context)
+                                                        .secondaryBackground,
+                                                    fontSize: 20,
+                                                    letterSpacing: 0.0,
+                                                    fontWeight: FontWeight.w500,
+                                                    fontStyle: FlutterFlowTheme.of(context)
+                                                        .bodyMedium
+                                                        .fontStyle,
+                                                  ),
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: Align(
+                                            alignment: const AlignmentDirectional(1, 0),
+                                            child: Padding(
+                                              padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 3, 0),
+                                              child: Container(
+                                                width: MediaQuery.sizeOf(context).width * 0.1,
+                                                decoration: const BoxDecoration(),
+                                                child: Icon(
+                                                  Icons.chat,
+                                                  color: FlutterFlowTheme.of(context).primaryText,
+                                                  size: 32,
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
-          ),
+          )
         ],
       ),
     );

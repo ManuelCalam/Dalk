@@ -412,6 +412,7 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                                       if (reviews.isNotEmpty) {
                                                         final review = reviews.first;
                                                         return ReviewedWalkCardWidget(
+                                                          walkId: walk['id'],
                                                           dogName: walk['pet_name'] ?? '',
                                                           dogWalker: walk['walker_name'] ?? '',
                                                           time: walk['startTime'] != null
@@ -422,6 +423,7 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                                         );
                                                       } else {
                                                         return NonReviewedWalkCardWidget(
+                                                          walkId: walk['id'],
                                                           petName: walk['pet_name'] ?? '',
                                                           dogWalker: walk['walker_name'] ?? '',
                                                           time: walk['startTime'] != null

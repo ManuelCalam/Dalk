@@ -16,6 +16,7 @@ export 'reviewed_dog_card_model.dart';
 class ReviewedDogCardWidget extends StatefulWidget {
   const ReviewedDogCardWidget({
     super.key,
+    required this.walkId,
     String? dogName,
     String? dogOwner,
     required this.time,
@@ -26,6 +27,7 @@ class ReviewedDogCardWidget extends StatefulWidget {
         this.fee = fee ?? '[fee]',
         this.rate = rate ?? '[rate]';
 
+  final int walkId;
   final String dogName;
   final String dogOwner;
   final DateTime? time;
@@ -151,7 +153,7 @@ class _ReviewedDogCardWidgetState extends State<ReviewedDogCardWidget> {
                                       return Padding(
                                         padding:
                                             MediaQuery.viewInsetsOf(context),
-                                        child: PopUpDogProfileWidget(),
+                                        child: const PopUpDogProfileWidget(),
                                       );
                                     },
                                   ).then((value) => safeSetState(() {}));
@@ -227,7 +229,7 @@ class _ReviewedDogCardWidgetState extends State<ReviewedDogCardWidget> {
                                       return Padding(
                                         padding:
                                             MediaQuery.viewInsetsOf(context),
-                                        child: PopUpDogWalkerProfileWidget(),
+                                        child: const PopUpDogWalkerProfileWidget(),
                                       );
                                     },
                                   ).then((value) => safeSetState(() {}));
@@ -343,7 +345,7 @@ class _ReviewedDogCardWidgetState extends State<ReviewedDogCardWidget> {
                               padding:
                                   EdgeInsetsDirectional.fromSTEB(5, 2, 0, 0),
                               child: AutoSizeText(
-                                widget!.fee,
+                                "\$${widget!.fee}",
                                 maxLines: 1,
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
@@ -455,7 +457,9 @@ class _ReviewedDogCardWidgetState extends State<ReviewedDogCardWidget> {
                                           return Padding(
                                             padding: MediaQuery.viewInsetsOf(
                                                 context),
-                                            child: PopUpReviewDetailsWidget(),
+                                            child: PopUpReviewDetailsWidget(
+                                              walkId: widget.walkId
+                                            ),
                                           );
                                         },
                                       ).then((value) => safeSetState(() {}));
