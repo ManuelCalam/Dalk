@@ -236,7 +236,7 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                           text: 'Solicitados',
                                         ),
                                         Tab(
-                                          text: 'En Curso',
+                                          text: 'Activo',
                                         ),
                                         Tab(
                                           text: 'Completados',
@@ -273,7 +273,7 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                               final walksList = snapshot.data!
                                                   .where((walk) =>
                                                       walk['status'] == 'Por confirmar' ||
-                                                      walk['status'] == 'Aceptado' ||
+                                                      // walk['status'] == 'Aceptado' ||
                                                       walk['status'] == 'Rechazado' ||
                                                       walk['status'] == 'Cancelado')
                                                   .toList();
@@ -319,7 +319,7 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                           )
                                         ),
 
-                                        // -------- Pestaña de paseos en curso ---------
+                                        // -------- Pestaña de paseos activos ---------
                                         Padding( 
                                           padding: EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
                                           child: StreamBuilder<List<Map<String, dynamic>>>(
@@ -332,11 +332,13 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                                 return Center(child: CircularProgressIndicator());
                                               }
                                               final walksList = snapshot.data!
-                                                .where((walk) => walk['status'] == 'En curso')
+                                                .where((walk) => walk['status'] == 'En curso'  ||
+                                                                 walk['status'] == 'Aceptado'
+                                                )
                                                 .toList();
 
                                               if (walksList.isEmpty) {
-                                                return Center(child: Text('No hay paseos en curso.'));
+                                                return Center(child: Text('No hay paseos activos.'));
                                               }
 
                                               return ListView.builder(
