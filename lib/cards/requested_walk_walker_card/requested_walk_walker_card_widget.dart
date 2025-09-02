@@ -429,6 +429,14 @@ class _RequestedWalkWalkerCardWidgetState
                                     .from('walks')
                                     .update({'status': 'Aceptado'})
                                     .eq('id', widget.id); 
+                                    //Notificación: Aceptado
+                                    await Supabase.instance.client.functions.invoke(
+                                      'send-walk-notification',
+                                      body: {
+                                        'walk_id': widget.id,
+                                        'new_status': 'Aceptado',
+                                      },
+                                    );
 
                               },
                             ),
@@ -461,12 +469,28 @@ class _RequestedWalkWalkerCardWidgetState
                                           .from('walks')
                                           .update({'status': 'Rechazado'})
                                           .eq('id', widget.id);
+                                          //Notificación: Rechazado
+                                          await Supabase.instance.client.functions.invoke(
+                                            'send-walk-notification',
+                                            body: {
+                                              'walk_id': widget.id,
+                                              'new_status': 'Rechazado',
+                                            },
+                                          );  
                                   }
                                   else if(currentStatus == 'Aceptado'){
                                      await SupaFlow.client
                                           .from('walks')
                                           .update({'status': 'Cancelado'})
-                                          .eq('id', widget.id); 
+                                          .eq('id', widget.id);
+                                          //Notificación: Cancelado
+                                          await Supabase.instance.client.functions.invoke(
+                                            'send-walk-notification',
+                                            body: {
+                                              'walk_id': widget.id,
+                                              'new_status': 'Cancelado',
+                                            },
+                                          );
                                   }
                                   else if (currentStatus == 'Rechazado' || currentStatus == 'Cancelado'){
                                       await SupaFlow.client
