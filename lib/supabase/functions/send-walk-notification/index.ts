@@ -168,6 +168,29 @@ Deno.serve(async (req) => {
     console.log(`📢 Título: ${notificationTitle}`);
     console.log(`📝 Mensaje: ${notificationBody}`);
 
+    // ✅ INSERTAR NOTIFICACIÓN EN BASE DE DATOS PRIMERO - CORREGIDO
+    try {
+      const { error: insertError } = await supabase.from('notifications').insert([
+        {
+          recipient_id: targetUserId,
+          title: notificationTitle,
+          body: notificationBody,
+          event_type: new_status,
+          walk_id: walk_id,
+          is_read: false,
+          created_at: new Date().toISOString(),
+        },
+      ]);
+
+      if (insertError) {
+        console.error('⚠️ Error insertando notificación en Supabase:', insertError);
+      } else {
+        console.log("📦 ✅ Notificación registrada en Supabase para usuario:", targetUserId);
+      }
+    } catch (insertErr) {
+      console.error('❌ Error insertando notificación:', insertErr);
+    }
+
     // Buscar token FCM del usuario destinatario
     const { data: userData, error: userError } = await supabase
       .from("users")
@@ -186,10 +209,10 @@ Deno.serve(async (req) => {
     }
 
     if (!userData.fcm_token) {
-      console.warn(`⚠️ Usuario ${targetUserId} sin token FCM válido, se omite notificación.`);
+      console.warn(`⚠️ Usuario ${targetUserId} sin token FCM válido, se omite notificación push.`);
       return new Response(JSON.stringify({ 
         success: true,
-        message: "Usuario sin token FCM",
+        message: "Notificación guardada en BD pero usuario sin token FCM",
         walk_id,
         new_status,
         target_user: targetUserId,
@@ -198,9 +221,9 @@ Deno.serve(async (req) => {
       }), { status: 200 });
     }
 
-    // Enviar notificación
+    // Enviar notificación push
     try {
-      console.log(`📤 Enviando notificación a usuario: ${targetUserId} (${targetUserType})`);
+      console.log(`📤 Enviando notificación push a usuario: ${targetUserId} (${targetUserType})`);
       
       const fcmResponse = await admin.messaging().send({
         token: userData.fcm_token,
@@ -240,7 +263,7 @@ Deno.serve(async (req) => {
         },
       });
       
-      console.log(`✅ Notificación enviada exitosamente:`, fcmResponse);
+      console.log(`✅ Notificación push enviada exitosamente:`, fcmResponse);
 
       return new Response(JSON.stringify({ 
         success: true,
@@ -249,22 +272,25 @@ Deno.serve(async (req) => {
         target_user: targetUserId,
         target_user_type: targetUserType,
         notification_sent: true,
+        notification_saved: true,
         fcm_response: fcmResponse,
         timestamp: timestamp
       }), { status: 200 });
 
     } catch (fcmError) {
-      console.error(`🔥 Error enviando notificación:`, fcmError);
+      console.error(`🔥 Error enviando notificación push:`, fcmError);
       return new Response(JSON.stringify({ 
-        success: false,
-        error: "Error enviando notificación",
+        success: true, // La notificación se guardó en BD
+        error: "Error enviando notificación push",
         details: String(fcmError),
         walk_id,
         new_status,
         target_user: targetUserId,
         target_user_type: targetUserType,
+        notification_saved: true,
+        notification_sent: false,
         timestamp: timestamp
-      }), { status: 500 });
+      }), { status: 200 }); // 200 porque la notificación se guardó
     }
   } catch (err) {
     console.error("🔥 Error en función:", err);

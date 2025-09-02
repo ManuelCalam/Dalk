@@ -6,6 +6,9 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:timeago/timeago.dart' as timeago;
+import '/auth/supabase_auth/auth_util.dart';
 import 'notifications_model.dart';
 export 'notifications_model.dart';
 
@@ -28,12 +31,13 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => NotificationsModel());
+    // Configurar timeago en español si lo deseas
+    timeago.setLocaleMessages('es', timeago.EsMessages());
   }
 
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
   }
 
@@ -160,153 +164,181 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 0.9,
                             decoration: BoxDecoration(),
-                            child: SingleChildScrollView(
-                              primary: false,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.max,
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    width:
-                                        MediaQuery.sizeOf(context).width * 1.0,
-                                    height:
-                                        MediaQuery.sizeOf(context).height * 0.1,
-                                    decoration: BoxDecoration(
-                                      color: FlutterFlowTheme.of(context)
-                                          .alternate,
-                                      borderRadius: BorderRadius.circular(15.0),
-                                    ),
-                                    alignment: AlignmentDirectional(0.0, -1.0),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Padding(
-                                          padding: EdgeInsets.all(10.0),
-                                          child: Container(
-                                            width: MediaQuery.sizeOf(context)
-                                                    .width *
-                                                0.1,
-                                            decoration: BoxDecoration(),
-                                            child: Align(
-                                              alignment: AlignmentDirectional(
-                                                  0.0, 0.0),
-                                              child: Icon(
-                                                Icons.watch_later,
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primary,
-                                                size: 30.0,
-                                              ),
-                                            ),
-                                          ),
+                            child: Builder(
+                              builder: (context) {
+                                final userId = currentUserUid;
+                                print('🔍 Usuario actual: $userId');
+                                
+                                return StreamBuilder<List<Map<String, dynamic>>>(
+                                  stream: Supabase.instance.client
+                                      .from('notifications')
+                                      .stream(primaryKey: ['id'])
+                                      .eq('recipient_id', userId) // ✅ CORREGIDO: usar recipient_id
+                                      .order('created_at', ascending: false),
+                                  builder: (context, snapshot) {
+                                    if (userId.isEmpty) {
+                                      return const Center(
+                                        child: Text('Usuario no autenticado'),
+                                      );
+                                    }
+
+                                    if (snapshot.connectionState == ConnectionState.waiting) {
+                                      return const Center(
+                                        child: CircularProgressIndicator(),
+                                      );
+                                    }
+
+                                    if (snapshot.hasError) {
+                                      print('❌ Error en stream de notificaciones: ${snapshot.error}');
+                                      return Center(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Text('Error cargando notificaciones'),
+                                            Text('${snapshot.error}', style: TextStyle(fontSize: 12)),
+                                          ],
                                         ),
-                                        Expanded(
-                                          child: Align(
-                                            alignment:
-                                                AlignmentDirectional(-1.0, 0.0),
-                                            child: Container(
-                                              decoration: BoxDecoration(),
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.max,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
+                                      );
+                                    }
+
+                                    final allNotifications = snapshot.data ?? [];
+                                    
+                                    // ✅ FILTRAR EN EL CLIENTE las notificaciones de los últimos 30 días
+                                    final notifications = allNotifications.where((notification) {
+                                      final createdAt = notification['created_at'] as String?;
+                                      if (createdAt == null) return false;
+                                      
+                                      try {
+                                        final notificationDate = DateTime.parse(createdAt);
+                                        final thirtyDaysAgoDate = DateTime.now().subtract(Duration(days: 30));
+                                        return notificationDate.isAfter(thirtyDaysAgoDate);
+                                      } catch (e) {
+                                        print('❌ Error parseando fecha: $e');
+                                        return false;
+                                      }
+                                    }).toList();
+                                    
+                                    print('📱 Notificaciones encontradas: ${notifications.length}');
+
+                                    if (notifications.isEmpty) {
+                                      return Center(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.notifications_none,
+                                              size: 64,
+                                              color: FlutterFlowTheme.of(context).secondaryText,
+                                            ),
+                                            SizedBox(height: 16),
+                                            Text(
+                                              'No tienes notificaciones',
+                                              style: FlutterFlowTheme.of(context).bodyMedium,
+                                            ),
+                                            Text(
+                                              'Las notificaciones de los últimos 30 días aparecerán aquí',
+                                              style: FlutterFlowTheme.of(context).labelSmall,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }
+
+                                    return ListView.builder(
+                                      itemCount: notifications.length,
+                                      itemBuilder: (context, index) {
+                                        final notification = notifications[index];
+                                        return Padding(
+                                          padding: const EdgeInsets.only(bottom: 10),
+                                          child: Container(
+                                            width: MediaQuery.sizeOf(context).width,
+                                            decoration: BoxDecoration(
+                                              color: FlutterFlowTheme.of(context).alternate,
+                                              borderRadius: BorderRadius.circular(15.0),
+                                            ),
+                                            child: InkWell(
+                                              onTap: () async {
+                                                print('🔔 Marcando notificación como leída: ${notification['id']}');
+                                                if (!notification['is_read']) {
+                                                  try {
+                                                    await Supabase.instance.client
+                                                        .from('notifications')
+                                                        .update({'is_read': true})
+                                                        .eq('id', notification['id']);
+                                                    print('✅ Notificación marcada como leída');
+                                                  } catch (e) {
+                                                    print('❌ Error marcando como leída: $e');
+                                                  }
+                                                }
+                                              },
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
                                                 children: [
-                                                  Align(
-                                                    alignment:
-                                                        AlignmentDirectional(
-                                                            -1.0, 0.0),
-                                                    child: AutoSizeText(
-                                                      'Reminder',
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      maxLines: 1,
-                                                      minFontSize: 10.0,
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            font: GoogleFonts
-                                                                .lexend(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              fontStyle:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                            ),
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .primary,
-                                                            fontSize: 13.0,
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                          ),
+                                                  Padding(
+                                                    padding: const EdgeInsets.all(10.0),
+                                                    child: Container(
+                                                      width: MediaQuery.sizeOf(context).width * 0.1,
+                                                      child: Icon(
+                                                        notification['is_read']
+                                                            ? Icons.notifications
+                                                            : Icons.notifications_active,
+                                                        color: notification['is_read']
+                                                            ? FlutterFlowTheme.of(context).secondaryText
+                                                            : FlutterFlowTheme.of(context).primary,
+                                                        size: 30.0,
+                                                      ),
                                                     ),
                                                   ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 0.0,
-                                                                20.0, 0.0),
-                                                    child: AutoSizeText(
-                                                      'Tienes un paseo agendado para mañana a las 5:30',
-                                                      textAlign:
-                                                          TextAlign.start,
-                                                      maxLines: 4,
-                                                      minFontSize: 8.0,
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            font: GoogleFonts
-                                                                .lexend(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontStyle:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                            ),
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .secondaryBackground,
-                                                            fontSize: 11.0,
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
+                                                  Expanded(
+                                                    child: Container(
+                                                      padding: const EdgeInsets.all(10),
+                                                      child: Column(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          // ✅ CORREGIDO: Mostrar title + body en lugar de message
+                                                          Text(
+                                                            notification['title'] ?? 'Sin título',
+                                                            style: FlutterFlowTheme.of(context)
+                                                                .bodyMedium
+                                                                .override(
+                                                                  fontWeight: notification['is_read'] 
+                                                                      ? FontWeight.normal 
+                                                                      : FontWeight.bold,
+                                                                ),
                                                           ),
+                                                          if (notification['body'] != null && notification['body'].isNotEmpty) ...[
+                                                            SizedBox(height: 4),
+                                                            Text(
+                                                              notification['body'],
+                                                              style: FlutterFlowTheme.of(context).bodySmall,
+                                                            ),
+                                                          ],
+                                                          SizedBox(height: 4),
+                                                          Text(
+                                                            notification['created_at'] != null
+                                                                ? timeago.format(
+                                                                    DateTime.parse(notification['created_at']),
+                                                                    locale: 'es',
+                                                                  )
+                                                                : 'Fecha desconocida',
+                                                            style: FlutterFlowTheme.of(context).labelSmall,
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
                                                   ),
                                                 ],
                                               ),
                                             ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                        );
+                                      },
+                                    );
+                                  },
+                                );
+                              },
                             ),
                           ),
                         ),

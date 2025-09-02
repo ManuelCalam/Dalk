@@ -49,7 +49,7 @@ class NotificationService {
 
   Future<void> initializeLocalNotifications() async {
     const AndroidInitializationSettings initializationSettingsAndroid = 
-        AndroidInitializationSettings('@drawable/ic_notification'); // ✅ Cambiar aquí
+        AndroidInitializationSettings('@drawable/ic_notification');
     
     const DarwinInitializationSettings initializationSettingsiOS = 
         DarwinInitializationSettings(
@@ -90,7 +90,7 @@ class NotificationService {
           showWhen: true,
           enableVibration: true,
           enableLights: true,
-          icon: '@drawable/ic_notification', // ✅ Agregar esta línea
+          icon: '@drawable/ic_notification',
         );
     
     const DarwinNotificationDetails iOSPlatformChannelSpecifics = 
@@ -125,6 +125,18 @@ class NotificationService {
       print('📱 ===== NOTIFICACIÓN EN FOREGROUND =====');
       print('📱 Title: ${message.notification?.title}');
       print('📱 Data: ${message.data}');
+      
+      // ✅ GUARDAR NOTIFICACIÓN EN BD DESDE EL CLIENTE TAMBIÉN (como respaldo)
+      final uid = currentUserUid;
+      if (uid.isNotEmpty && message.notification != null) {
+        _saveNotificationToDatabase(
+          recipientId: uid,
+          title: message.notification!.title ?? '',
+          body: message.notification!.body ?? '',
+          eventType: message.data['event_type'] ?? 'notification',
+          walkId: message.data['walk_id'] != null ? int.tryParse(message.data['walk_id']) : null,
+        );
+      }
       
       final payload = json.encode({
         'event_type': message.data['event_type'] ?? '',
@@ -186,6 +198,38 @@ class NotificationService {
     });
     
     print('✅ Firebase handlers configurados completamente');
+  }
+
+  // ✅ NUEVA FUNCIÓN PARA GUARDAR NOTIFICACIONES EN BD DESDE EL CLIENTE - CORREGIDA
+  Future<void> _saveNotificationToDatabase({
+    required String recipientId,
+    required String title,
+    required String body,
+    required String eventType,
+    int? walkId,
+  }) async {
+    try {
+      print('💾 Guardando notificación en BD para usuario: $recipientId');
+      
+      // ✅ CORREGIDO: Usar nombres de columnas correctos según el esquema
+      await Supabase.instance.client
+          .from('notifications')
+          .insert([
+            {
+              'recipient_id': recipientId,
+              'title': title,
+              'body': body,
+              'event_type': eventType,
+              'walk_id': walkId,
+              'is_read': false,
+              'created_at': DateTime.now().toIso8601String(),
+            },
+          ]);
+
+      print('✅ Notificación guardada en BD exitosamente');
+    } catch (e) {
+      print('❌ Excepción guardando notificación: $e');
+    }
   }
 
   // ✅ MANEJAR TAP DE NOTIFICACIÓN FIREBASE - CORREGIDO
@@ -287,7 +331,6 @@ class NotificationService {
         print('✅ Context disponible inmediatamente, navegando...');
         context.go(route);
         print('✅ ¡NAVEGACIÓN EXITOSA INMEDIATA!');
-        //showFallbackMessage('✅ Navegación exitosa a $userType');
         return;
       } else {
         print('❌ Context no disponible inmediatamente, intentando con delays...');
