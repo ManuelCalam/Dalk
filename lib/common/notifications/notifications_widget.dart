@@ -167,13 +167,12 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                             child: Builder(
                               builder: (context) {
                                 final userId = currentUserUid;
-                                print('🔍 Usuario actual: $userId');
                                 
                                 return StreamBuilder<List<Map<String, dynamic>>>(
                                   stream: Supabase.instance.client
                                       .from('notifications')
                                       .stream(primaryKey: ['id'])
-                                      .eq('recipient_id', userId) // ✅ CORREGIDO: usar recipient_id
+                                      .eq('recipient_id', userId)
                                       .order('created_at', ascending: false),
                                   builder: (context, snapshot) {
                                     if (userId.isEmpty) {
@@ -189,7 +188,6 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                                     }
 
                                     if (snapshot.hasError) {
-                                      print('❌ Error en stream de notificaciones: ${snapshot.error}');
                                       return Center(
                                         child: Column(
                                           mainAxisAlignment: MainAxisAlignment.center,
@@ -203,7 +201,7 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
 
                                     final allNotifications = snapshot.data ?? [];
                                     
-                                    // ✅ FILTRAR EN EL CLIENTE las notificaciones de los últimos 30 días
+                                    // Filtrar notificaciones de los últimos 30 días
                                     final notifications = allNotifications.where((notification) {
                                       final createdAt = notification['created_at'] as String?;
                                       if (createdAt == null) return false;
@@ -213,12 +211,9 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                                         final thirtyDaysAgoDate = DateTime.now().subtract(Duration(days: 30));
                                         return notificationDate.isAfter(thirtyDaysAgoDate);
                                       } catch (e) {
-                                        print('❌ Error parseando fecha: $e');
-                                        return false;
+                                        return false; // ✅ REMOVIDO: Log innecesario
                                       }
                                     }).toList();
-                                    
-                                    print('📱 Notificaciones encontradas: ${notifications.length}');
 
                                     if (notifications.isEmpty) {
                                       return Center(
@@ -259,16 +254,15 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                                             ),
                                             child: InkWell(
                                               onTap: () async {
-                                                print('🔔 Marcando notificación como leída: ${notification['id']}');
+                                                // ✅ REMOVIDO: Logs innecesarios
                                                 if (!notification['is_read']) {
                                                   try {
                                                     await Supabase.instance.client
                                                         .from('notifications')
                                                         .update({'is_read': true})
                                                         .eq('id', notification['id']);
-                                                    print('✅ Notificación marcada como leída');
                                                   } catch (e) {
-                                                    print('❌ Error marcando como leída: $e');
+                                                    // Fallar silenciosamente
                                                   }
                                                 }
                                               },
