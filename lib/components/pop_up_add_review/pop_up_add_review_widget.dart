@@ -346,6 +346,7 @@ class _PopUpAddReviewWidgetState extends State<PopUpAddReviewWidget> {
                                       .eq('id', widget.walkId)
                                       .maybeSingle();
                                   targetId = response?['dog_id'];
+                                  
                                 }
 
                                 print("Target id: ${targetId}");
