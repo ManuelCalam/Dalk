@@ -1,4 +1,5 @@
 import 'package:dalk/backend/supabase/supabase.dart';
+import 'package:dalk/common/chat/chat_widget.dart';
 import '/components/pop_up_dog_profile/pop_up_dog_profile_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -8,6 +9,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+
 
 import 'requested_walk_walker_card_model.dart';
 export 'requested_walk_walker_card_model.dart';
@@ -20,6 +22,8 @@ class RequestedWalkWalkerCardWidget extends StatefulWidget {
     String? dogOwner,
     required this.date,
     required this.time,
+    required this.walkerId,
+    required this.ownerId,
     String? status,
   })  : this.petName = petName ?? '[petName]',
         this.dogOwner = dogOwner ?? '[dogOwner]',
@@ -31,6 +35,9 @@ class RequestedWalkWalkerCardWidget extends StatefulWidget {
   final DateTime? date;
   final DateTime? time;
   final String status;
+  //chat
+  final String walkerId;
+  final String ownerId;
 
   @override
   State<RequestedWalkWalkerCardWidget> createState() =>
@@ -389,8 +396,16 @@ class _RequestedWalkWalkerCardWidgetState
                                 color: FlutterFlowTheme.of(context).primary,
                                 size: 30,
                               ),
-                              onPressed: () {
-                                print('openChat_btn pressed ...');
+                              onPressed: () async {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ChatWidget(
+                                      //walkerId: widget.walkerId,
+                                      //ownerId: widget.ownerId,   // <-- el del paseo
+                                    ),
+                                  ),
+                                );
                               },
                             ),
                           ),
@@ -413,16 +428,8 @@ class _RequestedWalkWalkerCardWidgetState
                                 await SupaFlow.client
                                     .from('walks')
                                     .update({'status': 'Aceptado'})
-                                    .eq('id', widget.id);
+                                    .eq('id', widget.id); 
 
-                                // Invoca la función Edge para notificación push
-                                await Supabase.instance.client.functions.invoke(
-                                  'send-walk-notification',
-                                  body: {
-                                    'walk_id': widget.id,
-                                    'new_status': 'Aceptado',
-                                  },
-                                );
                               },
                             ),
                           ),
@@ -448,52 +455,25 @@ class _RequestedWalkWalkerCardWidgetState
                                   .single();
 
                               if (response != null) {
-                                final currentStatus = response['status'];
-                                if (currentStatus == 'Por confirmar') {
-                                  await SupaFlow.client
-                                    .from('walks')
-                                    .update({'status': 'Rechazado'})
-                                    .eq('id', widget.id);
-
-                                  // Notificación: Rechazado
-                                  await Supabase.instance.client.functions.invoke(
-                                    'send-walk-notification',
-                                    body: {
-                                      'walk_id': widget.id,
-                                      'new_status': 'Rechazado',
-                                    },
-                                  );
-                                }
-                                else if (currentStatus == 'Aceptado') {
-                                  await SupaFlow.client
-                                    .from('walks')
-                                    .update({'status': 'Cancelado'})
-                                    .eq('id', widget.id);
-
-                                  // Notificación: Cancelado
-                                  await Supabase.instance.client.functions.invoke(
-                                    'send-walk-notification',
-                                    body: {
-                                      'walk_id': widget.id,
-                                      'new_status': 'Cancelado',
-                                    },
-                                  );
-                                }
-                                else if (currentStatus == 'Rechazado' || currentStatus == 'Cancelado') {
-                                  await SupaFlow.client
-                                    .from('walks')
-                                    .delete()
-                                    .eq('id', widget.id);
-
-                                  // Si quieres notificar el borrado, puedes agregar aquí otra invocación
-                                  // await Supabase.instance.client.functions.invoke(
-                                  //   'send-walk-notification',
-                                  //   body: {
-                                  //     'walk_id': widget.id,
-                                  //     'new_status': 'Eliminado',
-                                  //   },
-                                  // );
-                                }
+                                  final currentStatus = response['status'];
+                                  if (currentStatus == 'Por confirmar') {
+                                      await SupaFlow.client
+                                          .from('walks')
+                                          .update({'status': 'Rechazado'})
+                                          .eq('id', widget.id);
+                                  }
+                                  else if(currentStatus == 'Aceptado'){
+                                     await SupaFlow.client
+                                          .from('walks')
+                                          .update({'status': 'Cancelado'})
+                                          .eq('id', widget.id); 
+                                  }
+                                  else if (currentStatus == 'Rechazado' || currentStatus == 'Cancelado'){
+                                      await SupaFlow.client
+                                        .from('walks')
+                                        .delete()
+                                        .eq('id', widget.id);
+                                  }
                               }
                             }
                           ),

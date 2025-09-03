@@ -160,130 +160,41 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                     child: FFButtonWidget(
                       onPressed: () async {
                         // Unir fecha y hora para el registro de startTime como timestamp
-                        final DateTime? startDateTime = (date != null && time != null)
-                            ? DateTime(
-                                date!.year,
-                                date!.month,
-                                date!.day,
-                                time!.hour,
-                                time!.minute,
-                                time!.second,
-                              )
-                            : null;
+                          final DateTime? startDateTime = (date != null && time != null)
+                          ? DateTime(
+                              date!.year,
+                              date!.month,
+                              date!.day,
+                              time!.hour,
+                              time!.minute,
+                              time!.second,
+                            )
+                          : null;
 
-                        // Obtener el JWT del usuario actual
-                        final jwt = Supabase.instance.client.auth.currentSession?.accessToken;
-                        if (jwt == null) {
+
+                        try{
+                          final response = await Supabase.instance.client
+                          .from('walks')
+                          .insert({
+                              'dog_id': petId,
+                              'walker_id': uuidPaseador,
+                              'owner_id': currentUserUid,
+                              'address_id': addressId,
+                              'status': 'Por confirmar',
+                              'startTime': startDateTime?.toIso8601String(),
+                              'endTime': time != null
+                                  ? '${time!.hour.toString().padLeft(2, '0')}:${time!.minute.toString().padLeft(2, '0')}:00'
+                                  : null,                           });
+
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error: Usuario no autenticado')),
+                                    SnackBar(content: Text('¡Paseo solicitado!')),
                           );
-                          return;
-                        }
-
-                        try {
-                          print('🚀 Iniciando solicitud de paseo...');
-                          
-                          // Validar datos necesarios
-                          if (petId == null || addressId == null || currentUserUid.isEmpty) {
-                            throw Exception('Datos insuficientes para crear el paseo');
-                          }
-                          
-                          // 1. Insertar el paseo en la base de datos
-                          final insertResponse = await Supabase.instance.client
-                              .from('walks')
-                              .insert({
-                                'dog_id': petId,
-                                'walker_id': uuidPaseador,
-                                'owner_id': currentUserUid,
-                                'address_id': addressId,
-                                'status': 'Solicitado',
-                                'startTime': startDateTime?.toIso8601String(),
-                                'endTime': time != null
-                                    ? '${time!.hour.toString().padLeft(2, '0')}:${time!.minute.toString().padLeft(2, '0')}:00'
-                                    : null,
-                              })
-                              .select('id')
-                              .single();
-
-                          if (insertResponse['id'] == null) {
-                            throw Exception('Error: No se pudo obtener el ID del paseo insertado');
-                          }
-
-                          // Convertir el ID a int de manera segura
-                          final walkIdRaw = insertResponse['id'];
-                          final walkId = walkIdRaw is int ? walkIdRaw : int.parse(walkIdRaw.toString());
-                          print('✅ Paseo insertado con ID: $walkId');
-
-                          // 2. Obtener datos adicionales para la notificación
-                          final userResponse = await Supabase.instance.client
-                              .from('users')
-                              .select('name')
-                              .eq('uuid', currentUserUid)
-                              .single();
-
-                          final petResponse = await Supabase.instance.client
-                              .from('pets')
-                              .select('name')
-                              .eq('id', petId!)
-                              .single();
-
-                          if (userResponse['name'] == null || petResponse['name'] == null) {
-                            throw Exception('Error: No se pudieron obtener los datos del usuario o mascota');
-                          }
-
-                          final ownerName = userResponse['name'].toString();
-                          final petName = petResponse['name'].toString();
-                          final dateString = date != null 
-                              ? '${date!.day}/${date!.month}/${date!.year}'
-                              : 'fecha por confirmar';
-
-                          print('📊 Datos para notificación: Owner: $ownerName, Pet: $petName, Date: $dateString');
-
-                          // 3. Llamar a la Edge Function para enviar notificación
-                          final notificationPayload = {
-                            'walk_id': walkId,
-                            'new_status': 'Solicitado',
-                            'actor_name': currentUserUid,
-                            'pet_name': petName,
-                            'date': dateString,
-                          };
-
-                          print('📤 Enviando notificación con payload: $notificationPayload');
-
-                          final notificationResponse = await Supabase.instance.client.functions
-                              .invoke('send-walk-notification', body: notificationPayload);
-
-                          print('📱 Respuesta de notificación: ${notificationResponse.data}');
-                          print('📱 Tipo de respuesta: ${notificationResponse.data.runtimeType}');
-
-                          // Verificar el tipo de dato antes de acceder
-                          dynamic responseData = notificationResponse.data;
-                          if (responseData != null) {
-                            if (responseData is Map<String, dynamic>) {
-                              if (responseData['success'] == true) {
-                                print('✅ Notificación enviada exitosamente');
-                              } else {
-                                print('⚠️ Respuesta de notificación: $responseData');
-                              }
-                            } else {
-                              print('⚠️ Tipo de respuesta inesperado: ${responseData.runtimeType}');
-                              print('⚠️ Contenido: $responseData');
-                            }
-                          } else {
-                            print('⚠️ Respuesta nula');
-                          }
-
-                          // 4. Mostrar mensaje de éxito
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('¡Paseo solicitado exitosamente!')),
-                          );
-
-                        } catch (e, stackTrace) {
-                          print('❌ Error completo: $e');
-                          print('📍 Stack trace: $stackTrace');
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error al solicitar paseo: $e')),
-                          );
+                        } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Error al registrar solicitud: $e')),
+                                    
+                            );
+                          print(e);
                         }
                       },
                       text: 'Solicitar',
