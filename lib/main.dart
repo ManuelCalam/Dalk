@@ -1,6 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -30,12 +31,15 @@ void main() async {
   usePathUrlStrategy();
 
   await initFirebase();
+
+  //await SupaFlow.initialize();
+
   await FlutterFlowTheme.initialize();
   await dotenv.load(fileName: ".env"); 
 
-  // ✅ REGISTRAR HANDLER DE BACKGROUND (REQUERIDO)
-  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-  
+  //  Inicializar Supabase con Realtime
+  // print("SUPABASE_URL => ${dotenv.env['SUPABASE_URL']}");
+  // print("SUPABASE_ANON_KEY => ${dotenv.env['SUPABASE_ANON_KEY']}");
   await Supabase.initialize(
     url: "${dotenv.env['SUPABASE_URL']}",
     anonKey: "${dotenv.env['SUPABASE_ANON_KEY']}",

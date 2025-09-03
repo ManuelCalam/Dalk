@@ -5,11 +5,13 @@ import '/components/pop_up_dog_walker_profile/pop_up_dog_walker_profile_widget.d
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/auth/supabase_auth/auth_util.dart'; // ✅ AGREGAR ESTE IMPORT
 import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'; // ✅ AGREGAR ESTE IMPORT TAMBIÉN
 
 import 'requested_walk_owner_card_model.dart';
 export 'requested_walk_owner_card_model.dart';
@@ -474,45 +476,62 @@ class _RequestedWalkOwnerCardWidgetState
                               size: 32,
                             ),
                             onPressed: () async {
-                              final response = await SupaFlow.client
-                                  .from('walks')
-                                  .select('status')
-                                  .eq('id', widget.id)
-                                  .single();
+                              try {
+                                final response = await SupaFlow.client
+                                    .from('walks')
+                                    .select('status, owner_id, walker_id')
+                                    .eq('id', widget.id)
+                                    .single();
 
-                              print("El id del paseo es: ");
-                              print(widget.id);
-
-                              if (response != null) {
-                                  final currentStatus = response['status'];
-                                  if (currentStatus == 'Por confirmar') {
-                                      await SupaFlow.client
-                                          .from('walks')
-                                          .update({'status': 'Cancelado'})
-                                          .eq('id', widget.id);
-                                  }
-                                  else if(currentStatus == 'Aceptado'){
-                                     await SupaFlow.client
-                                          .from('walks')
-                                          .update({'status': 'Cancelado'})
-                                          .eq('id', widget.id);
-                                           await Supabase.instance.client.functions.invoke(
-                                              'send-walk-notification',
-                                              body: {
-                                                'walk_id': widget.id,
-                                                'new_status': 'Cancelado',
-                                              },
-                                            );
-                                  }
-                                  else if (currentStatus == 'Rechazado' || currentStatus == 'Cancelado'){
-                                      await SupaFlow.client
-                                        .from('walks')
-                                        .delete()
-                                        .eq('id', widget.id);
-                                  }
-                                print("Esta fue la respuesta: $response");
+                                if (response != null) {
+                                    final currentStatus = response['status'];
+                                    
+                                    if (currentStatus == 'Por confirmar') {
+                                        await SupaFlow.client
+                                            .from('walks')
+                                            .update({'status': 'Cancelado'})
+                                            .eq('id', widget.id);
+                                            
+                                    } else if(currentStatus == 'Aceptado'){
+                                        await SupaFlow.client
+                                            .from('walks')
+                                            .update({'status': 'Cancelado'})
+                                            .eq('id', widget.id);
+                                        
+                                        await Supabase.instance.client.functions.invoke(
+                                          'send-walk-notification',
+                                          body: {
+                                            'walk_id': widget.id,
+                                            'new_status': 'Cancelado',
+                                          },
+                                        );
+                                        
+                                    } else if (currentStatus == 'Rechazado' || currentStatus == 'Cancelado'){
+                                        // ✅ OPTIMIZADO: Solo verificar permisos básicos
+                                        final dbOwnerId = response['owner_id'];
+                                        final dbWalkerId = response['walker_id'];
+                                        
+                                        if (currentUserUid == dbOwnerId || currentUserUid == dbWalkerId) {
+                                            await SupaFlow.client
+                                                .from('walks')
+                                                .delete()
+                                                .eq('id', widget.id);
+                                        }
+                                    }
+                                }
+                                
+                              } catch (e) {
+                                // ✅ SIMPLIFICADO: Solo mostrar error si es crítico
+                                if (e.toString().contains('foreign key') || 
+                                    e.toString().contains('violates')) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                            content: Text('No se puede eliminar: hay datos relacionados'),
+                                            backgroundColor: Colors.orange,
+                                        ),
+                                    );
+                                }
                               }
-
                             },
                           ),
                         ),

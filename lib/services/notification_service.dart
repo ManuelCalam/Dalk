@@ -24,23 +24,17 @@ class NotificationService {
     required GlobalKey<NavigatorState> navKey,
   }) {
     scaffoldMessengerKey = scaffoldKey;
-    print('🔧 NotificationService inicializado');
     
-    // ✅ CONFIGURAR TODO AQUÍ EN EL SERVICIO
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      print('📱 Configurando NotificationService...');
-      
       try {
         await requestNotificationPermission();
         await initializeLocalNotifications();
-        setupFirebaseMessaging(); // ✅ CONFIGURAR HANDLERS AQUÍ
+        setupFirebaseMessaging();
         
         final uid = currentUserUid;
         if (uid.isNotEmpty) {
           await updateFcmToken(uid);
         }
-        
-        print('✅ NotificationService completamente configurado');
       } catch (e) {
         print('❌ Error configurando NotificationService: $e');
       }
@@ -49,7 +43,7 @@ class NotificationService {
 
   Future<void> initializeLocalNotifications() async {
     const AndroidInitializationSettings initializationSettingsAndroid = 
-        AndroidInitializationSettings('@drawable/ic_notification'); // ✅ Cambiar aquí
+        AndroidInitializationSettings('@drawable/ic_notification');
     
     const DarwinInitializationSettings initializationSettingsiOS = 
         DarwinInitializationSettings(
@@ -66,13 +60,9 @@ class NotificationService {
     await _flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
-        print('🔔 ===== NOTIFICACIÓN LOCAL TOCADA =====');
-        print('🔔 Payload: ${response.payload}');
         handleNotificationTap(response.payload);
       },
     );
-    
-    print('✅ Notificaciones locales inicializadas');
   }
 
   Future<void> showLocalNotification({
@@ -90,7 +80,7 @@ class NotificationService {
           showWhen: true,
           enableVibration: true,
           enableLights: true,
-          icon: '@drawable/ic_notification', // ✅ Agregar esta línea
+          icon: '@drawable/ic_notification',
         );
     
     const DarwinNotificationDetails iOSPlatformChannelSpecifics = 
@@ -112,20 +102,13 @@ class NotificationService {
       platformChannelSpecifics,
       payload: payload,
     );
-    
-    print('🔔 Notificación local mostrada: $title');
   }
 
-  // ✅ CONFIGURAR TODOS LOS HANDLERS DE FIREBASE AQUÍ
   void setupFirebaseMessaging() {
-    print('🔧 Configurando Firebase Messaging handlers...');
-    
     // Handler para notificaciones en foreground
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('📱 ===== NOTIFICACIÓN EN FOREGROUND =====');
-      print('📱 Title: ${message.notification?.title}');
-      print('📱 Data: ${message.data}');
-      
+      // ✅ REMOVIDO: Guardar desde cliente (ya se guarda desde servidor)
+      // Solo mostrar notificación local
       final payload = json.encode({
         'event_type': message.data['event_type'] ?? '',
         'walk_id': message.data['walk_id'] ?? '',
@@ -143,274 +126,121 @@ class NotificationService {
       }
     });
 
-    // ✅ HANDLER PARA TAP EN NOTIFICACIÓN (PRINCIPAL) - CORREGIDO
+    // Handler para tap en notificación (app abierta)
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('📱 ===== 🎉 NOTIFICACIÓN TOCADA - APP ABIERTA 🎉 =====');
-      print('📱 Este log significa que el handler SÍ se está ejecutando');
-      print('📱 Title: ${message.notification?.title}');
-      print('📱 Body: ${message.notification?.body}');
-      print('📱 Data completa: ${message.data}');
-      print('📱 messageId: ${message.messageId}');
-      print('📱 ========================================');
-      
-      // Procesar inmediatamente SIN PostFrameCallback
       handleFirebaseNotificationTap(message);
     });
 
-    // ✅ VERIFICAR SI APP SE ABRIÓ DESDE NOTIFICACIÓN
+    // Verificar si app se abrió desde notificación
     FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
       if (message != null) {
-        print('📱 ===== 🚀 APP INICIADA DESDE NOTIFICACIÓN 🚀 =====');
-        print('📱 Este log significa que la app se abrió desde una notificación');
-        print('📱 Title: ${message.notification?.title}');
-        print('📱 Data: ${message.data}');
-        print('📱 messageId: ${message.messageId}');
-        print('📱 ================================================');
-        
-        // Procesar con delay para inicialización
-        Future.delayed(Duration(seconds: 2), () {
-          print('📱 Procesando notificación inicial después de delay...');
+        // ✅ OPTIMIZADO: Reducir delay de 2s a 500ms
+        Future.delayed(Duration(milliseconds: 500), () {
           handleFirebaseNotificationTap(message);
         });
-      } else {
-        print('📱 No hay notificación inicial (app no se abrió desde notificación)');
       }
     });
 
     FirebaseMessaging.instance.onTokenRefresh.listen((String token) {
-      print('🔄 Token FCM renovado: ${token.substring(0, 20)}...');
       final uid = currentUserUid;
       if (uid.isNotEmpty) {
         updateFcmToken(uid);
       }
     });
-    
-    print('✅ Firebase handlers configurados completamente');
   }
 
-  // ✅ MANEJAR TAP DE NOTIFICACIÓN FIREBASE - CORREGIDO
+  // ✅ REMOVIDA: _saveNotificationToDatabase (ya se guarda desde servidor)
+
   void handleFirebaseNotificationTap(RemoteMessage message) {
-    print('🎯 ===== PROCESANDO TAP DE FIREBASE =====');
-    print('🎯 Iniciando procesamiento del tap...');
-    
-    final String eventType = message.data['event_type'] ?? '';
-    final String walkId = message.data['walk_id'] ?? '';
     final String targetUserType = message.data['target_user_type'] ?? '';
-    final String targetUserId = message.data['target_user_id'] ?? '';
-    
-    print('🎯 Event: $eventType');
-    print('🎯 Walk: $walkId');
-    print('🎯 UserType: $targetUserType');
-    print('🎯 UserId: $targetUserId');
+    final String eventType = message.data['event_type'] ?? '';
     
     if (targetUserType.isNotEmpty) {
-      print('🎯 Tipo de usuario válido, iniciando navegación...');
       navigateBasedOnUserType(targetUserType, eventType);
-    } else {
-      print('❌ Target user type vacío');
-      print('❌ Data disponible: ${message.data}');
-      showFallbackMessage('Tipo de usuario no encontrado en notificación');
     }
   }
 
-  // ✅ MANEJAR TAP DE NOTIFICACIÓN LOCAL
   Future<void> handleNotificationTap(String? payload) async {
-    print('🔔 ===== PROCESANDO TAP DE NOTIFICACIÓN LOCAL =====');
-    print('🔔 Payload recibido: $payload');
-    
-    if (payload == null || payload.isEmpty) {
-      print('❌ Payload vacío o null');
-      return;
-    }
+    if (payload == null || payload.isEmpty) return;
     
     try {
       final data = Map<String, dynamic>.from(json.decode(payload));
-      print('🔔 JSON parseado: $data');
-      
-      final String eventType = data['event_type'] ?? '';
-      final String walkId = data['walk_id'] ?? '';
       final String targetUserType = data['target_user_type'] ?? '';
-      final String targetUserId = data['target_user_id'] ?? '';
-      
-      print('🔔 Datos extraídos:');
-      print('🔔 - Event Type: $eventType');
-      print('🔔 - Walk ID: $walkId');
-      print('🔔 - Target User Type: $targetUserType');
-      print('🔔 - Target User ID: $targetUserId');
+      final String eventType = data['event_type'] ?? '';
       
       if (targetUserType.isNotEmpty) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          navigateBasedOnUserType(targetUserType, eventType);
-        });
-      } else {
-        print('⚠️ Target user type vacío, usando fallback');
-        showFallbackMessage('Tipo de usuario no encontrado');
+        // ✅ OPTIMIZADO: Sin PostFrameCallback innecesario
+        navigateBasedOnUserType(targetUserType, eventType);
       }
-    } catch (e, stackTrace) {
-      print('❌ Error procesando tap de notificación local: $e');
-      print('❌ Stack trace: $stackTrace');
-      showFallbackMessage('Error procesando notificación');
+    } catch (e) {
+      // Solo log en caso de error real
+      print('❌ Error procesando notificación: $e');
     }
   }
 
-  // ✅ FUNCIÓN PRINCIPAL DE NAVEGACIÓN - CORREGIDA
-  void navigateBasedOnUserType(String userType, String eventType) async {
-    print('🚀 ===== INICIANDO NAVEGACIÓN =====');
-    print('🚀 UserType: $userType');
-    print('🚀 Event: $eventType');
-    print('🚀 Timestamp: ${DateTime.now()}');
-    print('🚀 appNavigatorKey disponible: ${appNavigatorKey != null}');
-    
+  // ✅ OPTIMIZADO: Navegación simplificada sin reintentos innecesarios
+  void navigateBasedOnUserType(String userType, String eventType) {
     String route = '';
     
     if (userType.toLowerCase() == 'owner') {
       route = '/walksDogOwner';
-      print('🏠 Ruta determinada para dueño: $route');
     } else if (userType.toLowerCase() == 'walker') {
       route = '/walksDogWalker';
-      print('🚶 Ruta determinada para paseador: $route');
     } else {
-      print('❌ Tipo de usuario no reconocido: "$userType"');
-      showFallbackMessage('Tipo de usuario desconocido: $userType');
-      return;
+      return; // Sin route válido, terminar silenciosamente
     }
     
-    print('🚀 Ruta final: $route');
-    
-    // ✅ INTENTAR NAVEGACIÓN INMEDIATA PRIMERO
-    try {
-      final context = appNavigatorKey.currentContext;
-      print('🚀 Context inmediato: $context');
-      print('🚀 Context mounted: ${context?.mounted}');
-      
-      if (context != null && context.mounted) {
-        print('✅ Context disponible inmediatamente, navegando...');
-        context.go(route);
-        print('✅ ¡NAVEGACIÓN EXITOSA INMEDIATA!');
-        //showFallbackMessage('✅ Navegación exitosa a $userType');
-        return;
-      } else {
-        print('❌ Context no disponible inmediatamente, intentando con delays...');
-      }
-    } catch (e) {
-      print('❌ Error en navegación inmediata: $e');
-    }
-    
-    // ✅ INTENTAR CON REINTENTOS SI FALLA
-    for (int i = 0; i < 3; i++) {
-      final delay = Duration(milliseconds: 1000 * (i + 1));
-      print('🔄 Esperando ${delay.inMilliseconds}ms antes del intento ${i + 1}...');
-      await Future.delayed(delay);
-      
+    // ✅ OPTIMIZADO: Intentar navegación directa, si falla usar un solo reintento
+    final context = appNavigatorKey.currentContext;
+    if (context != null && context.mounted) {
       try {
-        final context = appNavigatorKey.currentContext;
-        print('🚀 Intento ${i + 1} - Context: $context');
-        print('🚀 Intento ${i + 1} - Mounted: ${context?.mounted}');
-        
-        if (context != null && context.mounted) {
-          context.go(route);
-          print('✅ ¡NAVEGACIÓN EXITOSA EN INTENTO ${i + 1}!');
-          showFallbackMessage('✅ Navegación exitosa a $userType (intento ${i + 1})');
-          return;
-        } else {
-          print('❌ Context aún no disponible en intento ${i + 1}');
-        }
+        context.go(route);
+        return; // Éxito inmediato
       } catch (e) {
-        print('❌ Error en intento ${i + 1}: $e');
+        // Si falla, un solo reintento con delay mínimo
+        Future.delayed(Duration(milliseconds: 100), () {
+          final retryContext = appNavigatorKey.currentContext;
+          if (retryContext != null && retryContext.mounted) {
+            try {
+              retryContext.go(route);
+            } catch (e) {
+              // Falló definitivamente, no hacer nada más
+            }
+          }
+        });
       }
     }
-    
-    print('❌ TODOS LOS INTENTOS DE NAVEGACIÓN FALLARON');
-    showFallbackMessage('❌ Error: No se pudo navegar automáticamente a $userType');
   }
 
-  // ✅ MOSTRAR MENSAJE DE FALLBACK
-  void showFallbackMessage(String message) {
-    print('💬 ===== MOSTRANDO MENSAJE DE FALLBACK =====');
-    print('💬 Mensaje: $message');
-    
-    try {
-      final scaffoldState = scaffoldMessengerKey?.currentState;
-      print('💬 ScaffoldMessengerState: $scaffoldState');
-      
-      if (scaffoldState != null) {
-        scaffoldState.showSnackBar(
-          SnackBar(
-            content: Text('📱 $message'),
-            duration: Duration(seconds: 6),
-            action: SnackBarAction(
-              label: 'OK',
-              onPressed: () {},
-            ),
-          ),
-        );
-        print('✅ SnackBar mostrado exitosamente');
-      } else {
-        print('❌ ScaffoldMessengerState no disponible');
-      }
-    } catch (e) {
-      print('❌ Error mostrando SnackBar: $e');
-    }
-  }
+  // ✅ REMOVIDA: showFallbackMessage (innecesaria para UX)
 
   Future<void> updateFcmToken(String userId) async {
     try {
-      print('🔧 Solicitando token FCM para usuario: $userId');
-      
-      String? token;
-      try {
-        token = await FirebaseMessaging.instance.getToken();
-      } catch (e) {
-        print('⚠️ Error obteniendo token FCM: $e');
-        if (e.toString().contains('service worker') || e.toString().contains('MIME type')) {
-          print('💡 Ejecutándose en web sin HTTPS - FCM no disponible');
-          return;
-        }
-        rethrow;
-      }
-      
-      print('🎯 Token FCM obtenido: ${token?.substring(0, 20)}...');
+      final token = await FirebaseMessaging.instance.getToken();
       
       if (token != null) {
-        final userExists = await Supabase.instance.client
+        await Supabase.instance.client
           .from('users')
-          .select('uuid')
-          .eq('uuid', userId)
-          .maybeSingle();
-        
-        if (userExists != null) {
-          await Supabase.instance.client
-            .from('users')
-            .update({'fcm_token': token})
-            .eq('uuid', userId);
-          print('✅ Token FCM actualizado en base de datos para usuario: $userId');
-        } else {
-          print('⚠️ Usuario $userId no encontrado en tabla users');
-        }
-      } else {
-        print('❌ No se pudo obtener token FCM');
+          .update({'fcm_token': token})
+          .eq('uuid', userId);
       }
     } catch (e) {
-      print('❌ Error actualizando token FCM: $e');
+      // Solo log en caso de error crítico
+      if (!e.toString().contains('service worker') && !e.toString().contains('MIME type')) {
+        print('❌ Error actualizando token FCM: $e');
+      }
     }
   }
 
   Future<void> requestNotificationPermission() async {
-    print('📱 Solicitando permisos de notificación...');
-    final settings = await FirebaseMessaging.instance.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-    
-    print('📱 Estado del permiso: ${settings.authorizationStatus}');
-    
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('✅ Permisos de notificación otorgados');
-    } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
-      print('⚠️ Permisos de notificación provisionales');
-    } else {
-      print('❌ Permisos de notificación denegados');
+    try {
+      await FirebaseMessaging.instance.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+    } catch (e) {
+      print('❌ Error solicitando permisos: $e');
     }
   }
 }
