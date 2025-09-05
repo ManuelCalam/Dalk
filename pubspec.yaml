@@ -114,6 +114,13 @@ dependencies:
   firebase_data_connect: ^0.1.0
   flutter_dotenv: ^5.2.1
   flutter_background_service: ^5.1.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/DALKLOGO_ICON.png"
+  min_sdk_android: 21 
 
 #dependency_overrides:
  # http: 1.2.2

@@ -32,8 +32,6 @@ void main() async {
 
   await initFirebase();
 
-  //await SupaFlow.initialize();
-
   await FlutterFlowTheme.initialize();
   await dotenv.load(fileName: ".env"); 
 

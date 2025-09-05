@@ -70,20 +70,16 @@ class _LoginWidgetState extends State<LoginWidget> {
                   height: MediaQuery.sizeOf(context).height * 0.2,
                   decoration: BoxDecoration(),
                   child: Align(
-                    alignment: AlignmentDirectional(0.0, 0.0),
-                    child: Container(
-                      width: 144.0,
-                      height: 144.0,
-                      clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                      ),
-                      child: Image.asset(
-                        'assets/images/Logo-removedbg.png',
-                        fit: BoxFit.fill,
-                      ),
+                    alignment: AlignmentDirectional(0, 0),
+                    child: Image.asset(
+                      'assets/images/DALKLOGO_Positivo_NS.png',
+                      width: 210,
+                      height: 175,
+                      fit: BoxFit.fitWidth,
+                      alignment: Alignment(0, 0),
                     ),
-                  ),
+                  )
+
                 ),
               ),
               Expanded(
