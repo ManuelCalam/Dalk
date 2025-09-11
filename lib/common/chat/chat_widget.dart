@@ -7,34 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '/services/notification_service.dart';
 
 import 'chat_model.dart';
 export 'chat_model.dart';
 
 class ChatWidget extends StatefulWidget {
   const ChatWidget({
-    super.key,
-    String? userName,
-    String? status,
-    required this.walkerId,
-    required this.ownerId,
-  })  : userName = userName ?? '[userName]',
-        status = status ?? '[status]';
-
-  final String userName;
-  final String status;
-  final String walkerId;
-  final String ownerId;
-
-  static String routeName = 'chat';
-  static String routePath = '/chat';
-
-  @override
-  State<ChatWidget> createState() => _ChatWidgetState();
-}
-
-class chatWidget extends StatefulWidget {
-  const chatWidget({
     super.key,
     String? userName,
     String? status,
@@ -73,28 +52,38 @@ class _ChatWidgetState extends State<ChatWidget> {
     super.initState();
     _myUserId = _supabase.auth.currentUser?.id;
     _textController = TextEditingController();
-    _loadOtherUserInfo();
-    _loadInitial();
-    _subscribeRealtime();
+    
+    if (widget.ownerId.isNotEmpty && widget.walkerId.isNotEmpty) {
+      _loadOtherUserInfo();
+      _loadInitial();
+      _subscribeRealtime();
+    }
   }
 
   Future<void> _loadOtherUserInfo() async {
-    // si yo soy el paseador, cargo la info del dueño
-    final String otherId = (_myUserId == widget.walkerId)
-        ? widget.ownerId
-        : widget.walkerId;
+    if (widget.ownerId.isEmpty || widget.walkerId.isEmpty || _myUserId == null) {
+      return;
+    }
+    
+    try {
+      final String otherId = (_myUserId == widget.walkerId)
+          ? widget.ownerId
+          : widget.walkerId;
 
-    final data = await _supabase
-        .from('users')
-        .select('name, photoUrl')
-        .eq('uuid', otherId)
-        .maybeSingle();
+      final data = await _supabase
+          .from('users')
+          .select('name, photoUrl')
+          .eq('uuid', otherId)
+          .maybeSingle();
 
-    if (data != null) {
-      setState(() {
-        otherUserName = data['name'];
-        otherUserPhotoUrl = data['photoUrl'];
-      });
+      if (data != null) {
+        setState(() {
+          otherUserName = data['name'];
+          otherUserPhotoUrl = data['photoUrl'];
+        });
+      }
+    } catch (e) {
+      // Error silencioso
     }
   }
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -141,14 +130,51 @@ class _ChatWidgetState extends State<ChatWidget> {
     final text = _textController.text.trim();
     if (text.isEmpty || _myUserId == null) return;
 
-    await _supabase.from('messages').insert({
-      'owner_id': widget.ownerId,
-      'walker_id': widget.walkerId,
-      'sender_id': _myUserId,
-      'content': text,
-    });
+    final String receiverId = (_myUserId == widget.ownerId) 
+        ? widget.walkerId 
+        : widget.ownerId;
 
-    _textController.clear();
+    try {
+      await _supabase.from('messages').insert({
+        'owner_id': widget.ownerId,
+        'walker_id': widget.walkerId,
+        'sender_id': _myUserId,
+        'content': text,
+      });
+
+      _textController.clear();
+
+      try {
+        await _supabase.functions.invoke(
+          'send-chat-notification', 
+          body: {
+            'sender_id': _myUserId,
+            'receiver_id': receiverId,
+            'message': text,
+            'owner_id': widget.ownerId,
+            'walker_id': widget.walkerId,
+          }
+        ).timeout(Duration(seconds: 10));
+      } catch (notificationError) {
+        await _showLocalFallbackNotification(text);
+      }
+
+    } catch (e) {
+      _textController.text = text;
+    }
+  }
+
+  Future<void> _showLocalFallbackNotification(String message) async {
+    try {
+      final notificationService = NotificationService();
+      await notificationService.showLocalNotification(
+        title: "Nuevo mensaje",
+        body: "${otherUserName ?? 'Usuario'}: ${message.length > 50 ? message.substring(0, 50) + '...' : message}",
+        payload: 'chat_fallback',
+      );
+    } catch (e) {
+      // Error silencioso
+    }
   }
 
   void _jumpToBottom() {
