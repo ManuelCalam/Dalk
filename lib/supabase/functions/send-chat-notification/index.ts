@@ -51,6 +51,26 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Lógica de mantenimiento: eliminar notificaciones de chat antiguas (más de 14 días)
+    const fourteenDaysAgo = new Date();
+    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+    
+    try {
+      const { error: cleanupError } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('event_type', 'chat_message')
+        .lt('created_at', fourteenDaysAgo.toISOString());
+      
+      if (cleanupError) {
+        console.error('Error en limpieza de notificaciones:', cleanupError);
+        // Continuar con el proceso aunque falle la limpieza
+      }
+    } catch (maintenanceError) {
+      console.error('Error en mantenimiento:', maintenanceError);
+      // Continuar con el proceso principal aunque falle el mantenimiento
+    }
+
     // Buscar información del remitente
     const { data: senderData, error: senderError } = await supabase
       .from("users")
@@ -89,7 +109,7 @@ Deno.serve(async (req) => {
     ]);
 
     if (insertError) {
-      console.error('⚠️ Error insertando notificación:', insertError);
+      console.error('Error insertando notificación:', insertError);
     }
 
     // Buscar token FCM

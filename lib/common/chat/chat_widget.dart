@@ -19,6 +19,7 @@ class ChatWidget extends StatefulWidget {
     String? status,
     required this.walkerId,
     required this.ownerId,
+    this.senderId,
   })  : userName = userName ?? '[userName]',
         status = status ?? '[status]';
 
@@ -26,6 +27,7 @@ class ChatWidget extends StatefulWidget {
   final String status;
   final String walkerId;
   final String ownerId;
+  final String? senderId;
 
   static String routeName = 'chat';
   static String routePath = '/chat';

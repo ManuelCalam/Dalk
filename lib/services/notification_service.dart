@@ -152,6 +152,18 @@ class NotificationService {
     final String targetUserType = message.data['target_user_type'] ?? '';
     final String eventType = message.data['event_type'] ?? '';
     
+    if (eventType == 'chat_message') {
+      // Navegación específica para chat con parámetros
+      final String ownerId = message.data['owner_id'] ?? '';
+      final String walkerId = message.data['walker_id'] ?? '';
+      final String senderId = message.data['sender_id'] ?? '';
+      
+      if (ownerId.isNotEmpty && walkerId.isNotEmpty) {
+        navigateToChatWidget(ownerId, walkerId, senderId);
+        return;
+      }
+    }
+    
     if (targetUserType.isNotEmpty) {
       navigateBasedOnUserType(targetUserType, eventType);
     }
@@ -165,11 +177,48 @@ class NotificationService {
       final String targetUserType = data['target_user_type'] ?? '';
       final String eventType = data['event_type'] ?? '';
       
+      if (eventType == 'chat_message') {
+        // Navegación específica para chat con parámetros
+        final String ownerId = data['owner_id'] ?? '';
+        final String walkerId = data['walker_id'] ?? '';
+        final String senderId = data['sender_id'] ?? '';
+        
+        if (ownerId.isNotEmpty && walkerId.isNotEmpty) {
+          navigateToChatWidget(ownerId, walkerId, senderId);
+          return;
+        }
+      }
+      
       if (targetUserType.isNotEmpty) {
         navigateBasedOnUserType(targetUserType, eventType);
       }
     } catch (e) {
       // Error silencioso
+    }
+  }
+
+  void navigateToChatWidget(String ownerId, String walkerId, String senderId) {
+    final context = appNavigatorKey.currentContext;
+    if (context != null && context.mounted) {
+      try {
+        // Navegar al chat con query parameters
+        final route = '/chat?ownerId=$ownerId&walkerId=$walkerId&senderId=$senderId';
+        context.go(route);
+        return;
+      } catch (e) {
+        // Si falla con parámetros, intentar sin senderId
+        Future.delayed(Duration(milliseconds: 100), () {
+          final retryContext = appNavigatorKey.currentContext;
+          if (retryContext != null && retryContext.mounted) {
+            try {
+              final route = '/chat?ownerId=$ownerId&walkerId=$walkerId';
+              retryContext.go(route);
+            } catch (e) {
+              // Falló definitivamente
+            }
+          }
+        });
+      }
     }
   }
 
