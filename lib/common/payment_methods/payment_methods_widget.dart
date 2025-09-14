@@ -29,6 +29,9 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  // Trigger para refrecar la lista de tarjetas
+  int refreshTrigger = 0;
+
   @override
   void initState() {
     super.initState();
@@ -66,32 +69,32 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
 
 
 
- Future<String> createSetupIntent() async {
-  final url = Uri.parse(
-    "https://bsactypehgxluqyaymui.supabase.co/functions/v1/create-setup-intent",
-  );
+  Future<String> createSetupIntent() async {
+    final url = Uri.parse(
+      "https://bsactypehgxluqyaymui.supabase.co/functions/v1/create-setup-intent",
+    );
 
-  final response = await http.post(
-    url,
-    headers: {
-      "Authorization": "Bearer ${Supabase.instance.client.auth.currentSession?.accessToken}",
-      "Content-Type": "application/json",
-    },
-  );
+    final response = await http.post(
+      url,
+      headers: {
+        "Authorization": "Bearer ${Supabase.instance.client.auth.currentSession?.accessToken}",
+        "Content-Type": "application/json",
+      },
+    );
 
-  if (response.statusCode == 200) {
-    final body = jsonDecode(response.body);
-    final clientSecret = body["client_secret"];
+    if (response.statusCode == 200) {
+      final body = jsonDecode(response.body);
+      final clientSecret = body["client_secret"];
 
-    if (clientSecret == null) {
-      throw Exception("El SetupIntent no devolvió client_secret. Respuesta: $body");
+      if (clientSecret == null) {
+        throw Exception("El SetupIntent no devolvió client_secret. Respuesta: $body");
+      }
+
+      return clientSecret as String;
+    } else {
+      throw Exception("Error creando SetupIntent: ${response.body}");
     }
-
-    return clientSecret as String;
-  } else {
-    throw Exception("Error creando SetupIntent: ${response.body}");
   }
-}
 
 
 
@@ -99,7 +102,6 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
     try {
       // 1. Asegurarnos de que existe un customer
       final customerId = await createCustomerIfNeeded();
-      print("Customer activo: $customerId");
 
       // 2. Crear SetupIntent en Stripe
       final clientSecret = await createSetupIntent();
@@ -108,7 +110,7 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
       await Stripe.instance.initPaymentSheet(
         paymentSheetParameters: SetupPaymentSheetParameters(
           setupIntentClientSecret: clientSecret,
-          merchantDisplayName: "DogWalker App",
+          merchantDisplayName: "Dalk",
           style: ThemeMode.light,
         ),
       );
@@ -119,6 +121,11 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Método de pago guardado ✅")),
       );
+
+      setState(() {
+        refreshTrigger++;
+      });
+
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e")),
@@ -129,26 +136,46 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
 
 
   Future<List<Map<String, dynamic>>> fetchPaymentMethods(String customerId) async {
-  final url = Uri.parse(
-    "https://bsactypehgxluqyaymui.supabase.co/functions/v1/list-payment-methods",
-  );
+    final url = Uri.parse(
+      "https://bsactypehgxluqyaymui.supabase.co/functions/v1/list-payment-methods",
+    );
 
-  final response = await http.post(
-    url,
-    headers: {
-      "Authorization": "Bearer ${Supabase.instance.client.auth.currentSession?.accessToken}",
-      "Content-Type": "application/json",
-    },
-    body: jsonEncode({"customerId": customerId}),
-  );
+    final response = await http.post(
+      url,
+      headers: {
+        "Authorization": "Bearer ${Supabase.instance.client.auth.currentSession?.accessToken}",
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({"customerId": customerId}),
+    );
 
-  if (response.statusCode == 200) {
-    final List data = jsonDecode(response.body);
-    return data.cast<Map<String, dynamic>>();
-  } else {
-    throw Exception("Error listando métodos: ${response.body}");
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.cast<Map<String, dynamic>>();
+    } else {
+      throw Exception("Error listando métodos: ${response.body}");
+    }
   }
-}
+
+  Future<void> detachPaymentMethod(String paymentMethodId) async {
+    final url = Uri.parse(
+      "https://bsactypehgxluqyaymui.supabase.co/functions/v1/detach-payment-method",
+    );
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Authorization": "Bearer ${Supabase.instance.client.auth.currentSession?.accessToken}",
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({"paymentMethodId": paymentMethodId}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Error eliminando método: ${response.body}");
+    }
+  }
+
 
 
 
@@ -236,55 +263,67 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
                                       ),
                                 ),
 
-    // FutureBuilder para tarjetas
-    FutureBuilder<String>(
-      future: createCustomerIfNeeded(), // obtenemos customerId
-      builder: (context, customerSnap) {
-        if (customerSnap.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (customerSnap.hasError) {
-          return Text("Error: ${customerSnap.error}");
-        }
-        final customerId = customerSnap.data!;
-        return FutureBuilder<List<Map<String, dynamic>>>(
-          future: fetchPaymentMethods(customerId),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError) {
-              return Text("Error: ${snapshot.error}");
-            }
-            final methods = snapshot.data ?? [];
-            if (methods.isEmpty) {
-              return Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  "No tienes tarjetas registradas",
-                  textAlign: TextAlign.center,
-                  style: FlutterFlowTheme.of(context).bodyMedium,
-                ),
-              );
-            }
-            return Column(
-              children: methods.map((pm) {
-                return PaymentCardWidget(
-                  funding: pm["funding"],
-                  brand: pm["brand"],
-                  last4: pm["last4"],
-                  expMonth: pm["exp_month"],
-                  expYear: pm["exp_year"],
-                  onDelete: () {
-                    // luego implementamos detach-payment-method
-                  },
-                );
-              }).toList(),
-            );
-          },
-        );
-      },
-    ),
+                                // FutureBuilder para tarjetas
+                                FutureBuilder<String>(
+                                  future: createCustomerIfNeeded().then((customerId) {return customerId;}),
+                                  key: ValueKey(refreshTrigger),
+                                  builder: (context, customerSnap) {
+                                    if (customerSnap.connectionState == ConnectionState.waiting) {
+                                      return const Center(child: CircularProgressIndicator());
+                                    }
+                                    if (customerSnap.hasError) {
+                                      return Text("Error: ${customerSnap.error}");
+                                    }
+                                    final customerId = customerSnap.data!;
+                                    return FutureBuilder<List<Map<String, dynamic>>>(
+                                      future: fetchPaymentMethods(customerId),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.connectionState == ConnectionState.waiting) {
+                                          return const Center(child: CircularProgressIndicator());
+                                        }
+                                        if (snapshot.hasError) {
+                                          return Text("Error: ${snapshot.error}");
+                                        }
+                                        final methods = snapshot.data ?? [];
+                                        if (methods.isEmpty) {
+                                          return Padding(
+                                            padding: const EdgeInsets.all(16),
+                                            child: Text(
+                                              "No tienes tarjetas registradas",
+                                              textAlign: TextAlign.center,
+                                              style: FlutterFlowTheme.of(context).bodyMedium,
+                                            ),
+                                          );
+                                        }
+                                        return Column(
+                                          children: methods.map((pm) {
+                                            return PaymentCardWidget(
+                                              funding: pm["funding"],
+                                              brand: pm["brand"],
+                                              last4: pm["last4"],
+                                              expMonth: pm["exp_month"],
+                                              expYear: pm["exp_year"],
+                                              onDelete: () async {
+                                                try {
+                                                  await detachPaymentMethod(pm["id"]);
+                                                  // refrescar lista
+                                                  setState(() {});
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    const SnackBar(content: Text("Tarjeta eliminada ✅")),
+                                                  );
+                                                } catch (e) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(content: Text("Error: $e")),
+                                                  );
+                                                }
+                                              },
+                                            );
+                                          }).toList(),
+                                        );
+                                      },
+                                    );
+                                  },
+                                ),
 
 
                                 GestureDetector(

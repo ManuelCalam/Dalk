@@ -1,5 +1,4 @@
 import '/flutter_flow/flutter_flow_theme.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -24,11 +23,11 @@ class PaymentCardWidget extends StatelessWidget {
     this.onDelete,
   });
 
-  // 🔹 Helper: asignar icono y gradient por brand
+  // Helper: asignar icono y gradient por brand
   (IconData, List<Color>) _getBrandStyle() {
     switch (brand.toLowerCase()) {
       case "visa":
-        return (FontAwesomeIcons.ccVisa, [Color(0xFF1A1F71), Color(0xFF3B79C9)]);
+        return (FontAwesomeIcons.ccVisa, [Color(0xFF1A1F71), Color.fromARGB(255, 5, 113, 202)]);
       case "mastercard":
         return (FontAwesomeIcons.ccMastercard, [Color(0xFFF79E1B), Color(0xFFEB001B)]);
       case "amex":
@@ -46,12 +45,12 @@ class PaymentCardWidget extends StatelessWidget {
     final (icon, gradient) = _getBrandStyle();
 
     return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+      padding: const EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
       child: Container(
         width: MediaQuery.sizeOf(context).width,
         height: 200,
         decoration: BoxDecoration(
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
               blurRadius: 4,
               color: Color(0x33000000),
@@ -61,13 +60,13 @@ class PaymentCardWidget extends StatelessWidget {
           gradient: LinearGradient(
             colors: gradient,
             stops: [0, 1],
-            begin: AlignmentDirectional(1, 0.98),
-            end: AlignmentDirectional(-1, -0.98),
+            begin: const AlignmentDirectional(1, 0.98),
+            end: const AlignmentDirectional(-1, -0.98),
           ),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Padding(
-          padding: EdgeInsets.all(18),
+          padding: const EdgeInsets.all(18),
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
@@ -81,24 +80,27 @@ class PaymentCardWidget extends StatelessWidget {
                             fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                           ),
                           color: FlutterFlowTheme.of(context).info,
+                          fontSize: 18,
                         ),
                   ),
-                  Spacer(),
+                  const Spacer(),
                   FaIcon(icon, color: FlutterFlowTheme.of(context).info, size: 50),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Align(
-                alignment: AlignmentDirectional(-1, 0),
+                alignment: const AlignmentDirectional(-1, 0),
                 child: Text(
-                  "•••• $last4",
+                  "•••• •••• •••• $last4",
                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                         font: GoogleFonts.lexend(),
                         color: FlutterFlowTheme.of(context).info,
+                        fontSize: 18,
+                        letterSpacing: 5,
                       ),
                 ),
               ),
-              Spacer(),
+              const Spacer(),
               Row(
                 children: [
                   GestureDetector(
@@ -111,15 +113,17 @@ class PaymentCardWidget extends StatelessWidget {
                             ),
                             color: FlutterFlowTheme.of(context).info,
                             decoration: TextDecoration.underline,
+                            fontSize: 18,
                           ),
                     ),
                   ),
-                  Spacer(),
+                  const Spacer(),
                   Text(
                     "$expMonth/$expYear",
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                           font: GoogleFonts.lexend(),
                           color: FlutterFlowTheme.of(context).info,
+                          fontSize: 18,
                         ),
                   ),
                 ],
