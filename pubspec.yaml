@@ -115,6 +115,8 @@ dependencies:
   flutter_dotenv: ^5.2.1
   flutter_background_service: ^5.1.0
   flutter_launcher_icons: ^0.14.4
+  flutter_stripe: ^11.5.0
+  image_picker: ^1.2.0
 
 flutter_icons:
   android: true

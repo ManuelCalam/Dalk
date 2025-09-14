@@ -1,0 +1,351 @@
+import 'package:dalk/backend/supabase/database/database.dart';
+import 'package:dalk/cards/payment_card/payment_card_widget.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:http/http.dart' as http;
+
+import '/components/go_back_container/go_back_container_widget.dart';
+import '/components/notification_container/notification_container_widget.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import 'payment_methods_model.dart';
+export 'payment_methods_model.dart';
+
+class PaymentMethodsWidget extends StatefulWidget {
+  const PaymentMethodsWidget({super.key});
+
+  static String routeName = 'paymentMethods';
+  static String routePath = '/paymentMethods';
+
+  @override
+  State<PaymentMethodsWidget> createState() => _PaymentMethodsWidgetState();
+}
+
+class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
+  late PaymentMethodsModel _model;
+
+  final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _model = createModel(context, () => PaymentMethodsModel());
+  }
+
+  @override
+  void dispose() {
+    _model.dispose();
+
+    super.dispose();
+  }
+
+  Future<String> createCustomerIfNeeded() async {
+    final jwt = Supabase.instance.client.auth.currentSession?.accessToken;
+    final url = Uri.parse(
+      "https://bsactypehgxluqyaymui.supabase.co/functions/v1/create-stripe-customer",
+    );
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Authorization": "Bearer $jwt",
+        "Content-Type": "application/json",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data["customerId"];
+    } else {
+      throw Exception("Error creando customer: ${response.body}");
+    }
+  }
+
+
+
+ Future<String> createSetupIntent() async {
+  final url = Uri.parse(
+    "https://bsactypehgxluqyaymui.supabase.co/functions/v1/create-setup-intent",
+  );
+
+  final response = await http.post(
+    url,
+    headers: {
+      "Authorization": "Bearer ${Supabase.instance.client.auth.currentSession?.accessToken}",
+      "Content-Type": "application/json",
+    },
+  );
+
+  if (response.statusCode == 200) {
+    final body = jsonDecode(response.body);
+    final clientSecret = body["client_secret"];
+
+    if (clientSecret == null) {
+      throw Exception("El SetupIntent no devolvió client_secret. Respuesta: $body");
+    }
+
+    return clientSecret as String;
+  } else {
+    throw Exception("Error creando SetupIntent: ${response.body}");
+  }
+}
+
+
+
+  Future<void> openSetupPaymentSheet(BuildContext context) async {
+    try {
+      // 1. Asegurarnos de que existe un customer
+      final customerId = await createCustomerIfNeeded();
+      print("Customer activo: $customerId");
+
+      // 2. Crear SetupIntent en Stripe
+      final clientSecret = await createSetupIntent();
+
+      // 3. Inicializar PaymentSheet
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          setupIntentClientSecret: clientSecret,
+          merchantDisplayName: "DogWalker App",
+          style: ThemeMode.light,
+        ),
+      );
+
+      // 4. Mostrar PaymentSheet
+      await Stripe.instance.presentPaymentSheet();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Método de pago guardado ✅")),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+      print("Error: $e");
+    }
+  }
+
+
+  Future<List<Map<String, dynamic>>> fetchPaymentMethods(String customerId) async {
+  final url = Uri.parse(
+    "https://bsactypehgxluqyaymui.supabase.co/functions/v1/list-payment-methods",
+  );
+
+  final response = await http.post(
+    url,
+    headers: {
+      "Authorization": "Bearer ${Supabase.instance.client.auth.currentSession?.accessToken}",
+      "Content-Type": "application/json",
+    },
+    body: jsonEncode({"customerId": customerId}),
+  );
+
+  if (response.statusCode == 200) {
+    final List data = jsonDecode(response.body);
+    return data.cast<Map<String, dynamic>>();
+  } else {
+    throw Exception("Error listando métodos: ${response.body}");
+  }
+}
+
+
+
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+        FocusManager.instance.primaryFocus?.unfocus();
+      },
+      child: Scaffold(
+        key: scaffoldKey,
+        backgroundColor: FlutterFlowTheme.of(context).secondary,
+        body: SafeArea(
+          top: true,
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Container(
+                width: MediaQuery.sizeOf(context).width,
+                height: MediaQuery.sizeOf(context).height * 0.1,
+                decoration: BoxDecoration(
+                  color: Color(0xFF162C43),
+                ),
+                child: wrapWithModel(
+                  model: _model.notificationContainerModel,
+                  updateCallback: () => safeSetState(() {}),
+                  child: NotificationContainerWidget(),
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  width: MediaQuery.sizeOf(context).width,
+                  decoration: BoxDecoration(
+                    color: FlutterFlowTheme.of(context).tertiary,
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(0),
+                      bottomRight: Radius.circular(0),
+                      topLeft: Radius.circular(50),
+                      topRight: Radius.circular(50),
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      wrapWithModel(
+                        model: _model.goBackContainerModel,
+                        updateCallback: () => safeSetState(() {}),
+                        child: GoBackContainerWidget(),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
+                          child: Container(
+                            width: MediaQuery.sizeOf(context).width * 0.9,
+                            decoration: BoxDecoration(),
+                            child: ListView(
+                              padding: EdgeInsets.zero,
+                              shrinkWrap: true,
+                              scrollDirection: Axis.vertical,
+                              children: [
+                                AutoSizeText(
+                                  'Métodos de pago',
+                                  textAlign: TextAlign.center,
+                                  minFontSize: 22,
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        font: GoogleFonts.lexend(
+                                          fontWeight: FontWeight.bold,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle,
+                                        ),
+                                        color: FlutterFlowTheme.of(context)
+                                            .primary,
+                                        fontSize: 32,
+                                        letterSpacing: 0.0,
+                                        fontWeight: FontWeight.bold,
+                                        fontStyle: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontStyle,
+                                      ),
+                                ),
+
+    // FutureBuilder para tarjetas
+    FutureBuilder<String>(
+      future: createCustomerIfNeeded(), // obtenemos customerId
+      builder: (context, customerSnap) {
+        if (customerSnap.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (customerSnap.hasError) {
+          return Text("Error: ${customerSnap.error}");
+        }
+        final customerId = customerSnap.data!;
+        return FutureBuilder<List<Map<String, dynamic>>>(
+          future: fetchPaymentMethods(customerId),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return Text("Error: ${snapshot.error}");
+            }
+            final methods = snapshot.data ?? [];
+            if (methods.isEmpty) {
+              return Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  "No tienes tarjetas registradas",
+                  textAlign: TextAlign.center,
+                  style: FlutterFlowTheme.of(context).bodyMedium,
+                ),
+              );
+            }
+            return Column(
+              children: methods.map((pm) {
+                return PaymentCardWidget(
+                  funding: pm["funding"],
+                  brand: pm["brand"],
+                  last4: pm["last4"],
+                  expMonth: pm["exp_month"],
+                  expYear: pm["exp_year"],
+                  onDelete: () {
+                    // luego implementamos detach-payment-method
+                  },
+                );
+              }).toList(),
+            );
+          },
+        );
+      },
+    ),
+
+
+                                GestureDetector(
+                                  onTap: () async {
+                                    await openSetupPaymentSheet(context);
+                                  },
+                                  child: Padding(
+                                    padding: EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+                                    child: Container(
+                                      width: 100,
+                                      decoration: BoxDecoration(
+                                        color: FlutterFlowTheme.of(context).alternate,
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Padding(
+                                        padding: EdgeInsets.all(17),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.max,
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Align(
+                                              alignment: AlignmentDirectional(0, 0),
+                                              child: Icon(
+                                                Icons.add_card_rounded,
+                                                color: FlutterFlowTheme.of(context).primary,
+                                                size: 35,
+                                              ),
+                                            ),
+                                            AutoSizeText(
+                                              'Agregar tarjeta',
+                                              textAlign: TextAlign.center,
+                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                font: GoogleFonts.lexend(
+                                                  fontWeight: FontWeight.w600,
+                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                ),
+                                                color: FlutterFlowTheme.of(context).primary,
+                                                fontSize: 19,
+                                                letterSpacing: 0.0,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

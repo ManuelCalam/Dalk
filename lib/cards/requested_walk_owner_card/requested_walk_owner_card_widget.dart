@@ -1,17 +1,15 @@
 import 'package:dalk/backend/supabase/supabase.dart';
 import 'package:dalk/common/chat/chat_widget.dart';
+import 'package:dalk/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
 import '/components/pop_up_dog_profile/pop_up_dog_profile_widget.dart';
 import '/components/pop_up_dog_walker_profile/pop_up_dog_walker_profile_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/auth/supabase_auth/auth_util.dart'; // ✅ AGREGAR ESTE IMPORT
-import 'dart:ui';
+import '/auth/supabase_auth/auth_util.dart'; 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart'; // ✅ AGREGAR ESTE IMPORT TAMBIÉN
 
 import 'requested_walk_owner_card_model.dart';
 export 'requested_walk_owner_card_model.dart';
@@ -27,9 +25,9 @@ class RequestedWalkOwnerCardWidget extends StatefulWidget {
     required this.time,
     required this.walkerId,
     required this.ownerId,
-  })  : this.status = status ?? '[status]',
-        this.petName = petName ?? '[petName]',
-        this.dogWalker = dogWalker ?? '[walkerName]';
+  })  : status = status ?? '[status]',
+        petName = petName ?? '[petName]',
+        dogWalker = dogWalker ?? '[walkerName]';
 
   final int id;
   final String status;
@@ -69,6 +67,79 @@ class _RequestedWalkOwnerCardWidgetState
 
     super.dispose();
   }
+
+  Future<void> deleteWalk(BuildContext context, int id, String currentUserUid) async {
+    try {
+      final response = await SupaFlow.client
+          .from('walks')
+          .select('owner_id, walker_id, status')
+          .eq('id', id)
+          .single();
+
+      if (response != null) {
+        final currentStatus = response['status'];
+        final dbOwnerId = response['owner_id'];
+        final dbWalkerId = response['walker_id'];
+
+        if ((currentUserUid == dbOwnerId || currentUserUid == dbWalkerId)) {
+          await SupaFlow.client.from('walks').delete().eq('id', id);
+        }
+      }
+      Navigator.pop(context);
+    } catch (e) {
+      handleError(context, e);
+    }
+  }
+
+
+  Future<void> cancelWalk(BuildContext context, int id) async {
+    try {
+      final response = await SupaFlow.client
+          .from('walks')
+          .select('status')
+          .eq('id', id)
+          .single();
+
+      if (response != null) {
+        final currentStatus = response['status'];
+
+        if (currentStatus == 'Por confirmar' || currentStatus == 'Aceptado') {
+          await SupaFlow.client
+              .from('walks')
+              .update({'status': 'Cancelado'})
+              .eq('id', id);
+
+        if (currentStatus == 'Aceptado') {
+            await Supabase.instance.client.functions.invoke(
+              'send-walk-notification',
+              body: {
+                'walk_id': id,
+                'new_status': 'Cancelado',
+              },
+            );
+          }
+        }
+      }
+    Navigator.pop(context);
+    } catch (e) {
+      handleError(context, e);
+    }
+  }
+
+  void handleError(BuildContext context, dynamic e) {
+    if (e.toString().contains('foreign key') ||
+        e.toString().contains('violates')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se puede eliminar: hay datos relacionados'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
+  }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -148,8 +219,7 @@ class _RequestedWalkOwnerCardWidgetState
                           mainAxisSize: MainAxisSize.max,
                           children: [
                             Padding(
-                              padding:
-                                  EdgeInsetsDirectional.fromSTEB(0, 2, 0, 0),
+                              padding: const EdgeInsetsDirectional.fromSTEB(0, 2, 0, 0),
                               child: AutoSizeText(
                                 'Mascota:',
                                 maxLines: 1,
@@ -173,8 +243,7 @@ class _RequestedWalkOwnerCardWidgetState
                               ),
                             ),
                             Padding(
-                              padding:
-                                  EdgeInsetsDirectional.fromSTEB(5, 2, 0, 0),
+                              padding: const EdgeInsetsDirectional.fromSTEB(5, 2, 0, 0),
                               child: InkWell(
                                 splashColor: Colors.transparent,
                                 focusColor: Colors.transparent,
@@ -190,7 +259,7 @@ class _RequestedWalkOwnerCardWidgetState
                                       return Padding(
                                         padding:
                                             MediaQuery.viewInsetsOf(context),
-                                        child: PopUpDogProfileWidget(),
+                                        child: const PopUpDogProfileWidget(),
                                       );
                                     },
                                   ).then((value) => safeSetState(() {}));
@@ -450,7 +519,7 @@ class _RequestedWalkOwnerCardWidgetState
                                 MaterialPageRoute(
                                   builder: (context) => ChatWidget(
                                     walkerId: widget.walkerId,
-                                    ownerId: widget.ownerId,   // <-- el del paseo
+                                    ownerId: widget.ownerId,   
                                   ),
                                 ),
                               );
@@ -476,62 +545,21 @@ class _RequestedWalkOwnerCardWidgetState
                               size: 32,
                             ),
                             onPressed: () async {
-                              try {
-                                final response = await SupaFlow.client
-                                    .from('walks')
-                                    .select('status, owner_id, walker_id')
-                                    .eq('id', widget.id)
-                                    .single();
-
-                                if (response != null) {
-                                    final currentStatus = response['status'];
-                                    
-                                    if (currentStatus == 'Por confirmar') {
-                                        await SupaFlow.client
-                                            .from('walks')
-                                            .update({'status': 'Cancelado'})
-                                            .eq('id', widget.id);
-                                            
-                                    } else if(currentStatus == 'Aceptado'){
-                                        await SupaFlow.client
-                                            .from('walks')
-                                            .update({'status': 'Cancelado'})
-                                            .eq('id', widget.id);
-                                        
-                                        await Supabase.instance.client.functions.invoke(
-                                          'send-walk-notification',
-                                          body: {
-                                            'walk_id': widget.id,
-                                            'new_status': 'Cancelado',
-                                          },
-                                        );
-                                        
-                                    } else if (currentStatus == 'Rechazado' || currentStatus == 'Cancelado'){
-                                        // ✅ OPTIMIZADO: Solo verificar permisos básicos
-                                        final dbOwnerId = response['owner_id'];
-                                        final dbWalkerId = response['walker_id'];
-                                        
-                                        if (currentUserUid == dbOwnerId || currentUserUid == dbWalkerId) {
-                                            await SupaFlow.client
-                                                .from('walks')
-                                                .delete()
-                                                .eq('id', widget.id);
-                                        }
-                                    }
-                                }
-                                
-                              } catch (e) {
-                                // ✅ SIMPLIFICADO: Solo mostrar error si es crítico
-                                if (e.toString().contains('foreign key') || 
-                                    e.toString().contains('violates')) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                            content: Text('No se puede eliminar: hay datos relacionados'),
-                                            backgroundColor: Colors.orange,
-                                        ),
-                                    );
-                                }
-                              }
+                              showDialog(
+                                context: context,
+                                builder: (_) => PopUpConfirmDialogWidget(
+                                  title: "Eliminar paseo",
+                                  message: "¿Estás seguro de que deseas eliminar este paseo?",
+                                  confirmText: "Cancelar paseo",
+                                  cancelText: "Eliminar paseo",
+                                  confirmColor: FlutterFlowTheme.of(context).accent1,
+                                  cancelColor: FlutterFlowTheme.of(context).error,
+                                  icon: Icons.delete_forever_rounded,
+                                  iconColor: FlutterFlowTheme.of(context).error,
+                                  onConfirm: () => cancelWalk(context, widget.id),
+                                  onCancel: () => deleteWalk(context, widget.id, currentUserUid),
+                                ), 
+                              );
                             },
                           ),
                         ),

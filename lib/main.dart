@@ -2,7 +2,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 
@@ -15,6 +14,8 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/nav/nav.dart';
 import '/services/notification_service.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
+
 
 // GlobalKey para el ScaffoldMessenger 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
@@ -31,13 +32,10 @@ void main() async {
   usePathUrlStrategy();
 
   await initFirebase();
-
   await FlutterFlowTheme.initialize();
   await dotenv.load(fileName: ".env"); 
 
-  //  Inicializar Supabase con Realtime
-  // print("SUPABASE_URL => ${dotenv.env['SUPABASE_URL']}");
-  // print("SUPABASE_ANON_KEY => ${dotenv.env['SUPABASE_ANON_KEY']}");
+
   await Supabase.initialize(
     url: "${dotenv.env['SUPABASE_URL']}",
     anonKey: "${dotenv.env['SUPABASE_ANON_KEY']}",
@@ -45,6 +43,9 @@ void main() async {
       eventsPerSecond: 10,
     ),
   );
+
+  Stripe.publishableKey = "pk_test_51S48646aB9DzvCSx9BqLEjUIcmpXvTuIU1elVEauQmFwOT2Ww3Sj2idqp148wcPsNWnbmtibCwCzgMjMfx02w08h00mNNCCfbB";  
+
 
   runApp(MyApp());
 }

@@ -1,14 +1,16 @@
 import 'package:dalk/auth/supabase_auth/auth_util.dart';
 import 'package:dalk/backend/supabase/supabase.dart';
+import 'package:dalk/flutter_flow/flutter_flow_util.dart';
+import 'package:dalk/index.dart';
 import '/components/pop_up_dog_walker_profile/pop_up_dog_walker_profile_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 export 'find_dog_walker_card_model.dart';
-import '/backend/supabase/supabase.dart';
+import '/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
+
 
 
 class FindDogWalkerCardWidget extends StatelessWidget {
@@ -204,7 +206,7 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                                       .select('id')
                                       .single();
 
-                                  // 🔹 Alias para no romper el código de notificaciones
+                                  //Alias para no romper el código de notificaciones
                                   final insertResponse = response;
 
                                   // Convertir el ID a int de manera segura
@@ -212,7 +214,7 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                                   final walkId = walkIdRaw is int
                                       ? walkIdRaw
                                       : int.parse(walkIdRaw.toString());
-                                  print('✅ Paseo insertado con ID: $walkId');
+                                  print('Paseo insertado con ID: $walkId');
 
                                   // 2. Obtener datos adicionales para la notificación
                                   final userResponse = await Supabase.instance.client
@@ -277,9 +279,40 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                                     print('⚠️ Respuesta nula');
                                   }
 
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('¡Paseo solicitado!')),
+                                  // ScaffoldMessenger.of(context).showSnackBar(
+                                  //   SnackBar(content: Text('¡Paseo solicitado!')),
+                                  // );
+
+                                  // ------------------------------------
+                                  // Confirmación de Paseo Registrado
+                                  // ------------------------------------
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return Dialog(
+                                        backgroundColor: Colors.transparent,
+                                        child: PopUpConfirmDialogWidget(
+                                          title: "Paseo registrado" ,
+                                          message: "¡Se ha registrado el paseo exitosamente!",
+                                          confirmText: "Volver a agendar",
+                                          cancelText: "Ver agenda",
+                                          confirmColor: FlutterFlowTheme.of(context).accent1,
+                                          cancelColor: FlutterFlowTheme.of(context).primary,
+                                          icon: Icons.check_circle,
+                                          iconColor: FlutterFlowTheme.of(context).success,
+                                          onConfirm: () {
+                                            context.goNamed(SetWalkScheduleWidget.routeName);
+                                          },
+                                          onCancel: () {
+                                            context.goNamed(WalksDogOwnerWidget.routeName);
+                                          },
+                                        ),
+                                      );
+                                    },
                                   );
+
+
+
                                 } catch (e) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(content: Text('Error al registrar solicitud: $e')),
