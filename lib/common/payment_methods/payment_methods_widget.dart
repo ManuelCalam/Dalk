@@ -1,5 +1,6 @@
 import 'package:dalk/backend/supabase/database/database.dart';
 import 'package:dalk/cards/payment_card/payment_card_widget.dart';
+import 'package:dalk/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:http/http.dart' as http;
 
@@ -122,18 +123,26 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
         const SnackBar(content: Text("Método de pago guardado ✅")),
       );
 
-      setState(() {
+    setState(() {
         refreshTrigger++;
       });
 
+    } on StripeException catch (e) {
+      if (e.error.code == FailureCode.Canceled) {
+        // Usuario canceló el PaymentSheet → no hacemos nada
+        debugPrint("Usuario canceló el PaymentSheet");
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: ${e.error.localizedMessage}")),
+        );
+      }
     } catch (e) {
+      // Otros errores inesperados
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
+        SnackBar(content: Text("Error inesperado: $e")),
       );
-      print("Error: $e");
     }
   }
-
 
   Future<List<Map<String, dynamic>>> fetchPaymentMethods(String customerId) async {
     final url = Uri.parse(
@@ -265,60 +274,94 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
 
                                 // FutureBuilder para tarjetas
                                 FutureBuilder<String>(
-                                  future: createCustomerIfNeeded().then((customerId) {return customerId;}),
+                                  future: createCustomerIfNeeded().then((customerId) => customerId),
                                   key: ValueKey(refreshTrigger),
                                   builder: (context, customerSnap) {
                                     if (customerSnap.connectionState == ConnectionState.waiting) {
-                                      return const Center(child: CircularProgressIndicator());
+                                      return const Padding(
+                                        padding: EdgeInsets.symmetric(vertical: 20),
+                                        child: Center(child: CircularProgressIndicator()),
+                                      );
                                     }
+
                                     if (customerSnap.hasError) {
-                                      return Text("Error: ${customerSnap.error}");
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 20),
+                                        child: Text("Error: ${customerSnap.error}"),
+                                      );
                                     }
+
                                     final customerId = customerSnap.data!;
                                     return FutureBuilder<List<Map<String, dynamic>>>(
                                       future: fetchPaymentMethods(customerId),
                                       builder: (context, snapshot) {
-                                        if (snapshot.connectionState == ConnectionState.waiting) {
-                                          return const Center(child: CircularProgressIndicator());
-                                        }
-                                        if (snapshot.hasError) {
-                                          return Text("Error: ${snapshot.error}");
-                                        }
-                                        final methods = snapshot.data ?? [];
-                                        if (methods.isEmpty) {
-                                          return Padding(
-                                            padding: const EdgeInsets.all(16),
-                                            child: Text(
-                                              "No tienes tarjetas registradas",
-                                              textAlign: TextAlign.center,
-                                              style: FlutterFlowTheme.of(context).bodyMedium,
-                                            ),
-                                          );
-                                        }
-                                        return Column(
-                                          children: methods.map((pm) {
-                                            return PaymentCardWidget(
-                                              funding: pm["funding"],
-                                              brand: pm["brand"],
-                                              last4: pm["last4"],
-                                              expMonth: pm["exp_month"],
-                                              expYear: pm["exp_year"],
-                                              onDelete: () async {
-                                                try {
-                                                  await detachPaymentMethod(pm["id"]);
-                                                  // refrescar lista
-                                                  setState(() {});
-                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                    const SnackBar(content: Text("Tarjeta eliminada ✅")),
+                                        return Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 20),
+                                          child: Builder(
+                                            builder: (_) {
+                                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                                return const Center(child: CircularProgressIndicator());
+                                              }
+                                              if (snapshot.hasError) {
+                                                return Text("Error: ${snapshot.error}");
+                                              }
+
+                                              final methods = snapshot.data ?? [];
+                                              if (methods.isEmpty) {
+                                                return Text(
+                                                  "No tienes tarjetas registradas",
+                                                  textAlign: TextAlign.center,
+                                                  style: FlutterFlowTheme.of(context).bodyMedium,
+                                                );
+                                              }
+
+                                              return Column(
+                                                children: methods.map((pm) {
+                                                  return PaymentCardWidget(
+                                                    funding: pm["funding"],
+                                                    brand: pm["brand"],
+                                                    last4: pm["last4"],
+                                                    expMonth: pm["exp_month"],
+                                                    expYear: pm["exp_year"],
+                                                    onDelete: () async {
+                                                      try {
+                                                        showDialog(
+                                                          context: context,
+                                                          builder: (context) {
+                                                            return Dialog(
+                                                              backgroundColor: Colors.transparent,
+                                                              child: PopUpConfirmDialogWidget(
+                                                                title: "Eliminar Paseo",
+                                                                message: "¿Estás seguro que quieres eliminar la tarjeta?",
+                                                                confirmText: "Eliminar Tarjeta",
+                                                                cancelText: "Cancelar",
+                                                                confirmColor: FlutterFlowTheme.of(context).error,
+                                                                cancelColor: FlutterFlowTheme.of(context).primary,
+                                                                icon: Icons.delete_forever_rounded,
+                                                                iconColor: FlutterFlowTheme.of(context).error,
+                                                                onConfirm: () async {
+                                                                  await detachPaymentMethod(pm["id"]);
+                                                                  setState(() {});
+                                                                  Navigator.pop(context); 
+                                                                },
+                                                                onCancel: () {
+                                                                  Navigator.pop(context);
+                                                                },
+                                                              ),
+                                                            );
+                                                          },
+                                                        );
+                                                      } catch (e) {
+                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                          SnackBar(content: Text("Error: $e")),
+                                                        );
+                                                      }
+                                                    },
                                                   );
-                                                } catch (e) {
-                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                    SnackBar(content: Text("Error: $e")),
-                                                  );
-                                                }
-                                              },
-                                            );
-                                          }).toList(),
+                                                }).toList(),
+                                              );
+                                            },
+                                          ),
                                         );
                                       },
                                     );
@@ -331,7 +374,7 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
                                     await openSetupPaymentSheet(context);
                                   },
                                   child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+                                    padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
                                     child: Container(
                                       width: 100,
                                       decoration: BoxDecoration(

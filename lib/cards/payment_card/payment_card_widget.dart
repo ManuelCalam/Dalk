@@ -45,7 +45,7 @@ class PaymentCardWidget extends StatelessWidget {
     final (icon, gradient) = _getBrandStyle();
 
     return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+      padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
       child: Container(
         width: MediaQuery.sizeOf(context).width,
         height: 200,
