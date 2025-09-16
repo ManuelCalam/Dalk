@@ -331,7 +331,7 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
                                                             return Dialog(
                                                               backgroundColor: Colors.transparent,
                                                               child: PopUpConfirmDialogWidget(
-                                                                title: "Eliminar Paseo",
+                                                                title: "Eliminar Tarjeta",
                                                                 message: "¿Estás seguro que quieres eliminar la tarjeta?",
                                                                 confirmText: "Eliminar Tarjeta",
                                                                 cancelText: "Cancelar",
