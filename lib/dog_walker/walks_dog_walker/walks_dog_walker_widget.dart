@@ -1,3 +1,4 @@
+import 'package:dalk/cards/accepted_walk_walker_card/accepted_walk_walker_card_widget.dart';
 import 'package:dalk/cards/current_walk_walker_card/current_walk_walker_card_widget.dart';
 import 'package:dalk/cards/non_reviewed_dog_card/non_reviewed_dog_card_widget.dart';
 import 'package:dalk/cards/requested_walk_walker_card/requested_walk_walker_card_widget.dart';
@@ -315,61 +316,89 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
                                           )
                                         ),
 
-                                        // -------- Pestaña de paseos en activos ---------
-                                        Padding( 
+                                        // -------- Pestaña de paseos activos ---------
+                                        Padding(
                                           padding: EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
                                           child: StreamBuilder<List<Map<String, dynamic>>>(
                                             stream: SupaFlow.client
-                                              .from('walks')
-                                              .stream(primaryKey: ['id'])
-                                              .eq('walker_id', currentUserUid),
+                                                .from('walks')
+                                                .stream(primaryKey: ['id'])
+                                                .eq('walker_id', currentUserUid),
                                             builder: (context, snapshot) {
                                               if (!snapshot.hasData) {
                                                 return Center(child: CircularProgressIndicator());
                                               }
+
                                               final walksList = snapshot.data!
-                                                .where((walk) => walk['status'] == 'En curso' ||
-                                                                 walk['status'] == 'Aceptado'
-                                                )
-                                                .toList();
+                                                  .where((walk) =>
+                                                      walk['status'] == 'En curso' ||
+                                                      walk['status'] == 'Aceptado')
+                                                  .toList();
+
+                                              // Ordenar: primero "En curso", luego "Aceptado"
+                                              walksList.sort((a, b) {
+                                                if (a['status'] == b['status']) return 0;
+                                                if (a['status'] == 'En curso') return -1;
+                                                return 1;
+                                              });
 
                                               if (walksList.isEmpty) {
                                                 return Center(child: Text('No hay paseos activos.'));
                                               }
 
-                                              return ListView.builder(
+                                              return ListView.separated(
                                                 padding: EdgeInsets.zero,
                                                 shrinkWrap: true,
                                                 itemCount: walksList.length,
                                                 itemBuilder: (context, index) {
                                                   final walk = walksList[index];
-
                                                   return FutureBuilder<Map<String, dynamic>?>(
                                                     future: fetchWalkInfoFromView(walk['id']),
                                                     builder: (context, snapshot) {
-                                                      if(!snapshot.hasData){
-                                                        return SizedBox();
-                                                      }
-
+                                                      if (!snapshot.hasData) return SizedBox();
                                                       final fullWalkData = snapshot.data!;
-                                                      return CurrentWalkWalkerCardWidget(
-                                                        id: fullWalkData['id'],
-                                                        petName: fullWalkData['pet_name'] ?? '',
-                                                        dogOwner: fullWalkData['owner_name'] ?? '',
-                                                        time: fullWalkData['startTime'] != null
-                                                            ? DateTime.tryParse(fullWalkData['startTime'])
-                                                            : null,
-                                                        returnTime: fullWalkData['endTime'] != null
-                                                            ? DateTime.tryParse('1970-01-01T${fullWalkData['endTime']}')
-                                                            : null,
-                                                      );
+
+                                                      if (walk['status'] == 'En curso') {
+                                                        return CurrentWalkWalkerCardWidget(
+                                                          id: fullWalkData['id'],
+                                                          petName: fullWalkData['pet_name'] ?? '',
+                                                          dogOwner: fullWalkData['owner_name'] ?? '',
+                                                          time: fullWalkData['startTime'] != null
+                                                              ? DateTime.tryParse(fullWalkData['startTime'])
+                                                              : null,
+                                                          returnTime: fullWalkData['endTime'] != null
+                                                              ? DateTime.tryParse('1970-01-01T${fullWalkData['endTime']}')
+                                                              : null,
+                                                        );
+                                                      } else {
+                                                        return AcceptedWalkWalkerCardWidget(
+                                                          id: fullWalkData['id'],
+                                                          petName: fullWalkData['pet_name'] ?? '',
+                                                          dogOwner: fullWalkData['owner_name'] ?? '',
+                                                          date: fullWalkData['startTime'] != null
+                                                              ? DateTime.tryParse(fullWalkData['startTime'])
+                                                              : null,
+                                                          time: fullWalkData['startTime'] != null
+                                                              ? DateTime.tryParse(fullWalkData['startTime'])
+                                                              : null,
+                                                          status: fullWalkData['status'] ?? '',
+                                                        );
+                                                      }
                                                     },
                                                   );
                                                 },
+                                                separatorBuilder: (context, index) => Divider(
+                                                  thickness: 2,
+                                                  indent: 0,
+                                                  endIndent: 0,
+                                                  color: FlutterFlowTheme.of(context).alternate
+                                                ),
                                               );
+
                                             },
                                           ),
                                         ),
+
 
                                         // -------- Pestaña de paseos finalizados ---------
                                         Padding( 

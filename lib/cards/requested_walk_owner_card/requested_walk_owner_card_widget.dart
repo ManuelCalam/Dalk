@@ -265,7 +265,7 @@ class _RequestedWalkOwnerCardWidgetState
                                   ).then((value) => safeSetState(() {}));
                                 },
                                 child: AutoSizeText(
-                                  widget!.petName,
+                                  widget.petName,
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
                                       .override(
@@ -399,7 +399,7 @@ class _RequestedWalkOwnerCardWidgetState
                               padding:
                                   EdgeInsetsDirectional.fromSTEB(5, 2, 0, 0),
                               child: AutoSizeText(
-                                dateTimeFormat("d/M/y", widget!.date),
+                                dateTimeFormat("d/M/y", widget.date),
                                 textAlign: TextAlign.center,
                                 maxLines: 2,
                                 style: FlutterFlowTheme.of(context)
