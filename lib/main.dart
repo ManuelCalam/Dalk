@@ -16,7 +16,7 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 // GlobalKey para el ScaffoldMessenger 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
-// ✅ HANDLER TOP-LEVEL SIMPLE (REQUERIDO)
+// HANDLER TOP-LEVEL SIMPLE (REQUERIDO)
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("📱 Background notification: ${message.notification?.title}");
