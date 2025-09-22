@@ -44,9 +44,156 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
     super.dispose();
   }
 
-  
+  Future<String> createCustomerIfNeeded() async {
+    final jwt = Supabase.instance.client.auth.currentSession?.accessToken;
+    final url = Uri.parse(
+      "https://bsactypehgxluqyaymui.supabase.co/functions/v1/create-stripe-customer",
+    );
 
-  Future<void> subscribePlan(BuildContext context, bool monthly) async {
+    final response = await http.post(
+      url,
+      headers: {
+        "Authorization": "Bearer $jwt",
+        "Content-Type": "application/json",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data["customerId"];
+    } else {
+      throw Exception("Error creando customer: ${response.body}");
+    }
+  }
+
+
+
+  Future<String> createSetupIntent() async {
+    final url = Uri.parse(
+      "https://bsactypehgxluqyaymui.supabase.co/functions/v1/create-setup-intent",
+    );
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Authorization": "Bearer ${Supabase.instance.client.auth.currentSession?.accessToken}",
+        "Content-Type": "application/json",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final body = jsonDecode(response.body);
+      final clientSecret = body["client_secret"];
+
+      if (clientSecret == null) {
+        throw Exception("El SetupIntent no devolvió client_secret. Respuesta: $body");
+      }
+
+      return clientSecret as String;
+    } else {
+      throw Exception("Error creando SetupIntent: ${response.body}");
+    }
+  }
+
+
+
+  Future<void> openSetupPaymentSheet(BuildContext context) async {
+    try {
+
+      // 1. Crear SetupIntent en Stripe
+      final clientSecret = await createSetupIntent();
+
+      // 2. Inicializar PaymentSheet
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          setupIntentClientSecret: clientSecret,
+          merchantDisplayName: "Dalk",
+          style: ThemeMode.light,
+        ),
+      );
+
+      // 3. Mostrar PaymentSheet
+      await Stripe.instance.presentPaymentSheet();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Método de pago guardado ✅")),
+      );
+
+
+    } on StripeException catch (e) {
+      if (e.error.code == FailureCode.Canceled) {
+        // Usuario canceló el PaymentSheet → no hacemos nada
+        debugPrint("Usuario canceló el PaymentSheet");
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: ${e.error.localizedMessage}")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error inesperado: $e")),
+      );
+    }
+  }
+
+
+  Future<List<Map<String, dynamic>>> fetchPaymentMethods(String customerId) async {
+    final url = Uri.parse(
+      "https://bsactypehgxluqyaymui.supabase.co/functions/v1/list-payment-methods",
+    );
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Authorization": "Bearer ${Supabase.instance.client.auth.currentSession?.accessToken}",
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({"customerId": customerId}),
+    );
+
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.cast<Map<String, dynamic>>();
+    } else {
+      throw Exception("Error listando métodos: ${response.body}");
+    }
+  }
+
+
+
+  Future<String> generateEphemeralKey(String customerId) async {
+    try {
+      final jwt = Supabase.instance.client.auth.currentSession?.accessToken;
+      
+      final url = Uri.parse(
+        "https://bsactypehgxluqyaymui.supabase.co/functions/v1/create-ephemeral-key"
+      );
+
+      final response = await http.post(
+        url,
+        headers: {
+          "Authorization": "Bearer $jwt",
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode({"customerId": customerId}),
+      );
+
+      if (response.statusCode != 200) {
+        print("Error generating ephemeral key: ${response.body}");
+        throw Exception("Error generating ephemeral key: ${response.body}");
+      }
+
+      final data = jsonDecode(response.body);
+      return data['secret']; 
+      
+    } catch (e) {
+      print("Error en generateEphemeralKey: $e");
+      throw Exception("Failed to generate ephemeral key: $e");
+    }
+  }
+    
+
+  Future<void> subscribePlan(BuildContext context, bool monthly, String customerId) async {
     try {
       final jwt = Supabase.instance.client.auth.currentSession?.accessToken;
       final plan = monthly ? "monthly" : "yearly";
@@ -61,7 +208,10 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
           "Authorization": "Bearer $jwt",
           "Content-Type": "application/json",
         },
-        body: jsonEncode({"plan": plan}),
+        body: jsonEncode({
+          "plan": plan,
+          "customerId": customerId
+        }),
       );
 
       if (response.statusCode != 200) {
@@ -71,26 +221,43 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
 
       final data = jsonDecode(response.body);
       final clientSecret = data["clientSecret"];
+      final subscriptionId = data["subscriptionId"];
+
+      final reused = data["reused"] ?? false;
+
+      if (reused) {
+        print("Reusing existing incomplete subscription: $subscriptionId");
+      }
+
       if (clientSecret == null) {
         throw Exception("No se recibió clientSecret de Stripe");
       }
 
+      // 1. Generar Ephemeral Key
+      final ephemeralKey = await generateEphemeralKey(customerId);
+
+      // 2. Configurar PaymentSheet
       await Stripe.instance.initPaymentSheet(
         paymentSheetParameters: SetupPaymentSheetParameters(
           paymentIntentClientSecret: clientSecret,
+          customerId: customerId, 
+          customerEphemeralKeySecret: ephemeralKey,
           merchantDisplayName: "Dalk",
           style: ThemeMode.light,
         ),
       );
 
+      // 3. Mostrar el PaymentSheet
       await Stripe.instance.presentPaymentSheet();
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("¡Suscripción completada!")),
       );
+
     } catch (e) {
+      print("Error en subscribePlan: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
+        SnackBar(content: Text("Error: ${e.toString()}")),
       );
     }
   }
@@ -546,7 +713,7 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                             child: Container(
                                               width: MediaQuery.sizeOf(context).width * 0.18,
                                               decoration: BoxDecoration(
-                                                color: Color(0xFFCCDBFF),
+                                                color: FlutterFlowTheme.of(context).alternate,
                                                 borderRadius: BorderRadius.circular(10),
                                               ),
                                               child: Column(
@@ -595,9 +762,30 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
                                   child: FFButtonWidget(
-                                    onPressed: () async {
-                                      await subscribePlan(context, _model.planValidity); 
-                                    },
+                                  onPressed: () async {
+                                    try {
+                                      final customerId = await createCustomerIfNeeded();
+                                      final methods = await fetchPaymentMethods(customerId);
+
+                                      if (methods.isEmpty) {
+                                        // No hay métodos, se abre el SetupIntent
+                                        await openSetupPaymentSheet(context);
+
+                                        // Tras agregar método, volver a verificar
+                                        final newMethods = await fetchPaymentMethods(customerId);
+                                        if (newMethods.isNotEmpty) {
+                                          await subscribePlan(context, _model.planValidity, customerId);
+                                        }
+                                      } else {
+                                        // Ya hay métodos, abrir PaymentIntentl
+                                        await subscribePlan(context, _model.planValidity, customerId);
+                                      }
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text("Error: $e")),
+                                      );
+                                    }
+                                  },
                                     text: 'Suscribirme',
                                     options: FFButtonOptions(
                                       width: MediaQuery.sizeOf(context).width,
