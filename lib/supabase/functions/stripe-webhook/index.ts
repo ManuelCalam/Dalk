@@ -133,6 +133,9 @@ serve(async (req) => {
 
     // Manejar eventos
     switch (event.type) {
+      case "setup_intent.succeeded":
+        await handleSetupIntentSucceeded(event.data.object);
+        break;
       case "checkout.session.completed":
         await handleCheckoutSessionCompleted(event.data.object);
         break;
@@ -181,6 +184,39 @@ serve(async (req) => {
 // =====================
 // Handlers
 // =====================
+async function handleSetupIntentSucceeded(setupIntent: any) {
+  console.log("✅ SetupIntent succeeded:", setupIntent.id);
+
+  const customerId = setupIntent.customer;
+  const paymentMethodId = setupIntent.payment_method;
+
+  if (!customerId || !paymentMethodId) {
+    console.warn("Missing customer or payment method in setup_intent.succeeded");
+    return;
+  }
+
+  try {
+    // 1. Adjuntar el método de pago al cliente (si aún no está)
+    await stripe.paymentMethods.attach(paymentMethodId, {
+      customer: customerId,
+    });
+    console.log(`PaymentMethod ${paymentMethodId} attached to customer ${customerId}`);
+
+    // 2. Actualizar el cliente para establecer este método como el predeterminado
+    await stripe.customers.update(customerId, {
+      invoice_settings: {
+        default_payment_method: paymentMethodId,
+      },
+    });
+    console.log(`Customer ${customerId} default payment method updated to ${paymentMethodId}`);
+
+  } catch (err) {
+    console.error("Error updating customer default payment method:", err);
+  }
+}
+
+
+
 async function handleCheckoutSessionCompleted(session: any) {
   console.log("Checkout session completed:", session.id);
 
