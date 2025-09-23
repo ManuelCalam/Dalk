@@ -13,6 +13,11 @@ import 'package:provider/provider.dart';
 
 import 'home_dog_walker_model.dart';
 export 'home_dog_walker_model.dart';
+import '/user_provider.dart';
+import '/user_prefs.dart';
+import '/backend/supabase/supabase.dart';
+import '/auth/supabase_auth/auth_util.dart';
+import 'package:provider/provider.dart';
 
 class HomeDogWalkerWidget extends StatefulWidget {
   const HomeDogWalkerWidget({super.key});
@@ -34,6 +39,33 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => HomeDogWalkerModel());
+    _loadUserFromSupabase();
+  }
+
+  Future<void> _loadUserFromSupabase() async {
+
+    try {
+      final response = await Supabase.instance.client
+          .from('users') // 👈 tu tabla
+          .select('name, photoUrl')
+          .eq('uuid', currentUserUid)
+          .maybeSingle();
+
+      if (response != null) {
+        final newUser = UserModel(
+          name: response['name'] ?? '',
+          photoUrl: response['photoUrl'] ?? '',
+        );
+
+        // Guardar en Provider
+        context.read<UserProvider>().setUser(newUser);
+
+        // Guardar en SharedPreferences
+        await UserPrefs.saveUser(newUser);
+      }
+    } catch (e) {
+      debugPrint("Error cargando usuario: $e");
+    }
   }
 
   @override
@@ -134,33 +166,39 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                       ),
                     ),
                     Align(
-                      alignment: AlignmentDirectional(-1, 0),
-                      child: Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(30, 0, 0, 0),
-                        child: AutoSizeText(
-                          'Hola User!',
-                          textAlign: TextAlign.start,
-                          maxLines: 1,
-                          minFontSize: 18,
-                          style:
-                              FlutterFlowTheme.of(context).bodyMedium.override(
-                                    font: GoogleFonts.lexend(
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                                    color: Color(0xFFCCDBFF),
-                                    fontSize: 32,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
-                        ),
-                      ),
-                    ),
+  alignment: AlignmentDirectional(-1.0, 0.0),
+  child: Padding(
+    padding: const EdgeInsetsDirectional.fromSTEB(30.0, 0.0, 0.0, 0.0),
+    child: Builder(
+      builder: (context) {
+        final user = context.watch<UserProvider>().user;
+        final nombre = user?.name.split(" ").first ?? "User";
+
+        return AutoSizeText(
+          'Hola $nombre!',
+          textAlign: TextAlign.start,
+          maxLines: 1,
+          minFontSize: 18.0,
+          style: FlutterFlowTheme.of(context).bodyMedium.override(
+                font: GoogleFonts.lexend(
+                  fontWeight: FontWeight.bold,
+                  fontStyle: FlutterFlowTheme.of(context)
+                      .bodyMedium
+                      .fontStyle,
+                ),
+                color: const Color(0xFFCCDBFF),
+                fontSize: 32.0,
+                letterSpacing: 0.0,
+                fontWeight: FontWeight.bold,
+                fontStyle: FlutterFlowTheme.of(context)
+                    .bodyMedium
+                    .fontStyle,
+              ),
+        );
+      },
+    ),
+  ),
+),
                     Flexible(
                       child: Align(
                         alignment: AlignmentDirectional(-1, -1),

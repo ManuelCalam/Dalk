@@ -25,6 +25,7 @@ export 'serialization_util.dart';
 
 const kTransitionInfoKey = '__transition_info__';
 
+
 GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
 class AppStateNotifier extends ChangeNotifier {
@@ -89,9 +90,9 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         final loggedIn = appStateNotifier.loggedIn;
 
         // Si no está logeado mandar al usuario a la ventana del login
-        if (!loggedIn && state.matchedLocation != LoginWidget.routePath) {
-          return LoginWidget.routePath;
-        }
+        // if (!loggedIn && state.matchedLocation != LoginWidget.routePath) {
+        //   return LoginWidget.routePath;
+        // }
 
         // Si está logeado y trata de entrar, mándalo a raíz con navBar
         if (loggedIn && state.matchedLocation == LoginWidget.routePath) {
@@ -107,11 +108,13 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => RootNavWidget(
             initialPage: params.getParam('initialPage', ParamType.String),
           ),
+          requireAuth: true
         ),
         FFRoute(
           name: HomeDogOwnerWidget.routeName,
           path: HomeDogOwnerWidget.routePath,
           builder: (context, params) => HomeDogOwnerWidget(),
+          requireAuth: true
         ),
         FFRoute(
           name: SetWalkScheduleWidget.routeName,
@@ -123,11 +126,13 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             ),
             selectedPet: params.getParam('selectedPet', ParamType.int),
           ),
+          requireAuth: true
         ),
         FFRoute(
           name: AddAddressWidget.routeName,
           path: AddAddressWidget.routePath,
           builder: (context, params) => AddAddressWidget(),
+          requireAuth: true
         ),
         FFRoute(
           name: FindDogWalkerWidget.routeName,
@@ -138,106 +143,127 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             addressId: int.tryParse(params.getParam('addressId', ParamType.String) ?? ''),
             petId: int.tryParse(params.getParam('petId', ParamType.String) ?? ''),
           ),
+          requireAuth: true
         ),
         FFRoute(
           name: AddPetWidget.routeName,
           path: AddPetWidget.routePath,
           builder: (context, params) => AddPetWidget(),
+          requireAuth: true
         ),
         FFRoute(
           name: PaseoNoAgendadoWidget.routeName,
           path: PaseoNoAgendadoWidget.routePath,
           builder: (context, params) => PaseoNoAgendadoWidget(),
+          requireAuth: true
         ),
         FFRoute(
           name: CurrentWalkWidget.routeName,
           path: CurrentWalkWidget.routePath,
           builder: (context, params) => CurrentWalkWidget(),
+          requireAuth: true
         ),
         FFRoute(
           name: WalksDogOwnerWidget.routeName,
           path: WalksDogOwnerWidget.routePath,
           builder: (context, params) => WalksDogOwnerWidget(),
+          requireAuth: true
         ),
         FFRoute(
           name: LoginWidget.routeName,
           path: LoginWidget.routePath,
           builder: (context, params) => LoginWidget(),
+          requireAuth: false
         ),
         FFRoute(
           name: NotificationsWidget.routeName,
           path: NotificationsWidget.routePath,
           builder: (context, params) => NotificationsWidget(),
+          requireAuth: true
         ),
         FFRoute(
           name: PetListWidget.routeName,
           path: PetListWidget.routePath,
           builder: (context, params) => PetListWidget(),
+          requireAuth: true
         ),
         FFRoute(
           name: SignInWithGoogleDogOwnerWidget.routeName,
           path: SignInWithGoogleDogOwnerWidget.routePath,
           builder: (context, params) => SignInWithGoogleDogOwnerWidget(),
+          requireAuth: false
         ),
         FFRoute(
           name: ChooseUserTypeWidget.routeName,
           path: ChooseUserTypeWidget.routePath,
           builder: (context, params) => ChooseUserTypeWidget(),
+          requireAuth: false
         ),
         FFRoute(
           name: DogOwnerProfileWidget.routeName,
           path: DogOwnerProfileWidget.routePath,
           builder: (context, params) => DogOwnerProfileWidget(),
+          requireAuth: true
         ),
         FFRoute(
           name: PremiumPlanInfoWidget.routeName,
           path: PremiumPlanInfoWidget.routePath,
           builder: (context, params) => PremiumPlanInfoWidget(),
+          requireAuth: true
         ),
         FFRoute(
           name: SingInDogOwnerWidget.routeName,
           path: SingInDogOwnerWidget.routePath,
           builder: (context, params) => SingInDogOwnerWidget(),
+          requireAuth: false
         ),
         FFRoute(
           name: SingInDogWalkerWidget.routeName,
           path: SingInDogWalkerWidget.routePath,
           builder: (context, params) => SingInDogWalkerWidget(),
+          requireAuth: false
         ),
         FFRoute(
           name: DogWalkerServiceWidget.routeName,
           path: DogWalkerServiceWidget.routePath,
           builder: (context, params) => DogWalkerServiceWidget(),
+          requireAuth: false
         ),
         FFRoute(
           name: ExceptionDayWidget.routeName,
           path: ExceptionDayWidget.routePath,
           builder: (context, params) => ExceptionDayWidget(),
+          requireAuth: false
         ),
         FFRoute(
           name: DogOwnerUpdateProfileWidget.routeName,
           path: DogOwnerUpdateProfileWidget.routePath,
           builder: (context, params) => DogOwnerUpdateProfileWidget(),
+          requireAuth: true
         ),
         FFRoute(
           name: ChangePasswordWidget.routeName,
           path: ChangePasswordWidget.routePath,
           builder: (context, params) => ChangePasswordWidget(),
+          requireAuth: false
         ),
         FFRoute(
           name: HomeDogWalkerWidget.routeName,
           path: HomeDogWalkerWidget.routePath,
           builder: (context, params) => HomeDogWalkerWidget(),
+          requireAuth: true
         ),
         FFRoute(
           name: WalksDogWalkerWidget.routeName,
           path: WalksDogWalkerWidget.routePath,
           builder: (context, params) => WalksDogWalkerWidget(),
+          requireAuth: true
         ),
         FFRoute(
           name: DogWalkerProfileWidget.routeName,
           path: DogWalkerProfileWidget.routePath,
           builder: (context, params) => DogWalkerProfileWidget(),
+          requireAuth: true
         ),
           
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
@@ -260,7 +286,7 @@ extension NavigationExtensions on BuildContext {
     Object? extra,
     bool ignoreRedirect = false,
   }) =>
-      !mounted || GoRouter.of(this).shouldRedirect(ignoreRedirect)
+      !mounted || GoRouterExtensions(GoRouter.of(this)).shouldRedirect(ignoreRedirect)
           ? null
           : goNamed(
               name,
@@ -277,7 +303,7 @@ extension NavigationExtensions on BuildContext {
     Object? extra,
     bool ignoreRedirect = false,
   }) =>
-      !mounted || GoRouter.of(this).shouldRedirect(ignoreRedirect)
+      !mounted || GoRouterExtensions(GoRouter.of(this)).shouldRedirect(ignoreRedirect)
           ? null
           : pushNamed(
               name,

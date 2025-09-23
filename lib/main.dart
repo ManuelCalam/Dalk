@@ -12,6 +12,10 @@ import '/backend/supabase/supabase.dart';
 import 'backend/firebase/firebase_config.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
+import 'user_provider.dart';
+import 'user_prefs.dart';
+import 'package:provider/provider.dart';
+
          
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,7 +41,30 @@ void main() async {
     ),
   );
 
-  runApp(MyApp());
+  final savedUser = await UserPrefs.getUser();
+
+   runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+      ],
+      child: MyAppWrapper(savedUser: savedUser),
+    ),
+  );
+}
+class MyAppWrapper extends StatelessWidget {
+  final UserModel? savedUser;
+  const MyAppWrapper({super.key, this.savedUser});
+
+  @override
+  Widget build(BuildContext context) {
+    // Si había un usuario guardado, lo ponemos en Provider al iniciar
+    if (savedUser != null) {
+      context.read<UserProvider>().setUser(savedUser!);
+    }
+
+    return MyApp();
+  }
 }
 
 class MyApp extends StatefulWidget {

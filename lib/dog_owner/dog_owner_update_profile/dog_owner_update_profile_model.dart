@@ -114,6 +114,7 @@ class DogOwnerUpdateProfileModel
   TextEditingController? cityDogOwnerInputTextController;
   String? Function(BuildContext, String?)?
       cityDogOwnerInputTextControllerValidator;
+
   String? _cityDogOwnerInputTextControllerValidator(
       BuildContext context, String? val) {
     if (val == null || val.isEmpty) {

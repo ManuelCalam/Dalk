@@ -17,6 +17,12 @@ import 'package:provider/provider.dart';
 
 import 'dog_owner_update_profile_model.dart';
 export 'dog_owner_update_profile_model.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import '/user_provider.dart';
+import '/user_prefs.dart';
+import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class DogOwnerUpdateProfileWidget extends StatefulWidget {
   const DogOwnerUpdateProfileWidget({super.key});
@@ -24,6 +30,7 @@ class DogOwnerUpdateProfileWidget extends StatefulWidget {
   static String routeName = 'dogOwnerUpdateProfile';
   static String routePath = '/dogOwnerUpdateProfile';
 
+  
   @override
   State<DogOwnerUpdateProfileWidget> createState() =>
       _DogOwnerUpdateProfileWidgetState();
@@ -33,9 +40,19 @@ class _DogOwnerUpdateProfileWidgetState
     extends State<DogOwnerUpdateProfileWidget> {
   late DogOwnerUpdateProfileModel _model;
 
+  //imagen
+  File? _ownerImage;
+  File? _walkerImage;
+  File? _tempImage;
+  final ImagePicker _picker = ImagePicker();
+  //final user = context.watch<UserProvider>().user;
+  //final PhotoUrl = user?.photoUrl ?? '';
+
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  
 
   Future<void> cargarDatosUsuario() async {
+    
     final response = await Supabase.instance.client
         .from('users')
         .select()
@@ -50,6 +67,7 @@ class _DogOwnerUpdateProfileWidgetState
       _model.zipCodeDogOwnerInputTextController.text = response['zipCode'] ?? '';
       _model.neighborhoodDogOwnerInputTextController.text = response['neighborhood'] ?? '';
       _model.cityDogOwnerInputTextController.text = response['city'] ?? '';
+      
       _model.genderDogOwnerMenuValue = response['gender'] ?? '';
       if (response['birthdate'] != null) {
         _model.datePicked = DateTime.tryParse(response['birthdate']);
@@ -59,6 +77,7 @@ class _DogOwnerUpdateProfileWidgetState
       setState(() {});
     }
   } 
+  
 
   @override
   void initState() {
@@ -85,7 +104,7 @@ class _DogOwnerUpdateProfileWidgetState
 
     _model.cityDogOwnerInputTextController ??= TextEditingController();
     _model.cityDogOwnerInputFocusNode ??= FocusNode();
-      
+
     cargarDatosUsuario();
   }
 
@@ -94,10 +113,102 @@ class _DogOwnerUpdateProfileWidgetState
     _model.dispose();
 
     super.dispose();
+    
+  }
+
+  Future<String?> _uploadOwnerImage(String userId, File imageFile) async {
+    try {
+      final filePath = 'owners/$userId/profile.jpg';
+      final storage = Supabase.instance.client.storage;
+
+      // Subir a storage (sobrescribir si ya existe)
+      await storage.from('profile_pics').upload(
+            filePath,
+            imageFile,
+            fileOptions: const FileOptions(upsert: true),
+          );
+
+      // Generar URL pública
+      final imageUrl = storage.from('profile_pics').getPublicUrl(filePath);
+
+      // 🔑 Agregar versión única para forzar refresh solo cuando cambie
+      final uniqueUrl = '$imageUrl?version=${DateTime.now().millisecondsSinceEpoch}';
+
+      // Actualizar en tabla users con el nuevo link
+      await Supabase.instance.client
+          .from('users')
+          .update({'photoUrl': uniqueUrl})
+          .eq('uuid', userId);
+
+      return uniqueUrl;
+    } catch (e) {
+      debugPrint('Error al subir imagen: $e');
+      return null;
+    }
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final pickedFile = await _picker.pickImage(source: source);
+    if (pickedFile != null) {
+      setState(() {
+        _tempImage = File(pickedFile.path);
+      });
+
+      final supabase = Supabase.instance.client;
+      final user = supabase.auth.currentUser;
+      if (user == null) return;
+
+      // Subir a Supabase
+      final uploadedUrl = await _uploadOwnerImage(user.id, _tempImage!);
+      if (uploadedUrl != null) {
+        // Solo actualizar Provider y SharedPrefs
+        final currentUser = context.read<UserProvider>().user;
+        final updatedUser = UserModel(
+          name: currentUser?.name ?? "User",
+          photoUrl: uploadedUrl,
+        );
+        context.read<UserProvider>().setUser(updatedUser);
+        await UserPrefs.saveUser(updatedUser);
+
+        // Limpiar temporal para que NetworkImage tome la nueva URL
+        setState(() {
+          _tempImage = null;
+        });
+      }
+    }
+  }
+
+  void _showImagePickerOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Tomar foto'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Elegir de la galería'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<UserProvider>().user;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -218,44 +329,27 @@ class _DogOwnerUpdateProfileWidgetState
                               Align(
                                 alignment: AlignmentDirectional(0, 0),
                                 child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      0, 10, 0, 10),
-                                  child: Container(
-                                    width:
-                                        MediaQuery.sizeOf(context).width * 0.3,
-                                    height: MediaQuery.sizeOf(context).height *
-                                        0.15,
-                                    decoration: BoxDecoration(),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Flexible(
-                                          child: Container(
-                                            width: MediaQuery.sizeOf(context)
-                                                .width,
-                                            height: MediaQuery.sizeOf(context)
-                                                .height,
-                                            decoration: BoxDecoration(),
-                                            child: Align(
-                                              alignment:
-                                                  AlignmentDirectional(0, 0),
-                                              child: Container(
-                                                width: 120,
-                                                height: 120,
-                                                clipBehavior: Clip.antiAlias,
-                                                decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: Image.network(
-                                                  'https://picsum.photos/seed/182/600',
-                                                  fit: BoxFit.cover,
-                                                ),
+                                  padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                  child: GestureDetector(
+                                    onTap: () => _showImagePickerOptions(context),
+                                    child: _tempImage != null
+                                        // Si eligió una imagen local (File)
+                                        ? CircleAvatar(
+                                            radius: 60,
+                                            backgroundImage: FileImage(_tempImage!),
+                                          )
+                                        //Si ya tiene foto en Supabase (con cache)
+                                        : (user?.photoUrl != null && user!.photoUrl.isNotEmpty)
+                                            ? CircleAvatar(
+                                                radius: 60,
+                                                backgroundImage:
+                                                    CachedNetworkImageProvider(user.photoUrl),
+                                              )
+                                            // Si no hay imagen
+                                            : const CircleAvatar(
+                                                radius: 60,
+                                                child: Icon(Icons.person, size: 60),
                                               ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
                                   ),
                                 ),
                               ),
@@ -1916,6 +2010,14 @@ class _DogOwnerUpdateProfileWidgetState
                                                         SnackBar(content: Text('Error al actualizar el perfil: $e')),
                                                       );
                                                     }
+                                                    //setState(() {});
+                                                    //PaintingBinding.instance.imageCache.clear();
+                                                    //PaintingBinding.instance.imageCache.clearLiveImages();
+                                                    // 2. Limpiar la imagen vieja del caché
+                                                    await CachedNetworkImage.evictFromCache(user!.photoUrl);
+
+                                                    // 3. Refrescar el widget
+                                                    setState(() {});
 
                                                   },
                                                   text: 'Guardar cambios',

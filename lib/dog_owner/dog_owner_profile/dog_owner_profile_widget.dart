@@ -1,3 +1,5 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '/auth/supabase_auth/auth_util.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
@@ -12,6 +14,12 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'dog_owner_profile_model.dart';
 export 'dog_owner_profile_model.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import '/user_provider.dart';
+import '/user_prefs.dart';
+import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class DogOwnerProfileWidget extends StatefulWidget {
   const DogOwnerProfileWidget({super.key});
@@ -25,6 +33,12 @@ class DogOwnerProfileWidget extends StatefulWidget {
 
 class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
   late DogOwnerProfileModel _model;
+
+  //imagen
+  File? _ownerImage;
+  File? _walkerImage;
+  File? _tempImage;
+  final ImagePicker _picker = ImagePicker();
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -43,6 +57,8 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<UserProvider>().user;
+    final nombre = user?.name.split(" ").first ?? "User";
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -101,21 +117,21 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                               children: [
                                 Align(
                                   alignment: AlignmentDirectional(0, 0),
-                                  child: Container(
-                                    width: 120,
-                                    height: 120,
-                                    clipBehavior: Clip.antiAlias,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Image.network(
-                                      'https://images.unsplash.com/photo-1495567720989-cebdbdd97913?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxfHxzdW5zZXR8ZW58MHx8fHwxNzQ3MDA2NTczfDA&ixlib=rb-4.1.0&q=80&w=1080',
-                                      fit: BoxFit.cover,
+                                  child: Padding(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                    child: CircleAvatar(
+                                      radius: 60,
+                                      backgroundImage: (user?.photoUrl != null && user!.photoUrl.isNotEmpty)
+                                          ? NetworkImage(user.photoUrl) //  Siempre se ve la foto de Supabase
+                                          : null,
+                                      child: (user?.photoUrl == null || user!.photoUrl.isEmpty)
+                                          ? const Icon(Icons.person, size: 60)
+                                          : null,
                                     ),
                                   ),
                                 ),
-                                Text(
-                                  'Nombre',
+                                AutoSizeText(
+                                '$nombre',
                                   textAlign: TextAlign.center,
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
@@ -954,6 +970,9 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
 
                                       context.goNamedAuth(LoginWidget.routeName,
                                           context.mounted);
+                                      // 2️⃣ Limpiar datos persistentes
+                                      final prefs = await SharedPreferences.getInstance();
+                                      await prefs.clear(); // borra todos los datos guardados localmente
                                     },
                                     text: 'Cerrar Sesión',
                                     options: FFButtonOptions(

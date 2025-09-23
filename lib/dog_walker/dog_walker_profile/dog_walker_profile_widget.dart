@@ -11,6 +11,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'dog_walker_profile_model.dart';
 export 'dog_walker_profile_model.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import '/user_provider.dart';
+import '/user_prefs.dart';
+import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class DogWalkerProfileWidget extends StatefulWidget {
   const DogWalkerProfileWidget({super.key});
@@ -42,6 +48,8 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<UserProvider>().user;
+    final nombre = user?.name.split(" ").first ?? "User";
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -100,20 +108,20 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                           scrollDirection: Axis.vertical,
                           children: [
                             Align(
-                              alignment: AlignmentDirectional(0.0, 0.0),
-                              child: Container(
-                                width: 120.0,
-                                height: 120.0,
-                                clipBehavior: Clip.antiAlias,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Image.network(
-                                  'https://images.unsplash.com/photo-1495567720989-cebdbdd97913?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxfHxzdW5zZXR8ZW58MHx8fHwxNzQ3MDA2NTczfDA&ixlib=rb-4.1.0&q=80&w=1080',
-                                  fit: BoxFit.cover,
+                                alignment: AlignmentDirectional(0, 0),
+                                child: Padding(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                  child: CircleAvatar(
+                                    radius: 60,
+                                    backgroundImage: (user?.photoUrl != null && user!.photoUrl.isNotEmpty)
+                                        ? NetworkImage(user.photoUrl) //  Siempre se ve la foto de Supabase
+                                        : null,
+                                    child: (user?.photoUrl == null || user!.photoUrl.isEmpty)
+                                        ? const Icon(Icons.person, size: 60)
+                                        : null,
+                                  ),
                                 ),
                               ),
-                            ),
                             Text(
                               'Nombre',
                               textAlign: TextAlign.center,
