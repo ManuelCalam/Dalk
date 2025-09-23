@@ -1,20 +1,12 @@
 import 'dart:async';
-
 import 'package:dalk/RootNavWidget.dart';
 import 'package:dalk/dog_walker/walks_dog_walker/walks_dog_walker_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
-
-import '/backend/supabase/supabase.dart';
-
 import '/auth/base_auth_user_provider.dart';
-
-import '/main.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/lat_lng.dart';
-import '/flutter_flow/place.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'serialization_util.dart';
 
@@ -90,9 +82,9 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         final loggedIn = appStateNotifier.loggedIn;
 
         // Si no está logeado mandar al usuario a la ventana del login
-        // if (!loggedIn && state.matchedLocation != LoginWidget.routePath) {
-        //   return LoginWidget.routePath;
-        // }
+        // // if (!loggedIn && state.matchedLocation != LoginWidget.routePath) {
+        // //   return LoginWidget.routePath;
+        // // }
 
         // Si está logeado y trata de entrar, mándalo a raíz con navBar
         if (loggedIn && state.matchedLocation == LoginWidget.routePath) {

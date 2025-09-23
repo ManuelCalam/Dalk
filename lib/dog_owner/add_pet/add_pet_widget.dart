@@ -12,7 +12,7 @@ import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
+import '/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
 
 import 'add_pet_model.dart';
 export 'add_pet_model.dart';
@@ -1284,9 +1284,25 @@ class _AddPetWidgetState extends State<AddPetWidget> {
 
                                               });
 
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                        SnackBar(content: Text('¡Registro exitoso!')),
+                                              // ScaffoldMessenger.of(context).showSnackBar(
+                                              //           SnackBar(content: Text('¡Registro exitoso!')),
+                                              // );
+                                              showDialog(
+                                                context: context,
+                                                builder: (_) => PopUpConfirmDialogWidget(
+                                                  title: "Mascota registrada",
+                                                  message: "¡Mascota ya forma parte de tu familia en la app!",
+                                                  confirmText: "Agregar otra mascota",
+                                                  cancelText: "Manú principal",
+                                                  confirmColor: FlutterFlowTheme.of(context).accent1,
+                                                  cancelColor: FlutterFlowTheme.of(context).primary,
+                                                  icon: Icons.check_circle,
+                                                  iconColor: FlutterFlowTheme.of(context).success,
+                                                  onConfirm: () => context.goNamed(AddPetWidget.routeName),
+                                                  onCancel: () => context.go('/'),
+                                                ), 
                                               );
+
                                             } catch (e) {
                                                 ScaffoldMessenger.of(context).showSnackBar(
                                                         SnackBar(content: Text('Error al registrar la dirección: $e')),

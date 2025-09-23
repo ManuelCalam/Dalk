@@ -150,6 +150,70 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
     );
   }
 
+  Future<String?> _uploadOwnerImage(String userId, File imageFile) async {
+    try {
+      final filePath = 'owners/$userId/profile.jpg'; // ruta dentro del bucket
+      final storage = Supabase.instance.client.storage;
+
+      // Subir la imagen, si existe reemplazar
+      await storage.from('profile_pics').upload(
+        filePath,
+        imageFile,
+        fileOptions: FileOptions(upsert: true),
+      );
+
+      // Obtener URL pública
+      final imageUrl = storage.from('profile_pics').getPublicUrl(filePath);
+
+      return imageUrl; // ahora es un String
+    } catch (e) {
+      print('Error al subir imagen: $e');
+      return null;
+    }
+  }
+
+  //funcion para seleccionar imagen
+  Future<void> _pickImage(bool isOwner, ImageSource source) async {
+    final pickedFile = await _picker.pickImage(source: source);
+    if (pickedFile != null) {
+      setState(() {
+        if (isOwner) {
+          _ownerImage = File(pickedFile.path);
+        } else {
+          _walkerImage = File(pickedFile.path);
+        }
+      });
+    }
+  }
+
+  void _showImagePickerOptions(BuildContext context, bool isOwner) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Tomar foto'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickImage(isOwner, ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Elegir de la galería'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickImage(isOwner, ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -268,22 +332,22 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                               ),
                             ),
                             Align(
-  alignment: AlignmentDirectional(0, 0),
-  child: Padding(
-    padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
-    child: GestureDetector(
-      onTap: () => _showImagePickerOptions(context, true), // true = dueño
-      child: CircleAvatar(
-        radius: 60,
-        backgroundImage: _ownerImage != null
-            ? FileImage(_ownerImage!)
-            : const NetworkImage(
-                'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/sign/profile_pics/fondo.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85ZTI2NTk2MC1mMDYzLTQ2Y2YtYjQ2MS1iMzllNjYwOThjNzUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9maWxlX3BpY3MvZm9uZG8uanBnIiwiaWF0IjoxNzU3MzE5NTMyLCJleHAiOjE3NTk5MTE1MzJ9.l6Wcm5GtTl9tsqdcIKRT1VHlvLsZH6KuZsK0A9_vDuU',
-              ) as ImageProvider,
-      ),
-    ),
-  ),
-),
+                              alignment: AlignmentDirectional(0, 0),
+                              child: Padding(
+                                padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                child: GestureDetector(
+                                  onTap: () => _showImagePickerOptions(context, true), // true = dueño
+                                  child: CircleAvatar(
+                                    radius: 60,
+                                    backgroundImage: _ownerImage != null
+                                        ? FileImage(_ownerImage!)
+                                        : const NetworkImage(
+                                            'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/sign/profile_pics/fondo.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85ZTI2NTk2MC1mMDYzLTQ2Y2YtYjQ2MS1iMzllNjYwOThjNzUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9maWxlX3BpY3MvZm9uZG8uanBnIiwiaWF0IjoxNzU3MzE5NTMyLCJleHAiOjE3NTk5MTE1MzJ9.l6Wcm5GtTl9tsqdcIKRT1VHlvLsZH6KuZsK0A9_vDuU',
+                                          ) as ImageProvider,
+                                  ),
+                                ),
+                              ),
+                            ),
                             Expanded(
                               child: Padding(
                                 padding:
@@ -2567,10 +2631,10 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
 
                                                   setState(() => isRegistering = true);
 
-String? ownerImageUrl;
-if (_ownerImage != null) {
-  ownerImageUrl = await _uploadOwnerImage(currentUserUid, _ownerImage!);
-}
+                                                  String? ownerImageUrl;
+                                                  if (_ownerImage != null) {
+                                                    ownerImageUrl = await _uploadOwnerImage(currentUserUid, _ownerImage!);
+                                                  }
 
                                                   // Registro en la tabla users
                                                   try {
