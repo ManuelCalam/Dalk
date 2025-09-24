@@ -101,6 +101,7 @@ dependencies:
   webview_flutter_android: 3.16.7
   webview_flutter_platform_interface: 2.10.0
   webview_flutter_wkwebview: 3.15.0
+  http: ^1.1.0
 
   firebase_messaging: ^15.1.5
   flutter_local_notifications: 17.2.3
@@ -115,8 +116,9 @@ dependencies:
   flutter_dotenv: ^5.2.1
   flutter_background_service: ^5.1.0
 
+
+
 #dependency_overrides:
- # http: 1.2.2
   #rxdart: 0.27.7
   #uuid: ^4.0.0
 
