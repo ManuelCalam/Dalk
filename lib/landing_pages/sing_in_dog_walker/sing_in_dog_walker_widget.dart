@@ -20,6 +20,7 @@ import 'sing_in_dog_walker_model.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '/components/ine_validation_webview/ine_validation_webview_widget.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 export 'sing_in_dog_walker_model.dart';
 
@@ -81,6 +82,126 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
     _model.dispose();
 
     super.dispose();
+  }
+
+  Future<bool> _requestCameraPermission() async {
+    debugPrint('📷 Solicitando permisos de cámara...');
+    
+    try {
+      final status = await Permission.camera.request();
+      
+      debugPrint('📷 Estado del permiso: $status');
+      
+      if (status == PermissionStatus.granted) {
+        debugPrint('✅ Permisos de cámara concedidos');
+        return true;
+      } else if (status == PermissionStatus.denied) {
+        debugPrint('❌ Permisos de cámara denegados');
+        return false;
+      } else if (status == PermissionStatus.permanentlyDenied) {
+        debugPrint('❌ Permisos de cámara permanentemente denegados');
+        
+        await _showPermissionSettingsDialog();
+        return false;
+      }
+      
+      return false;
+    } catch (e) {
+      debugPrint('💥 Error solicitando permisos: $e');
+      return false;
+    }
+  }
+
+  Future<void> _showPermissionSettingsDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Color(0xFF1A2332),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.camera_alt, color: Colors.orange, size: 24),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Permisos requeridos',
+                  style: FlutterFlowTheme.of(context).headlineSmall.override(
+                    font: GoogleFonts.lexend(),
+                    color: Colors.white,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'La verificación de identidad requiere acceso a la cámara. Por favor, habilita los permisos en la configuración de la app.',
+            style: FlutterFlowTheme.of(context).bodyMedium.override(
+              font: GoogleFonts.lexend(),
+              color: Colors.white70,
+            ),
+          ),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(
+                      'Cancelar',
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      await openAppSettings();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: FlutterFlowTheme.of(context).primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      'Configuración',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _cancelRegistrationAndGoToLogin() {
+    debugPrint('🚫 Cancelando registro por falta de permisos');
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Registro cancelado. Se requieren permisos de cámara para la verificación.'),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 3),
+        ),
+      );
+      
+      Future.delayed(Duration(seconds: 1), () {
+        if (mounted) {
+          context.goNamed('signIn');
+        }
+      });
+    }
   }
 
   @override
@@ -2623,13 +2744,26 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
                                                   debugPrint('📋 Resultado del AlertDialog: shouldContinue = $shouldContinue');
 
                                                   // Verificar respuesta del usuario
-                                                  if (shouldContinue == null || !shouldContinue) {
-                                                    debugPrint('❌ Usuario canceló la verificación');
-                                                    return;
-                                                  }
+                                                  // Verificar respuesta del usuario
+                                                if (shouldContinue == null || !shouldContinue) {
+                                                  debugPrint('❌ Usuario canceló la verificación');
+                                                  return;
+                                                }
 
-                                                  // ✅ USUARIO ACEPTÓ - INICIAR VERIFICACIÓN
-                                                  debugPrint('✅✅✅ El usuario aceptó la verificacion de la INE');
+                                                // ✅ AGREGAR ESTAS LÍNEAS DESPUÉS DEL IF ANTERIOR
+                                                debugPrint('📷 Solicitando permisos de cámara...');
+                                                final bool hasPermission = await _requestCameraPermission();
+
+                                                if (!hasPermission) {
+                                                  debugPrint('❌ Permisos de cámara no concedidos');
+                                                  _cancelRegistrationAndGoToLogin();
+                                                  return;
+                                                }
+
+                                                debugPrint('✅ Permisos de cámara concedidos, continuando...');
+
+                                                // ✅ USUARIO ACEPTÓ Y TIENE PERMISOS - INICIAR VERIFICACIÓN
+                                                debugPrint('✅✅✅ El usuario aceptó la verificacion de la INE y tiene permisos');
                                                   
                                                   if (!mounted) return;
                                                   setState(() => isRegistering = true);
