@@ -7,8 +7,6 @@ export '/dog_owner/add_address/add_address_widget.dart' show AddAddressWidget;
 export '/dog_owner/find_dog_walker/find_dog_walker_widget.dart'
     show FindDogWalkerWidget;
 export '/dog_owner/add_pet/add_pet_widget.dart' show AddPetWidget;
-export '/paseo_no_agendado/paseo_no_agendado_widget.dart'
-    show PaseoNoAgendadoWidget;
 export '/current_walk/current_walk_widget.dart' show CurrentWalkWidget;
 export '/dog_owner/walks_dog_owner/walks_dog_owner_widget.dart'
     show WalksDogOwnerWidget;
@@ -39,6 +37,6 @@ export '/common/change_password/change_password_widget.dart'
 export '/dog_walker/home_dog_walker/home_dog_walker_widget.dart'
     show HomeDogWalkerWidget;
 export '/dog_walker/walks_dog_walker/walks_dog_walker_widget.dart'
-    show WalkDogWalkerWidget;
+    show WalksDogWalkerWidget;
 export '/dog_walker/dog_walker_profile/dog_walker_profile_widget.dart'
     show DogWalkerProfileWidget;

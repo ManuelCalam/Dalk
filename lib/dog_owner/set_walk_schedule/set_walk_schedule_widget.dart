@@ -1,3 +1,6 @@
+import 'package:dalk/SubscriptionProvider.dart';
+import 'package:provider/provider.dart';
+
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import 'package:dalk/cards/pet_card/pet_card_widget.dart';
@@ -24,7 +27,8 @@ class SetWalkScheduleWidget extends StatefulWidget {
 
   final int? selectedAddress;
   final int? selectedPet;
-  
+  // String selectedWalkDuration = '30 min';
+  // int customWalkDuration = 30;
 
   static String routeName = 'setWalkSchedule';
   static String routePath = '/setWalkSchedule';
@@ -57,6 +61,8 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isPremium = context.watch<SubscriptionProvider>().isPremium;
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -512,6 +518,156 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                       ),
                                     ),
                                   ),
+                                  
+
+Align(
+  alignment: AlignmentDirectional(-1.0, 0.0),
+  child: Padding(
+    padding: EdgeInsetsDirectional.fromSTEB(0.0, 25.0, 0.0, 0.0),
+    child: AutoSizeText(
+      'Escoge tiempo de paseo',
+      textAlign: TextAlign.start,
+      maxLines: 2,
+      minFontSize: 10.0,
+      style: FlutterFlowTheme.of(context)
+          .bodyMedium
+          .override(
+            font: GoogleFonts.lexend(
+              fontWeight: FontWeight.normal,
+              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+            ),
+            color: FlutterFlowTheme.of(context).accent1,
+            letterSpacing: 0.0,
+            fontWeight: FontWeight.normal,
+            fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+          ),
+    ),
+  ),
+),
+
+/// Segmented control
+
+Padding(
+  padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+  child: LayoutBuilder(
+    builder: (context, constraints) {
+      final List<String> options = ['30 min', '60 min', 'Personalizado'];
+
+      final double segmentWidth = constraints.maxWidth / 3.0; 
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Contenedor principal del Segmented Control
+          Container(
+            decoration: BoxDecoration(
+              color: FlutterFlowTheme.of(context).alternate,
+              borderRadius: BorderRadius.circular(12.0), 
+            ),
+            padding: const EdgeInsets.all(4.0), 
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: List.generate(options.length, (index) {
+                final option = options[index];
+                final isSelected = _model.selectedWalkDuration == option;
+                final isCustomOption = option == 'Personalizado';
+                // Si no es premium Y es la opción Personalizado, está bloqueado.
+                final isLocked = !isPremium && isCustomOption; 
+
+                return GestureDetector(
+                  onTap: () async {
+                    if (isLocked) {
+                      // Acción de Upsell: Si está bloqueado, no selecciona y muestra SnackBar
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text('¡El tiempo Personalizado requiere el plan Premium!'),
+                          action: SnackBarAction(
+                            label: 'Ver Planes',
+                            onPressed: () {
+                              context.goNamed(PremiumPlanInfoWidget.routeName);
+                            },
+                          ),
+                        ),
+                      );
+                      // Se mantiene la selección anterior o se revierte a 30 min si no había selección válida.
+                      if (_model.selectedWalkDuration == 'Personalizado' || isLocked) {
+                        setState(() {
+                            _model.selectedWalkDuration = '30 min';
+                        });
+                      }
+                      return;
+                    }
+                    
+                    // Acción de Selección Válida
+                    setState(() {
+                      _model.selectedWalkDuration = option;
+                    });
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: segmentWidth - 4.0,
+                    height: 48.0, 
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? FlutterFlowTheme.of(context).primary
+                          : FlutterFlowTheme.of(context).alternate,
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: Center(
+                      child: AutoSizeText(
+                        option,
+                        maxLines: 1,
+                        minFontSize: 10.0,
+                        style: GoogleFonts.lexend(
+                          fontSize: 14.0,
+                          color: isSelected
+                              ? Colors.white
+                              : isLocked
+                                  ? Color(0xFF717981) 
+                                  : FlutterFlowTheme.of(context).primaryText,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+
+          // --- CONDITIONAL PREMIUM INPUT FIELD ---
+          if (isPremium && _model.selectedWalkDuration == 'Personalizado')
+            Padding(
+              padding: const EdgeInsets.only(top: 16.0),
+              child: TextFormField(
+                // Asegúrate de usar un TextEditingController real en un StatefulWidget
+                // controller: _customDurationController, 
+                decoration: InputDecoration(
+                  labelText: 'Minutos personalizados',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+                ),
+                keyboardType: TextInputType.number,
+                style: GoogleFonts.lexend(),
+                onChanged: (value) {
+                  setState(() {
+                    _model.customWalkDuration = int.tryParse(value) ?? 30;
+                  });
+                },
+              ),
+            ),
+        ],
+      );
+    },
+  ),
+),
+
+
+
+
+                                  
                                   Align(
                                     alignment: AlignmentDirectional(-1.0, 0.0),
                                     child: Padding(

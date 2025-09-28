@@ -143,12 +143,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           requireAuth: true
         ),
         FFRoute(
-          name: PaseoNoAgendadoWidget.routeName,
-          path: PaseoNoAgendadoWidget.routePath,
-          builder: (context, params) => PaseoNoAgendadoWidget(),
-          requireAuth: true
-        ),
-        FFRoute(
           name: CurrentWalkWidget.routeName,
           path: CurrentWalkWidget.routePath,
           builder: (context, params) => CurrentWalkWidget(),

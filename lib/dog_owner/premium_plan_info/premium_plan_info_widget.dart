@@ -1,6 +1,8 @@
+import 'package:dalk/SubscriptionProvider.dart';
 import 'package:dalk/backend/supabase/database/database.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
@@ -269,6 +271,8 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isPremium = context.watch<SubscriptionProvider>().isPremium;
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -318,14 +322,12 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      // GoBackContainer - FUERA del ListView pero dentro del Expanded
                       wrapWithModel(
                         model: _model.goBackContainerModel,
                         updateCallback: () => setState(() {}),
                         child: GoBackContainerWidget(),
                       ),
                       
-                      // Título - FUERA del ListView pero dentro del Expanded
                       Padding(
                         padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                         child: AutoSizeText(
@@ -345,7 +347,6 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                         ),
                       ),
                       
-                      // Contenedor con ListView - SOLUCIÓN AL ERROR
                       Expanded(
                         child: Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 15),
@@ -357,15 +358,21 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                               shrinkWrap: true,
                               scrollDirection: Axis.vertical,
                               children: [
-                                // Plan Gratuito
+                                // Plan Gratuito - Siempre primero, pero diseño cambia según isPremium
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                                   child: Container(
                                     width: MediaQuery.sizeOf(context).width,
                                     decoration: BoxDecoration(
-                                      color: FlutterFlowTheme.of(context).alternate,
+                                      color: isPremium 
+                                          ? FlutterFlowTheme.of(context).tertiary  // Cuando es premium, usa diseño premium
+                                          : FlutterFlowTheme.of(context).alternate, // Cuando no es premium, usa diseño gratuito
                                       borderRadius: BorderRadius.circular(15),
                                       shape: BoxShape.rectangle,
+                                      border: isPremium ? Border.all(  // Solo borde cuando es premium
+                                        color: FlutterFlowTheme.of(context).alternate,
+                                        width: 10,
+                                      ) : null,
                                     ),
                                     child: Padding(
                                       padding: EdgeInsets.all(15),
@@ -377,7 +384,7 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
                                               AutoSizeText(
-                                                'Gratuita',
+                                                'Gratuita',  // Siempre "Gratuita"
                                                 textAlign: TextAlign.start,
                                                 maxLines: 1,
                                                 minFontSize: 12,
@@ -400,13 +407,15 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                                       minHeight: 5,
                                                     ),
                                                     decoration: BoxDecoration(
-                                                      color: FlutterFlowTheme.of(context).tertiary,
+                                                      color: isPremium 
+                                                          ? FlutterFlowTheme.of(context).alternate  // Cuando es premium
+                                                          : FlutterFlowTheme.of(context).tertiary,  // Cuando no es premium
                                                       borderRadius: BorderRadius.circular(5),
                                                     ),
                                                     child: Align(
                                                       alignment: AlignmentDirectional(0, 0),
                                                       child: AutoSizeText(
-                                                        'Activa',
+                                                        isPremium ? 'Gratis' : 'Activa',  // Cambia según premium
                                                         textAlign: TextAlign.center,
                                                         maxLines: 1,
                                                         minFontSize: 8,
@@ -520,15 +529,17 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                   ),
                                 ),
 
-                                // Plan Premium
+                                // Plan Premium - Siempre segundo, pero diseño cambia según isPremium
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(0, 8, 0, 0),
                                   child: Container(
                                     width: MediaQuery.sizeOf(context).width,
                                     decoration: BoxDecoration(
-                                      color: FlutterFlowTheme.of(context).tertiary,
+                                      color: isPremium 
+                                          ? FlutterFlowTheme.of(context).alternate  // Cuando es premium, usa diseño gratuito
+                                          : FlutterFlowTheme.of(context).tertiary,  // Cuando no es premium, usa diseño premium
                                       borderRadius: BorderRadius.circular(15),
-                                      border: Border.all(
+                                      border: isPremium ? null : Border.all(  // Solo borde cuando NO es premium
                                         color: FlutterFlowTheme.of(context).alternate,
                                         width: 10,
                                       ),
@@ -545,7 +556,7 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                               Align(
                                                 alignment: AlignmentDirectional(1, -1),
                                                 child: Text(
-                                                  'Premium',
+                                                  'Premium',  // Siempre "Premium"
                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                     font: GoogleFonts.lexend(fontWeight: FontWeight.bold),
                                                     color: FlutterFlowTheme.of(context).accent1,
@@ -566,13 +577,15 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                                       minHeight: 5,
                                                     ),
                                                     decoration: BoxDecoration(
-                                                      color: FlutterFlowTheme.of(context).alternate,
+                                                      color: isPremium 
+                                                          ? FlutterFlowTheme.of(context).tertiary  // Cuando es premium
+                                                          : FlutterFlowTheme.of(context).alternate,  // Cuando no es premium
                                                       borderRadius: BorderRadius.circular(5),
                                                     ),
                                                     child: Align(
                                                       alignment: AlignmentDirectional(0, 0),
                                                       child: AutoSizeText(
-                                                        _model.planValidity == true ? '\$149' : '\$1699',
+                                                        isPremium ? 'Activo' : _model.planValidity == true ? '\$149' : '\$1699',  // Cambia según premium
                                                         maxLines: 1,
                                                         style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                           font: GoogleFonts.lexend(fontWeight: FontWeight.w600),
@@ -712,7 +725,9 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                               ),
                                             ),
                                           ),
-                                          Align(
+                                          
+                                          // Switch solo cuando NO es premium
+                                          if (!isPremium) Align(
                                             alignment: AlignmentDirectional(1, 0),
                                             child: Container(
                                               width: MediaQuery.sizeOf(context).width * 0.18,
@@ -790,7 +805,7 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                       );
                                     }
                                   },
-                                    text: 'Suscribirme',
+                                    text: isPremium ? "Revisa tus beneficios premium!" : 'Suscribirme',
                                     options: FFButtonOptions(
                                       width: MediaQuery.sizeOf(context).width,
                                       height: MediaQuery.sizeOf(context).height * 0.05,
