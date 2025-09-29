@@ -19,10 +19,10 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 // GlobalKey para el ScaffoldMessenger 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
-// ✅ HANDLER TOP-LEVEL SIMPLE (REQUERIDO)
+// HANDLER TOP-LEVEL SIMPLE (REQUERIDO)
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("📱 Background notification: ${message.notification?.title}");
+  print(" Background notification: ${message.notification?.title}");
 }
 
 void main() async {
@@ -44,10 +44,6 @@ void main() async {
   );
 
   Stripe.publishableKey = "pk_test_51S48646aB9DzvCSx9BqLEjUIcmpXvTuIU1elVEauQmFwOT2Ww3Sj2idqp148wcPsNWnbmtibCwCzgMjMfx02w08h00mNNCCfbB";  
-
-
-  Stripe.publishableKey = "pk_test_51S48646aB9DzvCSx9BqLEjUIcmpXvTuIU1elVEauQmFwOT2Ww3Sj2idqp148wcPsNWnbmtibCwCzgMjMfx02w08h00mNNCCfbB";  
-
 
   final savedUser = await UserPrefs.getUser();
 

@@ -33,33 +33,9 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => HomeDogOwnerModel());
-    _loadUserFromSupabase();
-  }
-
-  Future<void> _loadUserFromSupabase() async {
-
-    try {
-      final response = await Supabase.instance.client
-          .from('users') // 👈 tu tabla
-          .select('name, photoUrl')
-          .eq('uuid', currentUserUid)
-          .maybeSingle();
-
-      if (response != null) {
-        final newUser = UserModel(
-          name: response['name'] ?? '',
-          photoUrl: response['photoUrl'] ?? '',
-        );
-
-        // Guardar en Provider
-        context.read<UserProvider>().setUser(newUser);
-
-        // Guardar en SharedPreferences
-        await UserPrefs.saveUser(newUser);
-      }
-    } catch (e) {
-      debugPrint("Error cargando usuario: $e");
-    }
+    //recarga el cached del usuario
+    context.read<UserProvider>().loadUser();
+    //context.read<UserProvider>().loadUser(forceRefresh: true);
   }
   
 
@@ -168,7 +144,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                         child: Builder(
                           builder: (context) {
                             final user = context.watch<UserProvider>().user;
-                            final nombre = user?.name.split(" ").first ?? "User";
+                            final nombre = (user?.name?.split(" ").first) ?? "User";
 
                             return AutoSizeText(
                               'Hola $nombre!',

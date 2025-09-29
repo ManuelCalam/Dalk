@@ -1,5 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:dalk/common/payment_methods/payment_methods_widget.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
@@ -59,7 +59,8 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<UserProvider>().user;
-    final nombre = user?.name.split(" ").first ?? "User";
+    final nombre = (user?.name?.split(" ").first) ?? "User";
+    final photoUrl = user?.photoUrl ?? "";
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -122,12 +123,9 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                     padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
                                     child: CircleAvatar(
                                       radius: 60,
-                                      backgroundImage: (user?.photoUrl != null && user!.photoUrl.isNotEmpty)
-                                          ? NetworkImage(user.photoUrl) //  Siempre se ve la foto de Supabase
-                                          : null,
-                                      child: (user?.photoUrl == null || user!.photoUrl.isEmpty)
-                                          ? const Icon(Icons.person, size: 60)
-                                          : null,
+                                      //funcion de la imagen
+                                      backgroundImage: photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+                                      child: photoUrl.isEmpty ? const Icon(Icons.person, size: 60) : null,
                                     ),
                                   ),
                                 ),
@@ -982,12 +980,25 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                       await authManager.signOut();
                                       GoRouter.of(context)
                                           .clearRedirectLocation();
+                                      
+                                      // 4️⃣ Limpiar Provider de usuario
+                                      context.read<UserProvider>().clearUser();
+
+                                      // 5️⃣ Revisar qué hay en SharedPreferences antes de borrar
+                                      final prefs = await SharedPreferences.getInstance();
+                                      final userData = prefs.getString('user_data');
+                                      debugPrint("Antes de borrar user_data: $userData");
+
+                                      // 6️⃣ Borrar solo la información del usuario
+                                      await prefs.remove('user_data');
+                                      debugPrint("user_data borrado correctamente");
+
+                                      // 7️⃣ Verificar que se borró
+                                      final checkData = prefs.getString('user_data');
+                                      debugPrint("Después de borrar user_data: $checkData"); // debería ser null
 
                                       context.goNamedAuth(LoginWidget.routeName,
                                           context.mounted);
-                                      // 2️⃣ Limpiar datos persistentes
-                                      final prefs = await SharedPreferences.getInstance();
-                                      await prefs.clear(); // borra todos los datos guardados localmente
                                     },
                                     text: 'Cerrar Sesión',
                                     options: FFButtonOptions(

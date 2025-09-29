@@ -27,7 +27,6 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
-  image_picker: ^1.1.1 #agregado para seleccionar imagenes de la galeria o camara
   app_links: 6.3.2
   app_links_platform_interface: 2.0.2
   auto_size_text: 3.0.0

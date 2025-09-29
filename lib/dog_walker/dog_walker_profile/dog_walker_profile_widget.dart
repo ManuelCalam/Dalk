@@ -37,6 +37,7 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => DogWalkerProfileModel());
+    
   }
 
   @override
@@ -49,7 +50,8 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<UserProvider>().user;
-    final nombre = user?.name.split(" ").first ?? "User";
+    final nombre = (user?.name?.split(" ").first) ?? "User";
+    final photoUrl = user?.photoUrl ?? "";
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -113,12 +115,9 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                   padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
                                   child: CircleAvatar(
                                     radius: 60,
-                                    backgroundImage: (user?.photoUrl != null && user!.photoUrl.isNotEmpty)
-                                        ? NetworkImage(user.photoUrl) //  Siempre se ve la foto de Supabase
-                                        : null,
-                                    child: (user?.photoUrl == null || user!.photoUrl.isEmpty)
-                                        ? const Icon(Icons.person, size: 60)
-                                        : null,
+                                    //funcion de la imagen
+                                      backgroundImage: photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+                                      child: photoUrl.isEmpty ? const Icon(Icons.person, size: 60) : null,
                                   ),
                                 ),
                               ),

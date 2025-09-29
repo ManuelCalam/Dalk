@@ -209,6 +209,7 @@ class _DogOwnerUpdateProfileWidgetState
   @override
   Widget build(BuildContext context) {
     final user = context.watch<UserProvider>().user;
+    final photoUrl = user?.photoUrl ?? "";
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -339,11 +340,11 @@ class _DogOwnerUpdateProfileWidgetState
                                             backgroundImage: FileImage(_tempImage!),
                                           )
                                         //Si ya tiene foto en Supabase (con cache)
-                                        : (user?.photoUrl != null && user!.photoUrl.isNotEmpty)
+                                        : (photoUrl.isNotEmpty)
                                             ? CircleAvatar(
                                                 radius: 60,
                                                 backgroundImage:
-                                                    CachedNetworkImageProvider(user.photoUrl),
+                                                    CachedNetworkImageProvider(photoUrl),
                                               )
                                             // Si no hay imagen
                                             : const CircleAvatar(
@@ -2014,7 +2015,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                     //PaintingBinding.instance.imageCache.clear();
                                                     //PaintingBinding.instance.imageCache.clearLiveImages();
                                                     // 2. Limpiar la imagen vieja del caché
-                                                    await CachedNetworkImage.evictFromCache(user!.photoUrl);
+                                                    await CachedNetworkImage.evictFromCache(photoUrl);
 
                                                     // 3. Refrescar el widget
                                                     setState(() {});

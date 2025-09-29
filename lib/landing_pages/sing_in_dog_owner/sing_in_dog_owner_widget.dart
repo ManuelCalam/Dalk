@@ -150,69 +150,6 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
     );
   }
 
-  Future<String?> _uploadOwnerImage(String userId, File imageFile) async {
-    try {
-      final filePath = 'owners/$userId/profile.jpg'; // ruta dentro del bucket
-      final storage = Supabase.instance.client.storage;
-
-      // Subir la imagen, si existe reemplazar
-      await storage.from('profile_pics').upload(
-        filePath,
-        imageFile,
-        fileOptions: FileOptions(upsert: true),
-      );
-
-      // Obtener URL pública
-      final imageUrl = storage.from('profile_pics').getPublicUrl(filePath);
-
-      return imageUrl; // ahora es un String
-    } catch (e) {
-      print('Error al subir imagen: $e');
-      return null;
-    }
-  }
-
-  //funcion para seleccionar imagen
-  Future<void> _pickImage(bool isOwner, ImageSource source) async {
-    final pickedFile = await _picker.pickImage(source: source);
-    if (pickedFile != null) {
-      setState(() {
-        if (isOwner) {
-          _ownerImage = File(pickedFile.path);
-        } else {
-          _walkerImage = File(pickedFile.path);
-        }
-      });
-    }
-  }
-
-  void _showImagePickerOptions(BuildContext context, bool isOwner) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Tomar foto'),
-              onTap: () {
-                Navigator.of(context).pop();
-                _pickImage(isOwner, ImageSource.camera);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Elegir de la galería'),
-              onTap: () {
-                Navigator.of(context).pop();
-                _pickImage(isOwner, ImageSource.gallery);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
