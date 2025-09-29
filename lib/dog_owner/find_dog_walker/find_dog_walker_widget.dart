@@ -17,13 +17,15 @@ class FindDogWalkerWidget extends StatefulWidget {
     required this.date,
     required this.time,
     required this.addressId,
-    required this.petId
+    required this.petId,
+    required this.walkDuration
   });
 
   final DateTime? date;
   final DateTime? time;
   final int? addressId;
   final int? petId;
+  final int walkDuration;
 
   static String routeName = 'findDogWalker';
   static String routePath = '/findDogWalker';
@@ -333,6 +335,7 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                                         addressId: widget.addressId,
                                         petId: widget.petId,
                                         uuidPaseador: paseador['uuid'],
+                                        walkDuration: widget.walkDuration
                                       );
                                     },
                                   );

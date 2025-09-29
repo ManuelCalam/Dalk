@@ -14,6 +14,12 @@ class SetWalkScheduleModel extends FlutterFlowModel<SetWalkScheduleWidget> {
   Stream<List<AddressesRow>>? addressesListViewSupabaseStream;
   String selectedWalkDuration = '30 min';
   int customWalkDuration = 30;
+  final TextEditingController customDurationTextController = TextEditingController();
+  final FocusNode customDurationFocusNode = FocusNode();
+
+  final TextEditingController instructionsTextController = TextEditingController();
+  final FocusNode instructionsFocusNode = FocusNode();
+  
   // Models for address_Card dynamic component.
   late FlutterFlowDynamicModels<AddressCardModel> addressCardModels;
 
@@ -24,6 +30,10 @@ class SetWalkScheduleModel extends FlutterFlowModel<SetWalkScheduleWidget> {
 
   @override
   void dispose() {
+    customDurationTextController.dispose();
+    customDurationFocusNode.dispose();
+    instructionsTextController.dispose();
+    instructionsFocusNode.dispose();
     addressCardModels.dispose();
   }
 }
