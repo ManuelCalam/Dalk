@@ -1208,7 +1208,8 @@ Align(
                                               'time': _model.datePicked2?.toIso8601String(),
                                               'addressId': selectedAddressId?.toString(),
                                               'petId': selectedPetId?.toString(),
-                                              'walkDuration': finalWalkDurationInMinutes.toString()
+                                              'walkDuration': finalWalkDurationInMinutes.toString(),
+                                              'instructions': _model.instructionsTextController.toString()
                                             },
                                           );
                                       },

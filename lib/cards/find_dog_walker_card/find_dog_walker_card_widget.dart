@@ -24,6 +24,7 @@ class FindDogWalkerCardWidget extends StatelessWidget {
   final int? petId;
   final String uuidPaseador;
   final int walkDuration;
+  final String instructions;
 
   const FindDogWalkerCardWidget({
     required this.nombre,
@@ -36,13 +37,14 @@ class FindDogWalkerCardWidget extends StatelessWidget {
     required this.petId,
     required this.uuidPaseador,
     required this.walkDuration,
+    required this.instructions,
     Key? key,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: AlignmentDirectional(-1, -1),
+      alignment: const AlignmentDirectional(-1, -1),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 5),
         child: Container(
@@ -184,7 +186,7 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                           final jwt = Supabase.instance.client.auth.currentSession?.accessToken;
                             if (jwt == null) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Error: Usuario no autenticado')),
+                                const SnackBar(content: Text('Error: Usuario no autenticado')),
                               );
                               return;
                             }
@@ -196,6 +198,7 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                               if (petId == null || addressId == null || currentUserUid.isEmpty) {
                                 throw Exception('Datos insuficientes para crear el paseo');
                               } else {
+                                instructions.trim() == '' ? null : instructions;
                                 try {
                                   final response = await Supabase.instance.client
                                       .from('walks')
@@ -211,6 +214,7 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                                           : null,
                                           
                                       'walk_duration_minutes': walkDuration,
+                                      'walker_instructions': instructions
                                       })
                                       .select('id')
                                       .single();
