@@ -306,7 +306,7 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                                     .ilike(
                                       'name',
                                       _model.findDogWalkerInputTextController.text.isEmpty
-                                          ? '%' // esto devuelve todos
+                                          ? '%' 
                                           : '%${_model.findDogWalkerInputTextController.text}%',
                                     ),
                                 builder: (context, snapshot) {

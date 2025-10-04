@@ -134,7 +134,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             addressId: int.tryParse(params.getParam('addressId', ParamType.String) ?? ''),
             petId: int.tryParse(params.getParam('petId', ParamType.String) ?? ''),
             walkDuration: int.tryParse(params.getParam('walkDuration', ParamType.String) ?? '') ?? 30, 
-            instructions: '',  
+            instructions: params.getParam('instructions', ParamType.String) ?? ''
           ),
           requireAuth: true
         ),

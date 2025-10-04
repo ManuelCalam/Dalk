@@ -1209,7 +1209,7 @@ Align(
                                               'addressId': selectedAddressId?.toString(),
                                               'petId': selectedPetId?.toString(),
                                               'walkDuration': finalWalkDurationInMinutes.toString(),
-                                              'instructions': _model.instructionsTextController.toString()
+                                              'instructions': _model.instructionsTextController?.text ?? ''
                                             },
                                           );
                                       },
