@@ -15,8 +15,8 @@ export 'pop_up_walk_options_model.dart';
 class PopUpWalkOptionsWidget extends StatefulWidget {
   final String petName;
   final String address;
-  final DateTime time;
-  final DateTime date;
+  final DateTime? time;
+  final DateTime? date;
 
   const PopUpWalkOptionsWidget({
     super.key,

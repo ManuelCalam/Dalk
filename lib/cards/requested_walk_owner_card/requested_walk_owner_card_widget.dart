@@ -25,6 +25,7 @@ class RequestedWalkOwnerCardWidget extends StatefulWidget {
     required this.time,
     required this.walkerId,
     required this.ownerId,
+    required this.photoUrl
   })  : status = status ?? '[status]',
         petName = petName ?? '[petName]',
         dogWalker = dogWalker ?? '[walkerName]';
@@ -35,6 +36,7 @@ class RequestedWalkOwnerCardWidget extends StatefulWidget {
   final String dogWalker;
   final DateTime? date;
   final DateTime? time;
+  final String photoUrl;
   //chat
   final String walkerId;
   final String ownerId;
@@ -76,14 +78,11 @@ class _RequestedWalkOwnerCardWidgetState
           .eq('id', id)
           .single();
 
-      if (response != null) {
-        final currentStatus = response['status'];
-        final dbOwnerId = response['owner_id'];
-        final dbWalkerId = response['walker_id'];
+      final dbOwnerId = response['owner_id'];
+      final dbWalkerId = response['walker_id'];
 
-        if ((currentUserUid == dbOwnerId || currentUserUid == dbWalkerId)) {
-          await SupaFlow.client.from('walks').delete().eq('id', id);
-        }
+      if ((currentUserUid == dbOwnerId || currentUserUid == dbWalkerId)) {
+        await SupaFlow.client.from('walks').delete().eq('id', id);
       }
       Navigator.pop(context);
     } catch (e) {
@@ -100,27 +99,25 @@ class _RequestedWalkOwnerCardWidgetState
           .eq('id', id)
           .single();
 
-      if (response != null) {
-        final currentStatus = response['status'];
+      final currentStatus = response['status'];
 
-        if (currentStatus == 'Por confirmar' || currentStatus == 'Aceptado') {
-          await SupaFlow.client
-              .from('walks')
-              .update({'status': 'Cancelado'})
-              .eq('id', id);
+      if (currentStatus == 'Por confirmar' || currentStatus == 'Aceptado') {
+        await SupaFlow.client
+            .from('walks')
+            .update({'status': 'Cancelado'})
+            .eq('id', id);
 
-        if (currentStatus == 'Aceptado') {
-            await Supabase.instance.client.functions.invoke(
-              'send-walk-notification',
-              body: {
-                'walk_id': id,
-                'new_status': 'Cancelado',
-              },
-            );
-          }
+      if (currentStatus == 'Aceptado') {
+          await Supabase.instance.client.functions.invoke(
+            'send-walk-notification',
+            body: {
+              'walk_id': id,
+              'new_status': 'Cancelado',
+            },
+          );
         }
       }
-    Navigator.pop(context);
+        Navigator.pop(context);
     } catch (e) {
       handleError(context, e);
     }
@@ -160,37 +157,32 @@ class _RequestedWalkOwnerCardWidgetState
                 width: MediaQuery.sizeOf(context).width * 0.15,
                 height: MediaQuery.sizeOf(context).height * 0.1,
                 decoration: BoxDecoration(),
-                child: Align(
-                  alignment: AlignmentDirectional(0, 0),
-                  child: Container(
-                    width: 70,
-                    height: 70,
-                    decoration: BoxDecoration(),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(15),
-                      child: Image.network(
-                        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxNHx8dXNlcnxlbnwwfHx8fDE3NDY1NTY1OTR8MA&ixlib=rb-4.1.0&q=80&w=1080',
-                        width: MediaQuery.sizeOf(context).width,
-                        height: MediaQuery.sizeOf(context).height,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+                child: Container(
+                  width: MediaQuery.sizeOf(context).width,
+                  height: MediaQuery.sizeOf(context).width,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                  ),
+                  child: Image.network(
+                    widget.photoUrl,
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
             ),
             Expanded(
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0, 15, 0, 15),
+                padding: const EdgeInsetsDirectional.fromSTEB(0, 15, 0, 15),
                 child: Container(
-                  decoration: BoxDecoration(),
+                  decoration: const BoxDecoration(),
                   child: Align(
-                    alignment: AlignmentDirectional(0, 0),
+                    alignment: const AlignmentDirectional(0, 0),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Align(
-                          alignment: AlignmentDirectional(-1, 0),
+                          alignment: const AlignmentDirectional(-1, 0),
                           child: AutoSizeText(
                             widget!.status,
                             maxLines: 2,
@@ -541,25 +533,57 @@ class _RequestedWalkOwnerCardWidgetState
                             buttonSize: MediaQuery.sizeOf(context).width * 0.18,
                             icon: Icon(
                               Icons.cancel,
-                              color: Color(0xFFC40606),
+                              color: FlutterFlowTheme.of(context).error,
                               size: 32,
                             ),
                             onPressed: () async {
-                              showDialog(
-                                context: context,
-                                builder: (_) => PopUpConfirmDialogWidget(
-                                  title: "Eliminar paseo",
-                                  message: "¿Estás seguro de que deseas eliminar este paseo?",
-                                  confirmText: "Cancelar paseo",
-                                  cancelText: "Eliminar paseo",
-                                  confirmColor: FlutterFlowTheme.of(context).accent1,
-                                  cancelColor: FlutterFlowTheme.of(context).error,
-                                  icon: Icons.delete_forever_rounded,
-                                  iconColor: FlutterFlowTheme.of(context).error,
-                                  onConfirm: () => cancelWalk(context, widget.id),
-                                  onCancel: () => deleteWalk(context, widget.id, currentUserUid),
-                                ), 
-                              );
+                              try {
+                                final response = await SupaFlow.client
+                                  .from('walks')
+                                  .select('status')
+                                  .eq('id', widget.id)
+                                  .single();
+
+                                final currentStatus = response['status'];
+                                final bool isCancelled = currentStatus == 'Cancelado' || currentStatus == 'Rechazado';
+                                
+                                final Map<String, dynamic> dialogData = isCancelled 
+                                  ? {
+                                      'title': "Eliminar paseo",
+                                      'message': "¿Estás seguro de que deseas eliminar este paseo?",
+                                      'confirmText': "Eliminar paseo", 
+                                      'icon': Icons.delete_forever_rounded,
+                                      'onConfirm': () => deleteWalk(context, widget.id, currentUserUid),
+                                    }
+                                  : {
+                                      'title': "Cancelar solicitud",
+                                      'message': "¿Estás seguro de que deseas cancelar este paseo?",
+                                      'confirmText': "Cancelar paseo",
+                                      'icon': Icons.cancel_rounded,
+                                      'onConfirm': () => cancelWalk(context, widget.id),
+                                    };
+
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => PopUpConfirmDialogWidget(
+                                    title: dialogData['title'],
+                                    message: dialogData['message'],
+                                    confirmText: dialogData['confirmText'],
+                                    cancelText: "Cerrar",
+                                    confirmColor: FlutterFlowTheme.of(context).error,
+                                    cancelColor: FlutterFlowTheme.of(context).accent1,
+                                    icon: dialogData['icon'],
+                                    iconColor: FlutterFlowTheme.of(context).error,
+                                    onConfirm: dialogData['onConfirm'],
+                                    onCancel: () => Navigator.pop(context),
+                                  ), 
+                                );
+
+                              } catch (e) {
+                                handleError(context, e);                         
+                              }
+                              
+                              
                             },
                           ),
                         ),

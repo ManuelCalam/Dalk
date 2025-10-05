@@ -1,5 +1,7 @@
 import 'package:dalk/backend/supabase/supabase.dart';
 import 'package:dalk/common/chat/chat_widget.dart';
+import 'package:dalk/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
+import 'package:dalk/components/pop_up_walk_options/pop_up_walk_options_widget.dart';
 import '/components/pop_up_dog_profile/pop_up_dog_profile_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -27,6 +29,7 @@ class RequestedWalkWalkerCardWidget extends StatefulWidget {
     required this.time,
     required this.walkerId,
     required this.ownerId,
+    required this.photoUrl,
     String? status,
   })  : this.petName = petName ?? '[petName]',
         this.dogOwner = dogOwner ?? '[dogOwner]',
@@ -38,6 +41,7 @@ class RequestedWalkWalkerCardWidget extends StatefulWidget {
   final DateTime? date;
   final DateTime? time;
   final String status;
+  final String photoUrl;
   //chat
   final String walkerId;
   final String ownerId;
@@ -70,6 +74,73 @@ class _RequestedWalkWalkerCardWidgetState
     super.dispose();
   }
 
+
+  Future<void> deleteWalk(BuildContext context, int id, String currentUserUid) async {
+    try {
+      final response = await SupaFlow.client
+          .from('walks')
+          .select('owner_id, walker_id, status')
+          .eq('id', id)
+          .single();
+
+      final dbOwnerId = response['owner_id'];
+      final dbWalkerId = response['walker_id'];
+
+      if ((currentUserUid == dbOwnerId || currentUserUid == dbWalkerId)) {
+        await SupaFlow.client.from('walks').delete().eq('id', id);
+      }
+      Navigator.pop(context);
+    } catch (e) {
+      handleError(context, e);
+    }
+  }
+
+
+  Future<void> cancelWalk(BuildContext context, int id) async {
+    try {
+      final response = await SupaFlow.client
+          .from('walks')
+          .select('status')
+          .eq('id', id)
+          .single();
+
+      final currentStatus = response['status'];
+
+      if (currentStatus == 'Por confirmar' || currentStatus == 'Aceptado') {
+        await SupaFlow.client
+            .from('walks')
+            .update({'status': 'Cancelado'})
+            .eq('id', id);
+
+      if (currentStatus == 'Aceptado') {
+          await Supabase.instance.client.functions.invoke(
+            'send-walk-notification',
+            body: {
+              'walk_id': id,
+              'new_status': 'Cancelado',
+            },
+          );
+        }
+      }
+        Navigator.pop(context);
+    } catch (e) {
+      handleError(context, e);
+    }
+  }
+
+  void handleError(BuildContext context, dynamic e) {
+    if (e.toString().contains('foreign key') ||
+        e.toString().contains('violates')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se puede eliminar: hay datos relacionados'),
+        ),
+      );
+    }
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -89,21 +160,16 @@ class _RequestedWalkWalkerCardWidgetState
                 width: MediaQuery.sizeOf(context).width * 0.15,
                 height: MediaQuery.sizeOf(context).height * 0.1,
                 decoration: BoxDecoration(),
-                child: Align(
-                  alignment: AlignmentDirectional(0, 0),
-                  child: Container(
-                    width: 70,
-                    height: 70,
-                    decoration: BoxDecoration(),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(15),
-                      child: Image.network(
-                        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxNHx8dXNlcnxlbnwwfHx8fDE3NDY1NTY1OTR8MA&ixlib=rb-4.1.0&q=80&w=1080',
-                        width: MediaQuery.sizeOf(context).width,
-                        height: MediaQuery.sizeOf(context).height,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+                child: Container(
+                  width: MediaQuery.sizeOf(context).width,
+                  height: MediaQuery.sizeOf(context).width,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                  ),
+                  child: Image.network(
+                    widget.photoUrl,
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
@@ -160,6 +226,7 @@ class _RequestedWalkWalkerCardWidgetState
                                           .bodyMedium
                                           .fontStyle,
                                     ),
+                                    color: FlutterFlowTheme.of(context).primary,
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.w600,
                                     fontStyle: FlutterFlowTheme.of(context)
@@ -232,6 +299,7 @@ class _RequestedWalkWalkerCardWidgetState
                                           .bodyMedium
                                           .fontStyle,
                                     ),
+                                    color: FlutterFlowTheme.of(context).primary,
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.w600,
                                     fontStyle: FlutterFlowTheme.of(context)
@@ -281,6 +349,7 @@ class _RequestedWalkWalkerCardWidgetState
                                           .bodyMedium
                                           .fontStyle,
                                     ),
+                                    color: FlutterFlowTheme.of(context).primary,
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.w600,
                                     fontStyle: FlutterFlowTheme.of(context)
@@ -333,6 +402,7 @@ class _RequestedWalkWalkerCardWidgetState
                                           .bodyMedium
                                           .fontStyle,
                                     ),
+                                    color: FlutterFlowTheme.of(context).primary,
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.w600,
                                     fontStyle: FlutterFlowTheme.of(context)
@@ -368,6 +438,52 @@ class _RequestedWalkWalkerCardWidgetState
                           ),
                         ],
                       ),
+                      Padding(
+                              padding: const EdgeInsetsDirectional.fromSTEB(5, 2, 0, 0),
+                              child: InkWell(
+                                splashColor: Colors.transparent,
+                                focusColor: Colors.transparent,
+                                hoverColor: Colors.transparent,
+                                highlightColor: Colors.transparent,
+                                onTap: () async {
+                                  await showModalBottomSheet(
+                                    isScrollControlled: true,
+                                    backgroundColor: Colors.transparent,
+                                    enableDrag: false,
+                                    context: context,
+                                    builder: (context) {
+                                      return Padding(
+                                        padding:
+                                            MediaQuery.viewInsetsOf(context),
+                                        child: PopUpWalkOptionsWidget(petName: widget.petName, address: '', time: widget.time, date: widget.date,),
+                                      );
+                                    },
+                                  ).then((value) => safeSetState(() {}));
+                                },
+                                child: AutoSizeText(
+                                  "Ver mas detalles",
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        font: GoogleFonts.lexend(
+                                          fontWeight: FontWeight.w500,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle,
+                                        ),
+                                        color: FlutterFlowTheme.of(context)
+                                            .secondaryBackground,
+                                        letterSpacing: 0.0,
+                                        fontWeight: FontWeight.w500,
+                                        fontStyle: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontStyle,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                ),
+                              ),
+                            ),
                     ],
                   ),
                 ),
@@ -424,22 +540,43 @@ class _RequestedWalkWalkerCardWidgetState
                               borderRadius: 0,
                               icon: Icon(
                                 Icons.check_circle,
-                                color: Color(0xFF3DBB0B),
+                                color: Color.fromARGB(255, 8, 178, 127),
                                 size: 32,
                               ),
                               onPressed: () async {
-                                await SupaFlow.client
-                                    .from('walks')
-                                    .update({'status': 'Aceptado'})
-                                    .eq('id', widget.id); 
-                                    //Notificación: Aceptado
-                                    await Supabase.instance.client.functions.invoke(
-                                      'send-walk-notification',
-                                      body: {
-                                        'walk_id': widget.id,
-                                        'new_status': 'Aceptado',
-                                      },
-                                    );
+
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => PopUpConfirmDialogWidget(
+                                    title: "Aceptar paseo",
+                                    message: "¿Estás seguro de que deseas aceptar este paseo?",
+                                    confirmText: "Aceptar paseo",
+                                    cancelText: "Cancelar",
+                                    confirmColor: FlutterFlowTheme.of(context).success,
+                                    cancelColor: FlutterFlowTheme.of(context).accent1,
+                                    icon: Icons.check_circle_rounded,
+                                    iconColor: FlutterFlowTheme.of(context).success,
+                                    onConfirm: () async => {
+                                      await SupaFlow.client
+                                        .from('walks')
+                                        .update({'status': 'Aceptado'})
+                                        .eq('id', widget.id),
+
+                                      await Supabase.instance.client.functions.invoke(
+                                        'send-walk-notification',
+                                        body: {
+                                          'walk_id': widget.id,
+                                          'new_status': 'Aceptado',
+                                        },
+                                      ), 
+                                      Navigator.pop(context)
+                                    },
+                                    onCancel: () => Navigator.pop(context),
+                                  ), 
+                                );
+
+
+
 
                               },
                             ),
@@ -455,75 +592,121 @@ class _RequestedWalkWalkerCardWidgetState
                             borderRadius: 0,
                             icon: Icon(
                               Icons.cancel,
-                              color: Color(0xFFC40606),
+                              color: FlutterFlowTheme.of(context).error,
                               size: 32,
                             ),
+                            // onPressed: () async {
+                            //   try {
+                            //     final response = await SupaFlow.client
+                            //         .from('walks')
+                            //         .select('status, owner_id, walker_id')
+                            //         .eq('id', widget.id)
+                            //         .single();
+
+                            //     final currentStatus = response['status'];
+                                
+                            //     if (currentStatus == 'Por confirmar') {
+                            //         await SupaFlow.client
+                            //             .from('walks')
+                            //             .update({'status': 'Rechazado'})
+                            //             .eq('id', widget.id);
+                                    
+                            //         await Supabase.instance.client.functions.invoke(
+                            //           'send-walk-notification',
+                            //           body: {
+                            //             'walk_id': widget.id,
+                            //             'new_status': 'Rechazado',
+                            //           },
+                            //         );
+                                    
+                            //     } else if(currentStatus == 'Aceptado'){
+                            //         await SupaFlow.client
+                            //             .from('walks')
+                            //             .update({'status': 'Cancelado'})
+                            //             .eq('id', widget.id);
+                                    
+                            //         await Supabase.instance.client.functions.invoke(
+                            //           'send-walk-notification',
+                            //           body: {
+                            //             'walk_id': widget.id,
+                            //             'new_status': 'Cancelado',
+                            //           },
+                            //         );
+                                    
+                            //     } else if (currentStatus == 'Rechazado' || currentStatus == 'Cancelado'){
+                            //         // Solo verificar permisos básicos
+                            //         final dbOwnerId = response['owner_id'];
+                            //         final dbWalkerId = response['walker_id'];
+                                    
+                            //         if (currentUserUid == dbOwnerId || currentUserUid == dbWalkerId) {
+                            //             await SupaFlow.client
+                            //                 .from('walks')
+                            //                 .delete()
+                            //                 .eq('id', widget.id);
+                            //         }
+                            //     }
+                                                              
+                            //   } catch (e) {
+                            //     // Solo mostrar error si es crítico
+                            //     if (e.toString().contains('foreign key') || 
+                            //         e.toString().contains('violates')) {
+                            //         ScaffoldMessenger.of(context).showSnackBar(
+                            //             SnackBar(
+                            //                 content: Text('No se puede eliminar: hay datos relacionados'),
+                            //                 backgroundColor: Colors.orange,
+                            //             ),
+                            //         );
+                            //     }
+                            //   }
+                            // }
+
                             onPressed: () async {
                               try {
                                 final response = await SupaFlow.client
-                                    .from('walks')
-                                    .select('status, owner_id, walker_id')
-                                    .eq('id', widget.id)
-                                    .single();
+                                  .from('walks')
+                                  .select('status')
+                                  .eq('id', widget.id)
+                                  .single();
 
-                                if (response != null) {
-                                    final currentStatus = response['status'];
-                                    
-                                    if (currentStatus == 'Por confirmar') {
-                                        await SupaFlow.client
-                                            .from('walks')
-                                            .update({'status': 'Rechazado'})
-                                            .eq('id', widget.id);
-                                        
-                                        await Supabase.instance.client.functions.invoke(
-                                          'send-walk-notification',
-                                          body: {
-                                            'walk_id': widget.id,
-                                            'new_status': 'Rechazado',
-                                          },
-                                        );
-                                        
-                                    } else if(currentStatus == 'Aceptado'){
-                                        await SupaFlow.client
-                                            .from('walks')
-                                            .update({'status': 'Cancelado'})
-                                            .eq('id', widget.id);
-                                        
-                                        await Supabase.instance.client.functions.invoke(
-                                          'send-walk-notification',
-                                          body: {
-                                            'walk_id': widget.id,
-                                            'new_status': 'Cancelado',
-                                          },
-                                        );
-                                        
-                                    } else if (currentStatus == 'Rechazado' || currentStatus == 'Cancelado'){
-                                        // ✅ OPTIMIZADO: Solo verificar permisos básicos
-                                        final dbOwnerId = response['owner_id'];
-                                        final dbWalkerId = response['walker_id'];
-                                        
-                                        if (currentUserUid == dbOwnerId || currentUserUid == dbWalkerId) {
-                                            await SupaFlow.client
-                                                .from('walks')
-                                                .delete()
-                                                .eq('id', widget.id);
-                                        }
-                                    }
-                                }
+                                final currentStatus = response['status'];
+                                final bool isCancelled = currentStatus == 'Cancelado' || currentStatus == 'Rechazado';
                                 
+                                final Map<String, dynamic> dialogData = isCancelled 
+                                  ? {
+                                      'title': "Eliminar paseo",
+                                      'message': "¿Estás seguro de que deseas eliminar este paseo?",
+                                      'confirmText': "Eliminar paseo", 
+                                      'icon': Icons.delete_forever_rounded,
+                                      'onConfirm': () => deleteWalk(context, widget.id, currentUserUid),
+                                    }
+                                  : {
+                                      'title': "Cancelar solicitud",
+                                      'message': "¿Estás seguro de que deseas cancelar este paseo?",
+                                      'confirmText': "Cancelar paseo",
+                                      'icon': Icons.cancel_rounded,
+                                      'onConfirm': () => cancelWalk(context, widget.id),
+                                    };
+
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => PopUpConfirmDialogWidget(
+                                    title: dialogData['title'],
+                                    message: dialogData['message'],
+                                    confirmText: dialogData['confirmText'],
+                                    cancelText: "Cerrar",
+                                    confirmColor: FlutterFlowTheme.of(context).error,
+                                    cancelColor: FlutterFlowTheme.of(context).accent1,
+                                    icon: dialogData['icon'],
+                                    iconColor: FlutterFlowTheme.of(context).error,
+                                    onConfirm: dialogData['onConfirm'],
+                                    onCancel: () => Navigator.pop(context),
+                                  ), 
+                                );
+
                               } catch (e) {
-                                // ✅ SIMPLIFICADO: Solo mostrar error si es crítico
-                                if (e.toString().contains('foreign key') || 
-                                    e.toString().contains('violates')) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                            content: Text('No se puede eliminar: hay datos relacionados'),
-                                            backgroundColor: Colors.orange,
-                                        ),
-                                    );
-                                }
+                                handleError(context, e);
                               }
-                            }
+                            },
                           ),
                         ),
                       ),

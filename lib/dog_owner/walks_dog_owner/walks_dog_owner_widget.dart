@@ -1,25 +1,19 @@
 import 'package:dalk/cards/current_walk_owner_card/current_walk_owner_card_widget.dart';
 import 'package:dalk/cards/non_reviewed_walk_card/non_reviewed_walk_card_widget.dart';
 import 'package:dalk/cards/reviewed_walk_card/reviewed_walk_card_widget.dart';
+import 'package:dalk/flutter_flow/flutter_flow_widgets.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/cards/requested_walk_owner_card/requested_walk_owner_card_widget.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
-import '/components/pop_up_add_review/pop_up_add_review_widget.dart';
-import '/components/pop_up_dog_profile/pop_up_dog_profile_widget.dart';
-import '/components/pop_up_dog_walker_profile/pop_up_dog_walker_profile_widget.dart';
-import '/components/pop_up_review_details/pop_up_review_details_widget.dart';
 import '/flutter_flow/flutter_flow_button_tabbar.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 import 'walks_dog_owner_model.dart';
 export 'walks_dog_owner_model.dart';
@@ -107,7 +101,7 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                     height: MediaQuery.sizeOf(context).height,
                     decoration: BoxDecoration(
                       color: FlutterFlowTheme.of(context).tertiary,
-                      borderRadius: BorderRadius.only(
+                      borderRadius: const BorderRadius.only(
                         bottomLeft: Radius.circular(0),
                         bottomRight: Radius.circular(0),
                         topLeft: Radius.circular(50),
@@ -117,48 +111,121 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       children: [
-                        wrapWithModel(
-                          model: _model.goBackContainerModel,
-                          updateCallback: () => safeSetState(() {}),
-                          child: GoBackContainerWidget(),
+                        Container(
+                          width: MediaQuery.sizeOf(context).width,
+                          decoration: BoxDecoration(),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              wrapWithModel(
+                                model: _model.goBackContainerModel,
+                                updateCallback: () => safeSetState(() {}),
+                                child: GoBackContainerWidget(),
+                              ),
+                              Padding(
+                                padding:
+                                    EdgeInsetsDirectional.fromSTEB(0, 15, 25, 0),
+                                child: FFButtonWidget(
+                                  onPressed: () {
+                                    print('Button pressed ...');
+                                  },
+                                  text: 'Historial de paseos',
+                                  options: FFButtonOptions(
+                                    height: 40,
+                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                        0, 0, 0, 0),
+                                    iconAlignment: IconAlignment.end,
+                                    iconPadding: EdgeInsetsDirectional.fromSTEB(
+                                        0, 0, 0, 0),
+                                    color: Colors.transparent,
+                                    textStyle: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .override(
+                                          font: GoogleFonts.lexend(
+                                            fontWeight:
+                                                FlutterFlowTheme.of(context)
+                                                    .bodyMedium
+                                                    .fontWeight,
+                                            fontStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .bodyMedium
+                                                    .fontStyle,
+                                          ),
+                                          color: FlutterFlowTheme.of(context)
+                                              .primary,
+                                          letterSpacing: 0.0,
+                                          fontWeight: FlutterFlowTheme.of(context)
+                                              .bodyMedium
+                                              .fontWeight,
+                                          fontStyle: FlutterFlowTheme.of(context)
+                                              .bodyMedium
+                                              .fontStyle,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                    elevation: 0,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 8),
-                          child: AutoSizeText(
-                            'Paseos',
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            minFontSize: 16,
-                            style: FlutterFlowTheme.of(context)
-                                .bodyMedium
-                                .override(
-                                  font: GoogleFonts.lexend(
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                          child: Container(
+                            width: MediaQuery.sizeOf(context).width * 0.9,
+                            decoration: const BoxDecoration(),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Align(
+                                  alignment: AlignmentDirectional(-1, 0),
+                                  child: Padding(
+                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                        0, 0, 0, 8),
+                                    child: AutoSizeText(
+                                      'Paseos',
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      minFontSize: 16,
+                                      style: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .override(
+                                            font: GoogleFonts.lexend(
+                                              fontWeight: FontWeight.bold,
+                                              fontStyle:
+                                                  FlutterFlowTheme.of(context)
+                                                      .bodyMedium
+                                                      .fontStyle,
+                                            ),
+                                            color: FlutterFlowTheme.of(context)
+                                                .primary,
+                                            fontSize: 24,
+                                            letterSpacing: 0.0,
+                                            fontWeight: FontWeight.bold,
+                                            fontStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .bodyMedium
+                                                    .fontStyle,
+                                          ),
+                                    ),
                                   ),
-                                  color: FlutterFlowTheme.of(context).primary,
-                                  fontSize: 24,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FontWeight.bold,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .fontStyle,
                                 ),
+                              ],
+                            ),
                           ),
                         ),
                         Expanded(
                           child: Padding(
-                            padding:
-                                EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
+                            padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
                             child: Container(
                               width: MediaQuery.sizeOf(context).width * 0.9,
-                              decoration: BoxDecoration(),
+                              decoration: const BoxDecoration(),
                               child: Column(
                                 children: [
                                   Align(
-                                    alignment: Alignment(0, 0),
+                                    alignment: const Alignment(0, 0),
                                     child: FlutterFlowButtonTabBar(
                                       useToggleButtonStyle: true,
                                       labelStyle: FlutterFlowTheme.of(context)
@@ -174,7 +241,7 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                                       .titleMedium
                                                       .fontStyle,
                                             ),
-                                            fontSize: 16,
+                                            fontSize: 12,
                                             letterSpacing: 0.0,
                                             fontWeight:
                                                 FlutterFlowTheme.of(context)
@@ -185,61 +252,52 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                                     .titleMedium
                                                     .fontStyle,
                                           ),
-                                      unselectedLabelStyle: FlutterFlowTheme.of(
-                                              context)
-                                          .titleMedium
-                                          .override(
-                                            font: GoogleFonts.lexend(
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .titleMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .titleMedium
-                                                      .fontStyle,
-                                            ),
-                                            fontSize: 16,
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                FlutterFlowTheme.of(context)
-                                                    .titleMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .titleMedium
-                                                    .fontStyle,
-                                          ),
-                                      labelColor:
-                                          FlutterFlowTheme.of(context).accent1,
-                                      unselectedLabelColor: Color(0xFF717981),
-                                      backgroundColor:
+                                      unselectedLabelStyle:
                                           FlutterFlowTheme.of(context)
-                                              .alternate,
-                                      unselectedBackgroundColor:
-                                          FlutterFlowTheme.of(context)
-                                              .alternate,
-                                      unselectedBorderColor:
-                                          FlutterFlowTheme.of(context)
-                                              .alternate,
+                                              .titleMedium
+                                              .override(
+                                                font: GoogleFonts.lexend(
+                                                  fontWeight:
+                                                      FlutterFlowTheme.of(context)
+                                                          .titleMedium
+                                                          .fontWeight,
+                                                  fontStyle:
+                                                      FlutterFlowTheme.of(context)
+                                                          .titleMedium
+                                                          .fontStyle,
+                                                ),
+                                                fontSize: 12,
+                                                letterSpacing: 0.0,
+                                                fontWeight:
+                                                    FlutterFlowTheme.of(context)
+                                                        .titleMedium
+                                                        .fontWeight,
+                                                fontStyle:
+                                                    FlutterFlowTheme.of(context)
+                                                        .titleMedium
+                                                        .fontStyle,
+                                              ),
+                                      labelColor: FlutterFlowTheme.of(context).accent1,unselectedLabelColor: Color(0xFF717981),
+                                      backgroundColor: FlutterFlowTheme.of(context).alternate,
+                                      unselectedBackgroundColor: FlutterFlowTheme.of(context).alternate,
+                                      unselectedBorderColor: FlutterFlowTheme.of(context).alternate,
                                       borderWidth: 0,
                                       borderRadius: 8,
                                       elevation: 0,
-                                      labelPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              3, 0, 7, 0),
                                       buttonMargin:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              8, 0, 8, 0),
-                                      tabs: [
+                                          const EdgeInsetsDirectional.fromSTEB(8, 0, 8, 0),
+                                      tabs: const [
                                         Tab(
-                                          text: 'Solicitados',
+                                          text: 'Por confirmar',
+                                          icon: Icon(Icons.pending, size: 30),
                                         ),
                                         Tab(
-                                          text: 'Activo',
+                                          text: 'Aceptados',
+                                          icon: Icon(Icons.check_circle, size: 30),
                                         ),
                                         Tab(
-                                          text: 'Completados',
+                                          text: 'En Curso',
+                                          icon: FaIcon(FontAwesomeIcons.mapLocation, size: 30),
                                         ),
                                       ],
                                       controller: _model.tabBarController,
@@ -259,7 +317,7 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
 
                                         // -------- Pestaña de paseos por confirmar ----------
                                         Padding( 
-                                          padding: EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+                                          padding: const EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
                                           child: StreamBuilder<List<Map<String, dynamic>>>(
                                             stream: SupaFlow.client
                                                 .from('walks')
@@ -267,19 +325,18 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                                 .eq('owner_id', currentUserUid),
                                             builder: (context, snapshot) {
                                               if (!snapshot.hasData) {
-                                                return Center(child: CircularProgressIndicator());
+                                                return const Center(child: CircularProgressIndicator());
                                               }
 
                                               final walksList = snapshot.data!
                                                   .where((walk) =>
                                                       walk['status'] == 'Por confirmar' ||
-                                                      // walk['status'] == 'Aceptado' ||
                                                       walk['status'] == 'Rechazado' ||
                                                       walk['status'] == 'Cancelado')
                                                   .toList();
 
                                               if (walksList.isEmpty) {
-                                                return Center(child: Text('No hay paseos solicitados.'));
+                                                return const Center(child: Text('No hay paseos solicitados.'));
                                               }
 
                                               return ListView.builder(
@@ -293,7 +350,7 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                                     future: fetchWalkInfoFromView(walk['id']),
                                                     builder: (context, snapshot) {
                                                       if (!snapshot.hasData) {
-                                                        return SizedBox(); 
+                                                        return const SizedBox(); 
                                                       }
 
                                                       final fullWalkData = snapshot.data!;
@@ -310,6 +367,7 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                                         status: fullWalkData['status'] ?? '',
                                                         walkerId: fullWalkData['walker_id'],
                                                         ownerId: fullWalkData['owner_id'],
+                                                        photoUrl: fullWalkData['walker_photo_url']
                                                       );
                                                     },
                                                   );
