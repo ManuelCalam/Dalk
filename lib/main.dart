@@ -44,7 +44,7 @@ void main() async {
     ),
   );
 
-  Stripe.publishableKey = "asdasdasd";  
+  Stripe.publishableKey = "pk_test_51S48646aB9DzvCSx9BqLEjUIcmpXvTuIU1elVEauQmFwOT2Ww3Sj2idqp148wcPsNWnbmtibCwCzgMjMfx02w08h00mNNCCfbB";  
 
 
   runApp(MyApp());
