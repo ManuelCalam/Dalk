@@ -933,13 +933,13 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                 alignment:
                                                     AlignmentDirectional(0, 0),
                                                 child: FlutterFlowChoiceChips(
-                                                  options: [
+                                                  options: const [
                                                     ChipData(
                                                         'Sociable con otros perros'),
                                                     ChipData('Nervioso'),
                                                     ChipData('Tranquilo'),
                                                     ChipData('Obediente'),
-                                                    ChipData('EnergÃ©tico'),
+                                                    ChipData('Energético'),
                                                     ChipData(
                                                         'Tira de la correa'),
                                                     ChipData(
@@ -975,6 +975,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                               color: FlutterFlowTheme
                                                                       .of(context)
                                                                   .info,
+                                                              fontSize: 16,
                                                               letterSpacing:
                                                                   0.0,
                                                               fontWeight:
@@ -1080,9 +1081,6 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                         child: Container(
                                           width:
                                               MediaQuery.sizeOf(context).width,
-                                          height: MediaQuery.sizeOf(context)
-                                                  .height *
-                                              0.05,
                                           decoration: BoxDecoration(
                                             color: FlutterFlowTheme.of(context)
                                                 .alternate,
@@ -1090,174 +1088,93 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                 BorderRadius.circular(35),
                                           ),
                                           child: Container(
-                                            width: double.infinity,
+                                            width: MediaQuery.sizeOf(context).width,
                                             child: TextFormField(
-                                              controller: _model
-                                                  .dogInfoInputTextController,
-                                              focusNode:
-                                                  _model.dogInfoInputFocusNode,
+                                              controller: _model.dogInfoInputTextController,
+                                              focusNode: _model.dogInfoInputFocusNode,
                                               autofocus: false,
                                               obscureText: false,
                                               decoration: InputDecoration(
                                                 isDense: true,
-                                                labelStyle: FlutterFlowTheme.of(
-                                                        context)
-                                                    .bodyLarge
-                                                    .override(
+                                                labelText: 'Acerca de tu perro',
+                                                labelStyle: FlutterFlowTheme.of(context).bodyLarge.override(
                                                       font: GoogleFonts.lexend(
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyLarge
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyLarge
-                                                                .fontStyle,
+                                                        fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+                                                        fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
                                                       ),
-                                                      color: FlutterFlowTheme
-                                                              .of(context)
-                                                          .secondaryBackground,
+                                                      color: FlutterFlowTheme.of(context).primary,
                                                       fontSize: 16,
                                                       letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyLarge
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyLarge
-                                                              .fontStyle,
+                                                      fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+                                                      fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
                                                     ),
-                                                hintText:
-                                                    'Cuéntamos más sobre tu mascota',
-                                                hintStyle: FlutterFlowTheme.of(
-                                                        context)
-                                                    .labelMedium
-                                                    .override(
+                                                hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
                                                       font: GoogleFonts.lexend(
-                                                        fontWeight:
-                                                            FontWeight.normal,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontStyle,
+                                                        fontWeight: FontWeight.bold,
+                                                        fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
                                                       ),
-                                                      color:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .primaryText,
+                                                      color: FlutterFlowTheme.of(context).primary,
                                                       fontSize: 16,
                                                       letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FontWeight.normal,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .labelMedium
-                                                              .fontStyle,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
                                                     ),
-                                                enabledBorder:
-                                                    OutlineInputBorder(
+                                                enabledBorder: OutlineInputBorder(
                                                   borderSide: BorderSide(
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .alternate,
+                                                    color: FlutterFlowTheme.of(context).alternate,
                                                     width: 1,
                                                   ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(30),
+                                                  borderRadius: BorderRadius.circular(30),
                                                 ),
-                                                focusedBorder:
-                                                    OutlineInputBorder(
+                                                focusedBorder: OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                     color: Color(0x00000000),
                                                     width: 1,
                                                   ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(30),
+                                                  borderRadius: BorderRadius.circular(30),
                                                 ),
                                                 errorBorder: OutlineInputBorder(
                                                   borderSide: BorderSide(
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .error,
+                                                    color: FlutterFlowTheme.of(context).error,
                                                     width: 1,
                                                   ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(30),
+                                                  borderRadius: BorderRadius.circular(30),
                                                 ),
-                                                focusedErrorBorder:
-                                                    OutlineInputBorder(
+                                                focusedErrorBorder: OutlineInputBorder(
                                                   borderSide: BorderSide(
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .error,
+                                                    color: FlutterFlowTheme.of(context).error,
                                                     width: 1,
                                                   ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(30),
+                                                  borderRadius: BorderRadius.circular(30),
                                                 ),
                                                 filled: true,
-                                                fillColor:
-                                                    FlutterFlowTheme.of(context)
-                                                        .alternate,
+                                                fillColor: FlutterFlowTheme.of(context).alternate,
                                                 prefixIcon: Icon(
                                                   Icons.person,
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primary,
+                                                  color: FlutterFlowTheme.of(context).primary,
                                                   size: 25,
                                                 ),
                                               ),
-                                              style: FlutterFlowTheme.of(
-                                                      context)
-                                                  .bodyMedium
-                                                  .override(
+                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                     font: GoogleFonts.lexend(
-                                                      fontWeight:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .fontStyle,
+                                                      fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                     ),
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .primaryText,
+                                                    color: FlutterFlowTheme.of(context).secondaryBackground,
                                                     fontSize: 16,
                                                     letterSpacing: 0.0,
-                                                    fontWeight:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontStyle,
+                                                    fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                   ),
                                               maxLines: null,
                                               minLines: 5,
-                                              keyboardType:
-                                                  TextInputType.multiline,
-                                              cursorColor:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primaryText,
-                                              validator: _model
-                                                  .dogInfoInputTextControllerValidator
-                                                  .asValidator(context),
+                                              keyboardType: TextInputType.multiline,
+                                              cursorColor: FlutterFlowTheme.of(context).primaryText,
+                                              validator:
+                                                  _model.dogInfoInputTextControllerValidator.asValidator(context),
                                             ),
-                                          ),
+                                          )
+
                                         ),
                                       ),
                                     ),
