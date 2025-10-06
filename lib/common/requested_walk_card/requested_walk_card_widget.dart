@@ -1,4 +1,5 @@
 import 'package:dalk/common/chat/chat_widget.dart';
+import 'package:dalk/components/pop_up_dog_walker_profile/pop_up_dog_walker_profile_widget.dart';
 import 'package:dalk/components/pop_up_walk_options/pop_up_walk_options_widget.dart';
 
 import '/components/pop_up_dog_profile/pop_up_dog_profile_widget.dart';
@@ -204,7 +205,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                                                   .fontStyle,
                                         ),
                                         color: FlutterFlowTheme.of(context)
-                                            .secondaryBackground,
+                                            .accent1,
                                         letterSpacing: 0.0,
                                         fontWeight: FontWeight.w500,
                                         fontStyle: FlutterFlowTheme.of(context)
@@ -217,9 +218,8 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                             ),
                           ],
                         ),
-                        Flex(
+                        Row(
                           mainAxisSize: MainAxisSize.max,
-                          direction: Axis.horizontal,
                           children: [
                             Padding(
                               padding: const EdgeInsetsDirectional.fromSTEB(0, 2, 0, 0),
@@ -248,25 +248,48 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                             ),
                             Padding(
                               padding: const EdgeInsetsDirectional.fromSTEB(5, 2, 0, 0),
-                              child: Text(
-                                widget.userName,
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      font: GoogleFonts.lexend(
+                              child: InkWell(
+                                splashColor: Colors.transparent,
+                                focusColor: Colors.transparent,
+                                hoverColor: Colors.transparent,
+                                highlightColor: Colors.transparent,
+                                onTap: () async {
+                                  await showModalBottomSheet(
+                                    isScrollControlled: true,
+                                    backgroundColor: Colors.transparent,
+                                    enableDrag: false,
+                                    context: context,
+                                    builder: (context) {
+                                      return Padding(
+                                        padding:
+                                            MediaQuery.viewInsetsOf(context),
+                                        child: const PopUpDogWalkerProfileWidget(),
+                                      );
+                                    },
+                                  ).then((value) => safeSetState(() {}));
+                                },
+                                child: AutoSizeText(
+                                  widget.userName,
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        font: GoogleFonts.lexend(
+                                          fontWeight: FontWeight.w500,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle,
+                                        ),
+                                        color: FlutterFlowTheme.of(context)
+                                            .accent1,
+                                        letterSpacing: 0.0,
                                         fontWeight: FontWeight.w500,
                                         fontStyle: FlutterFlowTheme.of(context)
                                             .bodyMedium
                                             .fontStyle,
+                                        decoration: TextDecoration.underline,
                                       ),
-                                      color: FlutterFlowTheme.of(context)
-                                          .secondaryBackground,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.w500,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
+                                ),
                               ),
                             ),
                           ],
