@@ -446,19 +446,19 @@ class _RequestedWalkWalkerCardWidgetState
                                 hoverColor: Colors.transparent,
                                 highlightColor: Colors.transparent,
                                 onTap: () async {
-                                  await showModalBottomSheet(
-                                    isScrollControlled: true,
-                                    backgroundColor: Colors.transparent,
-                                    enableDrag: false,
-                                    context: context,
-                                    builder: (context) {
-                                      return Padding(
-                                        padding:
-                                            MediaQuery.viewInsetsOf(context),
-                                        child: PopUpWalkOptionsWidget(petName: widget.petName, address: '', time: widget.time, date: widget.date,),
-                                      );
-                                    },
-                                  ).then((value) => safeSetState(() {}));
+                                  // await showModalBottomSheet(
+                                  //   isScrollControlled: true,
+                                  //   backgroundColor: Colors.transparent,
+                                  //   enableDrag: false,
+                                  //   context: context,
+                                  //   builder: (context) {
+                                  //     return Padding(
+                                  //       padding:
+                                  //           MediaQuery.viewInsetsOf(context),
+                                  //       child: PopUpWalkOptionsWidget(petName: widget.petName, address: '', time: widget.time, date: widget.date,),
+                                  //     );
+                                  //   },
+                                  // ).then((value) => safeSetState(() {}));
                                 },
                                 child: AutoSizeText(
                                   "Ver mas detalles",
@@ -521,7 +521,7 @@ class _RequestedWalkWalkerCardWidgetState
                                   MaterialPageRoute(
                                     builder: (context) => ChatWidget(
                                       walkerId: widget.walkerId,
-                                      ownerId: widget.ownerId,   // <-- el del paseo
+                                      ownerId: widget.ownerId,  
                                     ),
                                   ),
                                 );

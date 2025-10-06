@@ -3,6 +3,7 @@ import 'package:dalk/cards/current_walk_walker_card/current_walk_walker_card_wid
 import 'package:dalk/cards/non_reviewed_dog_card/non_reviewed_dog_card_widget.dart';
 import 'package:dalk/cards/requested_walk_walker_card/requested_walk_walker_card_widget.dart';
 import 'package:dalk/cards/reviewed_dog_card/reviewed_dog_card_widget.dart';
+import 'package:dalk/common/requested_walk_card/requested_walk_card_widget.dart';
 import 'package:dalk/flutter_flow/flutter_flow_widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -355,20 +356,37 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
                                                       }
 
                                                       final fullWalkData = snapshot.data!;
-                                                      return RequestedWalkWalkerCardWidget(
+                                                      // return RequestedWalkWalkerCardWidget(
+                                                      //   id: fullWalkData['id'],
+                                                      //   petName: fullWalkData['pet_name'] ?? '',
+                                                      //   dogOwner: fullWalkData['owner_name'] ?? '',
+                                                      //   date: fullWalkData['startTime'] != null
+                                                      //       ? DateTime.tryParse(fullWalkData['startTime'])
+                                                      //       : null,
+                                                      //   time: fullWalkData['startTime'] != null
+                                                      //       ? DateTime.tryParse(fullWalkData['startTime'])
+                                                      //       : null,
+                                                      //   status: fullWalkData['status'] ?? '',
+                                                      //   walkerId: fullWalkData['walker_id'],
+                                                      //   ownerId: fullWalkData['owner_id'],
+                                                      //   photoUrl: fullWalkData['walker_photo_url']
+                                                      // );
+
+                                                      return RequestedWalkCardWidget(
                                                         id: fullWalkData['id'],
+                                                        status: fullWalkData['status'] ?? '',
                                                         petName: fullWalkData['pet_name'] ?? '',
-                                                        dogOwner: fullWalkData['owner_name'] ?? '',
+                                                        usertype: 'Paseador',
+                                                        userName: fullWalkData['walker_name'] ?? '',
                                                         date: fullWalkData['startTime'] != null
                                                             ? DateTime.tryParse(fullWalkData['startTime'])
                                                             : null,
                                                         time: fullWalkData['startTime'] != null
                                                             ? DateTime.tryParse(fullWalkData['startTime'])
                                                             : null,
-                                                        status: fullWalkData['status'] ?? '',
+                                                        photoUrl: fullWalkData['walker_photo_url'],
                                                         walkerId: fullWalkData['walker_id'],
                                                         ownerId: fullWalkData['owner_id'],
-                                                        photoUrl: fullWalkData['walker_photo_url']
                                                       );
                                                     },
                                                   );

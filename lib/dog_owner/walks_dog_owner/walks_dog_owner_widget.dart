@@ -1,6 +1,7 @@
 import 'package:dalk/cards/current_walk_owner_card/current_walk_owner_card_widget.dart';
 import 'package:dalk/cards/non_reviewed_walk_card/non_reviewed_walk_card_widget.dart';
 import 'package:dalk/cards/reviewed_walk_card/reviewed_walk_card_widget.dart';
+import 'package:dalk/common/requested_walk_card/requested_walk_card_widget.dart';
 import 'package:dalk/flutter_flow/flutter_flow_widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '/auth/supabase_auth/auth_util.dart';
@@ -277,7 +278,7 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                                         .titleMedium
                                                         .fontStyle,
                                               ),
-                                      labelColor: FlutterFlowTheme.of(context).accent1,unselectedLabelColor: Color(0xFF717981),
+                                      labelColor: FlutterFlowTheme.of(context).accent1,unselectedLabelColor: const Color(0xFF717981),
                                       backgroundColor: FlutterFlowTheme.of(context).alternate,
                                       unselectedBackgroundColor: FlutterFlowTheme.of(context).alternate,
                                       unselectedBorderColor: FlutterFlowTheme.of(context).alternate,
@@ -354,20 +355,23 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                                       }
 
                                                       final fullWalkData = snapshot.data!;
-                                                      return RequestedWalkOwnerCardWidget(
+
+
+                                                      return RequestedWalkCardWidget(
                                                         id: fullWalkData['id'],
+                                                        status: fullWalkData['status'] ?? '',
                                                         petName: fullWalkData['pet_name'] ?? '',
-                                                        dogWalker: fullWalkData['walker_name'] ?? '',
+                                                        usertype: 'Dueño',
+                                                        userName: fullWalkData['walker_name'] ?? '',
                                                         date: fullWalkData['startTime'] != null
                                                             ? DateTime.tryParse(fullWalkData['startTime'])
                                                             : null,
                                                         time: fullWalkData['startTime'] != null
                                                             ? DateTime.tryParse(fullWalkData['startTime'])
                                                             : null,
-                                                        status: fullWalkData['status'] ?? '',
+                                                        photoUrl: fullWalkData['walker_photo_url'],
                                                         walkerId: fullWalkData['walker_id'],
                                                         ownerId: fullWalkData['owner_id'],
-                                                        photoUrl: fullWalkData['walker_photo_url']
                                                       );
                                                     },
                                                   );

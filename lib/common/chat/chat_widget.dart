@@ -86,14 +86,14 @@ class _ChatWidgetState extends State<ChatWidget> {
 
     final data = await _supabase
         .from('users')
-        .select('name, photoUrl')
+        .select('name, photo_url')
         .eq('uuid', otherId)
         .maybeSingle();
 
     if (data != null) {
       setState(() {
         otherUserName = data['name'];
-        otherUserPhotoUrl = data['photoUrl'];
+        otherUserPhotoUrl = data['photo_url'];
       });
     }
   }
@@ -201,8 +201,8 @@ class _ChatWidgetState extends State<ChatWidget> {
                   height: MediaQuery.sizeOf(context).height * 0.2,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).secondary,
-                    boxShadow: [
-                      const BoxShadow(
+                    boxShadow: const [
+                      BoxShadow(
                         blurRadius: 4,
                         color: Color(0xFF162C43),
                         offset: Offset(0, 2),
@@ -221,7 +221,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Padding(
-                            padding: const EdgeInsets.only(left: 15),
+                            padding: const EdgeInsets.only(left: 15, bottom: 25),
                             child: InkWell(
                               onTap: () => context.safePop(),
                               child: Icon(
@@ -311,15 +311,13 @@ class _ChatWidgetState extends State<ChatWidget> {
                               decoration: BoxDecoration(
                                 color: isMine
                                     ? FlutterFlowTheme.of(context).primary
-                                    : Colors.grey[300],
+                                    : const Color(0xFF717981),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
                                 msg['content'],
                                 style: TextStyle(
-                                  color: isMine
-                                      ? FlutterFlowTheme.of(context).info
-                                      : Colors.black,
+                                  color: FlutterFlowTheme.of(context).info
                                 ),
                               ),
                             ),
