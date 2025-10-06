@@ -36,7 +36,7 @@ class NotificationService {
           await updateFcmToken(uid);
         }
       } catch (e) {
-        print('❌ Error configurando NotificationService: $e');
+        // Error silencioso
       }
     });
   }
@@ -105,15 +105,15 @@ class NotificationService {
   }
 
   void setupFirebaseMessaging() {
-    // Handler para notificaciones en foreground
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      // ✅ REMOVIDO: Guardar desde cliente (ya se guarda desde servidor)
-      // Solo mostrar notificación local
       final payload = json.encode({
         'event_type': message.data['event_type'] ?? '',
         'walk_id': message.data['walk_id'] ?? '',
         'target_user_type': message.data['target_user_type'] ?? '',
         'target_user_id': message.data['target_user_id'] ?? '',
+        'owner_id': message.data['owner_id'] ?? '',
+        'walker_id': message.data['walker_id'] ?? '',
+        'sender_id': message.data['sender_id'] ?? '',
         'timestamp': message.data['timestamp'] ?? '',
       });
       
@@ -126,15 +126,12 @@ class NotificationService {
       }
     });
 
-    // Handler para tap en notificación (app abierta)
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       handleFirebaseNotificationTap(message);
     });
 
-    // Verificar si app se abrió desde notificación
     FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
       if (message != null) {
-        // ✅ OPTIMIZADO: Reducir delay de 2s a 500ms
         Future.delayed(Duration(milliseconds: 500), () {
           handleFirebaseNotificationTap(message);
         });
@@ -155,6 +152,18 @@ class NotificationService {
     final String targetUserType = message.data['target_user_type'] ?? '';
     final String eventType = message.data['event_type'] ?? '';
     
+    if (eventType == 'chat_message') {
+      // Navegación específica para chat con parámetros
+      final String ownerId = message.data['owner_id'] ?? '';
+      final String walkerId = message.data['walker_id'] ?? '';
+      final String senderId = message.data['sender_id'] ?? '';
+      
+      if (ownerId.isNotEmpty && walkerId.isNotEmpty) {
+        navigateToChatWidget(ownerId, walkerId, senderId);
+        return;
+      }
+    }
+    
     if (targetUserType.isNotEmpty) {
       navigateBasedOnUserType(targetUserType, eventType);
     }
@@ -168,17 +177,51 @@ class NotificationService {
       final String targetUserType = data['target_user_type'] ?? '';
       final String eventType = data['event_type'] ?? '';
       
+      if (eventType == 'chat_message') {
+        // Navegación específica para chat con parámetros
+        final String ownerId = data['owner_id'] ?? '';
+        final String walkerId = data['walker_id'] ?? '';
+        final String senderId = data['sender_id'] ?? '';
+        
+        if (ownerId.isNotEmpty && walkerId.isNotEmpty) {
+          navigateToChatWidget(ownerId, walkerId, senderId);
+          return;
+        }
+      }
+      
       if (targetUserType.isNotEmpty) {
-        // ✅ OPTIMIZADO: Sin PostFrameCallback innecesario
         navigateBasedOnUserType(targetUserType, eventType);
       }
     } catch (e) {
-      // Solo log en caso de error real
-      print('❌ Error procesando notificación: $e');
+      // Error silencioso
     }
   }
 
-  // ✅ OPTIMIZADO: Navegación simplificada sin reintentos innecesarios
+  void navigateToChatWidget(String ownerId, String walkerId, String senderId) {
+    final context = appNavigatorKey.currentContext;
+    if (context != null && context.mounted) {
+      try {
+        // Navegar al chat con query parameters
+        final route = '/chat?ownerId=$ownerId&walkerId=$walkerId&senderId=$senderId';
+        context.go(route);
+        return;
+      } catch (e) {
+        // Si falla con parámetros, intentar sin senderId
+        Future.delayed(Duration(milliseconds: 100), () {
+          final retryContext = appNavigatorKey.currentContext;
+          if (retryContext != null && retryContext.mounted) {
+            try {
+              final route = '/chat?ownerId=$ownerId&walkerId=$walkerId';
+              retryContext.go(route);
+            } catch (e) {
+              // Falló definitivamente
+            }
+          }
+        });
+      }
+    }
+  }
+
   void navigateBasedOnUserType(String userType, String eventType) {
     String route = '';
     
@@ -187,32 +230,28 @@ class NotificationService {
     } else if (userType.toLowerCase() == 'walker') {
       route = '/walksDogWalker';
     } else {
-      return; // Sin route válido, terminar silenciosamente
+      return;
     }
     
-    // ✅ OPTIMIZADO: Intentar navegación directa, si falla usar un solo reintento
     final context = appNavigatorKey.currentContext;
     if (context != null && context.mounted) {
       try {
         context.go(route);
-        return; // Éxito inmediato
+        return;
       } catch (e) {
-        // Si falla, un solo reintento con delay mínimo
         Future.delayed(Duration(milliseconds: 100), () {
           final retryContext = appNavigatorKey.currentContext;
           if (retryContext != null && retryContext.mounted) {
             try {
               retryContext.go(route);
             } catch (e) {
-              // Falló definitivamente, no hacer nada más
+              // Falló definitivamente
             }
           }
         });
       }
     }
   }
-
-  // ✅ REMOVIDA: showFallbackMessage (innecesaria para UX)
 
   Future<void> updateFcmToken(String userId) async {
     try {
@@ -225,9 +264,8 @@ class NotificationService {
           .eq('uuid', userId);
       }
     } catch (e) {
-      // Solo log en caso de error crítico
       if (!e.toString().contains('service worker') && !e.toString().contains('MIME type')) {
-        print('❌ Error actualizando token FCM: $e');
+        // Error crítico
       }
     }
   }
@@ -240,7 +278,7 @@ class NotificationService {
         sound: true,
       );
     } catch (e) {
-      print('❌ Error solicitando permisos: $e');
+      // Error silencioso
     }
   }
 }

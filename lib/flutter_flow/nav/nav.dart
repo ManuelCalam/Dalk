@@ -252,6 +252,17 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => DogWalkerProfileWidget(),
           requireAuth: true
         ),
+        FFRoute(
+          name: ChatWidget.routeName,
+          path: ChatWidget.routePath,
+          builder: (context, params) => ChatWidget(
+            ownerId: params.getParam('ownerId', ParamType.String) ?? '',
+            walkerId: params.getParam('walkerId', ParamType.String) ?? '',
+            senderId: params.getParam('senderId', ParamType.String),
+            userName: params.getParam('userName', ParamType.String),
+            status: params.getParam('status', ParamType.String),
+          ),
+        ),
           
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
