@@ -128,7 +128,7 @@ class UserProvider with ChangeNotifier {
     try {
       final response = await Supabase.instance.client
           .from('users')
-          .select('uuid, name, email, birthdate, gender, address, houseNumber, zipCode, neighborhood, city, usertype, photoUrl, createdAt, phone')
+          .select('uuid, name, email, birthdate, gender, address, houseNumber, zipCode, neighborhood, city, usertype, photo_url, createdAt, phone')
           .eq('uuid', currentUserUid)
           .maybeSingle();
 
@@ -145,7 +145,7 @@ class UserProvider with ChangeNotifier {
           neighborhood: response['neighborhood'] ?? '',
           city: response['city'] ?? '',
           usertype: response['usertype'] ?? '',
-          photoUrl: response['photoUrl'] ?? '',
+          photoUrl: response['photo_url'] ?? '',
           createdAt: response['createdAt'] ?? '',
           phone: response['phone'] ?? '',
         );

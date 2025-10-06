@@ -8,16 +8,11 @@
     "source": "dataconnect"
   },
   "functions": [
+    
     {
-      "source": "functions",
-      "codebase": "default",
-      "ignore": [
-        "venv",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log",
-        "*.local"
-      ],
+      "source": "smartpaws",
+      "codebase": "smartpaws",
+      "ignore": ["venv", ".git", "*.local"],
       "runtime": "python313"
     }
   ]

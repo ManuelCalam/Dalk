@@ -137,7 +137,7 @@ class _DogOwnerUpdateProfileWidgetState
       // Actualizar en tabla users con el nuevo link
       await Supabase.instance.client
           .from('users')
-          .update({'photoUrl': uniqueUrl})
+          .update({'photo_url': uniqueUrl})
           .eq('uuid', userId);
 
       return uniqueUrl;
@@ -154,27 +154,8 @@ class _DogOwnerUpdateProfileWidgetState
         _tempImage = File(pickedFile.path);
       });
 
-      final supabase = Supabase.instance.client;
-      final user = supabase.auth.currentUser;
-      if (user == null) return;
+      
 
-      // Subir a Supabase
-      final uploadedUrl = await _uploadOwnerImage(user.id, _tempImage!);
-      if (uploadedUrl != null) {
-        // Solo actualizar Provider y SharedPrefs
-        final currentUser = context.read<UserProvider>().user;
-        final updatedUser = UserModel(
-          name: currentUser?.name ?? "User",
-          photoUrl: uploadedUrl,
-        );
-        context.read<UserProvider>().setUser(updatedUser);
-        await UserPrefs.saveUser(updatedUser);
-
-        // Limpiar temporal para que NetworkImage tome la nueva URL
-        setState(() {
-          _tempImage = null;
-        });
-      }
     }
   }
 
@@ -210,6 +191,9 @@ class _DogOwnerUpdateProfileWidgetState
   Widget build(BuildContext context) {
     final user = context.watch<UserProvider>().user;
     final photoUrl = user?.photoUrl ?? "";
+    final supabase = Supabase.instance.client;
+    final user1 = supabase.auth.currentUser;
+      
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -2016,6 +2000,24 @@ class _DogOwnerUpdateProfileWidgetState
                                                     //PaintingBinding.instance.imageCache.clearLiveImages();
                                                     // 2. Limpiar la imagen vieja del caché
                                                     await CachedNetworkImage.evictFromCache(photoUrl);
+                                                    if (user1 == null) return;
+                                                    // Subir a Supabase
+      final uploadedUrl = await _uploadOwnerImage(user1.id, _tempImage!);
+      if (uploadedUrl != null) {
+        // Solo actualizar Provider y SharedPrefs
+        final currentUser = context.read<UserProvider>().user;
+        final updatedUser = UserModel(
+          name: currentUser?.name ?? "User",
+          photoUrl: uploadedUrl,
+        );
+        context.read<UserProvider>().setUser(updatedUser);
+        await UserPrefs.saveUser(updatedUser);
+
+        // Limpiar temporal para que NetworkImage tome la nueva URL
+        setState(() {
+          _tempImage = null;
+        });
+      }
 
                                                     // 3. Refrescar el widget
                                                     setState(() {});

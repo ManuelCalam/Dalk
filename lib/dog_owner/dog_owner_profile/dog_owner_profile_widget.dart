@@ -996,6 +996,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                       // 7️⃣ Verificar que se borró
                                       final checkData = prefs.getString('user_data');
                                       debugPrint("Después de borrar user_data: $checkData"); // debería ser null
+                                      
 
                                       context.goNamedAuth(LoginWidget.routeName,
                                           context.mounted);

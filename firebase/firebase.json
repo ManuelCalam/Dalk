@@ -1,19 +1,23 @@
 {
-  "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
-  },
+  
   "functions": [
+    
     {
-      "source": "functions",
-      "runtime": "python311"
+      "source": "smartpaws",
+      "codebase": "smartpaws",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint"
+      ]
     }
   ],
   "storage": {
     "rules": "storage.rules"
-  },
-  "hosting": {
-    "public": "public",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
   }
 }
