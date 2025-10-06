@@ -23,6 +23,15 @@
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
 	<array>
+	<dict>
+		<key>CFBundleURLSchemes</key>
+		<array>
+		<string>dalkpaseos</string>
+		</array>
+	</dict>
+	</array>
+
+	<array>
         <dict>
             <key>CFBundleTypeRole</key>
             <string>Editor</string>

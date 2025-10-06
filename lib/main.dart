@@ -1,8 +1,13 @@
+import 'dart:async';
+import 'package:dalk/SubscriptionProvider.dart';
+
+import 'package:app_links/app_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:provider/provider.dart';
 import 'auth/supabase_auth/supabase_user_provider.dart';
 import 'auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
@@ -11,12 +16,15 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
 import '/services/notification_service.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:app_links/app_links.dart';
+
 
 
 // GlobalKey para el ScaffoldMessenger 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+late final AppLinks _appLinks;
 
-// ✅ HANDLER TOP-LEVEL SIMPLE (REQUERIDO)
+// HANDLER TOP-LEVEL SIMPLE (REQUERIDO)
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("📱 Background notification: ${message.notification?.title}");
@@ -59,6 +67,10 @@ class _MyAppState extends State<MyApp> {
 
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
+  bool isPasswordRecovery = false;
+
+  // Removed duplicate declaration of userStream
+  late StreamSubscription _linkSub;
   String getRoute([RouteMatch? routeMatch]) {
     final RouteMatch lastMatch =
         routeMatch ?? _router.routerDelegate.currentConfiguration.last;
@@ -102,6 +114,29 @@ class _MyAppState extends State<MyApp> {
       Duration(milliseconds: 1000),
       () => _appStateNotifier.stopShowingSplashImage(),
     );
+
+    _appLinks = AppLinks();
+    _appLinks.uriLinkStream.listen((uri) {
+      if (uri != null && uri.path == '/changePassword') {
+        isPasswordRecovery = true;
+        Navigator.pushNamed(context, '/changePassword');
+      }
+    });
+    _handleInitialUri();
+
+  }
+
+  Future<void> _handleInitialUri() async {
+    final uriString = await _appLinks.getInitialLink();
+    if (uriString != null) {
+      final uri = Uri.parse(uriString as String);
+      if (uri.path == '/changePassword') {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          isPasswordRecovery = true;
+          Navigator.pushNamed(context, '/changePassword');
+        });
+      }
+    }
   }
 
   void setThemeMode(ThemeMode mode) => safeSetState(() {
@@ -110,27 +145,56 @@ class _MyAppState extends State<MyApp> {
       });
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      title: 'Dalk',
-      scaffoldMessengerKey: scaffoldMessengerKey,
-      localizationsDelegates: [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [Locale('en', '')],
-      theme: ThemeData(
-        brightness: Brightness.light,
-        useMaterial3: false,
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        useMaterial3: false,
-      ),
-      themeMode: _themeMode,
-      routerConfig: _router,
-    );
+    Widget build(BuildContext context) {
+      return StreamBuilder<AuthState>(
+        stream: Supabase.instance.client.auth.onAuthStateChange,
+        builder: (context, snapshot) {
+          final authState = snapshot.data;
+          final event = authState?.event;
+          final session = authState?.session;
+
+          if (event == AuthChangeEvent.passwordRecovery) {
+            // 🚀 Redirige a Change Password
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _router.go('/changePassword');
+            });
+          }
+
+          final isAuthenticated = session?.user != null;
+
+          Widget appRouter = MaterialApp.router(
+            debugShowCheckedModeBanner: false,
+            title: 'Dalk',
+            scaffoldMessengerKey: scaffoldMessengerKey,
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [Locale('en', '')],
+            theme: ThemeData(
+              brightness: Brightness.light,
+              useMaterial3: false,
+            ),
+            darkTheme: ThemeData(
+              brightness: Brightness.dark,
+              useMaterial3: false,
+            ),
+            themeMode: _themeMode,
+            routerConfig: _router,
+          );
+
+          if (isAuthenticated) {
+            return ChangeNotifierProvider(
+              create: (context) =>
+                  SubscriptionProvider(Supabase.instance.client),
+              child: appRouter,
+            );
+          } else {
+            return appRouter;
+          }
+        },
+      );
+    }
+
   }
-}

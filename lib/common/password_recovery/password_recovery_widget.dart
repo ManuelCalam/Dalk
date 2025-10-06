@@ -8,7 +8,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'password_recovery_model.dart';
 export 'password_recovery_model.dart';
 
@@ -17,7 +17,7 @@ class PasswordRecoveryWidget extends StatefulWidget {
 
   static String routeName = 'passwordRecovery';
   static String routePath = '/passwordRecovery';
-
+ 
   @override
   State<PasswordRecoveryWidget> createState() => _PasswordRecoveryWidgetState();
 }
@@ -325,9 +325,34 @@ class _PasswordRecoveryWidgetState extends State<PasswordRecoveryWidget> {
                                         padding: EdgeInsetsDirectional.fromSTEB(
                                             0, 18, 0, 0),
                                         child: FFButtonWidget(
-                                          onPressed: () {
-                                            print(
-                                                'recoverPass_btn pressed ...');
+                                          onPressed: () async {
+                                            /*print(
+                                                'recoverPass_btn pressed ...');*/
+                                              //print('Recover_Pass_Btn pressed ...');
+                                            final email = _model.currentPassInputTextController.text.trim();
+
+                                            if (email.isEmpty) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text('Por favor, ingresa tu correo electrónico.')),
+                                              );
+                                              return;
+                                            }
+
+                                            try {
+                                              await Supabase.instance.client.auth.resetPasswordForEmail(
+                                                email);
+
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text('Correo de recuperación enviado.')),
+                                              );
+                                            } catch (e) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text('Error al enviar correo: $e')),
+                                              );
+                                            }
+
+                                            //context.pushNamed('changePassword');
+
                                           },
                                           text: 'Enviar',
                                           options: FFButtonOptions(

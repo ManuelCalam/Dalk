@@ -8,11 +8,15 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'change_password_model.dart';
 export 'change_password_model.dart';
 
 class ChangePasswordWidget extends StatefulWidget {
-  const ChangePasswordWidget({super.key});
+  final String? accessToken;
+  final String? refreshToken;
+
+  const ChangePasswordWidget({Key? key, this.accessToken, this.refreshToken}) : super(key: key);
 
   static String routeName = 'changePassword';
   static String routePath = '/changePassword';
@@ -26,24 +30,61 @@ class _ChangePasswordWidgetState extends State<ChangePasswordWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  final TextEditingController _passwordController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
+
     _model = createModel(context, () => ChangePasswordModel());
 
-    _model.currentPassInputTextController ??= TextEditingController();
-    _model.currentPassInputFocusNode ??= FocusNode();
+    Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
+      final event = data.event;
+      final session = data.session;
 
-    _model.newPassInputTextController ??= TextEditingController();
-    _model.newPassInputFocusNode ??= FocusNode();
+      if (event == AuthChangeEvent.passwordRecovery && session != null) {
+        print("✅ Recuperación detectada con accessToken: ${session.accessToken}");
 
-    _model.confirmNewPassInputTextController ??= TextEditingController();
-    _model.confirmNewPassInputFocusNode ??= FocusNode();
+        // Ya tienes sesión, ahora sí puedes cambiar contraseña
+        setState(() {
+          // habilita el formulario
+        });
+      }
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final uri = GoRouterState.of(context).uri;
+
+    // Aquí está el problema: los tokens vienen en el fragmento, no en queryParameters
+    final fragment = uri.fragment; // "access_token=...&refresh_token=...&type=recovery"
+
+    if (fragment.isNotEmpty) {
+      final params = Uri.splitQueryString(fragment);
+      final accessToken = params['access_token'];
+      final refreshToken = params['refresh_token'];
+
+      print("AccessToken: $accessToken, RefreshToken: $refreshToken");
+
+      if (accessToken != null && refreshToken != null) {
+        Supabase.instance.client.auth.setSession(refreshToken).then((res) {
+          print("✅ Sesión restaurada desde fragmento");
+        }).catchError((e) {
+          print("❌ Error al restaurar sesión: $e");
+        });
+      }
+    } else {
+      print("⚠️ No se encontró fragmento en la URL");
+    }
   }
 
   @override
   void dispose() {
     _model.dispose();
+    _passwordController.dispose();
 
     super.dispose();
   }
@@ -655,9 +696,50 @@ class _ChangePasswordWidgetState extends State<ChangePasswordWidget> {
                                         padding: EdgeInsetsDirectional.fromSTEB(
                                             0.0, 18.0, 0.0, 0.0),
                                         child: FFButtonWidget(
-                                          onPressed: () {
-                                            print('changePass_btn pressed ...');
-                                          },
+                                           onPressed: () async {
+                                              final newPassword = _model.newPassInputTextController.text.trim();
+                                              final confirmPassword = _model.confirmNewPassInputTextController.text.trim();
+
+                                              if (newPassword.isEmpty || confirmPassword.isEmpty) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(content: Text('Por favor, completa todos los campos')),
+                                                );
+                                                return;
+                                              }
+
+                                              if (newPassword != confirmPassword) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(content: Text('Las contraseñas no coinciden')),
+                                                );
+                                                return;
+                                              }
+
+                                              try {
+                                                final res = await Supabase.instance.client.auth.updateUser(
+                                                  UserAttributes(password: newPassword),
+                                                );
+
+                                                if (res.user != null) {
+                                                  // ✅ cerrar sesión para que tenga que iniciar con la nueva contraseña
+                                                  await Supabase.instance.client.auth.signOut();
+
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(content: Text('Contraseña actualizada, inicia sesión de nuevo')),
+                                                  );
+
+                                                  // ✅ redirigir al login
+                                                  context.go('/login');
+                                                } else {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(content: Text('No se pudo actualizar la contraseña')),
+                                                  );
+                                                }
+                                              } catch (e) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(content: Text('Error al actualizar contraseña: $e')),
+                                                );
+                                              }
+                                            },
                                           text: 'Cambiar contraseña',
                                           options: FFButtonOptions(
                                             width: MediaQuery.sizeOf(context)

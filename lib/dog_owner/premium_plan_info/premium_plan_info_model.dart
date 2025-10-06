@@ -17,7 +17,6 @@ class PremiumPlanInfoModel extends FlutterFlowModel<PremiumPlanInfoWidget> {
 
   ///  State fields for stateful widgets in this page.
 
-  // Model for notificationContainer component.
   late NotificationContainerModel notificationContainerModel;
   // Model for goBackContainer component.
   late GoBackContainerModel goBackContainerModel;

@@ -97,6 +97,13 @@
                 <data android:scheme="dalk" android:host="dalk.com" />
             </intent-filter>
 
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="dalkpaseos" android:host="changePassword" />
+            </intent-filter>
+
         </activity>
 
         <!-- Don't delete the meta-data below.

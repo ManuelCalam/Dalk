@@ -10,28 +10,33 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-class ChangePasswordModel extends FlutterFlowModel<ChangePasswordWidget> {
-  ///  State fields for stateful widgets in this page.
 
-  // Model for notificationContainer component.
+class ChangePasswordModel extends FlutterFlowModel<ChangePasswordWidget> {
+  // Controladores de texto para los campos de contraseña
+  TextEditingController? newPasswordController;
+  TextEditingController? confirmPasswordController;
+
+  // Modelos hijos
   late NotificationContainerModel notificationContainerModel;
-  // Model for goBackContainer component.
   late GoBackContainerModel goBackContainerModel;
-  // State field(s) for currentPass_Input widget.
+
+  // Campo actual (actualmente no usado pero lo dejamos completo)
   FocusNode? currentPassInputFocusNode;
   TextEditingController? currentPassInputTextController;
   late bool currentPassInputVisibility;
   String? Function(BuildContext, String?)?
       currentPassInputTextControllerValidator;
-  // State field(s) for newPass_Input widget.
+
+  // Campo para nueva contraseña
   FocusNode? newPassInputFocusNode;
   TextEditingController? newPassInputTextController;
-  late bool newPassInputVisibility;
+  bool newPassInputVisibility = false;
   String? Function(BuildContext, String?)? newPassInputTextControllerValidator;
-  // State field(s) for confirmNewPass_Input widget.
+
+  // Campo para confirmar nueva contraseña
   FocusNode? confirmNewPassInputFocusNode;
   TextEditingController? confirmNewPassInputTextController;
-  late bool confirmNewPassInputVisibility;
+  bool confirmNewPassInputVisibility = false;
   String? Function(BuildContext, String?)?
       confirmNewPassInputTextControllerValidator;
 
@@ -40,15 +45,29 @@ class ChangePasswordModel extends FlutterFlowModel<ChangePasswordWidget> {
     notificationContainerModel =
         createModel(context, () => NotificationContainerModel());
     goBackContainerModel = createModel(context, () => GoBackContainerModel());
+
     currentPassInputVisibility = false;
     newPassInputVisibility = false;
     confirmNewPassInputVisibility = false;
+
+    newPasswordController = TextEditingController();
+    confirmPasswordController = TextEditingController();
+
+    currentPassInputFocusNode = FocusNode();
+    currentPassInputTextController = TextEditingController();
+
+    newPassInputFocusNode = FocusNode();
+    newPassInputTextController = TextEditingController();
+
+    confirmNewPassInputFocusNode = FocusNode();
+    confirmNewPassInputTextController = TextEditingController();
   }
 
   @override
   void dispose() {
     notificationContainerModel.dispose();
     goBackContainerModel.dispose();
+
     currentPassInputFocusNode?.dispose();
     currentPassInputTextController?.dispose();
 
@@ -57,5 +76,8 @@ class ChangePasswordModel extends FlutterFlowModel<ChangePasswordWidget> {
 
     confirmNewPassInputFocusNode?.dispose();
     confirmNewPassInputTextController?.dispose();
+
+    newPasswordController?.dispose();
+    confirmPasswordController?.dispose();
   }
 }

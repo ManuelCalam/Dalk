@@ -1,3 +1,5 @@
+import 'package:dalk/backend/supabase/database/tables/users.dart';
+
 import '/auth/supabase_auth/auth_util.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -24,6 +26,8 @@ class LoginModel extends FlutterFlowModel<LoginWidget> {
   TextEditingController? passwordInputTextController;
   late bool passwordInputVisibility;
   String? Function(BuildContext, String?)? passwordInputTextControllerValidator;
+  List<UsersRow>? userQueryResult;
+
 
   @override
   void initState(BuildContext context) {
