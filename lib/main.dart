@@ -90,54 +90,80 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    
-    // ✅ INICIALIZAR NOTIFICATIONSERVICE (TODO EN EL SERVICIO)
+
     final notificationService = NotificationService();
     notificationService.initialize(
       scaffoldKey: scaffoldMessengerKey,
       navKey: appNavigatorKey,
     );
-    
+
     _appStateNotifier = AppStateNotifier.instance;
     _router = createRouter(_appStateNotifier);
+
     userStream = dalkSupabaseUserStream()
       ..listen((user) {
         _appStateNotifier.update(user);
-        // Actualizar token FCM cuando hay usuario logueado
         if (user.uid != null) {
           notificationService.updateFcmToken(user.uid!);
         }
       });
+
     jwtTokenStream.listen((_) {});
-    
     Future.delayed(
-      Duration(milliseconds: 1000),
+      const Duration(milliseconds: 1000),
       () => _appStateNotifier.stopShowingSplashImage(),
     );
 
     _appLinks = AppLinks();
-    _appLinks.uriLinkStream.listen((uri) {
-      if (uri != null && uri.path == '/changePassword') {
-        isPasswordRecovery = true;
-        Navigator.pushNamed(context, '/changePassword');
+
+    // ✅ Escucha deeplinks (por ejemplo dalkpaseos://auth#access_token=...)
+    _linkSub = _appLinks.uriLinkStream.listen((uri) async {
+      if (uri == null) return;
+      print("🔗 Deep link recibido: $uri");
+
+      // Supabase usa el FRAGMENTO (#...) para devolver los tokens
+      if (uri.fragment.isNotEmpty) {
+        final params = Uri.splitQueryString(uri.fragment);
+        final type = params['type'];
+
+        // 🧩 Caso: recuperación de contraseña
+        if (type == 'recovery') {
+          print("🔐 Modo recuperación detectado");
+          isPasswordRecovery = true;
+          _router.go('/changePassword');
+        } else {
+          print("✅ Autenticación completada");
+        }
+      } else {
+        print("⚠️ No se encontró fragmento en la URL");
       }
     });
-    _handleInitialUri();
 
+    _handleInitialUri();
   }
+
 
   Future<void> _handleInitialUri() async {
-    final uriString = await _appLinks.getInitialLink();
-    if (uriString != null) {
-      final uri = Uri.parse(uriString as String);
-      if (uri.path == '/changePassword') {
+    final uri = await _appLinks.getInitialLink();
+    if (uri == null) return;
+    print("🔗 URI inicial: $uri");
+
+    if (uri.fragment.isNotEmpty) {
+      final params = Uri.splitQueryString(uri.fragment);
+      final type = params['type'];
+
+      if (type == 'recovery') {
         WidgetsBinding.instance.addPostFrameCallback((_) {
+          print("🔐 Redirigiendo a cambio de contraseña");
           isPasswordRecovery = true;
-          Navigator.pushNamed(context, '/changePassword');
+          _router.go('/changePassword');
         });
       }
+    } else {
+      print("⚠️ No se encontró fragmento en la URI inicial");
     }
   }
+
 
   void setThemeMode(ThemeMode mode) => safeSetState(() {
         _themeMode = mode;
