@@ -262,14 +262,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: IneValidationWebviewWidget.routePath,
           builder: (context, params) => IneValidationWebviewWidget(
             formUrl: params.getParam('formUrl', ParamType.String) ?? '',
-            onValidationComplete: () async {
-              debugPrint('✅ Verificación completada desde WebView');
-              Navigator.pop(context, true);
-            },
-            onValidationFailed: () async {
-              debugPrint('❌ Verificación falló desde WebView');
-              Navigator.pop(context, false);
-            },
+            sessionId: params.getParam('sessionId', ParamType.String) ?? '',
           ),
           requireAuth: false
         ),

@@ -1,8 +1,7 @@
+import 'dart:async';  // ✅ AGREGAR ESTE IMPORT QUE FALTA
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 
@@ -15,9 +14,15 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/nav/nav.dart';
 import '/services/notification_service.dart';
+import 'package:app_links/app_links.dart';
+
+import '/dog_walker/home_dog_walker/home_dog_walker_widget.dart';
 
 // GlobalKey para el ScaffoldMessenger 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
+late final AppLinks _appLinks;
+late StreamSubscription<Uri> _linkSub;
 
 // ✅ HANDLER TOP-LEVEL SIMPLE (REQUERIDO)
 @pragma('vm:entry-point')
@@ -31,15 +36,9 @@ void main() async {
   usePathUrlStrategy();
 
   await initFirebase();
-
-  //await SupaFlow.initialize();
-
   await FlutterFlowTheme.initialize();
   await dotenv.load(fileName: ".env"); 
 
-  //  Inicializar Supabase con Realtime
-  // print("SUPABASE_URL => ${dotenv.env['SUPABASE_URL']}");
-  // print("SUPABASE_ANON_KEY => ${dotenv.env['SUPABASE_ANON_KEY']}");
   await Supabase.initialize(
     url: "${dotenv.env['SUPABASE_URL']}",
     anonKey: "${dotenv.env['SUPABASE_ANON_KEY']}",
@@ -64,6 +63,7 @@ class _MyAppState extends State<MyApp> {
 
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
+  
   String getRoute([RouteMatch? routeMatch]) {
     final RouteMatch lastMatch =
         routeMatch ?? _router.routerDelegate.currentConfiguration.last;
@@ -103,16 +103,62 @@ class _MyAppState extends State<MyApp> {
       });
     jwtTokenStream.listen((_) {});
     
+    // ✅ CORREGIR FUTURE.DELAYED - CERRAR PARÉNTESIS CORRECTAMENTE
     Future.delayed(
       Duration(milliseconds: 1000),
       () => _appStateNotifier.stopShowingSplashImage(),
     );
+
+    // ✅ INICIALIZAR APP_LINKS
+    _appLinks = AppLinks();
+
+    // ✅ ACTUALIZAR LISTENER PARA MANEJAR ÉXITO Y FALLO - línea ~85
+    _linkSub = _appLinks.uriLinkStream.listen((uri) {
+      print("🔗 Deep link recibido: $uri");
+      print("🔗 Host: ${uri.host}");
+      print("🔗 Path: ${uri.path}");
+      print("🔗 Query params: ${uri.queryParameters}");
+      
+      if (uri.host == 'verificamex') {
+        if (uri.path == '/success') {
+          print("✅ Verificación exitosa - navegando a HomeDogWalker");
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _router.go('/homeDogWalker');
+          });
+        } else if (uri.path == '/failed') {
+          print("❌ Verificación falló - navegando a Login");
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _router.go('/login');
+          });
+        }
+      }
+    });
+
+    _handleInitialUri();
+  }
+
+  // ✅ MÉTODO PARA MANEJAR URI INICIAL
+  Future<void> _handleInitialUri() async {
+    final uri = await _appLinks.getInitialLink();
+    if (uri != null && uri.host == 'verificamex' && uri.path == '/success') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        print("✅ URI inicial: Verificación exitosa");
+        _router.go('/homeDogWalker');
+      });
+    }
   }
 
   void setThemeMode(ThemeMode mode) => safeSetState(() {
         _themeMode = mode;
         FlutterFlowTheme.saveThemeMode(mode);
       });
+
+  @override
+  void dispose() {
+    // ✅ CLEANUP
+    _linkSub.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
