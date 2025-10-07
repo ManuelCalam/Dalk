@@ -839,7 +839,7 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
                                                     initialDate:
                                                         getCurrentTimestamp,
                                                     firstDate:
-                                                        getCurrentTimestamp,
+                                                         DateTime(1900),
                                                     lastDate: DateTime(2050),
                                                     builder: (context, child) {
                                                       return wrapInMaterialDatePickerTheme(

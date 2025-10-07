@@ -12,6 +12,7 @@ build/
 .metadata
 *.log
 crashlytics/
+pubspec.lock
 
 # ----------------------------
 # 🖼️ Assets 
@@ -118,5 +119,6 @@ Thumbs.db
 # ----------------------------
 # 🔥 Firebase Functions
 # ----------------------------
+firebase
 firebase/functions/lib/
 firebase/functions/node_modules/
