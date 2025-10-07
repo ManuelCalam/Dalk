@@ -9,21 +9,26 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'find_dog_walker_model.dart';
 export 'find_dog_walker_model.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
-
+// String? recommendedWalker;
 class FindDogWalkerWidget extends StatefulWidget {
+  
   const FindDogWalkerWidget({
     super.key,
     required this.date,
     required this.time,
     required this.addressId,
     required this.petId
+    
   });
 
   final DateTime? date;
   final DateTime? time;
   final int? addressId;
   final int? petId;
+  
 
   static String routeName = 'findDogWalker';
   static String routePath = '/findDogWalker';
@@ -34,6 +39,7 @@ class FindDogWalkerWidget extends StatefulWidget {
 
 class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
   late FindDogWalkerModel _model;
+  String? recommendedWalker;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -41,9 +47,10 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => FindDogWalkerModel());
-
     _model.findDogWalkerInputTextController ??= TextEditingController();
     _model.findDogWalkerInputFocusNode ??= FocusNode();
+
+    obtenerRecomendacion();
   }
 
   @override
@@ -53,8 +60,41 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
     super.dispose();
   }
 
+  Future<void> obtenerRecomendacion() async {
+  try {
+      final response = await http.post(
+        Uri.parse('https://recommendwalker-rtwziiuflq-uc.a.run.app/'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          "pet_type": "mediano",
+          "preferred_time": "tarde",
+          "day_of_week": "lunes",
+          "zone_id": "Colonia",
+          "last_paseador_id": "Daniel",
+          "avg_rating_threshold": 5,
+          "previous_match_success": true,
+          "gender_preference": "hombre",
+          "duration_preference": 30
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          recommendedWalker = data["recommended_paseador_id"];
+        });
+        print(" Paseador recomendado: $recommendedWalker");
+      } else {
+        print(" Error IA: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error obteniendo recomendación: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final String recommendedWalker = 'Paoo';
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -290,6 +330,7 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                           padding: EdgeInsetsDirectional.fromSTEB(
                               0.0, 20.0, 0.0, 15.0),
                           child: Container(
+                            //color: esRecomendado ? Colors.amber.shade50 : Colors.white,
                             width: MediaQuery.sizeOf(context).width * 0.9,
                             height: double.infinity,
                             decoration: BoxDecoration(),
@@ -305,38 +346,56 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                                           ? '%' // esto devuelve todos
                                           : '%${_model.findDogWalkerInputTextController.text}%',
                                     ),
+                                    
                                 builder: (context, snapshot) {
-                                  if (snapshot.hasError) {
-                                    return Center(child: Text('Error: ${snapshot.error}'));
-                                  }
+  if (snapshot.hasError) {
+    return Center(child: Text('Error: ${snapshot.error}'));
+  }
 
-                                  if (!snapshot.hasData) {
-                                    return const Center(child: CircularProgressIndicator());
-                                  }
+  if (!snapshot.hasData) {
+    return const Center(child: CircularProgressIndicator());
+  }
 
-                                  final paseadores = snapshot.data!;
-                                  if (paseadores.isEmpty) {
-                                    return const Center(child: Text('No se encontraron paseadores.'));
-                                  }
+  // 🔹 Copiamos los datos a una lista mutable
+  final List<Map<String, dynamic>> paseadores = List<Map<String, dynamic>>.from(snapshot.data!);
 
-                                  return ListView.builder(
-                                    itemCount: paseadores.length,
-                                    itemBuilder: (context, index) {
-                                      final paseador = paseadores[index];
-                                      return FindDogWalkerCardWidget(
-                                        nombre: paseador['name'] ?? 'Sin nombre',
-                                        precio: paseador['houseNumber']?.toString() ?? '0',
-                                        calificacion: paseador['Rating']?.toString() ?? '0',
-                                        fotoUrl: paseador['photoUrl'] ?? '',
-                                        date: widget.date,
-                                        time: widget.time,
-                                        addressId: widget.addressId,
-                                        petId: widget.petId,
-                                        uuidPaseador: paseador['uuid'],
-                                      );
-                                    },
-                                  );
-                                },
+  if (paseadores.isEmpty) {
+    return const Center(child: Text('No se encontraron paseadores.'));
+  }
+
+  // 🔹 Si hay recomendación, mover al inicio
+  if (recommendedWalker != null) {
+    final index = paseadores.indexWhere((p) =>
+        p['name']?.toLowerCase() == recommendedWalker!.toLowerCase());
+    if (index != -1) {
+      final recomendado = paseadores.removeAt(index);
+      paseadores.insert(0, recomendado);
+    }
+  }
+  
+  return ListView.builder(
+    itemCount: paseadores.length,
+    itemBuilder: (context, index) {
+      final paseador = paseadores[index];
+      final esRecomendado = paseador['name'] == recommendedWalker;
+      
+
+      return FindDogWalkerCardWidget(
+        nombre: paseador['name'] ?? 'Sin nombre',
+        precio: paseador['houseNumber']?.toString() ?? '0',
+        calificacion: paseador['Rating']?.toString() ?? '0',
+        fotoUrl: paseador['photoUrl'] ?? '',
+        date: widget.date,
+        time: widget.time,
+        addressId: widget.addressId,
+        petId: widget.petId,
+        uuidPaseador: paseador['uuid'],
+        recomendado: esRecomendado,
+      );
+    },
+  );
+},
+
                               ),
                             ),
                           ),

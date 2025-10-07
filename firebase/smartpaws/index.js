@@ -31,7 +31,7 @@
 //   response.send("Hello from Firebase!");
 // });
 const functions = require("firebase-functions");
-const fetch = require("node-fetch");
+// const fetch = require("node-fetch");
 const express = require("express");
 const cors = require("cors");
 
@@ -45,26 +45,32 @@ app.use(express.json());
 
 app.post("/", async (req, res) => {
   try {
-    // Asegurarse de que req.body tenga datos
     console.log("Body recibido en Firebase:", req.body);
 
-    const response = await fetch("https://servidor-ia-recomendador.onrender.com/recomendar", {
+    const iaUrl = "https://servidor-ia-recomendador.onrender.com/recomendar";
+    console.log("Enviando petición a:", iaUrl);
+
+    const response = await fetch(iaUrl, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(req.body),
     });
 
-    // Parsear la respuesta JSON
-    const data = await response.json();
-    console.log("Respuesta de la API externa:", data);
+    console.log("Código de respuesta de la IA:", response.status);
 
-    // Enviar JSON de vuelta al cliente
+    const data = await response.json().catch((err) => {
+      console.error("Error parseando JSON:", err);
+      throw new Error("Respuesta inválida de la IA");
+    });
+
+    console.log("Respuesta de la IA:", data);
+
     res.status(200).json(data);
   } catch (err) {
-    console.error("Error en recommendWalker:", err);
+    console.error("Error en recommendWalker:", err.message, err.stack);
     res.status(500).json({error: "Error en la función"});
   }
 });
 
-// Exportar la función como HTTPS
+
 exports.recommendWalker = functions.https.onRequest(app);

@@ -23,8 +23,10 @@ class FindDogWalkerCardWidget extends StatelessWidget {
   final int? addressId;
   final int? petId;
   final String uuidPaseador;
+  final bool recomendado;
 
   const FindDogWalkerCardWidget({
+    Key? key,
     required this.nombre,
     required this.precio,
     required this.calificacion,
@@ -34,7 +36,8 @@ class FindDogWalkerCardWidget extends StatelessWidget {
     required this.addressId,
     required this.petId,
     required this.uuidPaseador,
-    Key? key,
+    this.recomendado = false,
+    // Key? key, required bool recomendado,
   }) : super(key: key);
 
   @override
@@ -44,18 +47,26 @@ class FindDogWalkerCardWidget extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 5),
         child: Container(
+          //color: recomendado ? Colors.amber.shade50 : Colors.white,
           width: MediaQuery.sizeOf(context).width,
           height: MediaQuery.sizeOf(context).height * 0.12,
           decoration: BoxDecoration(
             color: FlutterFlowTheme.of(context).alternate,
             borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: recomendado ? Colors.amber.shade50 : FlutterFlowTheme.of(context).alternate,
+              width: 2,
+            ),
           ),
+          
           child: Row(
+            
             children: [
               /// FOTO
               Container(
                 width: MediaQuery.sizeOf(context).width * 0.2,
                 height: MediaQuery.sizeOf(context).height,
+                decoration: BoxDecoration(),
                 child: Padding(
                   padding: const EdgeInsets.all(10),
                   child: ClipRRect(
@@ -242,7 +253,7 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                                       : 'fecha por confirmar';
 
                                   print(
-                                    '📊 Datos para notificación: Owner: $ownerName, Pet: $petName, Date: $dateString',
+                                    'Datos para notificación: Owner: $ownerName, Pet: $petName, Date: $dateString',
                                   );
 
                                   // 3. Llamar a la Edge Function para enviar notificación
@@ -254,13 +265,13 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                                     'date': dateString,
                                   };
 
-                                  print('📤 Enviando notificación con payload: $notificationPayload');
+                                  print('Enviando notificación con payload: $notificationPayload');
 
                                   final notificationResponse = await Supabase.instance.client.functions
                                       .invoke('send-walk-notification', body: notificationPayload);
 
-                                  print('📱 Respuesta de notificación: ${notificationResponse.data}');
-                                  print('📱 Tipo de respuesta: ${notificationResponse.data.runtimeType}');
+                                  print('Respuesta de notificación: ${notificationResponse.data}');
+                                  print('ipo de respuesta: ${notificationResponse.data.runtimeType}');
 
                                   // Verificar el tipo de dato antes de acceder
                                   dynamic responseData = notificationResponse.data;
