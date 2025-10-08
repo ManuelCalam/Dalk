@@ -1,3 +1,6 @@
+import 'package:dalk/dog_owner/set_walk_schedule/set_walk_schedule_widget.dart';
+import 'package:dalk/dog_owner/walks_dog_owner/walks_dog_owner_widget.dart';
+
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -46,23 +49,23 @@ class _NotScheduledWalkContainerWidgetState
     return Container(
       width: MediaQuery.sizeOf(context).width,
       height: MediaQuery.sizeOf(context).height,
-      decoration: BoxDecoration(),
+      decoration: const BoxDecoration(),
       child: Column(
         mainAxisSize: MainAxisSize.max,
         children: [
           Container(
             width: 370,
             height: 400,
-            decoration: BoxDecoration(),
+            decoration: const BoxDecoration(),
             child: Column(
               mainAxisSize: MainAxisSize.max,
               children: [
                 Container(
                   width: 370,
                   height: 350,
-                  decoration: BoxDecoration(),
+                  decoration: const BoxDecoration(),
                   child: Align(
-                    alignment: AlignmentDirectional(0, 0),
+                    alignment: const AlignmentDirectional(0, 0),
                     child: FaIcon(
                       FontAwesomeIcons.dog,
                       color: FlutterFlowTheme.of(context).primary,
@@ -92,22 +95,25 @@ class _NotScheduledWalkContainerWidgetState
           Container(
             width: 370,
             height: 100,
-            decoration: BoxDecoration(),
+            decoration: const BoxDecoration(),
             child: Column(
               mainAxisSize: MainAxisSize.max,
               children: [
                 Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0, 8, 0, 0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(0, 8, 0, 0),
                   child: FFButtonWidget(
                     onPressed: () {
-                      print('Button pressed ...');
+                      Navigator.push(
+                        context, 
+                        MaterialPageRoute(builder: (context) => const SetWalkScheduleWidget(selectedAddress: null, selectedPet: null,))
+                      );                   
                     },
                     text: 'Agendar Paseo',
                     options: FFButtonOptions(
                       width: 360,
                       height: 40,
-                      padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
-                      iconPadding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                      padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+                      iconPadding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
                       color: FlutterFlowTheme.of(context).accent1,
                       textStyle:
                           FlutterFlowTheme.of(context).titleSmall.override(
@@ -134,17 +140,20 @@ class _NotScheduledWalkContainerWidgetState
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0, 8, 0, 0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(0, 8, 0, 0),
                   child: FFButtonWidget(
                     onPressed: () {
-                      print('Button pressed ...');
+                      Navigator.push(
+                        context, 
+                        MaterialPageRoute(builder: (context) => const WalksDogOwnerWidget())
+                      );                    
                     },
                     text: 'Ver mi agenda',
                     options: FFButtonOptions(
                       width: 360,
                       height: 40,
-                      padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
-                      iconPadding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                      padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+                      iconPadding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
                       color: FlutterFlowTheme.of(context).primary,
                       textStyle:
                           FlutterFlowTheme.of(context).titleSmall.override(

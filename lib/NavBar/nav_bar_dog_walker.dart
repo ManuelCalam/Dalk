@@ -39,10 +39,10 @@ class _NavBarPageState extends State<NavBarWalkerPage> {
   @override
   Widget build(BuildContext context) {
     final tabs = {
-      'homeDogWalker': HomeDogWalkerWidget(),
-      'CurrentWalk': CurrentWalkWidget(),
-      'petList': PetListWidget(),
-      'dogWalkerProfile': DogOwnerProfileWidget(),
+      'homeDogWalker': const HomeDogWalkerWidget(),
+      'CurrentWalk': const CurrentWalkWidget(),
+      'petList': const PetListWidget(),
+      'dogWalkerProfile': const DogOwnerProfileWidget(),
     };
     final currentIndex = tabs.keys.toList().indexOf(_currentPageName);
 
@@ -57,11 +57,11 @@ class _NavBarPageState extends State<NavBarWalkerPage> {
         }),
         backgroundColor: FlutterFlowTheme.of(context).tertiary,
         selectedItemColor: FlutterFlowTheme.of(context).primary,
-        unselectedItemColor: Color(0xFFB1B1B1),
+        unselectedItemColor: const Color(0xFFB1B1B1),
         showSelectedLabels: false,
         showUnselectedLabels: false,
         type: BottomNavigationBarType.fixed,
-        items: <BottomNavigationBarItem>[
+        items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(
               Icons.home,
