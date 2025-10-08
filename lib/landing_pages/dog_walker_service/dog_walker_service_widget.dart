@@ -10,7 +10,6 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/index.dart';
 import 'dog_walker_service_model.dart';
@@ -30,6 +29,10 @@ class _DogWalkerServiceWidgetState extends State<DogWalkerServiceWidget> {
   late DogWalkerServiceModel _model;
 
   bool isRegistering = false;
+  bool isLoading = true;
+  int? existingServiceId;
+
+  // bool isRegistering = false;
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -38,13 +41,133 @@ class _DogWalkerServiceWidgetState extends State<DogWalkerServiceWidget> {
     _model = createModel(context, () => DogWalkerServiceModel());
 
     _model.dogWalkerFeeInputTextController ??= TextEditingController();
-    _model.dogWalkerFeeInputFocusNode ??= FocusNode();
-
     _model.dogWalkerInfoInputTextController ??= TextEditingController();
-    _model.dogWalkerInfoInputFocusNode ??= FocusNode();
-
     _model.workZoneInputTextController ??= TextEditingController();
-    _model.workZoneInputFocusNode ??= FocusNode();
+
+    _loadExistingService();
+  }
+
+  Future<void> _loadExistingService() async {
+    final currentUser = Supabase.instance.client.auth.currentUser;
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Debes iniciar sesión primero.')),
+      );
+      return;
+    }
+
+    try {
+      final response = await Supabase.instance.client
+          .from('dog_walker_service')
+          .select()
+          .eq('walker_id', currentUser.id)
+          .maybeSingle(); // devuelve null si no hay registro
+
+      if (response != null) {
+        existingServiceId = response['id'];
+        _model.dogWalkerFeeInputTextController.text =
+            response['fee']?.toString() ?? '';
+        _model.dogWalkerInfoInputTextController.text =
+            response['aboutMe'] ?? '';
+        _model.workZoneInputTextController.text =
+            response['walkingArea'] ?? '';
+
+        _model.choiceChipsValues =
+            (response['workingDays'] as List?)?.cast<String>() ?? [];
+
+        if (response['startTime'] != null) {
+          _model.datePicked1 =
+              DateFormat('HH:mm').parse(response['startTime']);
+        }
+        if (response['endTime'] != null) {
+          _model.datePicked2 =
+              DateFormat('HH:mm').parse(response['endTime']);
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al cargar servicio: $e')),
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _saveService() async {
+    setState(() => isRegistering = true);
+
+    try {
+      final currentUser = Supabase.instance.client.auth.currentUser;
+      if (currentUser == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Debes iniciar sesión primero.')),
+        );
+        setState(() => isRegistering = false);
+        return;
+      }
+
+      final walkerId = currentUser.id;
+
+      if (_model.dogWalkerFeeInputTextController.text.isEmpty ||
+          _model.dogWalkerInfoInputTextController.text.isEmpty ||
+          _model.workZoneInputTextController.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Por favor, completa todos los campos.')),
+        );
+        setState(() => isRegistering = false);
+        return;
+      }
+
+      final double? fee =
+          double.tryParse(_model.dogWalkerFeeInputTextController.text);
+      if (fee == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('La tarifa debe ser un número válido.')),
+        );
+        setState(() => isRegistering = false);
+        return;
+      }
+
+      final data = {
+        'walker_id': walkerId,
+        'fee': fee,
+        'aboutMe': _model.dogWalkerInfoInputTextController.text,
+        'walkingArea': _model.workZoneInputTextController.text,
+        'workingDays': _model.choiceChipsValues ?? [],
+        'startTime': _model.datePicked1 != null
+            ? DateFormat('HH:mm').format(_model.datePicked1!)
+            : null,
+        'endTime': _model.datePicked2 != null
+            ? DateFormat('HH:mm').format(_model.datePicked2!)
+            : null,
+        'rate': 5,
+      };
+
+      if (existingServiceId == null) {
+        // 🟢 Insertar nuevo servicio
+        await Supabase.instance.client.from('dog_walker_service').insert(data);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('¡Servicio registrado con éxito!')),
+        );
+      } else {
+        // 🟡 Actualizar servicio existente
+        await Supabase.instance.client
+            .from('dog_walker_service')
+            .update(data)
+            .eq('id', existingServiceId!);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Servicio actualizado con éxito.')),
+        );
+      }
+
+      context.goNamedAuth(HomeDogWalkerWidget.routeName, context.mounted);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al guardar servicio: $e')),
+      );
+    } finally {
+      setState(() => isRegistering = false);
+    }
   }
 
   @override
@@ -1303,72 +1426,8 @@ class _DogWalkerServiceWidgetState extends State<DogWalkerServiceWidget> {
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(0, 18, 0, 18),
                                               child: FFButtonWidget(
-                                                onPressed: isRegistering ? null : () async {
-                                                  setState(() => isRegistering = true);
-
-                                                  try {
-                                                    final currentUser = Supabase.instance.client.auth.currentUser;
-                                                    if (currentUser == null) {
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        const SnackBar(content: Text('Debes iniciar sesión primero.')),
-                                                      );
-                                                      setState(() => isRegistering = false);
-                                                      return;
-                                                    }
-
-                                                    final walkerId = currentUser.id;
-
-                                                    // Validar campos requeridos
-                                                    if (_model.dogWalkerFeeInputTextController.text.isEmpty ||
-                                                        _model.dogWalkerInfoInputTextController.text.isEmpty ||
-                                                        _model.workZoneInputTextController.text.isEmpty) {
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        const SnackBar(content: Text('Por favor, completa todos los campos.')),
-                                                      );
-                                                      setState(() => isRegistering = false);
-                                                      return;
-                                                    }
-
-                                                    // Convertir fee a número
-                                                    final double? fee = double.tryParse(_model.dogWalkerFeeInputTextController.text);
-                                                    if (fee == null) {
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        const SnackBar(content: Text('La tarifa debe ser un número válido.')),
-                                                      );
-                                                      setState(() => isRegistering = false);
-                                                      return;
-                                                    }
-                                                    
-                                                    // Insertar en la tabla walker_services
-                                                    await Supabase.instance.client.from('dog_walker_service').insert({
-                                                      'walker_id': walkerId,
-                                                      'fee': fee,
-                                                      'aboutMe': _model.dogWalkerInfoInputTextController.text,
-                                                      'walkingArea': _model.workZoneInputTextController.text,
-                                                      'workingDays': _model.choiceChipsValues ?? [],   // si lo tienes como dropdown o selector
-                                                      'workingTime': _model.datePicked1 != null
-                                                    ? DateFormat('HH:mm').format(_model.datePicked1!)
-                                                    : null,
-                                                      'rate': 5, // se puede iniciar en 5
-                                                      'startTime': _model.datePicked1 != null ? DateFormat('HH:mm').format(_model.datePicked1!) : null,
-                                                'endTime': _model.datePicked2 != null ? DateFormat('HH:mm').format(_model.datePicked2!) : null,
-
-                                                    });
-
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      const SnackBar(content: Text('¡Servicio registrado con éxito!')),
-                                                    );
-
-                                                    context.goNamedAuth(HomeDogWalkerWidget.routeName, context.mounted);
-                                                  } catch (e) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(content: Text('Error al registrar servicio: $e')),
-                                                    );
-                                                  } finally {
-                                                    setState(() => isRegistering = false);
-                                                  }
-                                                },
-                                                text: 'Guardar',
+                                                onPressed: isRegistering ? null : _saveService,
+                                                  text: existingServiceId == null ? 'Guardar' : 'Actualizar',
                                                 options: FFButtonOptions(
                                                   width: 360,
                                                   height: 40,
