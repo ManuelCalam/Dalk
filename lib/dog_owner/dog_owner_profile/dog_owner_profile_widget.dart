@@ -1,5 +1,7 @@
 
+import 'package:dalk/SubscriptionProvider.dart';
 import 'package:dalk/common/payment_methods/payment_methods_widget.dart';
+import 'package:provider/provider.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
@@ -15,6 +17,7 @@ import 'dog_owner_profile_model.dart';
 export 'dog_owner_profile_model.dart';
 
 class DogOwnerProfileWidget extends StatefulWidget {
+  
   const DogOwnerProfileWidget({super.key});
 
   static String routeName = 'dogOwnerProfile';
@@ -46,6 +49,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isPremium = context.watch<SubscriptionProvider>().isPremium;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -144,7 +148,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0, 5, 0, 0),
                                   child: Text(
-                                    'Plan Gratuito',
+                                    isPremium ? 'Plan Premium' : 'Plan Gratuito',
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .override(
@@ -203,7 +207,8 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                                 padding: EdgeInsetsDirectional
                                                     .fromSTEB(5, 0, 0, 0),
                                                 child: AutoSizeText(
-                                                  'Descubre los beneficios del plan premium!',
+                                                  isPremium ? "Revisa tus beneficios premium!" :
+                                                    'Descubre los beneficios del plan premium!' ,
                                                   textAlign: TextAlign.start,
                                                   minFontSize: 10,
                                                   style: FlutterFlowTheme.of(

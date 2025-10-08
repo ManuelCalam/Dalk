@@ -1,8 +1,12 @@
+import 'dart:async';
+
+import 'package:dalk/SubscriptionProvider.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:provider/provider.dart';
 import 'auth/supabase_auth/supabase_user_provider.dart';
 import 'auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
@@ -16,10 +20,10 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 // GlobalKey para el ScaffoldMessenger 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
-// ✅ HANDLER TOP-LEVEL SIMPLE (REQUERIDO)
+// HANDLER TOP-LEVEL SIMPLE (REQUERIDO)
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("📱 Background notification: ${message.notification?.title}");
+  print("Background notification: ${message.notification?.title}");
 }
 
 void main() async {
@@ -44,6 +48,7 @@ void main() async {
 
 
   runApp(MyApp());
+
 }
 
 class MyApp extends StatefulWidget {
@@ -55,10 +60,14 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+
   ThemeMode _themeMode = FlutterFlowTheme.themeMode;
 
+  final _supabaseAuthStream = Supabase.instance.client.auth.onAuthStateChange;
+  late Stream<BaseAuthUser> userStream;
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
+
   String getRoute([RouteMatch? routeMatch]) {
     final RouteMatch lastMatch =
         routeMatch ?? _router.routerDelegate.currentConfiguration.last;
@@ -73,13 +82,12 @@ class _MyAppState extends State<MyApp> {
           .map((e) => getRoute(e))
           .toList();
 
-  late Stream<BaseAuthUser> userStream;
 
   @override
   void initState() {
     super.initState();
     
-    // ✅ INICIALIZAR NOTIFICATIONSERVICE (TODO EN EL SERVICIO)
+    // Inicializar NotificationService
     final notificationService = NotificationService();
     notificationService.initialize(
       scaffoldKey: scaffoldMessengerKey,
@@ -111,26 +119,43 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      title: 'Dalk',
-      scaffoldMessengerKey: scaffoldMessengerKey,
-      localizationsDelegates: [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [Locale('en', '')],
-      theme: ThemeData(
-        brightness: Brightness.light,
-        useMaterial3: false,
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        useMaterial3: false,
-      ),
-      themeMode: _themeMode,
-      routerConfig: _router,
-    );
+    // Use StreamBuilder to listen for auth state changes
+    return StreamBuilder<AuthState>(stream: Supabase.instance.client.auth.onAuthStateChange, builder: (context, snapshot) {
+      // Check if a user session exists
+      final isAuthenticated = snapshot.data?.session?.user != null;
+
+      // Conditional provider creation based on auth state
+      Widget appRouter = MaterialApp.router(
+        debugShowCheckedModeBanner: false,
+        title: 'Dalk',
+        scaffoldMessengerKey: scaffoldMessengerKey,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [Locale('en', '')],
+        theme: ThemeData(
+          brightness: Brightness.light,
+          useMaterial3: false,
+        ),
+        darkTheme: ThemeData(
+          brightness: Brightness.dark,
+          useMaterial3: false,
+        ),
+        themeMode: _themeMode,
+        routerConfig: _router,
+      );
+
+      if (isAuthenticated) {
+      // Wrap the router with the provider only if authenticated
+        return ChangeNotifierProvider(
+          create: (context) => SubscriptionProvider(Supabase.instance.client),
+          child: appRouter,
+        );
+      } else {
+        return appRouter;
+      }
+    });
   }
 }

@@ -967,7 +967,7 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                         child: Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
                           child: Text(
-                            'Reseñas',
+                            'ReseÃ±as',
                             style: FlutterFlowTheme.of(context)
                                 .titleMedium
                                 .override(

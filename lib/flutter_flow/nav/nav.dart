@@ -133,6 +133,8 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             time: DateTime.tryParse(params.getParam('time', ParamType.String) ?? ''),
             addressId: int.tryParse(params.getParam('addressId', ParamType.String) ?? ''),
             petId: int.tryParse(params.getParam('petId', ParamType.String) ?? ''),
+            walkDuration: int.tryParse(params.getParam('walkDuration', ParamType.String) ?? '') ?? 30, 
+            instructions: params.getParam('instructions', ParamType.String) ?? ''
           ),
           requireAuth: true
         ),
@@ -140,12 +142,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: AddPetWidget.routeName,
           path: AddPetWidget.routePath,
           builder: (context, params) => AddPetWidget(),
-          requireAuth: true
-        ),
-        FFRoute(
-          name: PaseoNoAgendadoWidget.routeName,
-          path: PaseoNoAgendadoWidget.routePath,
-          builder: (context, params) => PaseoNoAgendadoWidget(),
           requireAuth: true
         ),
         FFRoute(
@@ -255,6 +251,17 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: DogWalkerProfileWidget.routePath,
           builder: (context, params) => DogWalkerProfileWidget(),
           requireAuth: true
+        ),
+        FFRoute(
+          name: ChatWidget.routeName,
+          path: ChatWidget.routePath,
+          builder: (context, params) => ChatWidget(
+            ownerId: params.getParam('ownerId', ParamType.String) ?? '',
+            walkerId: params.getParam('walkerId', ParamType.String) ?? '',
+            senderId: params.getParam('senderId', ParamType.String),
+            userName: params.getParam('userName', ParamType.String),
+            status: params.getParam('status', ParamType.String),
+          ),
         ),
           
       ].map((r) => r.toRoute(appStateNotifier)).toList(),

@@ -1,0 +1,10 @@
+{
+  "imports": {
+    "stripe": "npm:stripe@^14.0.0"
+  },
+  "functions": {
+    "stripe-webhook": {
+      "verify_jwt": false
+    }
+  }
+}

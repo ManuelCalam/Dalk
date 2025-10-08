@@ -23,6 +23,8 @@ class FindDogWalkerCardWidget extends StatelessWidget {
   final int? addressId;
   final int? petId;
   final String uuidPaseador;
+  final int walkDuration;
+  final String instructions;
 
   const FindDogWalkerCardWidget({
     required this.nombre,
@@ -34,13 +36,15 @@ class FindDogWalkerCardWidget extends StatelessWidget {
     required this.addressId,
     required this.petId,
     required this.uuidPaseador,
+    required this.walkDuration,
+    required this.instructions,
     Key? key,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: AlignmentDirectional(-1, -1),
+      alignment: const AlignmentDirectional(-1, -1),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 5),
         child: Container(
@@ -174,10 +178,15 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                             )
                           : null;
 
+                          DateTime? endDateTime;
+                          if (startDateTime != null) {
+                            endDateTime = startDateTime.add(Duration(minutes: walkDuration));
+                          }
+
                           final jwt = Supabase.instance.client.auth.currentSession?.accessToken;
                             if (jwt == null) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Error: Usuario no autenticado')),
+                                const SnackBar(content: Text('Error: Usuario no autenticado')),
                               );
                               return;
                             }
@@ -185,7 +194,6 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                             try {
                               print('🚀 Iniciando solicitud de paseo...');
 
-                              // Validar datos necesarios
                               if (petId == null || addressId == null || currentUserUid.isEmpty) {
                                 throw Exception('Datos insuficientes para crear el paseo');
                               } else {
@@ -199,9 +207,12 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                                         'address_id': addressId,
                                         'status': 'Por confirmar',
                                         'startTime': startDateTime?.toIso8601String(),
-                                        'endTime': time != null
-                                            ? '${time!.hour.toString().padLeft(2, '0')}:${time!.minute.toString().padLeft(2, '0')}:00'
-                                            : null,
+                                        'endTime': endDateTime != null
+                                          ? '${endDateTime.hour.toString().padLeft(2, '0')}:${endDateTime.minute.toString().padLeft(2, '0')}:00'
+                                          : null,
+                                          
+                                        'walk_duration_minutes': walkDuration,
+                                        'walker_instructions': instructions.trim().isEmpty ? null : instructions.trim()
                                       })
                                       .select('id')
                                       .single();

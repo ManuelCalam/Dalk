@@ -17,13 +17,17 @@ class FindDogWalkerWidget extends StatefulWidget {
     required this.date,
     required this.time,
     required this.addressId,
-    required this.petId
+    required this.petId,
+    required this.walkDuration,
+    required this.instructions
   });
 
   final DateTime? date;
   final DateTime? time;
   final int? addressId;
   final int? petId;
+  final int walkDuration;
+  final String instructions;
 
   static String routeName = 'findDogWalker';
   static String routePath = '/findDogWalker';
@@ -302,7 +306,7 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                                     .ilike(
                                       'name',
                                       _model.findDogWalkerInputTextController.text.isEmpty
-                                          ? '%' // esto devuelve todos
+                                          ? '%' 
                                           : '%${_model.findDogWalkerInputTextController.text}%',
                                     ),
                                 builder: (context, snapshot) {
@@ -333,6 +337,8 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                                         addressId: widget.addressId,
                                         petId: widget.petId,
                                         uuidPaseador: paseador['uuid'],
+                                        walkDuration: widget.walkDuration,
+                                        instructions: widget.instructions,
                                       );
                                     },
                                   );

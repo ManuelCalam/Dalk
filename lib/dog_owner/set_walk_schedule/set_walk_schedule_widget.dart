@@ -1,3 +1,6 @@
+import 'package:dalk/SubscriptionProvider.dart';
+import 'package:provider/provider.dart';
+
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import 'package:dalk/cards/pet_card/pet_card_widget.dart';
@@ -24,7 +27,8 @@ class SetWalkScheduleWidget extends StatefulWidget {
 
   final int? selectedAddress;
   final int? selectedPet;
-  
+  // String selectedWalkDuration = '30 min';
+  // int customWalkDuration = 30;
 
   static String routeName = 'setWalkSchedule';
   static String routePath = '/setWalkSchedule';
@@ -57,6 +61,8 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isPremium = context.watch<SubscriptionProvider>().isPremium;
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -512,6 +518,224 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                       ),
                                     ),
                                   ),
+                                  
+
+                                  Align(
+                                    alignment: AlignmentDirectional(-1.0, 0.0),
+                                    child: Padding(
+                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 25.0, 0.0, 0.0),
+                                      child: AutoSizeText(
+                                        'Escoge tiempo de paseo',
+                                        textAlign: TextAlign.start,
+                                        maxLines: 2,
+                                        minFontSize: 10.0,
+                                        style: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .override(
+                                              font: GoogleFonts.lexend(
+                                                fontWeight: FontWeight.normal,
+                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                              ),
+                                              color: FlutterFlowTheme.of(context).accent1,
+                                              letterSpacing: 0.0,
+                                              fontWeight: FontWeight.normal,
+                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                            ),
+                                      ),
+                                    ),
+                                  ),
+
+                                  Padding(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                                    child: LayoutBuilder(
+                                      builder: (context, constraints) {
+                                        final List<String> options = ['30 min', '60 min', 'Personalizado'];
+
+                                        final double segmentWidth = constraints.maxWidth / 3.0; 
+
+                                        return Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                color: FlutterFlowTheme.of(context).alternate,
+                                                borderRadius: BorderRadius.circular(20.0), 
+                                              ),
+                                              padding: const EdgeInsets.all(4.0), 
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                children: List.generate(options.length, (index) {
+                                                  final option = options[index];
+                                                  final isSelected = _model.selectedWalkDuration == option;
+                                                  final isCustomOption = option == 'Personalizado';
+                                                  // Si no es premium Y es la opción Personalizado, está bloqueado.
+                                                  final isLocked = !isPremium && isCustomOption; 
+
+                                                  return GestureDetector(
+                                                    onTap: () async {
+                                                      if (isLocked) {
+                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                          SnackBar(
+                                                            content: const Text('¡El tiempo Personalizado requiere el plan Premium!'),
+                                                            action: SnackBarAction(
+                                                              label: 'Ver Planes',
+                                                              onPressed: () {
+                                                                context.goNamed(PremiumPlanInfoWidget.routeName);
+                                                              },
+                                                            ),
+                                                          ),
+                                                        );
+                                                        // Se mantiene la selección anterior o se revierte a 30 min si no había selección válida.
+                                                        if (_model.selectedWalkDuration == 'Personalizado' || isLocked) {
+                                                          setState(() {
+                                                              _model.selectedWalkDuration = '30 min';
+                                                          });
+                                                        }
+                                                        return;
+                                                      }
+                                                      
+                                                      // Acción de Selección Válida
+                                                      setState(() {
+                                                        _model.selectedWalkDuration = option;
+                                                      });
+                                                    },
+                                                    child: AnimatedContainer(
+                                                      duration: const Duration(milliseconds: 200),
+                                                      width: segmentWidth - 4.0,
+                                                      height: 48.0, 
+                                                      decoration: BoxDecoration(
+                                                        color: isSelected
+                                                            ? FlutterFlowTheme.of(context).primary
+                                                            : FlutterFlowTheme.of(context).alternate,
+                                                        borderRadius: BorderRadius.circular(16.0),
+                                                      ),
+                                                      child: Center(
+                                                        child: AutoSizeText(
+                                                          option,
+                                                          maxLines: 1,
+                                                          minFontSize: 10.0,
+                                                          style: GoogleFonts.lexend(
+                                                            fontSize: 14.0,
+                                                            color: isSelected
+                                                                ? Colors.white
+                                                                : isLocked
+                                                                    ? Color(0xFF717981) 
+                                                                    : FlutterFlowTheme.of(context).primaryText,
+                                                            fontWeight: FontWeight.w600,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  );
+                                                }),
+                                              ),
+                                            ),
+
+                                            // --- CONDITIONAL PREMIUM INPUT FIELD ---
+                                            if (isPremium && _model.selectedWalkDuration == 'Personalizado')
+                                              Padding(
+                                                padding: const EdgeInsets.only(top: 16.0),
+                                                child: TextFormField(
+                                                  controller: _model.customDurationTextController, 
+                                                  focusNode: _model.customDurationFocusNode,
+                                                  autofocus: true, 
+                                                  textInputAction: TextInputAction.done,
+                                                  keyboardType: TextInputType.number,
+                                                  obscureText: false,
+                                                  decoration: InputDecoration(
+                                                    isDense: true,
+                                                    filled: true, 
+                                                    fillColor: FlutterFlowTheme.of(context).alternate, 
+                                                    labelText: 'Minutos personalizados',
+                                                    labelStyle: FlutterFlowTheme.of(context).bodyLarge.override(
+                                                      font: GoogleFonts.lexend(
+                                                        fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+                                                        fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                                                      ),
+                                                      letterSpacing: 0.0,
+                                                      fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+                                                      fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                                                      color: FlutterFlowTheme.of(context).primary
+                                                    ),
+                                                    alignLabelWithHint: false,
+                                                    hintText: 'Ej. 90 minutos (Mínimo 70min)',
+                                                    hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                                                      font: GoogleFonts.lexend(
+                                                        fontWeight: FontWeight.w500,
+                                                        fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
+                                                      ),
+                                                      color: FlutterFlowTheme.of(context).primary,
+                                                      fontSize: 16,
+                                                      letterSpacing: 0.0,
+                                                      fontWeight: FontWeight.w500,
+                                                      fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
+                                                    ),
+                                                    prefixIcon: Icon(
+                                                      Icons.access_time_filled, 
+                                                      color: FlutterFlowTheme.of(context).primary,
+                                                      size: 25,
+                                                    ),
+                                                    enabledBorder: OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color: Color(0x00000000),
+                                                        width: 1,
+                                                      ),
+                                                      borderRadius: BorderRadius.circular(20),
+                                                    ),
+                                                    focusedBorder: OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color: Color(0x00000000),
+                                                        width: 1,
+                                                      ),
+                                                      borderRadius: BorderRadius.circular(20),
+                                                    ),
+                                                    errorBorder: OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color: FlutterFlowTheme.of(context).error,
+                                                        width: 1,
+                                                      ),
+                                                      borderRadius: BorderRadius.circular(20),
+                                                    ),
+                                                    focusedErrorBorder: OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color: FlutterFlowTheme.of(context).error,
+                                                        width: 1,
+                                                      ),
+                                                      borderRadius: BorderRadius.circular(20),
+                                                    ),
+                                                  ),
+                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                    font: GoogleFonts.lexend(
+                                                      fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                    ),
+                                                    color: FlutterFlowTheme.of(context).secondaryBackground,
+                                                    fontSize: 16,
+                                                    letterSpacing: 0.0,
+                                                    fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                  ),
+                                                  cursorColor: FlutterFlowTheme.of(context).primaryText,
+                                                  
+                                                  // LÓGICA (Funcionalidad del primer bloque)
+                                                  onChanged: (value) {
+                                                    setState(() {
+                                                      // Guarda el valor ingresado en la variable de estado
+                                                      _model.customWalkDuration = int.tryParse(value) ?? 0;
+                                                    });
+                                                  },
+                                                ),
+                                              ),
+                                          ],
+                                        );
+                                      },
+                                    ),
+                                  ),
+
+
+
+
+                                  
                                   Align(
                                     alignment: AlignmentDirectional(-1.0, 0.0),
                                     child: Padding(
@@ -593,9 +817,9 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                   onTap: () {
                                                     setState(() {
                                                       if (selectedAddressId == address.id) {
-                                                        selectedAddressId = null; // Deselecciona si ya estaba seleccionada
+                                                        selectedAddressId = null; 
                                                       } else {
-                                                        selectedAddressId = address.id; // Selecciona si era otra
+                                                        selectedAddressId = address.id; 
                                                       }
                                                     });
                                                   },
@@ -603,7 +827,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                     key: Key('Keyil1_${address.id}'),
                                                     alias: address.alias,
                                                     id: address.id,
-                                                    selected: selectedAddressId == address.id, // Solo uno seleccionado
+                                                    selected: selectedAddressId == address.id,
                                                   ),
                                                 );
                                               } else {
@@ -752,9 +976,9 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                   onTap: () {
                                                     setState(() {
                                                       if (selectedPetId == pet['id']) {
-                                                        selectedPetId = null; // Deselecciona si ya estaba seleccionada
+                                                        selectedPetId = null; 
                                                       } else {
-                                                        selectedPetId = pet['id']; // Selecciona si era otra
+                                                        selectedPetId = pet['id']; 
                                                       }
                                                     });
                                                   },
@@ -838,12 +1062,145 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                       ),
                                     ),
                                   ),
+
+
+
+
+if(isPremium)
+Align(
+  alignment: AlignmentDirectional(-1.0, 0.0),
+  child: Padding(
+    padding: EdgeInsetsDirectional.fromSTEB(0.0, 25.0, 0.0, 0.0),
+    child: AutoSizeText(
+      'Instrucciones especiales para el paseador',
+      textAlign: TextAlign.start,
+      maxLines: 2,
+      minFontSize: 10.0,
+      style: FlutterFlowTheme.of(context)
+          .bodyMedium
+          .override(
+            font: GoogleFonts.lexend(
+              fontWeight: FontWeight.normal,
+              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+            ),
+            color: FlutterFlowTheme.of(context).accent1,
+            letterSpacing: 0.0,
+            fontWeight: FontWeight.normal,
+            fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+          ),
+    ),
+  ),
+),
+
+if(isPremium)
+Align(
+  alignment: AlignmentDirectional(-1.0, 0.0),
+  child: Padding(
+    padding: EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+    child: TextFormField(
+      controller: _model.instructionsTextController,
+      focusNode: _model.instructionsFocusNode,
+      autofocus: false,
+      textInputAction: TextInputAction.done,
+      obscureText: false,
+      decoration: InputDecoration(
+        isDense: true,
+        filled: true,
+        fillColor: FlutterFlowTheme.of(context).alternate,
+        labelText: 'Instrucciones para el paseador',
+        labelStyle: FlutterFlowTheme.of(context).bodyLarge.override(
+          font: GoogleFonts.lexend(
+            fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+            fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+          ),
+          letterSpacing: 0.0,
+          fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+          fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+          color: FlutterFlowTheme.of(context).primary
+        ),
+        alignLabelWithHint: false,
+        hintText: 'Ej. Ruta preferida, cuidados especiales, etc.',
+        hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
+          font: GoogleFonts.lexend(
+            fontWeight: FontWeight.w500,
+            fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
+          ),
+          color: FlutterFlowTheme.of(context).primary,
+          fontSize: 16,
+          letterSpacing: 0.0,
+          fontWeight: FontWeight.w500,
+          fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
+        ),
+        prefixIcon: Icon(
+          Icons.note_alt_outlined,
+          color: FlutterFlowTheme.of(context).primary,
+          size: 25,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: Color(0x00000000),
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: Color(0x00000000),
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: FlutterFlowTheme.of(context).error,
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: FlutterFlowTheme.of(context).error,
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      style: FlutterFlowTheme.of(context).bodyMedium.override(
+        font: GoogleFonts.lexend(
+          fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+        ),
+        color: FlutterFlowTheme.of(context).secondaryBackground,
+        fontSize: 16,
+        letterSpacing: 0.0,
+        fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+      ),
+      cursorColor: FlutterFlowTheme.of(context).primaryText,
+      maxLines: 4,
+      textAlign: TextAlign.start,
+    ),
+  ),
+),
+
+
+
                                   
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         0.0, 20.0, 0.0, 0.0),
                                     child: FFButtonWidget(
                                       onPressed: () async {
+                                        int finalWalkDurationInMinutes;
+
+                                        if (_model.selectedWalkDuration == 'Personalizado') {
+                                            finalWalkDurationInMinutes = _model.customWalkDuration >= 70 ? _model.customWalkDuration : 70;
+                                        } else if (_model.selectedWalkDuration == '60 min') {
+                                            finalWalkDurationInMinutes = 60;
+                                        } else {
+                                            finalWalkDurationInMinutes = 30;
+                                        }
+
                                         context.pushNamed(
                                           FindDogWalkerWidget.routeName,
                                             queryParameters: {
@@ -851,6 +1208,8 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                               'time': _model.datePicked2?.toIso8601String(),
                                               'addressId': selectedAddressId?.toString(),
                                               'petId': selectedPetId?.toString(),
+                                              'walkDuration': finalWalkDurationInMinutes.toString(),
+                                              'instructions': _model.instructionsTextController?.text ?? ''
                                             },
                                           );
                                       },
@@ -862,25 +1221,14 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                         height:
                                             MediaQuery.sizeOf(context).height *
                                                 0.045,
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            16.0, 0.0, 16.0, 0.0),
-                                        iconPadding:
-                                            EdgeInsetsDirectional.fromSTEB(
-                                                0.0, 0.0, 0.0, 0.0),
-                                        color: FlutterFlowTheme.of(context)
-                                            .accent1,
-                                        textStyle: FlutterFlowTheme.of(context)
-                                            .titleSmall
+                                        padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                                        iconPadding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                                        color: FlutterFlowTheme.of(context).accent1,
+                                        textStyle: FlutterFlowTheme.of(context).titleSmall
                                             .override(
                                               font: GoogleFonts.lexend(
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleSmall
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleSmall
-                                                        .fontStyle,
+                                                fontWeight: FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                                                fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
                                               ),
                                               color: Colors.white,
                                               letterSpacing: 0.0,

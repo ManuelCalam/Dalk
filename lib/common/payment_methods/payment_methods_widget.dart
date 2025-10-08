@@ -296,7 +296,7 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
                                       future: fetchPaymentMethods(customerId),
                                       builder: (context, snapshot) {
                                         return Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 20),
+                                          padding: const EdgeInsetsDirectional.fromSTEB(0, 20, 0, 20),
                                           child: Builder(
                                             builder: (_) {
                                               if (snapshot.connectionState == ConnectionState.waiting) {

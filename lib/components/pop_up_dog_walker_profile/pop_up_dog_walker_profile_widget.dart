@@ -398,7 +398,7 @@ class _PopUpDogWalkerProfileWidgetState
                         child: Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
                           child: Text(
-                            'Conóceme',
+                            'ConÃ³ceme',
                             style: FlutterFlowTheme.of(context)
                                 .bodyMedium
                                 .override(
@@ -419,28 +419,36 @@ class _PopUpDogWalkerProfileWidgetState
                           ),
                         ),
                       ),
-                      AutoSizeText(
-                        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In sagittis elit mauris, eu molestie nisl rhoncus eu. Etiam ac scelerisque. Lorem ipsum dolor sit amet, consectetur adipiscing elit. In sagittis elit mauris, eu molestie nisl rhoncus eu. Etiam ac scelerisque.',
-                        textAlign: TextAlign.justify,
-                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                              font: GoogleFonts.lexend(
-                                fontWeight: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .fontWeight,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .fontStyle,
-                              ),
-                              color: FlutterFlowTheme.of(context)
-                                  .secondaryBackground,
-                              letterSpacing: 0.0,
-                              fontWeight: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .fontWeight,
-                              fontStyle: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .fontStyle,
-                            ),
+                      Align(
+                        alignment: AlignmentDirectional(-1, 0),
+                        child: Padding(
+                          padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 13),
+                          child: AutoSizeText(
+                            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In sagittis elit mauris, eu molestie nisl rhoncus eu. Etiam ac scelerisque. Lorem ipsum dolor sit amet, consectetur adipiscing elit. In sagittis elit mauris, eu molestie nisl rhoncus eu. Etiam ac scelerisque.',
+                            textAlign: TextAlign.justify,
+                            style: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .override(
+                                  font: GoogleFonts.lexend(
+                                    fontWeight: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontWeight,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontStyle,
+                                  ),
+                                  color: FlutterFlowTheme.of(context)
+                                      .secondaryBackground,
+                                  letterSpacing: 0.0,
+                                  fontWeight: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontWeight,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontStyle,
+                                ),
+                          ),
+                        ),
                       ),
                       Padding(
                         padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
@@ -564,7 +572,7 @@ class _PopUpDogWalkerProfileWidgetState
                         Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
                           child: Text(
-                            'Reseñas',
+                            'ReseÃ±as',
                             style: FlutterFlowTheme.of(context)
                                 .titleMedium
                                 .override(
