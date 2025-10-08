@@ -3,6 +3,7 @@ import 'package:dalk/cards/non_reviewed_walk_card/non_reviewed_walk_card_widget.
 import 'package:dalk/cards/reviewed_walk_card/reviewed_walk_card_widget.dart';
 import 'package:dalk/common/current_walk_card/current_walk_card_widget.dart';
 import 'package:dalk/common/requested_walk_card/requested_walk_card_widget.dart';
+import 'package:dalk/common/walks_record/walks_record_widget.dart';
 import 'package:dalk/flutter_flow/flutter_flow_widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '/auth/supabase_auth/auth_util.dart';
@@ -130,7 +131,10 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                     EdgeInsetsDirectional.fromSTEB(0, 15, 25, 0),
                                 child: FFButtonWidget(
                                   onPressed: () {
-                                    print('Button pressed ...');
+                                    Navigator.push(
+                                      context, 
+                                      MaterialPageRoute(builder: (context) => const WalksRecordWidget(userType: 'Dueño',))
+                                    );
                                   },
                                   text: 'Historial de paseos',
                                   options: FFButtonOptions(

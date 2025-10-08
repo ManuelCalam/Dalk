@@ -5,6 +5,7 @@ import 'package:dalk/cards/requested_walk_walker_card/requested_walk_walker_card
 import 'package:dalk/cards/reviewed_dog_card/reviewed_dog_card_widget.dart';
 import 'package:dalk/common/current_walk_card/current_walk_card_widget.dart';
 import 'package:dalk/common/requested_walk_card/requested_walk_card_widget.dart';
+import 'package:dalk/common/walks_record/walks_record_widget.dart';
 import 'package:dalk/flutter_flow/flutter_flow_widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -132,7 +133,10 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
                                     const EdgeInsetsDirectional.fromSTEB(0, 15, 25, 0),
                                 child: FFButtonWidget(
                                   onPressed: () {
-                                    print('Button pressed ...');
+                                    Navigator.push(
+                                      context, 
+                                      MaterialPageRoute(builder: (context) => const WalksRecordWidget(userType: 'Paseador',))
+                                    );
                                   },
                                   text: 'Historial de paseos',
                                   options: FFButtonOptions(

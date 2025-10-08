@@ -5,13 +5,11 @@ import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'pop_up_add_review_model.dart';
 export 'pop_up_add_review_model.dart';
 
@@ -331,47 +329,51 @@ class _PopUpAddReviewWidgetState extends State<PopUpAddReviewWidget> {
                                   return;
                                 }
 
-                                String? targetId;
+                                String? reviewedUserId;
+                                int? reviewedDogId;
+
                                 if (widget.reviewType == 'Paseador') {
-                                  final response = await SupaFlow.client
-                                      .from('walks_with_names')
-                                      .select('walker_id')
-                                      .eq('id', widget.walkId)
-                                      .maybeSingle();
-                                  targetId = response?['walker_id'];
+                                    final response = await SupaFlow.client
+                                        .from('walks_with_names')
+                                        .select('walker_id')
+                                        .eq('id', widget.walkId)
+                                        .maybeSingle();
+                                        
+                                    reviewedUserId = response?['walker_id'] as String?; 
+
                                 } else if (widget.reviewType == 'Perro') {
-                                  final response = await SupaFlow.client
-                                      .from('walks_with_names')
-                                      .select('dog_id')
-                                      .eq('id', widget.walkId)
-                                      .maybeSingle();
-                                  targetId = response?['dog_id'];
-                                  
+                                    final response = await SupaFlow.client
+                                        .from('walks_with_names')
+                                        .select('dog_id')
+                                        .eq('id', widget.walkId)
+                                        .maybeSingle();
+
+                                    reviewedDogId = response?['dog_id'] as int?; 
                                 }
 
-                                print("Target id: ${targetId}");
-
-                                if (targetId == null) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('No se encontró el usuario a calificar.')),
-                                  );
-                                  return;
+                                if (reviewedUserId == null && reviewedDogId == null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('No se encontró el objetivo a calificar.')),
+                                    );
+                                    return;
                                 }
 
-                                 await Supabase.instance.client
-                                  .from('reviews')
-                                  .insert({
-                                    'reviewType': widget.reviewType,
-                                    'walk_id': widget.walkId,
-                                    'rating': rating.toInt(),
-                                    'comments': _model.dogWalkerInfoInputTextController.text,
-                                    'author_id': currentUserUid,
-                                    'reviewed_id': targetId, 
-                                });
+                                await Supabase.instance.client
+                                    .from('reviews')
+                                    .insert({
+                                        'reviewType': widget.reviewType,
+                                        'walk_id': widget.walkId,
+                                        'rating': rating.toInt(),
+                                        'comments': _model.dogWalkerInfoInputTextController.text,
+                                        'author_id': currentUserUid,
+                                        
+                                        'reviewed_user_id': reviewedUserId, 
+                                        'reviewed_dog_id': reviewedDogId,
+                                    });
 
                                 Navigator.of(context).pop();
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('¡Reseña guardada!')),
+                                  const SnackBar(content: Text('¡Reseña guardada!')),
                                 );
                               },
                               text: 'Guardar reseña',

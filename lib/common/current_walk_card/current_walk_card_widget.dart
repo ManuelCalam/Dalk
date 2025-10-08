@@ -438,7 +438,10 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
                 decoration: BoxDecoration(),
                 child: FFButtonWidget(
                   onPressed: () {
-                    print('Button pressed ...');
+                    context.goNamed(
+                      '_initialize', 
+                      queryParameters: {'initialPage': 'CurrentWalk'},
+                    );                            
                   },
                   text: 'Abrir mapa',
                   icon: FaIcon(FontAwesomeIcons.mapLocation, size: 25),

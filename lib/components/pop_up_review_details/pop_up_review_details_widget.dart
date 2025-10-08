@@ -1,15 +1,12 @@
 import 'package:dalk/backend/supabase/supabase.dart';
-
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 import 'pop_up_review_details_model.dart';
 export 'pop_up_review_details_model.dart';
@@ -19,8 +16,11 @@ class PopUpReviewDetailsWidget extends StatefulWidget {
 
   const PopUpReviewDetailsWidget({
     super.key,
-    required this.walkId
+    required this.walkId,
+    required this.reviewedName
   });
+
+  final String reviewedName;
 
   @override
   State<PopUpReviewDetailsWidget> createState() =>
@@ -62,13 +62,13 @@ class _PopUpReviewDetailsWidgetState extends State<PopUpReviewDetailsWidget> {
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: AlignmentDirectional(0, 0),
+      alignment: const AlignmentDirectional(0, 0),
       child: Container(
         width: MediaQuery.sizeOf(context).width,
         height: MediaQuery.sizeOf(context).height * 0.45,
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).tertiary,
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
             bottomLeft: Radius.circular(50),
             bottomRight: Radius.circular(50),
             topLeft: Radius.circular(50),
@@ -79,13 +79,13 @@ class _PopUpReviewDetailsWidgetState extends State<PopUpReviewDetailsWidget> {
           mainAxisSize: MainAxisSize.max,
           children: [
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(15, 20, 10, 0),
+              padding: const EdgeInsetsDirectional.fromSTEB(15, 20, 10, 0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 children: [
                   Expanded(
                     child: Align(
-                      alignment: AlignmentDirectional(1, 0),
+                      alignment: const AlignmentDirectional(1, 0),
                       child: FlutterFlowIconButton(
                         borderRadius: 8,
                         buttonSize: 40,
@@ -106,11 +106,11 @@ class _PopUpReviewDetailsWidgetState extends State<PopUpReviewDetailsWidget> {
             ),
             Expanded(
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 25),
+                padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 25),
                 child: Container(
                   width: MediaQuery.sizeOf(context).width * 0.9,
                   height: 100,
-                  decoration: BoxDecoration(),
+                  decoration: const BoxDecoration(),
                   child: Form(
                     key: _model.formKey,
                     autovalidateMode: AutovalidateMode.disabled,
@@ -118,7 +118,7 @@ class _PopUpReviewDetailsWidgetState extends State<PopUpReviewDetailsWidget> {
                     future: fetchReview(widget.walkId),
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
-                        return Center(child: CircularProgressIndicator());
+                        return const Center(child: CircularProgressIndicator());
                       }
                       final review = snapshot.data!;
                       final rating = (review['rating'] ?? 0).toDouble();
@@ -128,7 +128,7 @@ class _PopUpReviewDetailsWidgetState extends State<PopUpReviewDetailsWidget> {
                         mainAxisSize: MainAxisSize.max,
                         children: [
                           AutoSizeText(
-                            'Tu reseña',
+                            'Tu reseña a ${widget.reviewedName}',
                             textAlign: TextAlign.center,
                             maxLines: 3,
                             style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -143,7 +143,7 @@ class _PopUpReviewDetailsWidgetState extends State<PopUpReviewDetailsWidget> {
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
+                            padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
                             child: RatingBar.builder(
                               ignoreGestures: true, // Solo mostrar, no editar
                               onRatingUpdate: (_) {},
@@ -161,7 +161,7 @@ class _PopUpReviewDetailsWidgetState extends State<PopUpReviewDetailsWidget> {
                           ),
                           Expanded(
                             child: Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
+                              padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
                               child: Container(
                                 width: MediaQuery.sizeOf(context).width,
                                 decoration: BoxDecoration(
@@ -169,7 +169,7 @@ class _PopUpReviewDetailsWidgetState extends State<PopUpReviewDetailsWidget> {
                                   borderRadius: BorderRadius.circular(30),
                                 ),
                                 child: Padding(
-                                  padding: EdgeInsets.all(12),
+                                  padding: const EdgeInsets.all(12),
                                   child: AutoSizeText(
                                     comments,
                                     textAlign: TextAlign.justify,
