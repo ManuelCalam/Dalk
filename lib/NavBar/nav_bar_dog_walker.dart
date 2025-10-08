@@ -4,6 +4,7 @@ import 'package:dalk/dog_owner/pet_list/pet_list_widget.dart';
 import 'package:dalk/dog_walker/home_dog_walker/home_dog_walker_widget.dart';
 import 'package:dalk/flutter_flow/flutter_flow_theme.dart';
 import 'package:dalk/flutter_flow/flutter_flow_util.dart';
+import 'package:dalk/landing_pages/dog_walker_service/dog_walker_service_widget.dart';
 import 'package:flutter/material.dart';
 
 class NavBarWalkerPage extends StatefulWidget {
@@ -39,10 +40,10 @@ class _NavBarPageState extends State<NavBarWalkerPage> {
   @override
   Widget build(BuildContext context) {
     final tabs = {
-      'homeDogWalker': const HomeDogWalkerWidget(),
-      'CurrentWalk': const CurrentWalkWidget(),
-      'petList': const PetListWidget(),
-      'dogWalkerProfile': const DogOwnerProfileWidget(),
+      'homeDogWalker': HomeDogWalkerWidget(),
+      'CurrentWalk': CurrentWalkWidget(),
+      'petList': DogWalkerServiceWidget(),
+      'dogWalkerProfile': DogOwnerProfileWidget(),
     };
     final currentIndex = tabs.keys.toList().indexOf(_currentPageName);
 
@@ -57,11 +58,11 @@ class _NavBarPageState extends State<NavBarWalkerPage> {
         }),
         backgroundColor: FlutterFlowTheme.of(context).tertiary,
         selectedItemColor: FlutterFlowTheme.of(context).primary,
-        unselectedItemColor: const Color(0xFFB1B1B1),
+        unselectedItemColor: Color(0xFFB1B1B1),
         showSelectedLabels: false,
         showUnselectedLabels: false,
         type: BottomNavigationBarType.fixed,
-        items: const <BottomNavigationBarItem>[
+        items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(
               Icons.home,
@@ -80,7 +81,7 @@ class _NavBarPageState extends State<NavBarWalkerPage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(
-              Icons.pets_outlined,
+              Icons.perm_contact_cal,
               size: 30.0,
             ),
             label: 'Home',
