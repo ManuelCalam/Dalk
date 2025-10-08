@@ -9,6 +9,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:dalk/backend/supabase/supabase.dart';
 
 import 'reviewed_walk_card_model.dart';
 export 'reviewed_walk_card_model.dart';
@@ -40,6 +41,7 @@ class ReviewedWalkCardWidget extends StatefulWidget {
 
 class _ReviewedWalkCardWidgetState extends State<ReviewedWalkCardWidget> {
   late ReviewedWalkCardModel _model;
+  String? walkerId;
 
   @override
   void setState(VoidCallback callback) {
@@ -51,6 +53,17 @@ class _ReviewedWalkCardWidgetState extends State<ReviewedWalkCardWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => ReviewedWalkCardModel());
+    _loadWalkerId();
+  }
+
+  Future<void> _loadWalkerId() async {
+    final id = await getWalkerIdByName(widget.dogWalker);
+    if (mounted) {
+      setState(() {
+        walkerId = id;
+      });
+    }
+    debugPrint('Walker ID obtenido: $walkerId');
   }
 
   @override
@@ -229,7 +242,7 @@ class _ReviewedWalkCardWidgetState extends State<ReviewedWalkCardWidget> {
                                       return Padding(
                                         padding:
                                             MediaQuery.viewInsetsOf(context),
-                                        child: PopUpDogWalkerProfileWidget(),
+                                        child: PopUpDogWalkerProfileWidget(walkerId: walkerId!),
                                       );
                                     },
                                   ).then((value) => safeSetState(() {}));
@@ -512,5 +525,26 @@ class _ReviewedWalkCardWidgetState extends State<ReviewedWalkCardWidget> {
         ),
       ),
     );
+  }
+}
+
+Future<String?> getWalkerIdByName(String walkerName) async {
+  try {
+    final response = await Supabase.instance.client
+        .from('users')
+        .select('uuid')
+        .eq('name', walkerName)
+        .eq('usertype', 'Paseador')
+        .maybeSingle();
+
+    if (response != null) {
+      return response['uuid'] as String?;
+    } else {
+      debugPrint('No se encontró un paseador con el nombre $walkerName');
+      return null;
+    }
+  } catch (e) {
+    debugPrint('Error al obtener walker_id: $e');
+    return null;
   }
 }

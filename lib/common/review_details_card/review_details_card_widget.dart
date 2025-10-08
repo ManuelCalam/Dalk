@@ -2,12 +2,33 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '/flutter_flow/flutter_flow_icon_button.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '/auth/supabase_auth/auth_util.dart';
 
 import 'review_details_card_model.dart';
 export 'review_details_card_model.dart';
 
 class ReviewDetailsCardWidget extends StatefulWidget {
-  const ReviewDetailsCardWidget({super.key});
+  const ReviewDetailsCardWidget({
+    super.key,
+    required this.userName,
+    required this.rating,
+    required this.comment,
+    required this.date,
+    required this.imageUrl,
+  });
+
+  final String userName;
+  final int rating;
+  final String comment;
+  final DateTime date;
+  final String imageUrl;
 
   @override
   State<ReviewDetailsCardWidget> createState() =>
@@ -63,7 +84,7 @@ class _ReviewDetailsCardWidgetState extends State<ReviewDetailsCardWidget> {
                     shape: BoxShape.circle,
                   ),
                   child: Image.network(
-                    'https://images.unsplash.com/photo-1604004555489-723a93d6ce74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxNXx8Z2lybHxlbnwwfHx8fDE3NTk3NzAzODV8MA&ixlib=rb-4.1.0&q=80&w=1080',
+                    widget.imageUrl ?? 'https://images.unsplash.com/photo-1604004555489-723a93d6ce74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxNXx8Z2lybHxlbnwwfHx8fDE3NTk3NzAzODV8MA&ixlib=rb-4.1.0&q=80&w=1080',
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -83,7 +104,7 @@ class _ReviewDetailsCardWidgetState extends State<ReviewDetailsCardWidget> {
                           Align(
                             alignment: AlignmentDirectional(-1, -1),
                             child: Text(
-                              '[userName]',
+                              widget.userName ?? '[userName]',
                               style: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .override(
@@ -119,7 +140,7 @@ class _ReviewDetailsCardWidgetState extends State<ReviewDetailsCardWidget> {
                               padding:
                                   EdgeInsetsDirectional.fromSTEB(0, 0, 20, 0),
                               child: Text(
-                                '5',
+                                (widget.rating != null ? '${widget.rating} ' : '[rate]'),
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
                                     .override(
@@ -148,13 +169,10 @@ class _ReviewDetailsCardWidgetState extends State<ReviewDetailsCardWidget> {
                         ],
                       ),
                     ),
-                    Expanded(
-                      child: Align(
-                        alignment: AlignmentDirectional(-1, 0),
-                        child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 5, 20, 20),
-                          child: Text(
-                            '[reviewInfo]',
+                    Padding(
+                      padding: const EdgeInsetsDirectional.fromSTEB(0, 5, 20, 20),
+                      child: Text(
+                            widget.comment?? '[reviewInfo]',
                             textAlign: TextAlign.justify,
                             style: FlutterFlowTheme.of(context)
                                 .bodyMedium
@@ -179,8 +197,6 @@ class _ReviewDetailsCardWidgetState extends State<ReviewDetailsCardWidget> {
                                 ),
                           ),
                         ),
-                      ),
-                    ),
                   ],
                 ),
               ),

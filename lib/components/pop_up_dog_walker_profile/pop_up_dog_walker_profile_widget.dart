@@ -5,12 +5,21 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '/auth/supabase_auth/auth_util.dart';
+import '/backend/supabase/supabase.dart';
+import '/index.dart';
+import 'package:dalk/common/review_details_card/review_details_card_widget.dart';
 
 import 'pop_up_dog_walker_profile_model.dart';
 export 'pop_up_dog_walker_profile_model.dart';
 
 class PopUpDogWalkerProfileWidget extends StatefulWidget {
-  const PopUpDogWalkerProfileWidget({super.key});
+  final String walkerId;
+  const PopUpDogWalkerProfileWidget({
+    super.key,
+    required this.walkerId,
+
+    });
 
   @override
   State<PopUpDogWalkerProfileWidget> createState() =>
@@ -21,16 +30,45 @@ class _PopUpDogWalkerProfileWidgetState
     extends State<PopUpDogWalkerProfileWidget> {
   late PopUpDogWalkerProfileModel _model;
 
+  // final int dogId = 12;
+  // final int dogId = ;
+
+  // 🔹 Variables para mostrar datos
+   // Reemplaza con el UUID real del paseador
+   String get walkerId => widget.walkerId;
+  String? walkerName;
+  String? walkerUuid;
+  String? walkerArea;
+  int? walkerAge;
+  String? walkerAboutMe;
+  int? walkerPrice;
+  double? walkerAvgRating;
+  int? walkerTotalWalks;
+  String? walkerJoinedAgo;
+  String? walkerLastWalk;
+  String? walkerPhotoUrl;
+
+  int? _totalWalks;
+  double? _avgDogRating;
+  String? _createdAgo;
+
+  final supabase = Supabase.instance.client;
+  List<Map<String, dynamic>> _reviews = [];
+  bool _loading = true;
+
   @override
   void setState(VoidCallback callback) {
     super.setState(callback);
     _model.onUpdate();
+    
   }
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => PopUpDogWalkerProfileModel());
+    fetchWalkerData();
+     _fetchReviews();
   }
 
   @override
@@ -38,6 +76,88 @@ class _PopUpDogWalkerProfileWidgetState
     _model.maybeDispose();
 
     super.dispose();
+  }
+  Future<void> fetchWalkerData() async {
+    try {
+      // Llamada a la vista walkers_with_stats
+      final response = await Supabase.instance.client
+          .from('walkers_with_stats')
+          .select('uuid,name,working_area,age,about_me,price,average_rating,total_walks,joined_at,last_walk_date, photo_url')
+          .eq('uuid', walkerId ) // usa aquí tu variable con el UUID del paseador
+          .maybeSingle();
+
+      if (response != null) {
+        setState(() {
+          walkerName = response['name'];
+          walkerUuid = response['uuid'];
+          walkerArea = response['working_area'];
+          walkerAge = response['age'];
+          walkerAboutMe = response['about_me'];
+          walkerPrice = response['price'];
+          walkerAvgRating = (response['average_rating'] as num?)?.toDouble();
+          walkerTotalWalks = response['total_walks'] as int?;
+          walkerLastWalk = response['last_walk_date'];
+          walkerPhotoUrl = response['photo_url'];
+
+          // Calcular hace cuánto se unió a la app
+          if (response['joined_at'] != null) {
+            final joinedAt = DateTime.parse(response['joined_at']);
+            final diff = DateTime.now().difference(joinedAt);
+
+            if (diff.inDays < 1) {
+              walkerJoinedAgo = '${diff.inHours} horas';
+            } else if (diff.inDays < 30) {
+              walkerJoinedAgo = '${diff.inDays} días';
+            } else if (diff.inDays < 365) {
+              walkerJoinedAgo = '${(diff.inDays / 30).floor()} meses';
+            } else {
+              walkerJoinedAgo = '${(diff.inDays / 365).floor()} años';
+            }
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint(' Error al obtener datos del paseador: $e');
+    }
+  }
+
+  Future<void> _fetchReviews() async {
+  try {
+      final response = await supabase
+          .from('reviews')
+          .select('id, rating, walk_id, comments, created_at, author_id, reviewer_photo, users:author_id (name)')
+          .eq('reviewed_user_id', walkerId)
+          .order('created_at', ascending: false);
+
+      // Log para revisar qué trae la respuesta
+      print('Reviews raw response: $response');
+
+      if (response == null || response.isEmpty) {
+        print('No reviews found');
+      }
+      //print('walkerId used: $walkerId');
+
+      setState(() {
+        _reviews = response.map<Map<String, dynamic>>((review) {
+          print('Review item: $review'); // log de cada review
+          return {
+            'user_name': review['users']?['name'] ?? 'Usuario',
+            'rating': review['rating'],
+            'comments': review['comments'],
+            'created_at': review['created_at'],
+            'walk_id': review['walk_id'], // ojo que antes tenías 'walker_id' que probablemente es nulo
+            'reviewer_photo': review['reviewer_photo'],
+          };
+        }).toList();
+        _loading = false;
+      });
+    } catch (e) {
+      print('Error fetching reviews: $e');
+      setState(() {
+        _loading = false;
+        _reviews = [];
+      });
+    }
   }
 
   @override
@@ -125,12 +245,12 @@ class _PopUpDogWalkerProfileWidgetState
                                 shape: BoxShape.circle,
                               ),
                               child: Image.network(
-                                'https://picsum.photos/seed/854/600',
+                                walkerPhotoUrl?? 'https://picsum.photos/seed/854/600',
                                 fit: BoxFit.cover,
                               ),
                             ),
                             AutoSizeText(
-                              'Nombre',
+                              walkerName?? 'Nombre',
                               textAlign: TextAlign.center,
                               maxLines: 1,
                               style: FlutterFlowTheme.of(context)
@@ -152,7 +272,7 @@ class _PopUpDogWalkerProfileWidgetState
                                   ),
                             ),
                             AutoSizeText(
-                              'Colonia Providencia',
+                              walkerArea?? 'Colonia Providencia',
                               textAlign: TextAlign.center,
                               maxLines: 1,
                               style: FlutterFlowTheme.of(context)
@@ -222,7 +342,7 @@ class _PopUpDogWalkerProfileWidgetState
                                     Align(
                                       alignment: AlignmentDirectional(0, -1),
                                       child: AutoSizeText(
-                                        '4.8',
+                                        walkerAvgRating.toString()?? '0',
                                         textAlign: TextAlign.center,
                                         maxLines: 1,
                                         style: FlutterFlowTheme.of(context)
@@ -288,7 +408,9 @@ class _PopUpDogWalkerProfileWidgetState
                                     Align(
                                       alignment: AlignmentDirectional(0, 0),
                                       child: AutoSizeText(
-                                        '12 Viajes',
+                                        walkerTotalWalks != null 
+                                          ? '${walkerTotalWalks} Viajes' 
+                                          : '0 Viajes',
                                         textAlign: TextAlign.center,
                                         maxLines: 2,
                                         minFontSize: 12,
@@ -360,7 +482,7 @@ class _PopUpDogWalkerProfileWidgetState
                                     Align(
                                       alignment: AlignmentDirectional(0, -1),
                                       child: AutoSizeText(
-                                        '1 mes',
+                                        walkerJoinedAgo?? 'mes',
                                         textAlign: TextAlign.center,
                                         style: FlutterFlowTheme.of(context)
                                             .bodyMedium
@@ -397,7 +519,7 @@ class _PopUpDogWalkerProfileWidgetState
                         child: Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
                           child: Text(
-                            'ConÃ³ceme',
+                            'Conóceme',
                             style: FlutterFlowTheme.of(context)
                                 .bodyMedium
                                 .override(
@@ -423,7 +545,7 @@ class _PopUpDogWalkerProfileWidgetState
                         child: Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 13),
                           child: AutoSizeText(
-                            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In sagittis elit mauris, eu molestie nisl rhoncus eu. Etiam ac scelerisque. Lorem ipsum dolor sit amet, consectetur adipiscing elit. In sagittis elit mauris, eu molestie nisl rhoncus eu. Etiam ac scelerisque.',
+                            walkerAboutMe?? 'No hay información disponible.' ,
                             textAlign: TextAlign.justify,
                             style: FlutterFlowTheme.of(context)
                                 .bodyMedium
@@ -477,7 +599,7 @@ class _PopUpDogWalkerProfileWidgetState
                                 padding:
                                     EdgeInsetsDirectional.fromSTEB(8, 0, 0, 0),
                                 child: AutoSizeText(
-                                  '25 aÃ±os',
+                                  (walkerAge != null ? '${walkerAge} años' : '[age]'),
                                   maxLines: 1,
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
@@ -536,7 +658,7 @@ class _PopUpDogWalkerProfileWidgetState
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       8, 0, 0, 0),
                                   child: AutoSizeText(
-                                    '\$100',
+                                    (walkerPrice != null ? '\$${walkerPrice} ' : '[Price]'),
                                     maxLines: 1,
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
@@ -570,7 +692,7 @@ class _PopUpDogWalkerProfileWidgetState
                         child: Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
                           child: Text(
-                            'ReseÃ±as',
+                            'Reseñas',
                             style: FlutterFlowTheme.of(context)
                                 .titleMedium
                                 .override(
@@ -594,6 +716,35 @@ class _PopUpDogWalkerProfileWidgetState
                           ),
                         ),
                       ),
+                      if (_loading)
+                        const Center(child: CircularProgressIndicator())
+                      else if (_reviews.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 10),
+                          child: Text(
+                            'Aún no hay reseñas para este Paseador.',
+                            style: FlutterFlowTheme.of(context).bodyMedium,
+                          ),
+                        )
+                      else
+                        ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: _reviews.length,
+                          itemBuilder: (context, index) {
+                            final review = _reviews[index];
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: ReviewDetailsCardWidget(
+                                userName: review['user_name'] ?? 'Usuario',
+                                rating: review['rating'] ?? 0,
+                                comment: review['comments'] ?? '',
+                                date: DateTime.parse(review['created_at']),
+                                imageUrl: review['reviewer_photo'] ?? 'https://images.unsplash.com/photo-1604004555489-723a93d6ce74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080',
+                              ),
+                            );
+                          },
+                        ),
                     ],
                   ),
                 ),

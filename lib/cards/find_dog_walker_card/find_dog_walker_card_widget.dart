@@ -92,7 +92,7 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                           builder: (context) {
                             return Padding(
                               padding: MediaQuery.viewInsetsOf(context),
-                              child: PopUpDogWalkerProfileWidget(),
+                              child: PopUpDogWalkerProfileWidget(walkerId: uuidPaseador),
                             );
                           },
                         );

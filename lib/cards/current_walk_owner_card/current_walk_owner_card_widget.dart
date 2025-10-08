@@ -29,6 +29,7 @@ class CurrentWalkOwnerCardWidget extends StatefulWidget {
   final DateTime? time;
   final DateTime? returnTime;
 
+
   @override
   State<CurrentWalkOwnerCardWidget> createState() =>
       _CurrentWalkOwnerCardWidgetState();
@@ -37,17 +38,30 @@ class CurrentWalkOwnerCardWidget extends StatefulWidget {
 class _CurrentWalkOwnerCardWidgetState
     extends State<CurrentWalkOwnerCardWidget> {
   late CurrentWalkOwnerCardModel _model;
+  String? walkerId;
 
   @override
   void setState(VoidCallback callback) {
     super.setState(callback);
     _model.onUpdate();
+    
   }
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => CurrentWalkOwnerCardModel());
+    _loadWalkerId();
+  }
+
+  Future<void> _loadWalkerId() async {
+    final id = await getWalkerIdByName(widget.dogWalker);
+    if (mounted) {
+      setState(() {
+        walkerId = id;
+      });
+    }
+    debugPrint('Walker ID obtenido: $walkerId');
   }
 
   @override
@@ -59,6 +73,7 @@ class _CurrentWalkOwnerCardWidgetState
 
   @override
   Widget build(BuildContext context) {
+    
     return Padding(
       padding: EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
       child: Container(
@@ -226,10 +241,11 @@ class _CurrentWalkOwnerCardWidgetState
                                     enableDrag: false,
                                     context: context,
                                     builder: (context) {
+                                      
                                       return Padding(
                                         padding:
                                             MediaQuery.viewInsetsOf(context),
-                                        child: PopUpDogWalkerProfileWidget(),
+                                        child: PopUpDogWalkerProfileWidget(walkerId: walkerId!),
                                       );
                                     },
                                   ).then((value) => safeSetState(() {}));
@@ -445,5 +461,25 @@ class _CurrentWalkOwnerCardWidgetState
         ),
       ),
     );
+  }
+}
+Future<String?> getWalkerIdByName(String walkerName) async {
+  try {
+    final response = await Supabase.instance.client
+        .from('users')
+        .select('uuid')
+        .eq('name', walkerName)
+        .eq('usertype', 'Paseador')
+        .maybeSingle();
+
+    if (response != null) {
+      return response['uuid'] as String?;
+    } else {
+      debugPrint('No se encontró un paseador con el nombre $walkerName');
+      return null;
+    }
+  } catch (e) {
+    debugPrint('Error al obtener walker_id: $e');
+    return null;
   }
 }

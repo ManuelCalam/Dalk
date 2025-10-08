@@ -337,7 +337,7 @@ class _RequestedWalkOwnerCardWidgetState
                                       return Padding(
                                         padding:
                                             MediaQuery.viewInsetsOf(context),
-                                        child: PopUpDogWalkerProfileWidget(),
+                                        child: PopUpDogWalkerProfileWidget(walkerId: widget.walkerId),
                                       );
                                     },
                                   ).then((value) => safeSetState(() {}));
