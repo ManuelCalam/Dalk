@@ -1,4 +1,5 @@
 import 'package:dalk/backend/supabase/supabase.dart';
+import 'package:dalk/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -59,6 +60,361 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
     return response;
   }
 
+  // Helper Function: Construye un botón con el formato necesario
+  Widget _buildActionButton({
+    required BuildContext context,
+    required String text,
+    required Color color,
+    required VoidCallback onPressed,
+    IconData? icon,
+    bool isPrimary = false, 
+  }) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+      child: FFButtonWidget(
+        onPressed:  onPressed, 
+        text: text,
+        options: FFButtonOptions(
+          width: MediaQuery.sizeOf(context).width,
+          height: MediaQuery.sizeOf(context).height * 0.05,
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+          iconPadding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+          iconAlignment: IconAlignment.end,
+          color: color, 
+          textStyle: FlutterFlowTheme.of(context)
+              .titleSmall
+              .override(
+                font: GoogleFonts.lexend(
+                  fontWeight: FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                  fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                ),
+                color: Colors.white,
+                letterSpacing: 0.0,
+                fontWeight: FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
+              ),
+          elevation: 0,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        icon: icon != null ? Icon(icon, color: Colors.white) : null,
+      ),
+    );
+  }
+
+  // Función central: Determina y retorna la lista de botones
+  List<Widget> _getButtonsBasedOnStatus(
+    BuildContext context,
+    String? userType,
+    String walkStatus,
+  ) {
+    final List<Widget> buttons = [];
+
+    // ------------------------------------
+    // LÓGICA DEL USUARIO DUEÑO ("Dueño")
+    // ------------------------------------
+    if (userType == 'Dueño') {
+      if (walkStatus == 'Por confirmar' || walkStatus == 'Aceptado') {
+        // Estatus "Por confirmar" o "Aceptado": Botón "Cancelar"
+        buttons.add(_buildActionButton(
+          context: context,
+          text: 'Cancelar paseo',
+          color: FlutterFlowTheme.of(context).error,
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (_) => PopUpConfirmDialogWidget(
+                title: "Cancelar paseo",
+                message: "¿Estás seguro de que deseas cancelar este paseo?",
+                confirmText: "Cancelar paseo",
+                cancelText: "Cerrar",
+                confirmColor: FlutterFlowTheme.of(context).error,
+                cancelColor: FlutterFlowTheme.of(context).accent1,
+                icon: Icons.cancel_rounded,
+                iconColor: FlutterFlowTheme.of(context).error,
+                onConfirm: () async => {
+                  await SupaFlow.client
+                    .from('walks')
+                    .update({'status': 'Cancelado'})
+                    .eq('id', widget.walkId),
+
+                  //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
+                  Navigator.pop(context),
+                  Navigator.pop(context),
+
+                  //Envío de notificacion después de cerrar los menús
+                  await Supabase.instance.client.functions.invoke(
+                    'send-walk-notification',
+                    body: {
+                      'walk_id': widget.walkId,
+                      'new_status': 'Cancelado',
+                    },
+                  )
+                },
+                onCancel: () => Navigator.pop(context),
+              ), 
+            );
+
+          },
+          icon: Icons.cancel_rounded,
+        ));
+      } else if (walkStatus == 'Rechazado' || walkStatus == 'Cancelado') {
+        // Estatus "Rechazado" o "Cancelado": Botón "Borrar"
+        buttons.add(_buildActionButton(
+          context: context,
+          text: 'Borrar paseo',
+          color: FlutterFlowTheme.of(context).error, 
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (_) => PopUpConfirmDialogWidget(
+                title: "Eliminar paseo",
+                message: "¿Estás seguro de que deseas eliminar este paseo?",
+                confirmText: "Eliminar paseo",
+                cancelText: "Cerrar",
+                confirmColor: FlutterFlowTheme.of(context).error,
+                cancelColor: FlutterFlowTheme.of(context).accent1,
+                icon: Icons.delete_forever_rounded,
+                iconColor: FlutterFlowTheme.of(context).error,
+                onConfirm: () async => {
+                  await SupaFlow.client.from('walks').delete().eq('id', widget.walkId),
+
+                  //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
+                  Navigator.pop(context),
+                  Navigator.pop(context)
+                },
+                onCancel: () => Navigator.pop(context),
+              ), 
+            );
+          },
+          icon: Icons.delete_forever_rounded,
+        ));
+      }
+    }
+
+    // ------------------------------------
+    // LÓGICA DEL USUARIO PASEADOR ("Paseador")
+    // ------------------------------------
+    else if (userType == 'Paseador') {
+      if (walkStatus == 'Por confirmar') {
+        // Estatus "Por confirmar": "Aceptar" y "Rechazar"
+        
+        // Botón 1: Aceptar
+        buttons.add(_buildActionButton(
+          context: context,
+          text: 'Aceptar',
+          color: FlutterFlowTheme.of(context).success, 
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (_) => PopUpConfirmDialogWidget(
+                title: "Aceptar paseo",
+                message: "¿Estás seguro de que deseas aceptar este paseo?",
+                confirmText: "Aceptar paseo",
+                cancelText: "Cerrar",
+                confirmColor: FlutterFlowTheme.of(context).success,
+                cancelColor: FlutterFlowTheme.of(context).accent1,
+                icon: Icons.check_circle_rounded,
+                iconColor: FlutterFlowTheme.of(context).success,
+                onConfirm: () async => {
+                  await SupaFlow.client
+                    .from('walks')
+                    .update({'status': 'Aceptado'})
+                    .eq('id', widget.walkId),
+
+
+                  //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
+                  Navigator.pop(context),
+                  Navigator.pop(context),
+
+                  //Envío de notificacion después de cerrar los menús
+                  await Supabase.instance.client.functions.invoke(
+                    'send-walk-notification',
+                    body: {
+                      'walk_id': widget.walkId,
+                      'new_status': 'Aceptado',
+                    },
+                  )
+                },
+                onCancel: () => Navigator.pop(context),
+              ), 
+            );
+
+          },
+          icon: Icons.check_circle,
+        ));
+
+        // Botón 2: Rechazar
+        buttons.add(_buildActionButton(
+          context: context,
+          text: 'Rechazar',
+          color: FlutterFlowTheme.of(context).error,
+          onPressed: () {
+           showDialog(
+              context: context,
+              builder: (_) => PopUpConfirmDialogWidget(
+                title: "Rechazar paseo",
+                message: "¿Estás seguro de que deseas rechazar este paseo?",
+                confirmText: "Rechazar paseo",
+                cancelText: "Cerrar",
+                confirmColor: FlutterFlowTheme.of(context).error,
+                cancelColor: FlutterFlowTheme.of(context).accent1,
+                icon: Icons.cancel_rounded,
+                iconColor: FlutterFlowTheme.of(context).error,
+                onConfirm: () async => {
+                  await SupaFlow.client
+                    .from('walks')
+                    .update({'status': 'Rechazado'})
+                    .eq('id', widget.walkId),
+
+
+                  //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
+                  Navigator.pop(context),
+                  Navigator.pop(context),
+
+                  //Envío de notificacion después de cerrar los menús
+                  await Supabase.instance.client.functions.invoke(
+                    'send-walk-notification',
+                    body: {
+                      'walk_id': widget.walkId,
+                      'new_status': 'Rechazado',
+                    },
+                  )
+                },
+                onCancel: () => Navigator.pop(context),
+              ), 
+            );
+
+          },
+          icon: Icons.cancel_rounded,
+        ));
+        
+      } else if (walkStatus == 'Aceptado') {
+        // Estatus "Aceptado": "Iniciar Viaje" y "Cancelar"
+        
+        // Botón 1: Iniciar Viaje (Color de acción principal)
+        buttons.add(_buildActionButton(
+          context: context,
+          text: 'Iniciar paseo',
+          color: FlutterFlowTheme.of(context).success, 
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (_) => PopUpConfirmDialogWidget(
+                title: "Iniciar paseo",
+                message: "¿Estás seguro de que deseas inniciar este paseo?",
+                confirmText: "Iniciar paseo",
+                cancelText: "Cerrar",
+                confirmColor: FlutterFlowTheme.of(context).success,
+                cancelColor: FlutterFlowTheme.of(context).accent1,
+                icon: FontAwesomeIcons.dog,
+                iconColor: FlutterFlowTheme.of(context).primary,
+                onConfirm: () async => {
+                  await SupaFlow.client
+                    .from('walks')
+                    .update({'status': 'En Curso'})
+                    .eq('id', widget.walkId),
+
+                  //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
+                  Navigator.pop(context),
+                  Navigator.pop(context),
+
+                  //Envío de notificacion después de cerrar los menús
+                  await Supabase.instance.client.functions.invoke(
+                          'send-walk-notification',
+                          body: {
+                            'walk_id': widget.walkId,
+                            'new_status': 'En Curso',
+                          },
+                  )
+                },
+                onCancel: () => Navigator.pop(context),
+              ), 
+            );
+          },
+          icon: FontAwesomeIcons.dog,
+        ));
+
+        // Botón 2: Cancelar (Color rojo)
+        buttons.add(_buildActionButton(
+          context: context,
+          text: 'Cancelar paseo',
+          color: FlutterFlowTheme.of(context).error,
+          onPressed: () {
+             showDialog(
+              context: context,
+              builder: (_) => PopUpConfirmDialogWidget(
+                title: "Cancelar paseo",
+                message: "¿Estás seguro de que deseas cancelar este paseo?",
+                confirmText: "Cancelar paseo",
+                cancelText: "Cerrar",
+                confirmColor: FlutterFlowTheme.of(context).error,
+                cancelColor: FlutterFlowTheme.of(context).accent1,
+                icon: Icons.cancel_rounded,
+                iconColor: FlutterFlowTheme.of(context).error,
+                onConfirm: () async => {
+                  await SupaFlow.client
+                    .from('walks')
+                    .update({'status': 'Cancelado'})
+                    .eq('id', widget.walkId),
+
+                  //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
+                  Navigator.pop(context),
+                  Navigator.pop(context),
+                  
+                  //Envío de notificacion después de cerrar los menús
+                  await Supabase.instance.client.functions.invoke(
+                          'send-walk-notification',
+                          body: {
+                            'walk_id': widget.walkId,
+                            'new_status': 'Cancelado',
+                          },
+                  )
+                },
+                onCancel: () => Navigator.pop(context),
+              ), 
+            );
+          },
+          icon: Icons.cancel_rounded,
+        ));
+        
+      } else if (walkStatus == 'Rechazado' || walkStatus == 'Cancelado') {
+        // Estatus "Rechazado" o "Cancelado": Botón "Borrar"
+        buttons.add(_buildActionButton(
+          context: context,
+          text: 'Borrar paseo',
+          color: FlutterFlowTheme.of(context).error,
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (_) => PopUpConfirmDialogWidget(
+                title: "Eliminar paseo",
+                message: "¿Estás seguro de que deseas eliminar este paseo?",
+                confirmText: "Eliminar paseo",
+                cancelText: "Cerrar",
+                confirmColor: FlutterFlowTheme.of(context).error,
+                cancelColor: FlutterFlowTheme.of(context).accent1,
+                icon: Icons.delete_forever_rounded,
+                iconColor: FlutterFlowTheme.of(context).error,
+                onConfirm: () async => {
+                  await SupaFlow.client.from('walks').delete().eq('id', widget.walkId),
+
+                  //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
+                  Navigator.pop(context),
+                  Navigator.pop(context)
+                },
+                onCancel: () => Navigator.pop(context),
+              ), 
+            );
+          },
+          icon: Icons.delete_forever_rounded,
+        ));
+      }
+    }
+
+    return buttons;
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final int walkId = widget.walkId; 
@@ -117,7 +473,6 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
 
         
         // Aquí puedes extraer los datos para usarlos en el widget:
-        print(widget.usertype);
         final String dogName = walkInfo['pet_name'] as String? ?? 'N/A';
         final String userName = widget.usertype == 'Dueño' ? walkInfo['walker_name'] : walkInfo['owner_name'];
         final String photoUrl = walkInfo['dog_photo_url'] as String? ?? 'N/A';
@@ -717,81 +1072,82 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                               ),
                             ),
                           ),
-                          FFButtonWidget(
-                            onPressed: () {
-                              print('Button pressed ...');
-                            },
-                            text: '[Confirm]',
-                            options: FFButtonOptions(
-                              width: MediaQuery.sizeOf(context).width,
-                              height: MediaQuery.sizeOf(context).height * 0.05,
-                              padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
-                              iconPadding:
-                                  EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                              color: FlutterFlowTheme.of(context).primary,
-                              textStyle:
-                                  FlutterFlowTheme.of(context).titleSmall.override(
-                                        font: GoogleFonts.lexend(
-                                          fontWeight: FlutterFlowTheme.of(context)
-                                              .titleSmall
-                                              .fontWeight,
-                                          fontStyle: FlutterFlowTheme.of(context)
-                                              .titleSmall
-                                              .fontStyle,
-                                        ),
-                                        color: Colors.white,
-                                        letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
-                                            .titleSmall
-                                            .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .titleSmall
-                                            .fontStyle,
-                                      ),
-                              elevation: 0,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
-                            child: FFButtonWidget(
-                              onPressed: () {
-                                print('Button pressed ...');
-                              },
-                              text: '[Cancel]',
-                              options: FFButtonOptions(
-                                width: MediaQuery.sizeOf(context).width,
-                                height: MediaQuery.sizeOf(context).height * 0.05,
-                                padding:
-                                    EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
-                                iconPadding:
-                                    EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                                color: Color(0xFFC40606),
-                                textStyle: FlutterFlowTheme.of(context)
-                                    .titleSmall
-                                    .override(
-                                      font: GoogleFonts.lexend(
-                                        fontWeight: FlutterFlowTheme.of(context)
-                                            .titleSmall
-                                            .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .titleSmall
-                                            .fontStyle,
-                                      ),
-                                      color: Colors.white,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontStyle,
-                                    ),
-                                elevation: 0,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                          ),
+                          // FFButtonWidget(
+                          //   onPressed: () {
+                          //     print('Button pressed ...');
+                          //   },
+                          //   text: '[Confirm]',
+                          //   options: FFButtonOptions(
+                          //     width: MediaQuery.sizeOf(context).width,
+                          //     height: MediaQuery.sizeOf(context).height * 0.05,
+                          //     padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+                          //     iconPadding:
+                          //         EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                          //     color: FlutterFlowTheme.of(context).primary,
+                          //     textStyle:
+                          //         FlutterFlowTheme.of(context).titleSmall.override(
+                          //               font: GoogleFonts.lexend(
+                          //                 fontWeight: FlutterFlowTheme.of(context)
+                          //                     .titleSmall
+                          //                     .fontWeight,
+                          //                 fontStyle: FlutterFlowTheme.of(context)
+                          //                     .titleSmall
+                          //                     .fontStyle,
+                          //               ),
+                          //               color: Colors.white,
+                          //               letterSpacing: 0.0,
+                          //               fontWeight: FlutterFlowTheme.of(context)
+                          //                   .titleSmall
+                          //                   .fontWeight,
+                          //               fontStyle: FlutterFlowTheme.of(context)
+                          //                   .titleSmall
+                          //                   .fontStyle,
+                          //             ),
+                          //     elevation: 0,
+                          //     borderRadius: BorderRadius.circular(8),
+                          //   ),
+                          // ),
+                          // Padding(
+                          //   padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                          //   child: FFButtonWidget(
+                          //     onPressed: () {
+                          //       print('Button pressed ...');
+                          //     },
+                          //     text: '[Cancel]',
+                          //     options: FFButtonOptions(
+                          //       width: MediaQuery.sizeOf(context).width,
+                          //       height: MediaQuery.sizeOf(context).height * 0.05,
+                          //       padding:
+                          //           EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+                          //       iconPadding:
+                          //           EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                          //       color: Color(0xFFC40606),
+                          //       textStyle: FlutterFlowTheme.of(context)
+                          //           .titleSmall
+                          //           .override(
+                          //             font: GoogleFonts.lexend(
+                          //               fontWeight: FlutterFlowTheme.of(context)
+                          //                   .titleSmall
+                          //                   .fontWeight,
+                          //               fontStyle: FlutterFlowTheme.of(context)
+                          //                   .titleSmall
+                          //                   .fontStyle,
+                          //             ),
+                          //             color: Colors.white,
+                          //             letterSpacing: 0.0,
+                          //             fontWeight: FlutterFlowTheme.of(context)
+                          //                 .titleSmall
+                          //                 .fontWeight,
+                          //             fontStyle: FlutterFlowTheme.of(context)
+                          //                 .titleSmall
+                          //                 .fontStyle,
+                          //           ),
+                          //       elevation: 0,
+                          //       borderRadius: BorderRadius.circular(8),
+                          //     ),
+                          //   ),
+                          // ),
+                          ..._getButtonsBasedOnStatus(context, widget.usertype, walkStatus),
                         ],
                       ),
                     ),
