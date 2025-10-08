@@ -49,7 +49,7 @@ class _NavBarPageState extends State<NavBarOwnerPage> {
         _currentPage = null;
       });
     }
-}
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -1,6 +1,7 @@
 import 'package:dalk/current_walk/current_walk_widget.dart';
 import 'package:dalk/dog_owner/dog_owner_profile/dog_owner_profile_widget.dart';
 import 'package:dalk/dog_owner/pet_list/pet_list_widget.dart';
+import 'package:dalk/dog_walker/dog_walker_profile/dog_walker_profile_widget.dart';
 import 'package:dalk/dog_walker/home_dog_walker/home_dog_walker_widget.dart';
 import 'package:dalk/flutter_flow/flutter_flow_theme.dart';
 import 'package:dalk/flutter_flow/flutter_flow_util.dart';
@@ -35,6 +36,30 @@ class _NavBarPageState extends State<NavBarWalkerPage> {
     _currentPage = widget.page;
   }
 
+// En nav_bar_dog_walker.dart, dentro de _NavBarPageState
+
+@override
+void didUpdateWidget(covariant NavBarWalkerPage oldWidget) {
+  super.didUpdateWidget(oldWidget);
+  
+  // Definir las claves válidas para usar en la validación
+  final validPages = const ['homeDogWalker', 'CurrentWalk', 'walkerService', 'dogWalkerProfile'];
+  
+  // Verificar si la página inicial ha cambiado Y si el nuevo valor no es nulo
+  if (widget.initialPage != null && widget.initialPage != oldWidget.initialPage) {
+    setState(() {
+      // 🌟 Si el valor es válido, ¡lo usamos!
+      if (validPages.contains(widget.initialPage)) {
+        _currentPageName = widget.initialPage!;
+      } else {
+        // 🚨 Si el valor no es una página del walker, volvemos a Home.
+        // Esto previene cargar una página de "Dueño" en la barra de "Paseador"
+        _currentPageName = 'homeDogWalker';
+      }
+      _currentPage = null;
+    });
+  }
+}
   
 
   @override
@@ -42,14 +67,17 @@ class _NavBarPageState extends State<NavBarWalkerPage> {
     final tabs = {
       'homeDogWalker': HomeDogWalkerWidget(),
       'CurrentWalk': CurrentWalkWidget(),
-      'petList': DogWalkerServiceWidget(),
-      'dogWalkerProfile': DogOwnerProfileWidget(),
+      'walkerService': DogWalkerServiceWidget(),
+      'dogWalkerProfile': DogWalkerProfileWidget(),
     };
-    final currentIndex = tabs.keys.toList().indexOf(_currentPageName);
+  String pageToUse = tabs.containsKey(_currentPageName) ? _currentPageName : 'homeDogWalker';
+  
+  // Ahora el índice siempre será >= 0
+  final currentIndex = tabs.keys.toList().indexOf(pageToUse);
 
     return Scaffold(
       resizeToAvoidBottomInset: !widget.disableResizeToAvoidBottomInset,
-      body: _currentPage ?? tabs[_currentPageName],
+    body: _currentPage ?? tabs[pageToUse], 
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
         onTap: (i) => safeSetState(() {
