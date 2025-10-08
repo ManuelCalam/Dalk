@@ -392,7 +392,7 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                             stream: SupaFlow.client
                                                 .from('walks')
                                                 .stream(primaryKey: ['id'])
-                                                .eq('walker_id', currentUserUid),
+                                                .eq('owner_id', currentUserUid),
                                             builder: (context, snapshot) {
                                               if (!snapshot.hasData) {
                                                 return const Center(child: CircularProgressIndicator());
@@ -427,7 +427,7 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                                         id: fullWalkData['id'],
                                                         status: fullWalkData['status'] ?? '',
                                                         petName: fullWalkData['pet_name'] ?? '',
-                                                        usertype: 'Paseador',
+                                                        usertype: 'Dueño',
                                                         userName: fullWalkData['walker_name'] ?? '',
                                                         date: fullWalkData['startTime'] != null
                                                             ? DateTime.tryParse(fullWalkData['startTime'])
@@ -455,7 +455,7 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                             stream: SupaFlow.client
                                                 .from('walks')
                                                 .stream(primaryKey: ['id'])
-                                                .eq('walker_id', currentUserUid),
+                                                .eq('owner_id', currentUserUid),
                                             builder: (context, snapshot) {
                                               if (!snapshot.hasData) {
                                                 return const Center(child: CircularProgressIndicator());
@@ -490,7 +490,7 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                                         id: fullWalkData['id'],
                                                         status: fullWalkData['status'] ?? '',
                                                         petName: fullWalkData['pet_name'] ?? '',
-                                                        usertype: 'Paseador',
+                                                        usertype: 'Dueño',
                                                         userName: fullWalkData['walker_name'] ?? '',
                                                         date: fullWalkData['startTime'] != null
                                                             ? DateTime.tryParse(fullWalkData['startTime'])

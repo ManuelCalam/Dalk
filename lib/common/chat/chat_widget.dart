@@ -1,15 +1,11 @@
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '/services/notification_service.dart';
 
-import 'chat_model.dart';
 export 'chat_model.dart';
 
 class ChatWidget extends StatefulWidget {
@@ -72,19 +68,23 @@ class _ChatWidgetState extends State<ChatWidget> {
           ? widget.ownerId
           : widget.walkerId;
 
-    final data = await _supabase
-        .from('users')
-        .select('name, photo_url')
-        .eq('uuid', otherId)
-        .maybeSingle();
+      final data = await _supabase
+          .from('users')
+          .select('name, photo_url')
+          .eq('uuid', otherId)
+          .maybeSingle();
 
-    if (data != null) {
-      setState(() {
-        otherUserName = data['name'];
-        otherUserPhotoUrl = data['photo_url'];
-      });
-    }
+      if (data != null) {
+        setState(() {
+          otherUserName = data['name'];
+          otherUserPhotoUrl = data['photo_url'];
+        });
+      }
+    } catch(e) {
+      //
+    } 
   }
+  
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   Future<void> _loadInitial() async {

@@ -362,7 +362,7 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
                                                         status: fullWalkData['status'] ?? '',
                                                         petName: fullWalkData['pet_name'] ?? '',
                                                         usertype: 'Paseador',
-                                                        userName: fullWalkData['walker_name'] ?? '',
+                                                        userName: fullWalkData['owner_name'] ?? '',
                                                         date: fullWalkData['startTime'] != null
                                                             ? DateTime.tryParse(fullWalkData['startTime'])
                                                             : null,
@@ -424,7 +424,7 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
                                                         status: fullWalkData['status'] ?? '',
                                                         petName: fullWalkData['pet_name'] ?? '',
                                                         usertype: 'Paseador',
-                                                        userName: fullWalkData['walker_name'] ?? '',
+                                                        userName: fullWalkData['owner_name'] ?? '',
                                                         date: fullWalkData['startTime'] != null
                                                             ? DateTime.tryParse(fullWalkData['startTime'])
                                                             : null,
@@ -487,7 +487,7 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
                                                         status: fullWalkData['status'] ?? '',
                                                         petName: fullWalkData['pet_name'] ?? '',
                                                         usertype: 'Paseador',
-                                                        userName: fullWalkData['walker_name'] ?? '',
+                                                        userName: fullWalkData['owner_name'] ?? '',
                                                         date: fullWalkData['startTime'] != null
                                                             ? DateTime.tryParse(fullWalkData['startTime'])
                                                             : null,

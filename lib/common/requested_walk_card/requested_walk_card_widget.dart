@@ -73,6 +73,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
 
   @override
   Widget build(BuildContext context) {
+    print(widget.usertype);
     return Padding(
       padding: EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
       child: Container(
