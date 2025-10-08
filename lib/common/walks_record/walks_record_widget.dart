@@ -187,7 +187,8 @@ class _WalksRecordWidgetState extends State<WalksRecordWidget> {
                                                       duration: (walk['walk_duration_minutes'] as int?)?.toString() ?? '', 
                                                       fee: (walk['fee'] as int?)?.toString() ?? '', 
                                                       rate: review['rating']?.toString() ?? '',
-                                                      photoUrl: walk['dog_photo_url'] ?? '',
+                                                      photoUrl: walk['dog_photo_url'] ?? '', 
+                                                      dogId: walk['dog_id'] ?? 0, 
                                                     );
                                                   } else {
                                                     return NonReviewedDogCardWidget(
@@ -197,6 +198,8 @@ class _WalksRecordWidgetState extends State<WalksRecordWidget> {
                                                       duration: (walk['walk_duration_minutes'] as int?)?.toString() ?? '', 
                                                       fee: (walk['fee'] as int?)?.toString() ?? '', 
                                                       photoUrl: walk['dog_photo_url'] ?? '',
+                                                      walkerId: walk['walker_id'] ?? '',
+                                                      dogId: walk['dog_id'] ?? 0, 
                                                     );
                                                   }
                                                 },
@@ -256,6 +259,8 @@ class _WalksRecordWidgetState extends State<WalksRecordWidget> {
                                                         fee: (walk['fee'] as int?)?.toString() ?? '', 
                                                         rate: review['rating']?.toString() ?? '',
                                                         photoUrl: walk['dog_photo_url'] ?? '',
+                                                        walkerId: walk['walker_id'] ?? '',                     
+                                                        dogId: walk['dog_id'] ?? 0, 
                                                       );
                                                     } else {
                                                       return NonReviewedWalkCardWidget(
@@ -265,6 +270,8 @@ class _WalksRecordWidgetState extends State<WalksRecordWidget> {
                                                         duration: (walk['walk_duration_minutes'] as int?)?.toString() ?? '', 
                                                         fee: (walk['fee'] as int?)?.toString() ?? '', 
                                                         photoUrl: walk['dog_photo_url'] ?? '',
+                                                        walkerId: walk['walker_id'] ?? '',
+                                                        dogId: walk['dog_id'] ?? 0, 
                                                       );
                                                     }
                                                   },

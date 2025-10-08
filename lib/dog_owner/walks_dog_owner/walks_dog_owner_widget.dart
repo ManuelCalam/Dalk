@@ -1,6 +1,3 @@
-import 'package:dalk/cards/current_walk_owner_card/current_walk_owner_card_widget.dart';
-import 'package:dalk/cards/non_reviewed_walk_card/non_reviewed_walk_card_widget.dart';
-import 'package:dalk/cards/reviewed_walk_card/reviewed_walk_card_widget.dart';
 import 'package:dalk/common/current_walk_card/current_walk_card_widget.dart';
 import 'package:dalk/common/requested_walk_card/requested_walk_card_widget.dart';
 import 'package:dalk/common/walks_record/walks_record_widget.dart';
@@ -8,7 +5,6 @@ import 'package:dalk/flutter_flow/flutter_flow_widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
-import '/cards/requested_walk_owner_card/requested_walk_owner_card_widget.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
 import '/flutter_flow/flutter_flow_button_tabbar.dart';
@@ -86,11 +82,11 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
               Container(
                 width: MediaQuery.sizeOf(context).width,
                 height: MediaQuery.sizeOf(context).height * 0.1,
-                decoration: BoxDecoration(),
+                decoration: const BoxDecoration(),
                 child: wrapWithModel(
                   model: _model.notificationContainerModel,
                   updateCallback: () => safeSetState(() {}),
-                  child: NotificationContainerWidget(),
+                  child: const NotificationContainerWidget(),
                 ),
               ),
               Expanded(
@@ -116,7 +112,7 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                       children: [
                         Container(
                           width: MediaQuery.sizeOf(context).width,
-                          decoration: BoxDecoration(),
+                          decoration: const BoxDecoration(),
                           child: Row(
                             mainAxisSize: MainAxisSize.max,
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -124,11 +120,11 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                               wrapWithModel(
                                 model: _model.goBackContainerModel,
                                 updateCallback: () => safeSetState(() {}),
-                                child: GoBackContainerWidget(),
+                                child: const GoBackContainerWidget(),
                               ),
                               Padding(
                                 padding:
-                                    EdgeInsetsDirectional.fromSTEB(0, 15, 25, 0),
+                                    const EdgeInsetsDirectional.fromSTEB(0, 15, 25, 0),
                                 child: FFButtonWidget(
                                   onPressed: () {
                                     Navigator.push(
@@ -139,10 +135,10 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                   text: 'Historial de paseos',
                                   options: FFButtonOptions(
                                     height: 40,
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         0, 0, 0, 0),
                                     iconAlignment: IconAlignment.end,
-                                    iconPadding: EdgeInsetsDirectional.fromSTEB(
+                                    iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                         0, 0, 0, 0),
                                     color: Colors.transparent,
                                     textStyle: FlutterFlowTheme.of(context)
@@ -186,9 +182,9 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Align(
-                                  alignment: AlignmentDirectional(-1, 0),
+                                  alignment: const AlignmentDirectional(-1, 0),
                                   child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         0, 0, 0, 8),
                                     child: AutoSizeText(
                                       'Paseos',
@@ -377,6 +373,7 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                                         photoUrl: fullWalkData['walker_photo_url'],
                                                         walkerId: fullWalkData['walker_id'],
                                                         ownerId: fullWalkData['owner_id'],
+                                                        dogId: fullWalkData['dog_id'],
                                                       );
                                                     },
                                                   );
@@ -442,6 +439,7 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                                         photoUrl: fullWalkData['walker_photo_url'],
                                                         walkerId: fullWalkData['walker_id'],
                                                         ownerId: fullWalkData['owner_id'],
+                                                        dogId: fullWalkData['dog_id'],
                                                       );
                                                     },
                                                   );
@@ -467,7 +465,7 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
 
                                               final walksList = snapshot.data!
                                                   .where((walk) =>
-                                                      walk['status'] == 'En Curso')
+                                                      walk['status'] == 'En curso')
                                                   .toList();
 
                                               if (walksList.isEmpty) {

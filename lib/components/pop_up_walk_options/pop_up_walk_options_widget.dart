@@ -311,7 +311,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                 onConfirm: () async => {
                   await SupaFlow.client
                     .from('walks')
-                    .update({'status': 'En Curso'})
+                    .update({'status': 'En curso'})
                     .eq('id', widget.walkId),
 
                   //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
@@ -323,7 +323,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                           'send-walk-notification',
                           body: {
                             'walk_id': widget.walkId,
-                            'new_status': 'En Curso',
+                            'new_status': 'En curso',
                           },
                   )
                 },

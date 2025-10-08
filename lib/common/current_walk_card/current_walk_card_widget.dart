@@ -438,7 +438,7 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
                 decoration: BoxDecoration(),
                 child: FFButtonWidget(
                   onPressed: () {
-                    context.goNamed(
+                    context.pushReplacementNamed(
                       '_initialize', 
                       queryParameters: {'initialPage': 'CurrentWalk'},
                     );                            

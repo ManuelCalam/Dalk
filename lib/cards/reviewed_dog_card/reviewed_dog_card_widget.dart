@@ -20,6 +20,7 @@ class ReviewedDogCardWidget extends StatefulWidget {
     required this.duration,
     required this.fee,
     required this.photoUrl,
+    required this.dogId,
     String? rate,
   })  : this.petName = petName ?? '[petName]',
         this.dogOwner = dogOwner ?? '[dogOwner]',
@@ -32,6 +33,7 @@ class ReviewedDogCardWidget extends StatefulWidget {
   final String? fee;
   final String rate;
   final String photoUrl;
+  final int dogId;
 
   @override
   State<ReviewedDogCardWidget> createState() => _ReviewedDogCardWidgetState();
@@ -157,7 +159,7 @@ class _ReviewedDogCardWidgetState extends State<ReviewedDogCardWidget> {
                                             padding: MediaQuery.viewInsetsOf(
                                                 context),
                                             child:
-                                               const PopUpDogProfileWidget(),
+                                              PopUpDogProfileWidget(dogId: widget.dogId),
                                           );
                                         },
                                       ).then((value) => safeSetState(() {}));

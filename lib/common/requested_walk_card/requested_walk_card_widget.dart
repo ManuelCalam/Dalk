@@ -26,6 +26,7 @@ class RequestedWalkCardWidget extends StatefulWidget {
     required this.id, 
     required this.walkerId,
     required this.ownerId,
+    required this.dogId,
   })  : this.petName = petName ?? '[petName]',
         this.userName = userName ?? '[userName]',
         this.status = status ?? '[status]',
@@ -41,6 +42,7 @@ class RequestedWalkCardWidget extends StatefulWidget {
   final String photoUrl;
   final String walkerId;
   final String ownerId;
+  final int dogId;
 
   @override
   State<RequestedWalkCardWidget> createState() =>
@@ -196,7 +198,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                                             padding: MediaQuery.viewInsetsOf(
                                                 context),
                                             child:
-                                                PopUpDogProfileWidget(),
+                                                PopUpDogProfileWidget(dogId: widget.dogId),
                                           );
                                         },
                                       ).then((value) => safeSetState(() {}));

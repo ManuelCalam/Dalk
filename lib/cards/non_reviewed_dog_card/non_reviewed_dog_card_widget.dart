@@ -1,4 +1,5 @@
 import 'package:dalk/components/pop_up_add_review/pop_up_add_review_widget.dart';
+import 'package:dalk/components/pop_up_dog_profile/pop_up_dog_profile_widget.dart';
 import 'package:dalk/components/pop_up_dog_walker_profile/pop_up_dog_walker_profile_widget.dart';
 
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -20,6 +21,8 @@ class NonReviewedDogCardWidget extends StatefulWidget {
     required this.duration,
     required this.fee,
     required this.photoUrl,
+    required this.walkerId,
+    required this.dogId,
   })  : this.petName = petName ?? '[petName]',
         this.dogOwner = dogOwner ?? '[dogOwner]';
 
@@ -29,6 +32,8 @@ class NonReviewedDogCardWidget extends StatefulWidget {
   final String? duration;
   final String? fee;
   final String photoUrl;
+  final String walkerId;
+  final int dogId;
 
   @override
   State<NonReviewedDogCardWidget> createState() =>
@@ -155,7 +160,7 @@ class _NonReviewedDogCardWidgetState extends State<NonReviewedDogCardWidget> {
                                             padding: MediaQuery.viewInsetsOf(
                                                 context),
                                             child:
-                                               const PopUpDogWalkerProfileWidget()
+                                              PopUpDogProfileWidget(dogId: widget.dogId)
                                           );
                                         },
                                       ).then((value) => safeSetState(() {}));
@@ -197,7 +202,7 @@ class _NonReviewedDogCardWidgetState extends State<NonReviewedDogCardWidget> {
                                   padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 2, 0, 0),
                                   child: AutoSizeText(
-                                    'DueÃ±o:',
+                                    'Dueño:',
                                     textAlign: TextAlign.center,
                                     maxLines: 1,
                                     style: FlutterFlowTheme.of(context)

@@ -20,6 +20,8 @@ class ReviewedWalkCardWidget extends StatefulWidget {
     required this.duration,
     required this.fee,
     required this.photoUrl,
+    required this.walkerId,
+    required this.dogId,
     String? rate,
   })  : this.petName = petName ?? '[petName]',
         this.dogWalker = dogWalker ?? '[dogWalker]',
@@ -32,6 +34,8 @@ class ReviewedWalkCardWidget extends StatefulWidget {
   final String? fee;
   final String rate;
   final String photoUrl;
+  final String walkerId;
+  final int dogId;
 
   @override
   State<ReviewedWalkCardWidget> createState() => _ReviewedWalkCardWidgetState();
@@ -157,7 +161,7 @@ class _ReviewedWalkCardWidgetState extends State<ReviewedWalkCardWidget> {
                                             padding: MediaQuery.viewInsetsOf(
                                                 context),
                                             child:
-                                               const PopUpDogProfileWidget(),
+                                               PopUpDogProfileWidget(dogId: widget.dogId),
                                           );
                                         },
                                       ).then((value) => safeSetState(() {}));
@@ -243,7 +247,7 @@ class _ReviewedWalkCardWidgetState extends State<ReviewedWalkCardWidget> {
                                             padding: MediaQuery.viewInsetsOf(
                                                 context),
                                             child:
-                                               const PopUpDogWalkerProfileWidget(),
+                                              PopUpDogWalkerProfileWidget(walkerId: widget.walkerId),
                                           );
                                         },
                                       ).then((value) => safeSetState(() {}));

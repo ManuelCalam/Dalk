@@ -1,8 +1,3 @@
-import 'package:dalk/cards/accepted_walk_walker_card/accepted_walk_walker_card_widget.dart';
-import 'package:dalk/cards/current_walk_walker_card/current_walk_walker_card_widget.dart';
-import 'package:dalk/cards/non_reviewed_dog_card/non_reviewed_dog_card_widget.dart';
-import 'package:dalk/cards/requested_walk_walker_card/requested_walk_walker_card_widget.dart';
-import 'package:dalk/cards/reviewed_dog_card/reviewed_dog_card_widget.dart';
 import 'package:dalk/common/current_walk_card/current_walk_card_widget.dart';
 import 'package:dalk/common/requested_walk_card/requested_walk_card_widget.dart';
 import 'package:dalk/common/walks_record/walks_record_widget.dart';
@@ -88,11 +83,11 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
               Container(
                 width: MediaQuery.sizeOf(context).width,
                 height: MediaQuery.sizeOf(context).height * 0.1,
-                decoration: BoxDecoration(),
+                decoration: const BoxDecoration(),
                 child: wrapWithModel(
                   model: _model.notificationContainerModel,
                   updateCallback: () => safeSetState(() {}),
-                  child: NotificationContainerWidget(),
+                  child: const NotificationContainerWidget(),
                 ),
               ),
               Expanded(
@@ -106,7 +101,7 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
                     height: MediaQuery.sizeOf(context).height,
                     decoration: BoxDecoration(
                       color: FlutterFlowTheme.of(context).tertiary,
-                      borderRadius: BorderRadius.only(
+                      borderRadius: const BorderRadius.only(
                         bottomLeft: Radius.circular(0),
                         bottomRight: Radius.circular(0),
                         topLeft: Radius.circular(50),
@@ -177,18 +172,18 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 0.9,
-                            decoration: BoxDecoration(),
+                            decoration: const BoxDecoration(),
                             child: Row(
                               mainAxisSize: MainAxisSize.max,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Align(
-                                  alignment: AlignmentDirectional(-1, 0),
+                                  alignment: const AlignmentDirectional(-1, 0),
                                   child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         0, 0, 0, 8),
                                     child: AutoSizeText(
                                       'Paseos',
@@ -227,11 +222,11 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
                             padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
                             child: Container(
                               width: MediaQuery.sizeOf(context).width * 0.9,
-                              decoration: BoxDecoration(),
+                              decoration: const BoxDecoration(),
                               child: Column(
                                 children: [
                                   Align(
-                                    alignment: Alignment(0, 0),
+                                    alignment: const Alignment(0, 0),
                                     child: FlutterFlowButtonTabBar(
                                       useToggleButtonStyle: true,
                                       labelStyle: FlutterFlowTheme.of(context)
@@ -283,7 +278,7 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
                                                         .titleMedium
                                                         .fontStyle,
                                               ),
-                                      labelColor: FlutterFlowTheme.of(context).accent1,unselectedLabelColor: Color(0xFF717981),
+                                      labelColor: FlutterFlowTheme.of(context).accent1,unselectedLabelColor: const Color(0xFF717981),
                                       backgroundColor: FlutterFlowTheme.of(context).alternate,
                                       unselectedBackgroundColor: FlutterFlowTheme.of(context).alternate,
                                       unselectedBorderColor: FlutterFlowTheme.of(context).alternate,
@@ -376,6 +371,7 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
                                                         photoUrl: fullWalkData['walker_photo_url'],
                                                         walkerId: fullWalkData['walker_id'],
                                                         ownerId: fullWalkData['owner_id'],
+                                                        dogId: fullWalkData['dog_id'],
                                                       );
                                                     },
                                                   );
@@ -438,6 +434,7 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
                                                         photoUrl: fullWalkData['walker_photo_url'],
                                                         walkerId: fullWalkData['walker_id'],
                                                         ownerId: fullWalkData['owner_id'],
+                                                        dogId: fullWalkData['dog_id'],
                                                       );
                                                     },
                                                   );
@@ -463,7 +460,7 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
 
                                               final walksList = snapshot.data!
                                                   .where((walk) =>
-                                                      walk['status'] == 'En Curso')
+                                                      walk['status'] == 'En curso')
                                                   .toList();
 
                                               if (walksList.isEmpty) {
