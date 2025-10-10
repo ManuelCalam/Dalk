@@ -43,3 +43,5 @@ export '/dog_walker/walks_dog_walker/walks_dog_walker_widget.dart'
 export '/dog_walker/dog_walker_profile/dog_walker_profile_widget.dart'
     show DogWalkerProfileWidget;
 export '/common/chat/chat_widget.dart' show ChatWidget;
+export '/landing_pages/redirect_verificamex/redirect_verificamex_widget.dart'
+    show RedirectVerificamexWidget;

@@ -111,6 +111,32 @@
                 <data android:scheme="dalkpaseos" android:host="verificamex" />
             </intent-filter>
 
+            <!-- ✅ NUEVO: Deep Link para redirect_verificamex -->
+    <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+
+        <!-- Deep link para verificación completada -->
+        <data 
+            android:scheme="dalkpaseos" 
+            android:host="redirect" 
+            android:pathPrefix="/verificamex" />
+    </intent-filter>
+
+    <!-- ✅ ALTERNATIVA: Universal Link (HTTPS) -->
+    <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+
+        <!-- HTTPS link (si tienes dominio) -->
+        <data 
+            android:scheme="https" 
+            android:host="dalk.app" 
+            android:pathPrefix="/redirect/verificamex" />
+    </intent-filter>
+
         </activity>
 
         <!-- Don't delete the meta-data below.

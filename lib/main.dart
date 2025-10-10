@@ -1,4 +1,4 @@
-import 'dart:async';  // ✅ AGREGAR ESTE IMPORT QUE FALTA
+import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -20,9 +20,6 @@ import '/dog_walker/home_dog_walker/home_dog_walker_widget.dart';
 
 // GlobalKey para el ScaffoldMessenger 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
-
-late final AppLinks _appLinks;
-late StreamSubscription<Uri> _linkSub;
 
 // ✅ HANDLER TOP-LEVEL SIMPLE (REQUERIDO)
 @pragma('vm:entry-point')
@@ -64,6 +61,10 @@ class _MyAppState extends State<MyApp> {
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
   
+  // ✅ APP LINKS - DECLARAR COMO VARIABLES DE INSTANCIA
+  late AppLinks _appLinks;
+  StreamSubscription<Uri>? _linkSubscription;
+  
   String getRoute([RouteMatch? routeMatch]) {
     final RouteMatch lastMatch =
         routeMatch ?? _router.routerDelegate.currentConfiguration.last;
@@ -84,7 +85,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     
-    // ✅ INICIALIZAR NOTIFICATIONSERVICE (TODO EN EL SERVICIO)
+    // ✅ INICIALIZAR NOTIFICATIONSERVICE
     final notificationService = NotificationService();
     notificationService.initialize(
       scaffoldKey: scaffoldMessengerKey,
@@ -103,7 +104,7 @@ class _MyAppState extends State<MyApp> {
       });
     jwtTokenStream.listen((_) {});
     
-    // ✅ CORREGIR FUTURE.DELAYED - CERRAR PARÉNTESIS CORRECTAMENTE
+    // ✅ SPLASH SCREEN
     Future.delayed(
       Duration(milliseconds: 1000),
       () => _appStateNotifier.stopShowingSplashImage(),
@@ -111,42 +112,96 @@ class _MyAppState extends State<MyApp> {
 
     // ✅ INICIALIZAR APP_LINKS
     _appLinks = AppLinks();
+    _initDeepLinks();
+  }
 
-    // ✅ ACTUALIZAR LISTENER PARA MANEJAR ÉXITO Y FALLO - línea ~85
-    _linkSub = _appLinks.uriLinkStream.listen((uri) {
-      print("🔗 Deep link recibido: $uri");
-      print("🔗 Host: ${uri.host}");
-      print("🔗 Path: ${uri.path}");
-      print("🔗 Query params: ${uri.queryParameters}");
-      
-      if (uri.host == 'verificamex') {
-        if (uri.path == '/success') {
-          print("✅ Verificación exitosa - navegando a HomeDogWalker");
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _router.go('/homeDogWalker');
-          });
-        } else if (uri.path == '/failed') {
-          print("❌ Verificación falló - navegando a Login");
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _router.go('/login');
-          });
-        }
+  /// ✅ INICIALIZAR DEEP LINKS (MÉTODO DE LA CLASE)
+  Future<void> _initDeepLinks() async {
+    // ✅ MANEJAR LINK INICIAL (app cerrada)
+    try {
+      final initialUri = await _appLinks.getInitialLink();
+      if (initialUri != null) {
+        debugPrint('🔗 Initial link: $initialUri');
+        _handleDeepLink(initialUri);
       }
-    });
-
-    _handleInitialUri();
-  }
-
-  // ✅ MÉTODO PARA MANEJAR URI INICIAL
-  Future<void> _handleInitialUri() async {
-    final uri = await _appLinks.getInitialLink();
-    if (uri != null && uri.host == 'verificamex' && uri.path == '/success') {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        print("✅ URI inicial: Verificación exitosa");
-        _router.go('/homeDogWalker');
-      });
+    } catch (e) {
+      debugPrint('❌ Error obteniendo initial link: $e');
     }
+
+    // ✅ ESCUCHAR LINKS ENTRANTES (app abierta/background)
+    _linkSubscription = _appLinks.uriLinkStream.listen(
+      (uri) {
+        debugPrint('🔗 Deep link recibido: $uri');
+        _handleDeepLink(uri);
+      },
+      onError: (err) {
+        debugPrint('❌ Error en deep link: $err');
+      },
+    );
   }
+
+  void _handleDeepLink(Uri uri) {
+  debugPrint('🔍 Procesando deep link:');
+  debugPrint('  Scheme: ${uri.scheme}');
+  debugPrint('  Host: ${uri.host}');
+  debugPrint('  Path: ${uri.path}');
+  debugPrint('  Query: ${uri.queryParameters}');
+
+  // ✅ CASO 1: dalkpaseos://redirect/verificamex?session_id=xxx&user_id=yyy
+  if (uri.host == 'redirect' && uri.path.startsWith('/verificamex')) {
+    final sessionId = uri.queryParameters['session_id'] ?? '';
+    final userId = uri.queryParameters['user_id'] ?? '';
+
+    if (sessionId.isNotEmpty && userId.isNotEmpty) {
+      debugPrint('✅ Navegando a redirect_verificamex');
+      debugPrint('  Session ID: $sessionId');
+      debugPrint('  User ID: $userId');
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // ✅ OPCIÓN 1: Usar context.go (si estás en un BuildContext)
+        // context.go('/redirect_verificamex?session_id=$sessionId&user_id=$userId');
+        
+        // ✅ OPCIÓN 2: Usar _router.go directamente
+        _router.go('/redirect_verificamex?session_id=$sessionId&user_id=$userId');
+        
+        // ✅ OPCIÓN 3: Usar pushNamed (recomendado para deep links)
+        // _router.pushNamed(
+        //   'redirect_verificamex',
+        //   queryParameters: {
+        //     'session_id': sessionId,
+        //     'user_id': userId,
+        //   },
+        // );
+      });
+    } else {
+      debugPrint('❌ Faltan parámetros: session_id o user_id');
+    }
+    return;
+  }
+
+  // ✅ CASO 2: dalkpaseos://verificamex/success (webhook exitoso)
+  if (uri.host == 'verificamex' && uri.path == '/success') {
+    debugPrint('✅ Verificación exitosa - navegando a HomeDogWalker');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _router.go('/homeDogWalker');
+    });
+    return;
+  }
+
+  // ✅ CASO 3: dalkpaseos://verificamex/failed (webhook fallido)
+  if (uri.host == 'verificamex' && uri.path == '/failed') {
+    debugPrint('❌ Verificación fallida - navegando a Login');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _router.go('/singInDogWalker');
+    });
+    return;
+  }
+
+  // ✅ CASO 4: Otros deep links (auth, changePassword, etc)
+  if (uri.host == 'auth' || uri.host == 'changePassword') {
+    debugPrint('🔐 Deep link de autenticación');
+  }
+}
 
   void setThemeMode(ThemeMode mode) => safeSetState(() {
         _themeMode = mode;
@@ -155,8 +210,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
-    // ✅ CLEANUP
-    _linkSub.cancel();
+    _linkSubscription?.cancel();
     super.dispose();
   }
 

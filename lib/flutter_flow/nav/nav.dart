@@ -266,6 +266,17 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           ),
           requireAuth: false
         ),
+        FFRoute(
+          name: 'redirect_verificamex',
+          path: '/redirect_verificamex', // ✅ DEBE COINCIDIR CON EL PATH DEL DEEP LINK
+          builder: (context, params) => RedirectVerificamexWidget(
+            sessionId: params.getParam('session_id', ParamType.String) ?? '',
+            userId: params.getParam('user_id', ParamType.String) ?? '',
+          ),
+          requireAuth: false, // ✅ IMPORTANTE: Sin autenticación
+        ),
+
+
         
           
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
