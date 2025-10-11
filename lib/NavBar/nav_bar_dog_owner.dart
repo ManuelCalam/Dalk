@@ -1,3 +1,4 @@
+import 'package:dalk/common/current_walk_empty_window/current_walk_empty_window_widget.dart';
 import 'package:dalk/current_walk/current_walk_widget.dart';
 import 'package:dalk/dog_owner/dog_owner_profile/dog_owner_profile_widget.dart';
 import 'package:dalk/dog_owner/home_dog_owner/home_dog_owner_widget.dart';
@@ -55,7 +56,7 @@ class _NavBarPageState extends State<NavBarOwnerPage> {
   Widget build(BuildContext context) {
     final tabs = {
       'homeDogOwner': HomeDogOwnerWidget(),
-      'CurrentWalk': CurrentWalkWidget(),
+      'CurrentWalk': CurrentWalkEmptyWindowWidget(),
       'petList': PetListWidget(),
       'dogOwnerProfile': DogOwnerProfileWidget(),
     };

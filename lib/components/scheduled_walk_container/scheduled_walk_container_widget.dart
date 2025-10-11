@@ -230,24 +230,19 @@ class _ScheduledWalkContainerWidgetState
     return response;
   } 
   
-
-  
-  
-  
-
   @override
   Widget build(BuildContext context) {
     return Container(
       width: MediaQuery.sizeOf(context).width,
+      height: MediaQuery.sizeOf(context).height, // Altura completa
       decoration: const BoxDecoration(),
       child: Column(
         mainAxisSize: MainAxisSize.max,
         children: [
-
-
+          // Mapa - 60% del alto
           Container(
-            width: MediaQuery.of(context).size.width ,
-            height: MediaQuery.of(context).size.height * 0.5,
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height * 0.6, // 60%
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(5),
             ),
@@ -274,245 +269,174 @@ class _ScheduledWalkContainerWidgetState
               },
             ),
           ),
-          Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(0, 15, 0, 0),
-            child: FutureBuilder<Map<String, dynamic>?>(
-              future: fetchWalkInfoFromView(widget.walkId),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return SizedBox(
-                    width: MediaQuery.sizeOf(context).width * 0.9,
-                    height: MediaQuery.sizeOf(context).height * 0.1,
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-                final walkData = snapshot.data!;
-                return SizedBox(
-                  width: MediaQuery.sizeOf(context).width * 0.9,
-                  height: MediaQuery.sizeOf(context).height * 0.1,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: FlutterFlowTheme.of(context).alternate,
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 0, 0),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        Container(
-                          width: MediaQuery.sizeOf(context).width * 0.17,
-                          height: MediaQuery.sizeOf(context).height * 0.1,
-                          decoration: const BoxDecoration(),
-                          child: Padding(
-                            padding: const EdgeInsets.all(10),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.network(
-                                walkData['pet_photo_url'] ?? 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxfHx1c2VyfGVufDB8fHx8MTc0NjQ1OTI1OXww&ixlib=rb-4.0.3&q=80&w=1080',
-                                width: 200,
-                                height: 200,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          width: MediaQuery.sizeOf(context).width * 0.6,
-                          height: 70,
-                          decoration: const BoxDecoration(),
-                          child: Align(
-                            alignment: const AlignmentDirectional(-1, 0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Align(
-                                  alignment: const AlignmentDirectional(-1, -1),
-                                  child: Container(
-                                    width: MediaQuery.sizeOf(context).width,
-                                    height: 35,
-                                    decoration: const BoxDecoration(),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      children: [
-                                        Container(
-                                          width: 140,
-                                          height: 100,
-                                          decoration: const BoxDecoration(),
-                                          child: Align(
-                                            alignment: const AlignmentDirectional(-1, 0),
-                                            child: AutoSizeText(
-                                              walkData['pet_name'] ?? 'Nombre',
-                                              style: FlutterFlowTheme.of(context)
-                                                  .bodyMedium
-                                                  .override(
-                                                    font: GoogleFonts.lexend(
-                                                      fontWeight: FontWeight.w600,
-                                                      fontStyle: FlutterFlowTheme.of(context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                    ),
-                                                    fontSize: 18,
-                                                    letterSpacing: 0.0,
-                                                    fontWeight: FontWeight.w600,
-                                                    fontStyle: FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                                  ),
-                                            ),
-                                          ),
-                                        ),
-                                        Flexible(
-                                          child: Align(
-                                            alignment: const AlignmentDirectional(1, 0),
-                                            child: Container(
-                                              height: 100,
-                                              decoration: const BoxDecoration(),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.max,
-                                                children: [
-                                                  const Flexible(
-                                                    child: Align(
-                                                      alignment: AlignmentDirectional(1, 0),
-                                                      child: Icon(
-                                                        Icons.star,
-                                                        color: Color(0xFFE2B433),
-                                                        size: 24,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  Align(
-                                                    alignment: const AlignmentDirectional(1, 0),
-                                                    child: Padding(
-                                                      padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 10, 0),
-                                                      child: AutoSizeText(
-                                                        (walkData['pet_rating']?.toString() ?? '4.8'),
-                                                        textAlign: TextAlign.center,
-                                                        maxLines: 1,
-                                                        minFontSize: 10,
-                                                        style: FlutterFlowTheme.of(context)
-                                                            .bodyMedium
-                                                            .override(
-                                                              font: GoogleFonts.lexend(
-                                                                fontWeight: FontWeight.w500,
-                                                                fontStyle: FlutterFlowTheme.of(context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                              ),
-                                                              color: FlutterFlowTheme.of(context)
-                                                                  .secondaryBackground,
-                                                              fontSize: 20,
-                                                              letterSpacing: 0.0,
-                                                              fontWeight: FontWeight.w500,
-                                                              fontStyle: FlutterFlowTheme.of(context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                            ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                Align(
-                                  alignment: const AlignmentDirectional(-1, -1),
-                                  child: Container(
-                                    height: 35,
-                                    decoration: const BoxDecoration(),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: [
-                                        Align(
-                                          alignment: const AlignmentDirectional(-1, 0),
-                                          child: AutoSizeText(
-                                            'Tiempo:',
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  font: GoogleFonts.lexend(
-                                                    fontWeight: FontWeight.w500,
-                                                    fontStyle: FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                                  ),
-                                                  fontSize: 16,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.w500,
-                                                  fontStyle: FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                                ),
-                                          ),
-                                        ),
-                                        Align(
-                                          alignment: const AlignmentDirectional(1, 0),
-                                          child: Padding(
-                                            padding: const EdgeInsetsDirectional.fromSTEB(5, 0, 10, 0),
-                                            child: AutoSizeText(
-                                              walkData['startTime'] != null
-                                                  ? DateTime.tryParse(walkData['startTime'])?.toLocal().toString().substring(11, 16) ?? ''
-                                                  : '',
-                                              style: FlutterFlowTheme.of(context)
-                                                  .bodyMedium
-                                                  .override(
-                                                    font: GoogleFonts.lexend(
-                                                      fontWeight: FontWeight.w500,
-                                                      fontStyle: FlutterFlowTheme.of(context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                    ),
-                                                    color: FlutterFlowTheme.of(context)
-                                                        .secondaryBackground,
-                                                    fontSize: 20,
-                                                    letterSpacing: 0.0,
-                                                    fontWeight: FontWeight.w500,
-                                                    fontStyle: FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                                  ),
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child: Align(
-                                            alignment: const AlignmentDirectional(1, 0),
-                                            child: Padding(
-                                              padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 3, 0),
-                                              child: Container(
-                                                width: MediaQuery.sizeOf(context).width * 0.1,
-                                                decoration: const BoxDecoration(),
-                                                child: Icon(
-                                                  Icons.chat,
-                                                  color: FlutterFlowTheme.of(context).primaryText,
-                                                  size: 32,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
+          Container(
+  width: MediaQuery.sizeOf(context).width,
+  padding: const EdgeInsetsDirectional.fromSTEB(0, 15, 0, 0),
+  child: FutureBuilder<Map<String, dynamic>?>(
+    future: fetchWalkInfoFromView(widget.walkId),
+    builder: (context, snapshot) {
+      if (!snapshot.hasData) {
+        return SizedBox(
+          width: MediaQuery.sizeOf(context).width * 0.9,
+          height: MediaQuery.sizeOf(context).height * 0.1,
+          child: Center(child: CircularProgressIndicator()),
+        );
+      }
+      final walkData = snapshot.data!;
+      
+      return Container(
+        width: MediaQuery.sizeOf(context).width * 0.9,
+        decoration: BoxDecoration(
+          color: FlutterFlowTheme.of(context).alternate,
+          borderRadius: BorderRadius.circular(15),
+        ),
+        padding: const EdgeInsets.all(15),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Primera fila: Imagen circular, nombre e icono de chat
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Imagen circular
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: FlutterFlowTheme.of(context).secondaryBackground,
+                      width: 2,
                     ),
                   ),
-                );
-              },
+                  child: ClipOval(
+                    child: Image.network(
+                      walkData['pet_photo_url'] ?? 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxfHx1c2VyfGVufDB8fHx8MTc0NjQ1OTI1OXww&ixlib=rb-4.0.3&q=80&w=1080',
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                
+                // Nombre de la mascota
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: AutoSizeText(
+                      walkData['pet_name'] ?? 'Nombre',
+                      textAlign: TextAlign.center,
+                      style: FlutterFlowTheme.of(context)
+                          .bodyMedium
+                          .override(
+                            font: GoogleFonts.lexend(
+                              fontWeight: FontWeight.w600,
+                              fontStyle: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .fontStyle,
+                            ),
+                            fontSize: 18,
+                            letterSpacing: 0.0,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ),
+                ),
+                
+                // Icono de chat
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: FlutterFlowTheme.of(context).secondaryBackground,
+                  ),
+                  child: Icon(
+                    Icons.chat,
+                    color: FlutterFlowTheme.of(context).primaryText,
+                    size: 24,
+                  ),
+                ),
+              ],
             ),
-          )
+            
+            const SizedBox(height: 15),
+            
+            // Timer
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                color: FlutterFlowTheme.of(context).secondaryBackground,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.access_time,
+                    color: FlutterFlowTheme.of(context).primaryText,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  AutoSizeText(
+                    walkData['startTime'] != null
+                        ? DateTime.tryParse(walkData['startTime'])?.toLocal().toString().substring(11, 16) ?? ''
+                        : '01:00',
+                    style: FlutterFlowTheme.of(context)
+                        .bodyMedium
+                        .override(
+                          font: GoogleFonts.lexend(
+                            fontWeight: FontWeight.w500,
+                          ),
+                          fontSize: 16,
+                          letterSpacing: 0.0,
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 15),
+            
+            // Botón que ocupa el 90% del ancho
+            Container(
+              width: MediaQuery.sizeOf(context).width * 0.9 * 0.9,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () {
+                  // Acción del botón
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: FlutterFlowTheme.of(context).primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: AutoSizeText(
+                  'Ver detalles',
+                  style: FlutterFlowTheme.of(context)
+                      .bodyMedium
+                      .override(
+                        font: GoogleFonts.lexend(
+                          fontWeight: FontWeight.w600,
+                        ),
+                        color: FlutterFlowTheme.of(context).secondaryBackground,
+                        fontSize: 16,
+                        letterSpacing: 0.0,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  ),
+),
         ],
       ),
     );

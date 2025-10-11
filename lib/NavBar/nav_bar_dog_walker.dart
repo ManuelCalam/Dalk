@@ -1,3 +1,4 @@
+import 'package:dalk/common/current_walk_empty_window/current_walk_empty_window_widget.dart';
 import 'package:dalk/current_walk/current_walk_widget.dart';
 import 'package:dalk/dog_owner/dog_owner_profile/dog_owner_profile_widget.dart';
 import 'package:dalk/dog_owner/pet_list/pet_list_widget.dart';
@@ -66,7 +67,7 @@ void didUpdateWidget(covariant NavBarWalkerPage oldWidget) {
   Widget build(BuildContext context) {
     final tabs = {
       'homeDogWalker': HomeDogWalkerWidget(),
-      'CurrentWalk': CurrentWalkWidget(),
+      'CurrentWalk': CurrentWalkEmptyWindowWidget(),
       'walkerService': DogWalkerServiceWidget(),
       'dogWalkerProfile': DogWalkerProfileWidget(),
     };
