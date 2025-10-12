@@ -107,6 +107,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
     // El permiso ya es "AllowAlways" o "deniedForever" 
     return true; 
   }
+  
 
   // Helper Function: Construye un botón con el formato necesario
   Widget _buildActionButton({

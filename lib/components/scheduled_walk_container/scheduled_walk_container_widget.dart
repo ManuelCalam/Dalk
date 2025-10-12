@@ -70,11 +70,8 @@ class _ScheduledWalkContainerWidgetState
     };
 
     if (widget.userType == 'Paseador') {
-      if (WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
-        _startSendingLocation(); // Primer plano
-      } else {
-        _startBackgroundService(); // Segundo plano
-      }
+      // Al cargar la ventana, siempre iniciamos el rastreo en primer plano.
+      _startSendingLocation(); 
     } else if (widget.userType == 'Dueño') {
       _listenToWalkerLocation();
     }
@@ -85,120 +82,160 @@ class _ScheduledWalkContainerWidgetState
     // Timer
   }
 
+  // --- LÓGICA DEL CICLO DE VIDA (RESUMED/PAUSED) ---
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (widget.userType != 'Paseador') return;
 
+    if (state == AppLifecycleState.paused) {
+      // App en segundo plano: Rastrear TODOS los paseos.
+      _locationTimer?.cancel(); // Detiene el timer local
+      _setTrackingIds(includeCurrentWalk: true); // Envia la lista COMPLETA de IDs al fondo
+      FlutterBackgroundService().invoke("setAsBackground"); 
+    }
 
-@override
-void didChangeAppLifecycleState(AppLifecycleState state) {
-  if (widget.userType != 'Paseador') return;
+    if (state == AppLifecycleState.resumed) {
+      // App vuelve al primer plano: El paseo visible toma el control, los demás van al fondo.
+      _startSendingLocation(); // Reinicia el timer local para el paseo visible
+    }
+  }
 
-  if (state == AppLifecycleState.paused) {
-    // App en segundo plano
-    _locationTimer?.cancel();
-    FlutterBackgroundService().invoke("setAsBackground"); 
-    _startBackgroundService();
+  // --- MÉTODOS DE SERVICIO DE FONDO MULTI-WALK ---
+
+  // Helper para obtener todos los IDs activos
+  Future<List<String>> _getActiveWalkIds() async {
+    final currentUserId = SupaFlow.client.auth.currentUser?.id;
+    if (currentUserId == null) return [];
     
+    final activeWalksRes = await SupaFlow.client
+        .from('walks')
+        .select('id')
+        .eq('walker_id', currentUserId)
+        .eq('status', 'En curso')
+        .order('created_at', ascending: true);
+
+    return activeWalksRes
+        .map((e) => e['id']?.toString() ?? '')
+        .where((id) => id.isNotEmpty)
+        .toList();
   }
 
-  if (state == AppLifecycleState.resumed) {
-    // App vuelve al primer plano
-    _stopBackgroundService();
-    _startSendingLocation();
+  // Lógica centralizada para enviar IDs de rastreo al servicio de fondo
+  Future<void> _setTrackingIds({required bool includeCurrentWalk}) async {
+    final allActiveWalkIds = await _getActiveWalkIds();
+    
+    // Si includeCurrentWalk es true (App en PAUSED o DISPOSE), se envían todos.
+    // Si es false (App en RESUMED/Foreground), se excluye el ID actual.
+    final List<String> trackingIds = includeCurrentWalk
+        ? allActiveWalkIds
+        : allActiveWalkIds.where((id) => id != widget.walkId).toList();
+        
+    await _ensureServiceIsRunning();
+
+    if (trackingIds.isEmpty) {
+        FlutterBackgroundService().invoke("stopService"); 
+        print('UI: Servicio de fondo detenido. trackingIds está vacío.');
+    } else {
+        FlutterBackgroundService().invoke("setTrackingIds", {"walkIds": trackingIds});
+        print('UI: Background Service actualizado para rastrear: $trackingIds');
+    }
   }
-}
-
-void _stopBackgroundService() {
-  FlutterBackgroundService().invoke("stopService");
-}
-
-void _startBackgroundService() async {
-  final service = FlutterBackgroundService();
-
-  bool isRunning = await service.isRunning();
   
-  if (!isRunning) {
-      await service.configure(
-          androidConfiguration: AndroidConfiguration(
-              onStart: onStart,
-              isForegroundMode: true,
-              autoStart: true,
-          ),
-          iosConfiguration: IosConfiguration(
-              autoStart: true,
-              onForeground: onStart,
-              onBackground: onIosBackground,
-          ),
-      );
-      await service.startService(); 
+  // 1. Helper para configurar e iniciar el servicio si no está corriendo.
+  Future<void> _ensureServiceIsRunning() async { 
+    final service = FlutterBackgroundService();
+
+    bool isRunning = await service.isRunning();
+
+    if (!isRunning) {
+        // Asegúrate de que onStart y onIosBackground estén definidos y accesibles
+        await service.configure(
+            androidConfiguration: AndroidConfiguration(
+                onStart: onStart, 
+                isForegroundMode: true,
+                autoStart: true,
+            ),
+            iosConfiguration: IosConfiguration(
+                autoStart: true,
+                onForeground: onStart,
+                onBackground: onIosBackground,
+            ),
+        );
+        await service.startService(); 
+    }
+    await Future.delayed(const Duration(milliseconds: 500)); 
   }
 
-  await Future.delayed(const Duration(milliseconds: 500)); 
 
-  service.invoke("setData", {"walkId": widget.walkId});
-}
+  // --- LÓGICA DE RASTREO EN PRIMER PLANO ---
 
-void _startSendingLocation() async {
-  final hasPermission = await _handleLocationPermission();
-  if (!hasPermission) return;
+  void _startSendingLocation() async {
+    final hasPermission = await _handleLocationPermission();
+    if (!hasPermission) return;
 
-  const interval = Duration(seconds: 6);
-  final ref = FirebaseDatabase.instance.ref('walk_locations/${widget.walkId}');
-
-  _locationTimer = Timer.periodic(interval, (timer) async {
-    if (!mounted) {
-      timer.cancel();
-      return;
-    }
-
-    // Ya tenemos permiso, solo obtenemos la posición.
-    final position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
-
+    // 1. Configurar el servicio de fondo para rastrear SOLO los demás paseos.
+    // **CORRECCIÓN CLAVE:** Enviamos FALSE para que excluya el ID actual (widget.walkId).
+    await _setTrackingIds(includeCurrentWalk: false); 
     
-    if (!mounted) {
-      timer.cancel();
-      return;
-    }
+    // Cancelar timer local anterior.
+    _locationTimer?.cancel(); 
+    
+    // No es necesario llamar a stopService, ya que _setTrackingIds... se encarga de reconfigurar.
 
-    // Enviamos ubicación a Firebase
-    await ref.update({
-      'lat': position.latitude,
-      'lng': position.longitude,
+    const interval = Duration(seconds: 6);
+    final ref = FirebaseDatabase.instance.ref('walk_locations/${widget.walkId}');
+
+    _locationTimer = Timer.periodic(interval, (timer) async {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      // Check de mounted después de la primera operación asíncrona
+      if (!mounted) {
+          timer.cancel();
+          return;
+      }
+
+      // Enviamos ubicación a Firebase
+      await ref.update({
+        'lat': position.latitude,
+        'lng': position.longitude,
+      });
+
+      final currentLatLng = LatLng(position.latitude, position.longitude);
+      
+      // Obtener el controlador del mapa
+      final controller = await _model.googleMapsController.future;
+
+      // Check de mounted antes de usar el ValueNotifier
+      if (!mounted) {
+          timer.cancel();
+          return;
+      }
+      
+      // Actualizar solo el ValueNotifier de marcadores
+      final newWalkerMarker = Marker(
+        markerId: const MarkerId("walker"),
+        position: currentLatLng,
+        infoWindow: const InfoWindow(title: 'Tú estás aquí'),
+      );
+
+      // Reemplazar o agregar el marcador del paseador
+      final newMarkers = Set<Marker>.from(_markersNotifier.value);
+      newMarkers.removeWhere((m) => m.markerId.value == 'walker');
+      newMarkers.add(newWalkerMarker);
+
+      _markersNotifier.value = newMarkers; 
+
+      controller.animateCamera(CameraUpdate.newLatLng(currentLatLng));
     });
-
-    final currentLatLng = LatLng(position.latitude, position.longitude);
-
-    if (!mounted) {
-      timer.cancel();
-      return;
-    }
-
-    final controller = await _model.googleMapsController.future;
-
-    
-    if (!mounted) {
-      timer.cancel();
-      return;
-    }
-
-    // Actualizar solo el ValueNotifier de marcadores
-    final newWalkerMarker = Marker(
-      markerId: const MarkerId("walker"),
-      position: currentLatLng,
-      infoWindow: const InfoWindow(title: 'Tú estás aquí'),
-    );
-
-    // Reemplazar o agregar el marcador del paseador
-    final newMarkers = Set<Marker>.from(_markersNotifier.value);
-    newMarkers.removeWhere((m) => m.markerId.value == 'walker');
-    newMarkers.add(newWalkerMarker);
-
-    _markersNotifier.value = newMarkers; // Actualiza el mapa sin setState
-
-    controller.animateCamera(CameraUpdate.newLatLng(currentLatLng));
-  });
-}
+  }
 
 Future<bool> _handleLocationPermission() async {
   LocationPermission permission = await Geolocator.checkPermission();
@@ -216,6 +253,7 @@ Future<bool> _handleLocationPermission() async {
 
   return true;
 }
+
 
 
   // Método aplicado para el dueño para obtener la ubicación del paseador
@@ -254,16 +292,92 @@ Future<bool> _handleLocationPermission() async {
     });
   }
 
+
+  Future<void> _handleWalkCompletion() async {
+    final currentUserId = SupaFlow.client.auth.currentUser?.id;
+
+    if (currentUserId == null) {
+      print("Error: No se pudo obtener el ID del usuario actual.");
+      return;
+    }
+
+    // 1. Marcar el paseo actual como 'Finalizado' en la tabla 'walks'
+    await SupaFlow.client
+      .from('walks')
+      .update({'status': 'Finalizado'})
+      .eq('id', widget.walkId);
+    
+    print("✅ Paseo ${widget.walkId} marcado como Finalizado.");
+
+    // 2. Detener el timer local de primer plano.
+    _locationTimer?.cancel();
+
+    // 3. Buscar TODOS los paseos restantes con status 'En curso'
+    final remainingWalksRes = await SupaFlow.client
+        .from('walks')
+        .select('id')
+        .eq('walker_id', currentUserId)
+        .eq('status', 'En curso')
+        .order('created_at', ascending: true);
+
+    final List<String> allActiveWalkIds = remainingWalksRes
+        .map((e) => e['id']?.toString() ?? '')
+        .where((id) => id.isNotEmpty)
+        .toList();
+
+    // El primer paseo en la lista será el nuevo paseo principal (foreground)
+    final nextForegroundWalkId = allActiveWalkIds.isNotEmpty 
+        ? allActiveWalkIds.first 
+        : null;
+
+    if (nextForegroundWalkId != null) {
+      // 4A. Hay más paseos activos: Reasignar current_walk_id y ACTUALIZAR el background service
+
+      // 4A.i. Actualizar el perfil del usuario con el ID del siguiente paseo
+      await SupaFlow.client
+        .from('users')
+        .update({'current_walk_id': nextForegroundWalkId})
+        .eq('uuid', currentUserId)
+        .maybeSingle();
+        
+      print("✅ current_walk_id reasignado a $nextForegroundWalkId.");
+
+      // 4A.ii. Enviar la lista COMPLETA de IDs restantes al servicio de fondo.
+      // Se necesita enviar la lista completa de paseos activos, ya que uno acaba de terminar.
+      await _setTrackingIds(includeCurrentWalk: true);
+
+    } else {
+      // 4B. No hay más paseos 'En curso': Limpiar current_walk_id y detener el servicio
+      
+      await SupaFlow.client
+        .from('users')
+        .update({'current_walk_id': null})
+        .eq('uuid', currentUserId)
+        .maybeSingle();
+
+      // Detener el servicio por completo ya que no hay nada más que rastrear
+      FlutterBackgroundService().invoke('stopService'); 
+
+      print("✅ current_walk_id limpiado. Servicio de fondo detenido.");
+    }
+
+    // 5. Navegar a CurrentWalkEmptyWindow
+    context.pushReplacementNamed('CurrentWalkEmptyWindow');
+  }
+
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _locationTimer?.cancel(); 
     _locationSubscription?.cancel(); 
 
-
-    final lifecycleState = WidgetsBinding.instance.lifecycleState;
-    if (widget.userType == 'Paseador' && lifecycleState == AppLifecycleState.resumed) {
-        _startBackgroundService(); 
+    // Al salir de la vista (dispose), el paseo actual pasa a segundo plano, 
+    // por lo que debemos asegurarnos de que el background service lo rastree.
+    if (widget.userType == 'Paseador') {
+      // **CORRECCIÓN CLAVE:** Enviamos TRUE para incluir este ID que está saliendo.
+      // Así el servicio de fondo rastrea TODOS los paseos activos.
+      _setTrackingIds(includeCurrentWalk: true); 
     }
 
     _model.maybeDispose();
