@@ -1,7 +1,6 @@
 import 'package:dalk/backend/supabase/supabase.dart';
 import 'package:dalk/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
-import 'package:dalk/dog_walker/background_service/background_service.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:dalk/components/scheduled_walk_container/scheduled_walk_container_widget.dart';
 import 'package:geolocator/geolocator.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -15,15 +14,20 @@ import 'package:google_fonts/google_fonts.dart';
 import 'pop_up_walk_options_model.dart';
 export 'pop_up_walk_options_model.dart';
 
+
+typedef WalkCompletionCallback = Future<void> Function(); 
+
 class PopUpWalkOptionsWidget extends StatefulWidget {
   const PopUpWalkOptionsWidget({
     super.key,
     required this.walkId,
     required this.usertype,
+    this.onWalkCompletion,
   });
 
   final int walkId;
   final String? usertype;
+  final WalkCompletionCallback? onWalkCompletion;
 
   @override
   State<PopUpWalkOptionsWidget> createState() => _PopUpWalkOptionsWidgetState();
@@ -31,6 +35,7 @@ class PopUpWalkOptionsWidget extends StatefulWidget {
 
 class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
   late PopUpWalkOptionsModel _model;
+  final currentUserId = SupaFlow.client.auth.currentUser?.id;
 
   @override
   void setState(VoidCallback callback) {
@@ -347,7 +352,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
       } else if (walkStatus == 'Aceptado') {
         // Estatus "Aceptado": "Iniciar Viaje" y "Cancelar"
         
-        // Botón 1: Iniciar Viaje
+        // Botón 1: Iniciar paseo
         buttons.add(_buildActionButton(
           context: context,
           text: 'Iniciar paseo',
@@ -357,7 +362,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
               context: context,
               builder: (_) => PopUpConfirmDialogWidget(
                 title: "Iniciar paseo",
-                message: "¿Estás seguro de que deseas inniciar este paseo?",
+                message: "¿Estás seguro de que deseas iniciar este paseo?",
                 confirmText: "Iniciar paseo",
                 cancelText: "Cerrar",
                 confirmColor: FlutterFlowTheme.of(context).success,
@@ -365,14 +370,27 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                 icon: FontAwesomeIcons.dog,
                 iconColor: FlutterFlowTheme.of(context).primary,
                 onConfirm: () async => {
+                  
+
                   await SupaFlow.client
                     .from('walks')
                     .update({'status': 'En curso'})
                     .eq('id', widget.walkId),
 
+                  context.pushReplacementNamed(
+                    '_initialize',
+                    queryParameters: {'initialPage': 'CurrentWalk'},
+                  ),
                   //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
                   Navigator.pop(context),
                   Navigator.pop(context),
+
+                  await SupaFlow.client
+                    .from('users') 
+                    .update({'current_walk_id': widget.walkId}) 
+                    .eq('uuid', currentUserId!) 
+                    .maybeSingle(),
+
 
                   //Envío de notificacion después de cerrar los menús
                   await Supabase.instance.client.functions.invoke(
@@ -381,7 +399,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                       'walk_id': widget.walkId,
                       'new_status': 'En curso',
                     },
-                  )
+                  ),
                 },
                 onCancel: () => Navigator.pop(context),
               ), 
@@ -484,122 +502,17 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                 cancelColor: FlutterFlowTheme.of(context).accent1,
                 icon: Icons.check_circle_rounded,
                 iconColor: FlutterFlowTheme.of(context).primary,
-                // onConfirm: () async {
-                //   final currentUserId = SupaFlow.client.auth.currentUser?.id;
 
-                //   if (currentUserId == null) {
-                //     print("Error: No se pudo obtener el ID del usuario actual para limpiar current_walk_id.");
-                //   }
-
-                //   // Marcar el paseo como 'Finalizado' en la tabla 'walks'
-                //   await SupaFlow.client
-                //     .from('walks')
-                //     .update({'status': 'Finalizado'})
-                //     .eq('id', widget.walkId);
-
-                //   // Limpiar el current_walk_id en la tabla 'users'
-                //   if (currentUserId != null) {
-                //     try {
-                //       await SupaFlow.client
-                //         .from('users')
-                //         .update({'current_walk_id': null}) 
-                //         .eq('uuid', currentUserId)
-                //         .maybeSingle();
-
-                //     } catch (e) {
-                //       print("Error al limpiar current_walk_id en Supabase: $e");
-                //     }
-                //   }
-
-                //   // FlutterBackgroundService().invoke('stopService');
-                  
-                //   // 4. Cerrar el PopUpConfirmDialogWidget y el showDialog original
-                //   Navigator.pop(context);
-                //   Navigator.pop(context);
-
-
-
-                //   context.pushReplacementNamed('/');
-                // },
-
-onConfirm: () async {
-  final currentUserId = SupaFlow.client.auth.currentUser?.id;
-
-  if (currentUserId == null) {
-    print("Error: No se pudo obtener el ID del usuario actual.");
-    Navigator.pop(context); // Cerrar solo el diálogo de confirmación
-    return;
-  }
-
-  // 1. Marcar el paseo actual como 'Finalizado' en la tabla 'walks'
-  await SupaFlow.client
-    .from('walks')
-    .update({'status': 'Finalizado'})
-    .eq('id', widget.walkId);
-  
-  print("✅ Paseo ${widget.walkId} marcado como Finalizado.");
-
-  // 2. Desactivar el background service inmediatamente. Esto detiene el rastreo del paseo finalizado
-   FlutterBackgroundService().invoke('stopService');
-  print("❌ Servicio de fondo detenido para el paseo finalizado.");
-
-  // 3. Buscar el siguiente paseo más antiguo con status 'En curso' (solo 'En curso')
-  final nextWalkRes = await SupaFlow.client
-      .from('walks')
-      .select('id')
-      .eq('walker_id', currentUserId)
-      .eq('status', 'En curso') // Solo busca paseos con status 'En curso'
-      .order('created_at', ascending: true) // Priorizamos el más antiguo/primero
-      .limit(1)
-      .maybeSingle();
-
-  final nextWalkId = nextWalkRes?['id']?.toString();
-
-  if (nextWalkId != null) {
-    // 4A. Se encontró un paseo activo: Reasignar current_walk_id y REINICIAR el background service
-
-    // 4A.i. Actualizar el perfil del usuario con el ID del siguiente paseo
-    await SupaFlow.client
-      .from('users')
-      .update({'current_walk_id': nextWalkId})
-      .eq('uuid', currentUserId)
-      .maybeSingle();
-      
-    print("✅ current_walk_id reasignado a $nextWalkId.");
-
-    // 4A.ii. Reiniciar el servicio de fondo y enviarle el nuevo ID prioritario.
-    // Esto es NECESARIO porque el servicio fue detenido en el paso 2.
-    // NOTA: El background service solo puede rastrear UN walkId a la vez.
-    // Por lo tanto, solo rastreamos el paseo más antiguo y prioritario.
-    await FlutterBackgroundService().startService();
-    FlutterBackgroundService().invoke('setData', {'walkId': nextWalkId});
-    
-    print("✅ Servicio de fondo reiniciado y actualizado para el nuevo walkId: $nextWalkId.");
-
-  } else {
-    // 4B. No hay más paseos 'En curso': Limpiar current_walk_id
-    
-    // El background service ya se detuvo en el paso 2, solo limpiamos el ID.
-    await SupaFlow.client
-      .from('users')
-      .update({'current_walk_id': null})
-      .eq('uuid', currentUserId)
-      .maybeSingle();
-
-    print("✅ current_walk_id limpiado. No hay más paseos 'En curso'.");
-  }
-  
-  // 5. Cerrar los diálogos
-  Navigator.pop(context); // Cierra PopUpConfirmDialogWidget
-  Navigator.pop(context); // Cierra el showDialog principal
-  
-  // 6. Navegar a CurrentWalkEmptyWindow para forzar la recarga de la vista
-  // Esto hará que la lógica de inicialización revise el nuevo current_walk_id (o null).
-  context.pushReplacementNamed('CurrentWalkEmptyWindow');
-
-  // 7. Envío de notificación (descomentar cuando sea necesario)
-  // ...
-},
+            onConfirm: () async {
+              // ✅ CAMBIO CLAVE 3: Llamamos a la función usando ?.call()
+              // Esto solo ejecuta la función si widget.onWalkCompletion NO es null.
+              await widget.onWalkCompletion?.call(); 
+              
+              // Cerramos el PopUp, usando el contexto del diálogo
+              if (Navigator.canPop(context)) {
+                  Navigator.pop(context); 
+              }
+            },
 
 
                 onCancel: () => Navigator.pop(context),
@@ -1316,81 +1229,6 @@ onConfirm: () async {
                               ),
                             ),
                           ),
-                          // FFButtonWidget(
-                          //   onPressed: () {
-                          //     print('Button pressed ...');
-                          //   },
-                          //   text: '[Confirm]',
-                          //   options: FFButtonOptions(
-                          //     width: MediaQuery.sizeOf(context).width,
-                          //     height: MediaQuery.sizeOf(context).height * 0.05,
-                          //     padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
-                          //     iconPadding:
-                          //         EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                          //     color: FlutterFlowTheme.of(context).primary,
-                          //     textStyle:
-                          //         FlutterFlowTheme.of(context).titleSmall.override(
-                          //               font: GoogleFonts.lexend(
-                          //                 fontWeight: FlutterFlowTheme.of(context)
-                          //                     .titleSmall
-                          //                     .fontWeight,
-                          //                 fontStyle: FlutterFlowTheme.of(context)
-                          //                     .titleSmall
-                          //                     .fontStyle,
-                          //               ),
-                          //               color: Colors.white,
-                          //               letterSpacing: 0.0,
-                          //               fontWeight: FlutterFlowTheme.of(context)
-                          //                   .titleSmall
-                          //                   .fontWeight,
-                          //               fontStyle: FlutterFlowTheme.of(context)
-                          //                   .titleSmall
-                          //                   .fontStyle,
-                          //             ),
-                          //     elevation: 0,
-                          //     borderRadius: BorderRadius.circular(8),
-                          //   ),
-                          // ),
-                          // Padding(
-                          //   padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
-                          //   child: FFButtonWidget(
-                          //     onPressed: () {
-                          //       print('Button pressed ...');
-                          //     },
-                          //     text: '[Cancel]',
-                          //     options: FFButtonOptions(
-                          //       width: MediaQuery.sizeOf(context).width,
-                          //       height: MediaQuery.sizeOf(context).height * 0.05,
-                          //       padding:
-                          //           EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
-                          //       iconPadding:
-                          //           EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                          //       color: Color(0xFFC40606),
-                          //       textStyle: FlutterFlowTheme.of(context)
-                          //           .titleSmall
-                          //           .override(
-                          //             font: GoogleFonts.lexend(
-                          //               fontWeight: FlutterFlowTheme.of(context)
-                          //                   .titleSmall
-                          //                   .fontWeight,
-                          //               fontStyle: FlutterFlowTheme.of(context)
-                          //                   .titleSmall
-                          //                   .fontStyle,
-                          //             ),
-                          //             color: Colors.white,
-                          //             letterSpacing: 0.0,
-                          //             fontWeight: FlutterFlowTheme.of(context)
-                          //                 .titleSmall
-                          //                 .fontWeight,
-                          //             fontStyle: FlutterFlowTheme.of(context)
-                          //                 .titleSmall
-                          //                 .fontStyle,
-                          //           ),
-                          //       elevation: 0,
-                          //       borderRadius: BorderRadius.circular(8),
-                          //     ),
-                          //   ),
-                          // ),
                           ..._getButtonsBasedOnStatus(context, widget.usertype, walkStatus),
                         ],
                       ),

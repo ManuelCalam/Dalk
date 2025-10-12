@@ -452,8 +452,6 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
                         .update({'current_walk_id': widget.id}) 
                         .eq('uuid', currentUserId) 
                         .maybeSingle();
-
-
                     } catch (e) {
                       print("Error al actualizar current_walk_id en Supabase: $e");
                     }

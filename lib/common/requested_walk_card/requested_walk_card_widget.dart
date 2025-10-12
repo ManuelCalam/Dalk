@@ -467,7 +467,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                       return Padding(
                         padding:
                             MediaQuery.viewInsetsOf(context),
-                        child: PopUpWalkOptionsWidget(walkId: widget.id, usertype: widget.usertype,),
+                        child: PopUpWalkOptionsWidget(walkId: widget.id, usertype: widget.usertype),
                       );
                     },
                   ).then((value) => safeSetState(() {}));

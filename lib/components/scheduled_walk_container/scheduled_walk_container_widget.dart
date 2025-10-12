@@ -34,11 +34,12 @@ class ScheduledWalkContainerWidget extends StatefulWidget {
   });
 
   @override
-  State<ScheduledWalkContainerWidget> createState() =>
-      _ScheduledWalkContainerWidgetState();
+  State<ScheduledWalkContainerWidget> createState() => ScheduledWalkContainerWidgetState();
 }
 
-class _ScheduledWalkContainerWidgetState
+
+
+class ScheduledWalkContainerWidgetState
     extends State<ScheduledWalkContainerWidget> with WidgetsBindingObserver {
   late ScheduledWalkContainerModel _model;
 
@@ -292,8 +293,7 @@ Future<bool> _handleLocationPermission() async {
     });
   }
 
-
-  Future<void> _handleWalkCompletion() async {
+    Future<void> handleWalkCompletion() async { 
     final currentUserId = SupaFlow.client.auth.currentUser?.id;
 
     if (currentUserId == null) {
@@ -301,6 +301,9 @@ Future<bool> _handleLocationPermission() async {
       return;
     }
 
+    // 2. Detener el timer local de primer plano. (¡Esta es la parte clave!)
+    _locationTimer?.cancel();
+    
     // 1. Marcar el paseo actual como 'Finalizado' en la tabla 'walks'
     await SupaFlow.client
       .from('walks')
@@ -309,8 +312,6 @@ Future<bool> _handleLocationPermission() async {
     
     print("✅ Paseo ${widget.walkId} marcado como Finalizado.");
 
-    // 2. Detener el timer local de primer plano.
-    _locationTimer?.cancel();
 
     // 3. Buscar TODOS los paseos restantes con status 'En curso'
     final remainingWalksRes = await SupaFlow.client
@@ -343,7 +344,6 @@ Future<bool> _handleLocationPermission() async {
       print("✅ current_walk_id reasignado a $nextForegroundWalkId.");
 
       // 4A.ii. Enviar la lista COMPLETA de IDs restantes al servicio de fondo.
-      // Se necesita enviar la lista completa de paseos activos, ya que uno acaba de terminar.
       await _setTrackingIds(includeCurrentWalk: true);
 
     } else {
@@ -362,7 +362,10 @@ Future<bool> _handleLocationPermission() async {
     }
 
     // 5. Navegar a CurrentWalkEmptyWindow
-    context.pushReplacementNamed('CurrentWalkEmptyWindow');
+    context.pushReplacementNamed(
+      '_initialize',
+      queryParameters: {'initialPage': 'CurrentWalk'},
+    );
   }
 
 
@@ -674,7 +677,8 @@ Future<bool> _handleLocationPermission() async {
                                         return Padding(
                                           padding:
                                               MediaQuery.viewInsetsOf(context),
-                                          child: PopUpWalkOptionsWidget(walkId: int.parse(widget.walkId), usertype: widget.userType,),
+                                          child: PopUpWalkOptionsWidget(walkId: int.parse(widget.walkId), usertype: widget.userType,  onWalkCompletion: handleWalkCompletion, 
+),
                                         );
                                       },
                                     ).then((value) => safeSetState(() {}));
