@@ -35,10 +35,8 @@ class _CurrentWalkWidgetState extends State<CurrentWalkWidget> {
   @override
   void initState() {
     super.initState();
-    checkCurrentWalk();
     _model = createModel(context, () => CurrentWalkModel());
-
-
+    checkCurrentWalk();
   }
 
   @override

@@ -29,7 +29,7 @@ class _CurrentWalkEmpyWindowWidgetState
   late CurrentWalkEmptyWindowModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  String? currentWalkId;
+  String currentWalkId = '';
   String userType = '';
   bool isLoading = true;
 
@@ -46,188 +46,175 @@ class _CurrentWalkEmpyWindowWidgetState
     super.dispose();
   }
 
-  Future<void> checkCurrentWalk() async {
-    // Obtener tipo de usuario
-    final userRes = await Supabase.instance.client
-        .from('users')
-        .select('usertype')
-        .eq('uuid', currentUserUid)
-        .maybeSingle();
+Future<void> checkCurrentWalk() async {
+  // 1. Consultamos la tabla 'users' para obtener el 'usertype' y el 'current_walk_id'
+  final userRes = await Supabase.instance.client
+      .from('users')
+      .select('usertype, current_walk_id')
+      .eq('uuid', currentUserUid)
+      .maybeSingle();
 
-    userType = userRes?['usertype'];
-
-    // Buscar paseo en curso
-    final walkRes = await Supabase.instance.client
-        .from('walks')
-        .select('current_walk_id')
-        .eq(userType == 'Dueño' ? 'owner_id' : 'walker_id', currentUserUid)
-        .eq('status', 'En curso')
-        .maybeSingle();
-
-    if (walkRes != null) {
-      currentWalkId = walkRes['id'].toString();
-      print('Walk encontrado: $walkRes');
-      print('Tipo de usuario: $userType');
-    }
-
-    setState(() {
-      isLoading = false;
-    });
+  // Si no se encuentra el usuario, detenemos.
+  if (userRes == null) {
+      // userType = null;
+      currentWalkId = '';
+      setState(() { isLoading = false; });
+      return;
   }
 
+  userType = userRes['usertype'];
+  final currentWalkIdFromUser = userRes['current_walk_id']?.toString();
+
+  currentWalkId = ''; // Inicializamos la variable local
+
+  // 2. Si el usuario tiene un ID de paseo activo, lo validamos.
+  if (currentWalkIdFromUser != null && currentWalkIdFromUser.isNotEmpty) {
+    
+    // Verificación de estado: Consultamos la tabla 'walks' para asegurarnos que el paseo SÍ esté activo.
+    final walkStatusRes = await Supabase.instance.client
+        .from('walks')
+        .select('status')
+        .eq('id', currentWalkIdFromUser)
+        .maybeSingle();
+    
+    final walkStatus = walkStatusRes?['status'] as String?;
+
+    // Si el estado es Finalizado, Cancelado o el paseo no existe (null), el ID es obsoleto.
+    if (walkStatus == 'Finalizado' || walkStatus == 'Cancelado' || walkStatus == null) {
+        // Limpiamos el ID obsoleto en la base de datos
+        await Supabase.instance.client
+            .from('users')
+            .update({'current_walk_id': null}) 
+            .eq('uuid', currentUserUid);
+            
+        // currentWalkId ya está en ''
+    } else {
+        // El paseo está activo, lo asignamos.
+        currentWalkId = currentWalkIdFromUser;
+    }
+  }
+
+  setState(() {
+    isLoading = false;
+  });
+}
+
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
-      child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondary,
-        body: SafeArea(
-          top: true,
+Widget build(BuildContext context) {
+  print("El paseo desde empty window: ${currentWalkId}");
+  return GestureDetector(
+    onTap: () {
+      FocusScope.of(context).unfocus();
+      FocusManager.instance.primaryFocus?.unfocus();
+    },
+    child: Scaffold(
+      key: scaffoldKey,
+      backgroundColor: FlutterFlowTheme.of(context).secondary,
+      body: SafeArea(
+        top: true,
+        child: Container(
+          width: MediaQuery.sizeOf(context).width,
+          height: MediaQuery.sizeOf(context).height,
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
+              // Header fijo
+              Container(
+                width: MediaQuery.sizeOf(context).width,
+                height: MediaQuery.sizeOf(context).height * 0.1,
+                decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).secondary,
+                  boxShadow: const [
+                    BoxShadow(
+                      blurRadius: 4,
+                      color: Color(0xFF162C43),
+                      offset: Offset(0, 2),
+                    )
+                  ],
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(40),
+                    bottomRight: Radius.circular(40),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Align(
+                      alignment: const AlignmentDirectional(-1, 0),
+                      child: Padding(
+                        padding: const EdgeInsetsDirectional.fromSTEB(15, 0, 0, 0),
+                        child: InkWell(
+                          splashColor: Colors.transparent,
+                          focusColor: Colors.transparent,
+                          hoverColor: Colors.transparent,
+                          highlightColor: Colors.transparent,
+                          onTap: () async {
+                            context.safePop();
+                          },
+                          child: Icon(
+                            Icons.chevron_left_outlined,
+                            color: FlutterFlowTheme.of(context).secondary,
+                            size: 32,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Align(
+                        alignment: const AlignmentDirectional(0, 0),
+                        child: Text(
+                          'Paseo en curso',
+                          textAlign: TextAlign.center,
+                          style: FlutterFlowTheme.of(context)
+                              .bodyMedium
+                              .override(
+                                font: GoogleFonts.lexend(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                color: FlutterFlowTheme.of(context).accent2,
+                                fontSize: 18,
+                                letterSpacing: 0.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 15, 0),
+                      child: Icon(
+                        Icons.notifications_sharp,
+                        color: FlutterFlowTheme.of(context).accent2,
+                        size: 32,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Contenido principal - EXPANDIDO para ocupar todo el espacio restante
               Expanded(
                 child: Container(
                   width: MediaQuery.sizeOf(context).width,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).tertiary,
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Container(
-                        width: MediaQuery.sizeOf(context).width,
-                        height: MediaQuery.sizeOf(context).height * 0.1,
-                        decoration: BoxDecoration(
-                          color: FlutterFlowTheme.of(context).secondary,
-                          boxShadow: const [
-                            BoxShadow(
-                              blurRadius: 4,
-                              color: Color(0xFF162C43),
-                              offset: Offset(
-                                0,
-                                2,
-                              ),
+                  child: isLoading
+                      ? const Center(
+                          child: CircularProgressIndicator(),
+                        )
+                      : (currentWalkId.isNotEmpty
+                          ? ScheduledWalkContainerWidget(
+                              walkId: currentWalkId,
+                              userType: userType,
                             )
-                          ],
-                          borderRadius: const BorderRadius.only(
-                            bottomLeft: Radius.circular(40),
-                            bottomRight: Radius.circular(40),
-                            topLeft: Radius.circular(0),
-                            topRight: Radius.circular(0),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Align(
-                              alignment: const AlignmentDirectional(-1, 0),
-                              child: Padding(
-                                padding:
-                                    const EdgeInsetsDirectional.fromSTEB(15, 0, 0, 0),
-                                child: InkWell(
-                                  splashColor: Colors.transparent,
-                                  focusColor: Colors.transparent,
-                                  hoverColor: Colors.transparent,
-                                  highlightColor: Colors.transparent,
-                                  onTap: () async {
-                                    context.safePop();
-                                  },
-                                  child: Icon(
-                                    Icons.chevron_left_outlined,
-                                    color: FlutterFlowTheme.of(context).secondary,
-                                    size: 32,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Align(
-                                alignment: const AlignmentDirectional(0, 0),
-                                child: Text(
-                                  'Paseo en curso',
-                                  textAlign: TextAlign.center,
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        font: GoogleFonts.lexend(
-                                          fontWeight: FontWeight.bold,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontStyle,
-                                        ),
-                                        color: FlutterFlowTheme.of(context)
-                                            .accent2,
-                                        fontSize: 18,
-                                        letterSpacing: 0.0,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .fontStyle,
-                                      ),
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsetsDirectional.fromSTEB(0, 0, 15, 0),
-                              child: Icon(
-                                Icons.notifications_sharp,
-                                color: FlutterFlowTheme.of(context).accent2,
-                                size: 32,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(0, 15, 0, 15),
-                          child: Container(
-                            width: MediaQuery.sizeOf(context).width,
-                            decoration: const BoxDecoration(),
-                            child: SingleChildScrollView(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.max,
-                                children: [
-                                  // Mostrar loading mientras se carga
-                                  if (isLoading)
-                                    Padding(
-                                      padding: const EdgeInsetsDirectional.fromSTEB(0, 50, 0, 0),
-                                      child: CircularProgressIndicator(
-                                        valueColor: AlwaysStoppedAnimation<Color>(
-                                          FlutterFlowTheme.of(context).primary,
-                                        ),
-                                      ),
-                                    )
-                                  else
-                                    // Mostrar contenido una vez cargado
-                                    if (currentWalkId != null)
-                                      ScheduledWalkContainerWidget(
-                                        walkId: currentWalkId!,
-                                        userType: userType,
-                                      )
-                                    else
-                                      NotScheduledWalkContainerWidget(userType: userType),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                          : NotScheduledWalkContainerWidget(userType: userType)),
                 ),
               ),
             ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
