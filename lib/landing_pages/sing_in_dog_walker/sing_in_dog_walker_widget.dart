@@ -17,6 +17,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'sing_in_dog_walker_model.dart';
 export 'sing_in_dog_walker_model.dart';
+import '/components/ine_validation_webview/ine_validation_webview_widget.dart';
 
 class SingInDogWalkerWidget extends StatefulWidget {
   const SingInDogWalkerWidget({super.key});
@@ -2480,155 +2481,273 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
                                               ),
                                             ),
                                             Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
-                                                      0.0, 18.0, 0.0, 18.0),
+                                              padding: EdgeInsetsDirectional.fromSTEB(0.0, 18.0, 0.0, 18.0),
                                               child: FFButtonWidget(
                                                 onPressed: isRegistering ? null : () async {
-                                                  setState(() => isRegistering = true);
-                                                  GoRouter.of(context).prepareAuthEvent();
-
+                                                  // ✅ 1. VALIDAR CONTRASEÑAS
                                                   if (_model.passDogWalkerInputTextController.text !=
                                                       _model.confirmPassDogWalkerInputTextController.text) {
                                                     ScaffoldMessenger.of(context).showSnackBar(
                                                       SnackBar(
                                                         content: Text('Las contraseñas no coinciden!'),
+                                                        backgroundColor: Colors.red,
                                                       ),
                                                     );
-                                                    setState(() => isRegistering = false);
                                                     return;
                                                   }
 
-                                                  // Autenticación en Supabase
-                                                  try{
+                                                  // ✅ 2. MOSTRAR DIÁLOGO DE CONFIRMACIÓN
+                                                  final shouldContinue = await showDialog<bool>(
+                                                    context: context,
+                                                    barrierDismissible: false,
+                                                    builder: (BuildContext dialogContext) {
+                                                      return AlertDialog(
+                                                        backgroundColor: Color(0xFF1A2332),
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius: BorderRadius.circular(16.0),
+                                                        ),
+                                                        title: Row(
+                                                          children: [
+                                                            Icon(Icons.verified_user, color: Colors.blue, size: 24),
+                                                            SizedBox(width: 8),
+                                                            Expanded(
+                                                              child: Text(
+                                                                'Verificación de Identidad',
+                                                                style: TextStyle(color: Colors.white, fontSize: 18),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        content: Column(
+                                                          mainAxisSize: MainAxisSize.min,
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Text(
+                                                              'Para completar tu registro como paseador, necesitamos verificar tu identidad con:',
+                                                              style: TextStyle(color: Colors.white70, fontSize: 14),
+                                                            ),
+                                                            SizedBox(height: 16),
+                                                            Row(
+                                                              children: [
+                                                                Icon(Icons.credit_card, color: Colors.blue, size: 20),
+                                                                SizedBox(width: 8),
+                                                                Text('• INE (frente y reverso)',
+                                                                    style: TextStyle(color: Colors.white, fontSize: 14)),
+                                                              ],
+                                                            ),
+                                                            SizedBox(height: 8),
+                                                            Row(
+                                                              children: [
+                                                                Icon(Icons.face, color: Colors.blue, size: 20),
+                                                                SizedBox(width: 8),
+                                                                Text('• Selfie para comparación',
+                                                                    style: TextStyle(color: Colors.white, fontSize: 14)),
+                                                              ],
+                                                            ),
+                                                            SizedBox(height: 16),
+                                                            Container(
+                                                              padding: EdgeInsets.all(12),
+                                                              decoration: BoxDecoration(
+                                                                color: Colors.blue.withOpacity(0.1),
+                                                                borderRadius: BorderRadius.circular(8),
+                                                                border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                                                              ),
+                                                              child: Row(
+                                                                children: [
+                                                                  Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                                                                  SizedBox(width: 8),
+                                                                  Expanded(
+                                                                    child: Text(
+                                                                      'Este proceso toma 0-4 minutos',
+                                                                      style: TextStyle(color: Colors.white70, fontSize: 12),
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        actions: [
+                                                          Row(
+                                                            children: [
+                                                              Expanded(
+                                                                child: TextButton(
+                                                                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                                                                  child: Text('Cancelar',
+                                                                      style: TextStyle(color: Colors.white70, fontSize: 16)),
+                                                                ),
+                                                              ),
+                                                              SizedBox(width: 8),
+                                                              Expanded(
+                                                                child: ElevatedButton(
+                                                                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                                                                  style: ElevatedButton.styleFrom(
+                                                                    backgroundColor: FlutterFlowTheme.of(context).primary,
+                                                                    shape: RoundedRectangleBorder(
+                                                                      borderRadius: BorderRadius.circular(8),
+                                                                    ),
+                                                                    padding: EdgeInsets.symmetric(vertical: 12),
+                                                                  ),
+                                                                  child: Text('Continuar',
+                                                                      style: TextStyle(
+                                                                          color: Colors.white,
+                                                                          fontSize: 16,
+                                                                          fontWeight: FontWeight.w600)),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      );
+                                                    },
+                                                  );
+
+                                                  // ✅ 3. SI CANCELA, DETENER
+                                                  if (shouldContinue != true) {
+                                                    debugPrint('❌ Usuario canceló verificación');
+                                                    return;
+                                                  }
+
+                                                  // ✅ 4. INICIAR REGISTRO
+                                                  setState(() => isRegistering = true);
+
+                                                  try {
+                                                    debugPrint('🚀 INICIANDO PROCESO DE REGISTRO');
+
+                                                    // ✅ 5. CREAR USUARIO EN auth.users
+                                                    GoRouter.of(context).prepareAuthEvent();
 
                                                     final user = await authManager.createAccountWithEmail(
                                                       context,
                                                       _model.emailDogWalkerInputTextController.text,
                                                       _model.passDogWalkerInputTextController.text,
                                                     );
-                                                    if (user == null) {
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        SnackBar(content: Text('No se pudo crear el usuario.')),
-                                                      );
-                                                      setState(() => isRegistering = false);
-                                                      return;
-                                                    }
-                                                  } catch (e, st){
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(content: Text('Error al crear usuario: $e')),
-                                                    );
-                                                    setState(() => isRegistering = false);    
-                                                    return;
-                                                  }
 
-                                                  // Registro en la tabla users
-                                                  try {
-                                                    final response = await Supabase.instance.client
-                                                    .from('users')
-                                                    .insert({
+                                                    if (user == null) {
+                                                      throw Exception('No se pudo crear el usuario en auth.users');
+                                                    }
+
+                                                    debugPrint('✅ Usuario creado en auth.users: $currentUserUid');
+
+                                                    // ✅ 6. CREAR REGISTRO EN users
+                                                    await SupaFlow.client.from('users').insert({
                                                       'uuid': currentUserUid,
                                                       'name': _model.nameDogWalkerInputTextController.text,
                                                       'email': currentUserEmail,
                                                       'phone': _model.phoneDogWalkerInputTextController.text,
                                                       'birthdate': supaSerialize<DateTime>(_model.datePicked),
                                                       'gender': _model.genderDogWalkerMenuValue,
+                                                      'usertype': 'Paseador',
+                                                      'verification_status': 'pending_verification', // ✅ IMPORTANTE
+                                                    });
+
+                                                    debugPrint('✅ Usuario creado en tabla users');
+
+                                                    // ✅ 7. CREAR REGISTRO EN addresses
+                                                    await SupaFlow.client.from('addresses').insert({
+                                                      'uuid': currentUserUid,
+                                                      'alias': 'Mi Dirección',
                                                       'address': _model.streetDogWalkerInputTextController.text,
                                                       'houseNumber': _model.apartamentNumDogWalkerInputTextController.text,
                                                       'zipCode': _model.zipCodeDogWalkerInputTextController.text,
                                                       'neighborhood': _model.neighborhoodDogWalkerInputTextController.text,
                                                       'city': _model.cityDogWalkerInputTextController.text,
-                                                      'usertype': 'Paseador'
                                                     });
 
-                                                    // Registro en la tabla addresses
-                                                    try{
-                                                      final response = await Supabase.instance.client
-                                                      .from('addresses')
-                                                      .insert({
-                                                        'uuid': currentUserUid,
-                                                        'alias': 'Mi Dirección',
-                                                        'address': _model.streetDogWalkerInputTextController.text,
-                                                        'houseNumber': _model.apartamentNumDogWalkerInputTextController.text,
-                                                        'zipCode': _model.zipCodeDogWalkerInputTextController.text,
-                                                        'neighborhood': _model.neighborhoodDogWalkerInputTextController.text,
-                                                        'city': _model.cityDogWalkerInputTextController.text,
-                                                    });
-                                                  } catch (e, st) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(
-                                                        content: Text('Error al registrar dirección: $e')
-                                                      ),
+                                                    debugPrint('✅ Dirección creada');
+
+                                                    // ✅ 8. LLAMAR A EDGE FUNCTION
+                                                    debugPrint('📡 Llamando a Edge Function...');
+
+                                                    final response = await Supabase.instance.client.functions.invoke(
+                                                      'ine-validation',
+                                                      body: {
+                                                        'action': 'create_session',
+                                                        'user_uuid': currentUserUid,
+                                                        'email': currentUserEmail,
+                                                      },
                                                     );
-                                                    setState(() => isRegistering = false);
-                                                    return;
-                                                  }
 
-                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                    SnackBar(content: Text('¡Registro exitoso!')),
-                                                  );
-                                                  context.goNamedAuth(HomeDogWalkerWidget.routeName, context.mounted);
+                                                    debugPrint('📊 Response status: ${response.status}');
+                                                    debugPrint('📊 Response data: ${response.data}');
 
-                                                  } catch (e, st) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(
-                                                        content: Text('Error al registrar usuario: $e')
-                                                      ),
-                                                    );
-                                                    setState(() => isRegistering = false);
-                                                    return;
-                                                  }
+                                                    if (response.status != 200 || response.data?['success'] != true) {
+                                                      throw Exception(
+                                                          response.data?['error'] ?? 'Error creando sesión de verificación');
+                                                    }
 
-                                                  
-                                                },
-                                                text: 'Continuar',
-                                                options: FFButtonOptions(
-                                                  width:
-                                                      MediaQuery.sizeOf(context)
-                                                              .width *
-                                                          1.0,
-                                                  height:
-                                                      MediaQuery.sizeOf(context)
-                                                              .height *
-                                                          0.05,
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          0.0, 0.0, 0.0, 0.0),
-                                                  iconPadding:
-                                                      EdgeInsetsDirectional
-                                                          .fromSTEB(0.0, 0.0,
-                                                              0.0, 0.0),
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .accent1,
-                                                  textStyle: FlutterFlowTheme
-                                                          .of(context)
-                                                      .titleSmall
-                                                      .override(
-                                                        font:
-                                                            GoogleFonts.lexend(
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .titleSmall
-                                                                  .fontStyle,
+                                                    final formUrl = response.data['form_url'];
+
+                                                    if (formUrl == null || formUrl.isEmpty) {
+                                                      throw Exception('No se obtuvo URL de verificación');
+                                                    }
+
+                                                    debugPrint('✅ Form URL obtenida: $formUrl');
+
+                                                    // ✅ 9. ABRIR WEBVIEW
+                                                    if (mounted) {
+                                                      await Navigator.of(context).push(
+                                                        MaterialPageRoute(
+                                                          builder: (context) => IneValidationWebviewWidget(
+                                                            formUrl: formUrl,
+                                                            sessionId: currentUserUid,
+                                                          ),
                                                         ),
+                                                      );
+
+                                                      debugPrint('🔙 WebView cerrado');
+
+                                                      // ✅ 10. REDIRIGIR A PANTALLA DE ESPERA
+                                                      if (mounted) {
+                                                        context.pushReplacementNamed(
+                                                          'redirect_verificamex',
+                                                          queryParameters: {
+                                                            'user_id': currentUserUid,
+                                                          },
+                                                        );
+                                                      }
+                                                    }
+                                                  } catch (e) {
+                                                    debugPrint('💥 Error: $e');
+
+                                                    // LIMPIAR USUARIO SI HAY ERROR
+                                                    try {
+                                                      await SupaFlow.client
+                                                          .from('users')
+                                                          .delete()
+                                                          .eq('uuid', currentUserUid);
+                                                      await SupaFlow.client
+                                                          .from('identity_verifications')
+                                                          .delete()
+                                                          .eq('user_uuid', currentUserUid);
+                                                      await Supabase.instance.client.auth.admin.deleteUser(currentUserUid);
+                                                    } catch (deleteError) {
+                                                      debugPrint('❌ Error eliminando usuario: $deleteError');
+                                                    }
+
+                                                    if (mounted) {
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(
+                                                          content: Text('Error: ${e.toString()}'),
+                                                          backgroundColor: Colors.red,
+                                                        ),
+                                                      );
+                                                    }
+                                                  } finally {
+                                                    if (mounted) setState(() => isRegistering = false);
+                                                  }
+                                                },
+                                                text: isRegistering ? 'Procesando...' : 'Continuar',
+                                                options: FFButtonOptions(
+                                                  width: MediaQuery.sizeOf(context).width * 1.0,
+                                                  height: MediaQuery.sizeOf(context).height * 0.05,
+                                                  color: FlutterFlowTheme.of(context).accent1,
+                                                  textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                                                        fontFamily: 'Lexend',
                                                         color: Colors.white,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FontWeight.normal,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .titleSmall
-                                                                .fontStyle,
                                                       ),
                                                   elevation: 0.0,
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          10.0),
+                                                  borderRadius: BorderRadius.circular(10.0),
                                                 ),
                                               ),
                                             ),
@@ -2653,4 +2772,7 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
       ),
     );
   }
+
+
+
 }

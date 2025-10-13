@@ -9,6 +9,7 @@ import '/auth/base_auth_user_provider.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'serialization_util.dart';
+import '/landing_pages/redirect_url/redirect_verificamex_widget.dart';
 
 import '/index.dart';
 
@@ -262,6 +263,20 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             userName: params.getParam('userName', ParamType.String),
             status: params.getParam('status', ParamType.String),
           ),
+        ),
+        FFRoute(
+          name: 'redirect_verificamex',
+          path: '/redirect_verificamex',
+          builder: (context, params) {
+            final userId = params.getParam('user_id', ParamType.String) ?? '';
+            final sessionId = params.getParam('session_id', ParamType.String) ?? '';
+            
+            return RedirectVerificamexWidget(
+              userId: userId,
+            );
+            
+          },
+          requireAuth: false,
         ),
           
       ].map((r) => r.toRoute(appStateNotifier)).toList(),

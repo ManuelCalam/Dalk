@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:dalk/SubscriptionProvider.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -13,17 +12,16 @@ import '/backend/supabase/supabase.dart';
 import 'backend/firebase/firebase_config.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/nav/nav.dart';
 import '/services/notification_service.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:app_links/app_links.dart';
 
-
-// GlobalKey para el ScaffoldMessenger 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
-// HANDLER TOP-LEVEL SIMPLE (REQUERIDO)
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("Background notification: ${message.notification?.title}");
+  print("📱 Background notification: ${message.notification?.title}");
 }
 
 void main() async {
@@ -35,7 +33,6 @@ void main() async {
   await FlutterFlowTheme.initialize();
   await dotenv.load(fileName: ".env"); 
 
-
   await Supabase.initialize(
     url: "${dotenv.env['SUPABASE_URL']}",
     anonKey: "${dotenv.env['SUPABASE_ANON_KEY']}",
@@ -46,9 +43,7 @@ void main() async {
 
   Stripe.publishableKey = "pk_test_51S48646aB9DzvCSx9BqLEjUIcmpXvTuIU1elVEauQmFwOT2Ww3Sj2idqp148wcPsNWnbmtibCwCzgMjMfx02w08h00mNNCCfbB";  
 
-
   runApp(MyApp());
-
 }
 
 class MyApp extends StatefulWidget {
@@ -60,34 +55,20 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   ThemeMode _themeMode = FlutterFlowTheme.themeMode;
 
   final _supabaseAuthStream = Supabase.instance.client.auth.onAuthStateChange;
   late Stream<BaseAuthUser> userStream;
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
-
-  String getRoute([RouteMatch? routeMatch]) {
-    final RouteMatch lastMatch =
-        routeMatch ?? _router.routerDelegate.currentConfiguration.last;
-    final RouteMatchList matchList = lastMatch is ImperativeRouteMatch
-        ? lastMatch.matches
-        : _router.routerDelegate.currentConfiguration;
-    return matchList.uri.toString();
-  }
-
-  List<String> getRouteStack() =>
-      _router.routerDelegate.currentConfiguration.matches
-          .map((e) => getRoute(e))
-          .toList();
-
+  
+  late AppLinks _appLinks;
+  StreamSubscription<Uri>? _linkSubscription;
 
   @override
   void initState() {
     super.initState();
     
-    // Inicializar NotificationService
     final notificationService = NotificationService();
     notificationService.initialize(
       scaffoldKey: scaffoldMessengerKey,
@@ -99,7 +80,6 @@ class _MyAppState extends State<MyApp> {
     userStream = dalkSupabaseUserStream()
       ..listen((user) {
         _appStateNotifier.update(user);
-        // Actualizar token FCM cuando hay usuario logueado
         if (user.uid != null) {
           notificationService.updateFcmToken(user.uid!);
         }
@@ -110,6 +90,73 @@ class _MyAppState extends State<MyApp> {
       Duration(milliseconds: 1000),
       () => _appStateNotifier.stopShowingSplashImage(),
     );
+
+    _initDeepLinks();
+  }
+
+  /// ✅ INICIALIZAR DEEP LINKS
+  Future<void> _initDeepLinks() async {
+    _appLinks = AppLinks();
+
+    // Manejar link inicial (app cerrada)
+    try {
+      final initialUri = await _appLinks.getInitialLink();
+      if (initialUri != null) {
+        debugPrint('🔗 Initial deep link: $initialUri');
+        _handleDeepLink(initialUri);
+      }
+    } catch (e) {
+      debugPrint('❌ Error obteniendo initial link: $e');
+    }
+
+    // Escuchar links entrantes (app abierta/background)
+    _linkSubscription = _appLinks.uriLinkStream.listen(
+      (uri) {
+        debugPrint('🔗 Deep link recibido: $uri');
+        _handleDeepLink(uri);
+      },
+      onError: (err) {
+        debugPrint('❌ Error en deep link stream: $err');
+      },
+    );
+  }
+
+  /// ✅ MANEJAR DEEP LINK
+  void _handleDeepLink(Uri uri) {
+    debugPrint('🔍 Procesando deep link:');
+    debugPrint('  URI completo: $uri');
+    debugPrint('  Scheme: ${uri.scheme}');
+    debugPrint('  Host: ${uri.host}');
+    debugPrint('  Path: ${uri.path}');
+    debugPrint('  Path segments: ${uri.pathSegments}');
+    debugPrint('  Query params: ${uri.queryParameters}');
+
+    // ✅ OPCIÓN A: Path parameters (RECOMENDADO)
+    // dalkpaseos://verificamex/USER_ID/SESSION_ID
+    if (uri.scheme == 'dalkpaseos' && uri.host == 'verificamex') {
+      String userId = '';
+      String sessionId = '';
+
+      if (uri.pathSegments.length >= 1) {
+        userId = uri.pathSegments[0];
+        // sessionId es opcional ahora
+        sessionId = uri.pathSegments.length >= 2 ? uri.pathSegments[1] : '';
+      }
+
+      if (userId.isNotEmpty) {  // ✅ Solo validar userId
+        // Esperar a que el router esté listo
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          debugPrint('🚀 Navegando a /redirect_verificamex');
+          _router.go('/redirect_verificamex?user_id=$userId${sessionId.isNotEmpty ? '&session_id=$sessionId' : ''}');
+        });
+      } else {
+        debugPrint('❌ Faltan parámetros requeridos');
+        debugPrint('   userId isEmpty: ${userId.isEmpty}');
+        debugPrint('   sessionId isEmpty: ${sessionId.isEmpty}');
+      }
+    } else {
+      debugPrint('⚠️ Deep link no reconocido: ${uri.scheme}://${uri.host}');
+    }
   }
 
   void setThemeMode(ThemeMode mode) => safeSetState(() {
@@ -117,45 +164,61 @@ class _MyAppState extends State<MyApp> {
         FlutterFlowTheme.saveThemeMode(mode);
       });
 
+  // ✅ MÉTODOS REQUERIDOS POR FLUTTER_FLOW_UTIL
+  String? getRoute() {
+    return _router.routerDelegate.currentConfiguration.uri.toString();
+  }
+
+  List<String> getRouteStack() {
+    return _router.routerDelegate.currentConfiguration.matches
+        .map((match) => match.matchedLocation)
+        .toList();
+  }
+
+  @override
+  void dispose() {
+    _linkSubscription?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Use StreamBuilder to listen for auth state changes
-    return StreamBuilder<AuthState>(stream: Supabase.instance.client.auth.onAuthStateChange, builder: (context, snapshot) {
-      // Check if a user session exists
-      final isAuthenticated = snapshot.data?.session?.user != null;
+    return StreamBuilder<AuthState>(
+      stream: Supabase.instance.client.auth.onAuthStateChange, 
+      builder: (context, snapshot) {
+        final isAuthenticated = snapshot.data?.session?.user != null;
 
-      // Conditional provider creation based on auth state
-      Widget appRouter = MaterialApp.router(
-        debugShowCheckedModeBanner: false,
-        title: 'Dalk',
-        scaffoldMessengerKey: scaffoldMessengerKey,
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [Locale('en', '')],
-        theme: ThemeData(
-          brightness: Brightness.light,
-          useMaterial3: false,
-        ),
-        darkTheme: ThemeData(
-          brightness: Brightness.dark,
-          useMaterial3: false,
-        ),
-        themeMode: _themeMode,
-        routerConfig: _router,
-      );
-
-      if (isAuthenticated) {
-      // Wrap the router with the provider only if authenticated
-        return ChangeNotifierProvider(
-          create: (context) => SubscriptionProvider(Supabase.instance.client),
-          child: appRouter,
+        Widget appRouter = MaterialApp.router(
+          debugShowCheckedModeBanner: false,
+          title: 'Dalk',
+          scaffoldMessengerKey: scaffoldMessengerKey,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('en', '')],
+          theme: ThemeData(
+            brightness: Brightness.light,
+            useMaterial3: false,
+          ),
+          darkTheme: ThemeData(
+            brightness: Brightness.dark,
+            useMaterial3: false,
+          ),
+          themeMode: _themeMode,
+          routerConfig: _router,
         );
-      } else {
-        return appRouter;
+
+        if (isAuthenticated) {
+          return ChangeNotifierProvider(
+            create: (context) => SubscriptionProvider(Supabase.instance.client),
+            child: appRouter,
+          );
+        } else {
+          return appRouter;
+        }
       }
-    });
+    );
   }
 }
