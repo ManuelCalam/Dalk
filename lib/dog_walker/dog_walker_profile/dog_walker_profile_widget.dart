@@ -241,8 +241,7 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                                         ),
                                                         color: FlutterFlowTheme
                                                                 .of(context)
-                                                            .secondaryBackground,
-                                                        fontSize: 16,
+                                                            .secondaryBackground,fontSize: 16,
                                                         letterSpacing: 0.0,
                                                         fontWeight:
                                                             FontWeight.w500,
@@ -401,18 +400,18 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                     hoverColor: Colors.transparent,
                                     highlightColor: Colors.transparent,
                                     onTap: () async {
-                                      // context.pushReplacementNamed(
-                                      //   '_initialize', 
-                                      //   queryParameters: {'initialPage': 'walkerService'},
-                                      // );  
+                                      context.pushReplacementNamed(
+                                        '_initialize', 
+                                        queryParameters: {'initialPage': 'walkerService'},
+                                      );  
 
 
 
-                                    // ESTO ES TEMPORAL
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => const WalkPaymentWindowWidget(walkId: 256, userType: 'Paseador',)),
-                                    );
+                                    // // ESTO ES TEMPORAL
+                                    // Navigator.push(
+                                    //   context,
+                                    //   MaterialPageRoute(builder: (context) => const WalkPaymentWindowWidget(walkId: 256, userType: 'Paseador',)),
+                                    // );
 
 
 

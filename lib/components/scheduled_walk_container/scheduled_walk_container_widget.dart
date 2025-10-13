@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:dalk/backend/supabase/supabase.dart' show SupaFlow;
 import 'package:dalk/common/chat/chat_widget.dart';
+import 'package:dalk/common/walk_payment_window/walk_payment_window_widget.dart';
 import 'package:dalk/components/pop_up_walk_options/pop_up_walk_options_widget.dart';
 import 'package:dalk/dog_walker/background_service/background_service.dart';
 import 'package:dalk/dog_walker/background_service/on_ios_background';
@@ -90,15 +91,13 @@ class ScheduledWalkContainerWidgetState
     if (widget.userType != 'Paseador') return;
 
     if (state == AppLifecycleState.paused) {
-      // App en segundo plano: Rastrear TODOS los paseos.
-      _locationTimer?.cancel(); // Detiene el timer local
-      _setTrackingIds(includeCurrentWalk: true); // Envia la lista COMPLETA de IDs al fondo
+      _locationTimer?.cancel();
+      _setTrackingIds(includeCurrentWalk: true); 
       FlutterBackgroundService().invoke("setAsBackground"); 
     }
 
     if (state == AppLifecycleState.resumed) {
-      // App vuelve al primer plano: El paseo visible toma el control, los demás van al fondo.
-      _startSendingLocation(); // Reinicia el timer local para el paseo visible
+      _startSendingLocation(); 
     }
   }
 
@@ -126,8 +125,6 @@ class ScheduledWalkContainerWidgetState
   Future<void> _setTrackingIds({required bool includeCurrentWalk}) async {
     final allActiveWalkIds = await _getActiveWalkIds();
     
-    // Si includeCurrentWalk es true (App en PAUSED o DISPOSE), se envían todos.
-    // Si es false (App en RESUMED/Foreground), se excluye el ID actual.
     final List<String> trackingIds = includeCurrentWalk
         ? allActiveWalkIds
         : allActiveWalkIds.where((id) => id != widget.walkId).toList();
@@ -150,7 +147,6 @@ class ScheduledWalkContainerWidgetState
     bool isRunning = await service.isRunning();
 
     if (!isRunning) {
-        // Asegúrate de que onStart y onIosBackground estén definidos y accesibles
         await service.configure(
             androidConfiguration: AndroidConfiguration(
                 onStart: onStart, 
@@ -169,20 +165,14 @@ class ScheduledWalkContainerWidgetState
   }
 
 
-  // --- LÓGICA DE RASTREO EN PRIMER PLANO ---
 
   void _startSendingLocation() async {
     final hasPermission = await _handleLocationPermission();
     if (!hasPermission) return;
 
-    // 1. Configurar el servicio de fondo para rastrear SOLO los demás paseos.
-    // **CORRECCIÓN CLAVE:** Enviamos FALSE para que excluya el ID actual (widget.walkId).
     await _setTrackingIds(includeCurrentWalk: false); 
     
-    // Cancelar timer local anterior.
     _locationTimer?.cancel(); 
-    
-    // No es necesario llamar a stopService, ya que _setTrackingIds... se encarga de reconfigurar.
 
     const interval = Duration(seconds: 6);
     final ref = FirebaseDatabase.instance.ref('walk_locations/${widget.walkId}');
@@ -244,7 +234,7 @@ Future<bool> _handleLocationPermission() async {
   if (permission == LocationPermission.denied) {
     permission = await Geolocator.requestPermission(); 
     if (permission == LocationPermission.denied) {
-      return false; // Sigue denegado
+      return false;
     }
   }
 
@@ -301,19 +291,16 @@ Future<bool> _handleLocationPermission() async {
       return;
     }
 
-    // 2. Detener el timer local de primer plano. (¡Esta es la parte clave!)
     _locationTimer?.cancel();
     
-    // 1. Marcar el paseo actual como 'Finalizado' en la tabla 'walks'
     await SupaFlow.client
       .from('walks')
       .update({'status': 'Finalizado'})
       .eq('id', widget.walkId);
     
-    print("✅ Paseo ${widget.walkId} marcado como Finalizado.");
+    // print("Paseo ${widget.walkId} marcado como Finalizado.");
 
 
-    // 3. Buscar TODOS los paseos restantes con status 'En curso'
     final remainingWalksRes = await SupaFlow.client
         .from('walks')
         .select('id')
@@ -332,9 +319,6 @@ Future<bool> _handleLocationPermission() async {
         : null;
 
     if (nextForegroundWalkId != null) {
-      // 4A. Hay más paseos activos: Reasignar current_walk_id y ACTUALIZAR el background service
-
-      // 4A.i. Actualizar el perfil del usuario con el ID del siguiente paseo
       await SupaFlow.client
         .from('users')
         .update({'current_walk_id': nextForegroundWalkId})
@@ -343,11 +327,9 @@ Future<bool> _handleLocationPermission() async {
         
       print("✅ current_walk_id reasignado a $nextForegroundWalkId.");
 
-      // 4A.ii. Enviar la lista COMPLETA de IDs restantes al servicio de fondo.
       await _setTrackingIds(includeCurrentWalk: true);
 
     } else {
-      // 4B. No hay más paseos 'En curso': Limpiar current_walk_id y detener el servicio
       
       await SupaFlow.client
         .from('users')
@@ -358,7 +340,7 @@ Future<bool> _handleLocationPermission() async {
       // Detener el servicio por completo ya que no hay nada más que rastrear
       FlutterBackgroundService().invoke('stopService'); 
 
-      print("✅ current_walk_id limpiado. Servicio de fondo detenido.");
+      print("current_walk_id limpiado. Servicio de fondo detenido.");
     }
 
     // 5. Navegar a CurrentWalkEmptyWindow
@@ -366,6 +348,10 @@ Future<bool> _handleLocationPermission() async {
       '_initialize',
       queryParameters: {'initialPage': 'CurrentWalk'},
     );
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(builder: (context) =>  WalkPaymentWindowWidget(walkId: int.parse(widget.walkId), userType: widget.userType )),
+    // );
   }
 
 
@@ -375,11 +361,7 @@ Future<bool> _handleLocationPermission() async {
     _locationTimer?.cancel(); 
     _locationSubscription?.cancel(); 
 
-    // Al salir de la vista (dispose), el paseo actual pasa a segundo plano, 
-    // por lo que debemos asegurarnos de que el background service lo rastree.
     if (widget.userType == 'Paseador') {
-      // **CORRECCIÓN CLAVE:** Enviamos TRUE para incluir este ID que está saliendo.
-      // Así el servicio de fondo rastrea TODOS los paseos activos.
       _setTrackingIds(includeCurrentWalk: true); 
     }
 
@@ -677,8 +659,7 @@ Future<bool> _handleLocationPermission() async {
                                         return Padding(
                                           padding:
                                               MediaQuery.viewInsetsOf(context),
-                                          child: PopUpWalkOptionsWidget(walkId: int.parse(widget.walkId), usertype: widget.userType,  onWalkCompletion: handleWalkCompletion, 
-),
+                                          child: PopUpWalkOptionsWidget(walkId: int.parse(widget.walkId), usertype: widget.userType,  onWalkCompletion: handleWalkCompletion),
                                         );
                                       },
                                     ).then((value) => safeSetState(() {}));

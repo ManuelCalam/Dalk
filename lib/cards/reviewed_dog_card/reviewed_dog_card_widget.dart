@@ -436,23 +436,23 @@ class _ReviewedDogCardWidgetState extends State<ReviewedDogCardWidget> {
                 decoration: const BoxDecoration(),
                 child: FFButtonWidget(
                   onPressed: () async {
-                                      await showModalBottomSheet(
-                                        isScrollControlled: true,
-                                        backgroundColor: Colors.transparent,
-                                        enableDrag: false,
-                                        context: context,
-                                        builder: (context) {
-                                          return Padding(
-                                            padding: MediaQuery.viewInsetsOf(
-                                                context),
-                                            child: PopUpReviewDetailsWidget(
-                                              walkId: widget.id,
-                                              reviewedName: widget.petName
-                                            ),
-                                          );
-                                        },
-                                      ).then((value) => safeSetState(() {}));
-                                    },
+                    await showModalBottomSheet(
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      enableDrag: false,
+                      context: context,
+                      builder: (context) {
+                        return Padding(
+                          padding: MediaQuery.viewInsetsOf(
+                              context),
+                          child: PopUpReviewDetailsWidget(
+                            walkId: widget.id,
+                            reviewedName: widget.petName
+                          ),
+                        );
+                      },
+                    ).then((value) => safeSetState(() {}));
+                  },
                   text: 'Ver reseña',
                   icon: const Icon(
                     Icons.auto_awesome,

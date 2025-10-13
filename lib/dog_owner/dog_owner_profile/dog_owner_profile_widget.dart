@@ -620,16 +620,16 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                                 highlightColor:
                                                     Colors.transparent,
                                                 onTap: () async {
-                                                  // context.pushNamed(
-                                                  //   '_initialize', 
-                                                  //   queryParameters: {'initialPage': 'petList'},
-                                                  // );  
+                                                  context.pushNamed(
+                                                    '_initialize', 
+                                                    queryParameters: {'initialPage': 'petList'},
+                                                  );  
 
                                                   // ESTO ES TEMPORAL
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(builder: (context) => const WalkPaymentWindowWidget(walkId: 256, userType: 'Dueño',)),
-                                                  );
+                                                  // Navigator.push(
+                                                  //   context,
+                                                  //   MaterialPageRoute(builder: (context) => const WalkPaymentWindowWidget(walkId: 256, userType: 'Dueño',)),
+                                                  // );
 
 
 

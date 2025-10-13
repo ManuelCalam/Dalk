@@ -2615,7 +2615,7 @@ if (_ownerImage != null) {
                                                   ScaffoldMessenger.of(context).showSnackBar(
                                                     SnackBar(content: Text('¡Registro exitoso!')),
                                                   );
-                                                  context.goNamedAuth(HomeDogOwnerWidget.routeName, context.mounted);
+                                                  context.go('/');
 
                                                   } catch (e, st) {
                                                     ScaffoldMessenger.of(context).showSnackBar(

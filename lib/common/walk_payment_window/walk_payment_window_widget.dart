@@ -1,5 +1,6 @@
 import 'package:dalk/backend/supabase/supabase.dart';
 import 'package:dalk/components/pop_up_add_review/pop_up_add_review_widget.dart';
+import 'package:dalk/components/pop_up_review_details/pop_up_review_details_widget.dart';
 
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -41,7 +42,9 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
   @override
   void initState() {
     super.initState();
+
     _model = createModel(context, () => WalkPaymentWindowModel());
+    _checkReviewStatus();
 
     _model.nameDogOwnerInputTextController1 ??=
         TextEditingController(text: '[duration]');
@@ -58,6 +61,22 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
     _model.nameDogOwnerInputTextController4 ??=
         TextEditingController(text: '[bill]');
     _model.nameDogOwnerInputFocusNode4 ??= FocusNode();
+  }
+
+  // Comprobar el status de una posible reseña
+  Future<void> _checkReviewStatus() async {
+    final review = await SupaFlow.client
+        .from('reviews')
+        .select('id')
+        .eq('walk_id', widget.walkId)
+        .limit(1)
+        .maybeSingle();
+
+    if (mounted) {
+      safeSetState(() {
+        _hasReview = review != null;
+      });
+    }
   }
 
   //Obtener información del View walks_with_names
@@ -80,35 +99,57 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
   }
 
 
-    // Posibles valores: 'not_reviewed', 'reviewed'
-    String _reviewStatus = 'not_reviewed'; 
-    
-    // Posibles valores: 'pending', 'paid', 'cash_agreed'
+    bool _hasReview = false; 
     String _paymentStatus = 'pending'; 
 
-    // Simulación de funciones de acción (solo imprimen para no romper el código)
     void _handleStripePayment() => print('Acción: Abrir Stripe Payment Sheet');
     void _handleCashPayment() => print('Acción: Registrar Pago en Efectivo y redirigir a Home');
+    
     Future<void> _handleReviewAction(Map<String, dynamic> walkData) async {
-      await showModalBottomSheet(
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        enableDrag: false,
-        context: context,
-        builder: (context) {
-          return Padding(
-            padding: MediaQuery.viewInsetsOf(context),
-            child: PopUpAddReviewWidget(
-              walkId: widget.walkId,
-              userTypeName: widget.userType == 'Dueño' ? walkData['walker_name'] : walkData['pet_name'],
-              reviewType: widget.userType == 'Dueño' ? 'Paseador' : 'Perro',
-            ),
-          );
-        },
-      );
-      // Llamar a safeSetState *después* de que el modal se cierra y el await termina.
-      safeSetState(() {}); 
+      // Determina el nombre del usuario/mascota para el pop-up
+      final reviewedName = widget.userType == 'Dueño' ? walkData['walker_name'] : walkData['pet_name'];
+
+      if (_hasReview) {
+        // Acción: VER RESEÑA
+        await showModalBottomSheet(
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          enableDrag: false,
+          context: context,
+          builder: (context) {
+            return Padding(
+              padding: MediaQuery.viewInsetsOf(context),
+              child: PopUpReviewDetailsWidget(
+                walkId: widget.walkId, 
+                reviewedName: reviewedName,
+              ),
+            );
+          },
+        );
+      } else {
+        // Acción: AGREGAR RESEÑA
+        await showModalBottomSheet(
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          enableDrag: false,
+          context: context,
+          builder: (context) {
+            return Padding(
+              padding: MediaQuery.viewInsetsOf(context),
+              child: PopUpAddReviewWidget(
+                walkId: widget.walkId,
+                userTypeName: reviewedName,
+                reviewType: widget.userType == 'Dueño' ? 'Paseador' : 'Perro',
+              ),
+            );
+          },
+        );
+      }
+      
+      // Después de cerrar CUALQUIERA de los modales, re-verifica el estado.
+      await _checkReviewStatus(); 
     }
+
     void _goToHome() => print('Acción: Volver al Home');
 
 
@@ -170,22 +211,26 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
   ) {
     final theme = FlutterFlowTheme.of(context);
     final List<Widget> buttons = [];
-    final isReviewed = _reviewStatus == 'reviewed';
+    final hasReview = _hasReview; 
     final isPaid = _paymentStatus == 'paid' || _paymentStatus == 'cash_agreed';
     
     // --- 1. BOTÓN DE RESEÑA (Común a ambos usuarios) ---
     final reviewButton = _buildActionButton(
       context: context,
-      text: isReviewed ? 'Ver Reseña' : 'Agregar Reseña',
-      onPressed: () => _handleReviewAction(walkData), // <-- CORREGIDO
+      // Texto dinámico basado en el estado
+      text: hasReview ? 'Ver Reseña' : 'Agregar Reseña',
+      
+      // La acción corregida (closure)
+      onPressed: () => _handleReviewAction(walkData), 
+      
       iconWidget: Icon(
-        isReviewed ? Icons.rate_review_rounded : Icons.reviews_sharp,
+        // Ícono dinámico basado en el estado
+        hasReview ? Icons.rate_review_rounded : Icons.reviews_sharp,
         color: Colors.white,
         size: 23,
       ),
-      // Si ya está revisado, cambia el color para indicar que es una acción secundaria
       isDisabled: false, 
-      color: isReviewed ? theme.secondaryText : theme.accent1,
+      color: hasReview ? theme.accent1 : theme.accent1,
     );
 
     if (userType == 'Dueño') {
@@ -243,7 +288,7 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
   }
 
 
-  @override
+@override
 Widget build(BuildContext context) {
   return GestureDetector(
     onTap: () {
@@ -255,56 +300,56 @@ Widget build(BuildContext context) {
       backgroundColor: FlutterFlowTheme.of(context).secondary,
       body: SafeArea(
         top: true,
-        child: FutureBuilder<Map<String, dynamic>?>(
-          future: fetchWalkInfoFromView(widget.walkId),
-          builder: (context, snapshot) {
-            // Mientras carga
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-
-            // Si hay error
-            if (snapshot.hasError) {
-              return Center(
-                child: Text('Error: ${snapshot.error}'),
-              );
-            }
-
-            // Si no hay datos
-            if (!snapshot.hasData) {
-              return const Center(
-                child: Text('No se encontraron datos'),
-              );
-            }
-
-            // Datos cargados correctamente
-            final walkData = snapshot.data!;
-
-            return Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Container(
-                  width: MediaQuery.sizeOf(context).width,
-                  height: MediaQuery.sizeOf(context).height * 0.1,
-                  decoration: BoxDecoration(
-                    color: FlutterFlowTheme.of(context).secondary,
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Container(
+              width: MediaQuery.sizeOf(context).width,
+              height: MediaQuery.sizeOf(context).height * 0.1,
+              decoration: BoxDecoration(
+                color: FlutterFlowTheme.of(context).secondary,
+              ),
+            ),
+            Expanded(
+              child: Container(
+                width: MediaQuery.sizeOf(context).width,
+                decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).tertiary,
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(0),
+                    bottomRight: Radius.circular(0),
+                    topLeft: Radius.circular(50),
+                    topRight: Radius.circular(50),
                   ),
                 ),
-                Expanded(
-                  child: Container(
-                    width: MediaQuery.sizeOf(context).width,
-                    decoration: BoxDecoration(
-                      color: FlutterFlowTheme.of(context).tertiary,
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(0),
-                        bottomRight: Radius.circular(0),
-                        topLeft: Radius.circular(50),
-                        topRight: Radius.circular(50),
-                      ),
-                    ),
-                    child: Column(
+                child: FutureBuilder<Map<String, dynamic>?>(
+                  future: fetchWalkInfoFromView(widget.walkId),
+                  builder: (context, snapshot) {
+                    // Mientras carga
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+
+                    // Si hay error
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Text('Error: ${snapshot.error}'),
+                      );
+                    }
+
+                    // Si no hay datos
+                    if (!snapshot.hasData) {
+                      return const Center(
+                        child: Text('No se encontraron datos'),
+                      );
+                    }
+
+                    // Datos cargados correctamente
+                    final walkData = snapshot.data!;
+
+                    return Column(
                       mainAxisSize: MainAxisSize.max,
                       children: [
                         Expanded(
@@ -352,7 +397,7 @@ Widget build(BuildContext context) {
                                     ),
                                   ),
                                   AutoSizeText(
-                                    '[paymentStatus]',
+                                    walkData['payment_status'],
                                     textAlign: TextAlign.center,
                                     minFontSize: 22,
                                     style: FlutterFlowTheme.of(context)
@@ -815,7 +860,7 @@ Widget build(BuildContext context) {
                                                   0.8,
                                               child: TextFormField(
                                                 controller: _model
-                                                    .nameDogOwnerInputTextController4..text = '${walkData['fee']}'.toString(),
+                                                    .nameDogOwnerInputTextController4..text = '\$${walkData['fee'].toString()}',
                                                 focusNode: _model
                                                     .nameDogOwnerInputFocusNode4,
                                                 autofocus: false,
@@ -965,12 +1010,12 @@ Widget build(BuildContext context) {
                           ),
                         ),
                       ],
-                    ),
-                  ),
+                    );
+                  },
                 ),
-              ],
-            );
-          },
+              ),
+            ),
+          ],
         ),
       ),
     ),
