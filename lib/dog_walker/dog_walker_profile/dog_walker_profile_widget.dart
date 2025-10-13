@@ -1,5 +1,6 @@
 import 'package:dalk/auth/supabase_auth/auth_util.dart';
 import 'package:dalk/common/payment_methods/payment_methods_widget.dart';
+import 'package:dalk/common/walk_payment_window/walk_payment_window_widget.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -400,10 +401,21 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                     hoverColor: Colors.transparent,
                                     highlightColor: Colors.transparent,
                                     onTap: () async {
-                                      context.pushReplacementNamed(
-                                        '_initialize', 
-                                        queryParameters: {'initialPage': 'walkerService'},
-                                      );  
+                                      // context.pushReplacementNamed(
+                                      //   '_initialize', 
+                                      //   queryParameters: {'initialPage': 'walkerService'},
+                                      // );  
+
+
+
+                                    // ESTO ES TEMPORAL
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => const WalkPaymentWindowWidget(walkId: 256, userType: 'Paseador',)),
+                                    );
+
+
+
                                     },
                                     child: Container(
                                       width: MediaQuery.sizeOf(context).width,

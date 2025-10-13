@@ -394,7 +394,7 @@ class _NonReviewedDogCardWidgetState extends State<NonReviewedDogCardWidget> {
                 height: 35,
                 decoration: const BoxDecoration(),
                 child: FFButtonWidget(
-                   onPressed: () async {
+                    onPressed: () async {
                       await showModalBottomSheet(
                         isScrollControlled: true,
                         backgroundColor: Colors.transparent,

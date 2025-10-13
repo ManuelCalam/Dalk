@@ -1,6 +1,7 @@
 
 import 'package:dalk/SubscriptionProvider.dart';
 import 'package:dalk/common/payment_methods/payment_methods_widget.dart';
+import 'package:dalk/common/walk_payment_window/walk_payment_window_widget.dart';
 import 'package:provider/provider.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
@@ -66,13 +67,13 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
               Container(
                 width: MediaQuery.sizeOf(context).width,
                 height: MediaQuery.sizeOf(context).height * 0.1,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Color(0xFF162C43),
                 ),
                 child: wrapWithModel(
                   model: _model.notificationContainerModel,
                   updateCallback: () => safeSetState(() {}),
-                  child: NotificationContainerWidget(),
+                  child: const NotificationContainerWidget(),
                 ),
               ),
               Expanded(
@@ -80,7 +81,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                   width: MediaQuery.sizeOf(context).width,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).tertiary,
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(0),
                       bottomRight: Radius.circular(0),
                       topLeft: Radius.circular(50),
@@ -93,26 +94,26 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                       wrapWithModel(
                         model: _model.goBackContainerModel,
                         updateCallback: () => safeSetState(() {}),
-                        child: GoBackContainerWidget(),
+                        child: const GoBackContainerWidget(),
                       ),
                       Expanded(
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 0.9,
-                            decoration: BoxDecoration(),
+                            decoration: const BoxDecoration(),
                             child: ListView(
                               padding: EdgeInsets.zero,
                               shrinkWrap: true,
                               scrollDirection: Axis.vertical,
                               children: [
                                 Align(
-                                  alignment: AlignmentDirectional(0, 0),
+                                  alignment: const AlignmentDirectional(0, 0),
                                   child: Container(
                                     width: 120,
                                     height: 120,
                                     clipBehavior: Clip.antiAlias,
-                                    decoration: BoxDecoration(
+                                    decoration: const BoxDecoration(
                                       shape: BoxShape.circle,
                                     ),
                                     child: Image.network(
@@ -145,7 +146,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                       ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 5, 0, 0),
                                   child: Text(
                                     isPremium ? 'Plan Premium' : 'Plan Gratuito',
@@ -172,7 +173,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 5, 0, 0),
                                   child: InkWell(
                                     splashColor: Colors.transparent,
@@ -202,9 +203,9 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                             flex: 8,
                                             child: Align(
                                               alignment:
-                                                  AlignmentDirectional(-1, 0),
+                                                  const AlignmentDirectional(-1, 0),
                                               child: Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(5, 0, 0, 0),
                                                 child: AutoSizeText(
                                                   isPremium ? "Revisa tus beneficios premium!" :
@@ -249,9 +250,9 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                           Flexible(
                                             child: Align(
                                               alignment:
-                                                  AlignmentDirectional(1, 0),
+                                                  const AlignmentDirectional(1, 0),
                                               child: Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(0, 0, 5, 0),
                                                 child: Icon(
                                                   Icons.chevron_right_outlined,
@@ -269,9 +270,9 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                   ),
                                 ),
                                 Align(
-                                  alignment: AlignmentDirectional(-1, 0),
+                                  alignment: const AlignmentDirectional(-1, 0),
                                   child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         0, 25, 0, 0),
                                     child: AutoSizeText(
                                       'Información personal',
@@ -301,7 +302,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(0, 5, 0, 0),
+                                  padding: const EdgeInsetsDirectional.fromSTEB(0, 5, 0, 0),
                                   child: InkWell(
                                     splashColor: Colors.transparent,
                                     focusColor: Colors.transparent,
@@ -319,7 +320,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                       decoration: BoxDecoration(
                                         color: FlutterFlowTheme.of(context)
                                             .alternate,
-                                        borderRadius: BorderRadius.only(
+                                        borderRadius: const BorderRadius.only(
                                           bottomLeft: Radius.circular(5),
                                           bottomRight: Radius.circular(5),
                                           topLeft: Radius.circular(5),
@@ -333,9 +334,9 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                         children: [
                                           Align(
                                             alignment:
-                                                AlignmentDirectional(-1, 0),
+                                                const AlignmentDirectional(-1, 0),
                                             child: Padding(
-                                              padding: EdgeInsetsDirectional
+                                              padding: const EdgeInsetsDirectional
                                                   .fromSTEB(8, 0, 0, 0),
                                               child: Icon(
                                                 Icons.account_circle_sharp,
@@ -349,9 +350,9 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                           Flexible(
                                             child: Align(
                                               alignment:
-                                                  AlignmentDirectional(-1, 0),
+                                                  const AlignmentDirectional(-1, 0),
                                               child: Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(8, 0, 0, 0),
                                                 child: Text(
                                                   'Mi perfil',
@@ -388,9 +389,9 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                           ),
                                           Align(
                                             alignment:
-                                                AlignmentDirectional(1, 0),
+                                                const AlignmentDirectional(1, 0),
                                             child: Padding(
-                                              padding: EdgeInsetsDirectional
+                                              padding: const EdgeInsetsDirectional
                                                   .fromSTEB(0, 0, 15, 0),
                                               child: InkWell(
                                                 splashColor: Colors.transparent,
@@ -419,7 +420,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 10, 0, 0),
                                   child: InkWell(
                                     splashColor: Colors.transparent,
@@ -429,7 +430,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                     onTap: () async {
                                       Navigator.push(
                                         context,
-                                        MaterialPageRoute(builder: (context) => PaymentMethodsWidget()),
+                                        MaterialPageRoute(builder: (context) => const PaymentMethodsWidget()),
                                       );
                                     },
                                     child: Container(
@@ -440,7 +441,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                       decoration: BoxDecoration(
                                         color: FlutterFlowTheme.of(context)
                                             .alternate,
-                                        borderRadius: BorderRadius.only(
+                                        borderRadius: const BorderRadius.only(
                                           bottomLeft: Radius.circular(5),
                                           bottomRight: Radius.circular(5),
                                           topLeft: Radius.circular(5),
@@ -452,7 +453,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                         children: [
                                           Padding(
                                             padding:
-                                                EdgeInsetsDirectional.fromSTEB(
+                                                const EdgeInsetsDirectional.fromSTEB(
                                                     8, 0, 0, 0),
                                             child: Icon(
                                               Icons.wallet_rounded,
@@ -465,9 +466,9 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                           Flexible(
                                             child: Align(
                                               alignment:
-                                                  AlignmentDirectional(-1, 0),
+                                                  const AlignmentDirectional(-1, 0),
                                               child: Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(8, 0, 0, 0),
                                                 child: Text(
                                                   'Métodos de pago',
@@ -504,9 +505,9 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                           ),
                                           Align(
                                             alignment:
-                                                AlignmentDirectional(1, 0),
+                                                const AlignmentDirectional(1, 0),
                                             child: Padding(
-                                              padding: EdgeInsetsDirectional
+                                              padding: const EdgeInsetsDirectional
                                                   .fromSTEB(0, 0, 15, 0),
                                               child: Icon(
                                                 Icons.arrow_forward_ios,
@@ -523,7 +524,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 10, 0, 0),
                                   child: InkWell(
                                     splashColor: Colors.transparent,
@@ -544,7 +545,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                       decoration: BoxDecoration(
                                         color: FlutterFlowTheme.of(context)
                                             .alternate,
-                                        borderRadius: BorderRadius.only(
+                                        borderRadius: const BorderRadius.only(
                                           bottomLeft: Radius.circular(5),
                                           bottomRight: Radius.circular(5),
                                           topLeft: Radius.circular(5),
@@ -556,7 +557,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                         children: [
                                           Padding(
                                             padding:
-                                                EdgeInsetsDirectional.fromSTEB(
+                                                const EdgeInsetsDirectional.fromSTEB(
                                                     8, 0, 0, 0),
                                             child: Icon(
                                               Icons.pets_outlined,
@@ -569,9 +570,9 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                           Flexible(
                                             child: Align(
                                               alignment:
-                                                  AlignmentDirectional(-1, 0),
+                                                  const AlignmentDirectional(-1, 0),
                                               child: Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(8, 0, 0, 0),
                                                 child: Text(
                                                   'Mis mascotas',
@@ -608,9 +609,9 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                           ),
                                           Align(
                                             alignment:
-                                                AlignmentDirectional(1, 0),
+                                                const AlignmentDirectional(1, 0),
                                             child: Padding(
-                                              padding: EdgeInsetsDirectional
+                                              padding: const EdgeInsetsDirectional
                                                   .fromSTEB(0, 0, 15, 0),
                                               child: InkWell(
                                                 splashColor: Colors.transparent,
@@ -619,10 +620,20 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                                 highlightColor:
                                                     Colors.transparent,
                                                 onTap: () async {
-                                                  context.pushNamed(
-                                                    '_initialize', 
-                                                    queryParameters: {'initialPage': 'petList'},
-                                                  );  
+                                                  // context.pushNamed(
+                                                  //   '_initialize', 
+                                                  //   queryParameters: {'initialPage': 'petList'},
+                                                  // );  
+
+                                                  // ESTO ES TEMPORAL
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(builder: (context) => const WalkPaymentWindowWidget(walkId: 256, userType: 'Dueño',)),
+                                                  );
+
+
+
+
                                                 },
                                                 child: Icon(
                                                   Icons.arrow_forward_ios,
@@ -641,9 +652,9 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                 ),
                                 
                                 Align(
-                                  alignment: AlignmentDirectional(-1, 0),
+                                  alignment: const AlignmentDirectional(-1, 0),
                                   child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         0, 25, 0, 0),
                                     child: AutoSizeText(
                                       'Soporte Técnico',
@@ -673,7 +684,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 5, 0, 0),
                                   child: Container(
                                     width: MediaQuery.sizeOf(context).width,
@@ -682,7 +693,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                     decoration: BoxDecoration(
                                       color: FlutterFlowTheme.of(context)
                                           .alternate,
-                                      borderRadius: BorderRadius.only(
+                                      borderRadius: const BorderRadius.only(
                                         bottomLeft: Radius.circular(5),
                                         bottomRight: Radius.circular(5),
                                         topLeft: Radius.circular(5),
@@ -694,7 +705,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                       children: [
                                         Padding(
                                           padding:
-                                              EdgeInsetsDirectional.fromSTEB(
+                                              const EdgeInsetsDirectional.fromSTEB(
                                                   8, 0, 0, 0),
                                           child: Icon(
                                             Icons.question_mark,
@@ -706,9 +717,9 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                         Flexible(
                                           child: Align(
                                             alignment:
-                                                AlignmentDirectional(-1, 0),
+                                                const AlignmentDirectional(-1, 0),
                                             child: Padding(
-                                              padding: EdgeInsetsDirectional
+                                              padding: const EdgeInsetsDirectional
                                                   .fromSTEB(8, 0, 0, 0),
                                               child: Text(
                                                 'Preguntas Frecuentes',
@@ -743,10 +754,10 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                           ),
                                         ),
                                         Align(
-                                          alignment: AlignmentDirectional(1, 0),
+                                          alignment: const AlignmentDirectional(1, 0),
                                           child: Padding(
                                             padding:
-                                                EdgeInsetsDirectional.fromSTEB(
+                                                const EdgeInsetsDirectional.fromSTEB(
                                                     0, 0, 15, 0),
                                             child: Icon(
                                               Icons.arrow_forward_ios,
@@ -762,7 +773,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 10, 0, 0),
                                   child: Container(
                                     width: MediaQuery.sizeOf(context).width,
@@ -771,7 +782,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                     decoration: BoxDecoration(
                                       color: FlutterFlowTheme.of(context)
                                           .alternate,
-                                      borderRadius: BorderRadius.only(
+                                      borderRadius: const BorderRadius.only(
                                         bottomLeft: Radius.circular(5),
                                         bottomRight: Radius.circular(5),
                                         topLeft: Radius.circular(5),
@@ -783,7 +794,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                       children: [
                                         Padding(
                                           padding:
-                                              EdgeInsetsDirectional.fromSTEB(
+                                              const EdgeInsetsDirectional.fromSTEB(
                                                   8, 0, 0, 0),
                                           child: Icon(
                                             Icons.error_outline,
@@ -795,9 +806,9 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                         Flexible(
                                           child: Align(
                                             alignment:
-                                                AlignmentDirectional(-1, 0),
+                                                const AlignmentDirectional(-1, 0),
                                             child: Padding(
-                                              padding: EdgeInsetsDirectional
+                                              padding: const EdgeInsetsDirectional
                                                   .fromSTEB(8, 0, 0, 0),
                                               child: Text(
                                                 'Acerca de nosotros',
@@ -833,10 +844,10 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                           ),
                                         ),
                                         Align(
-                                          alignment: AlignmentDirectional(1, 0),
+                                          alignment: const AlignmentDirectional(1, 0),
                                           child: Padding(
                                             padding:
-                                                EdgeInsetsDirectional.fromSTEB(
+                                                const EdgeInsetsDirectional.fromSTEB(
                                                     0, 0, 15, 0),
                                             child: Icon(
                                               Icons.arrow_forward_ios,
@@ -852,7 +863,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 30, 0, 0),
                                   child: FFButtonWidget(
                                     onPressed: () async {
@@ -870,11 +881,11 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                       height:
                                           MediaQuery.sizeOf(context).height *
                                               0.05,
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           0, 0, 0, 0),
                                       iconAlignment: IconAlignment.end,
                                       iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
+                                          const EdgeInsetsDirectional.fromSTEB(
                                               0, 0, 0, 0),
                                       color: FlutterFlowTheme.of(context)
                                           .secondary,
