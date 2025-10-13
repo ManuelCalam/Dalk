@@ -22,7 +22,7 @@ void onStart(ServiceInstance service) {
       desiredAccuracy: LocationAccuracy.high,
     );
 
-    final ref = FirebaseDatabase.instance.ref('walk_locations/$walkId');
+    final ref = FirebaseDatabase.instance.ref('dog_locations/$walkId');
     await ref.update({
       'lat': position.latitude,
       'lng': position.longitude,

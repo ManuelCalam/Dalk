@@ -13,6 +13,9 @@ import '/backend/supabase/supabase.dart';
 import 'backend/firebase/firebase_config.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
+import 'user_provider.dart';
+import 'user_prefs.dart';
+import 'package:provider/provider.dart';    
 import '/services/notification_service.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 
@@ -23,7 +26,7 @@ final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<Scaffol
 // HANDLER TOP-LEVEL SIMPLE (REQUERIDO)
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("Background notification: ${message.notification?.title}");
+  print("📱 Background notification: ${message.notification?.title}");
 }
 
 void main() async {
@@ -46,9 +49,30 @@ void main() async {
 
   Stripe.publishableKey = "pk_test_51S48646aB9DzvCSx9BqLEjUIcmpXvTuIU1elVEauQmFwOT2Ww3Sj2idqp148wcPsNWnbmtibCwCzgMjMfx02w08h00mNNCCfbB";  
 
+  final savedUser = await UserPrefs.getUser();
 
-  runApp(MyApp());
+   runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+      ],
+      child: MyAppWrapper(savedUser: savedUser),
+    ),
+  );
+}
+class MyAppWrapper extends StatelessWidget {
+  final UserModel? savedUser;
+  const MyAppWrapper({super.key, this.savedUser});
 
+  @override
+  Widget build(BuildContext context) {
+    // Si había un usuario guardado, lo ponemos en Provider al iniciar
+    if (savedUser != null) {
+      context.read<UserProvider>().setUser(savedUser!);
+    }
+
+    return MyApp();
+  }
 }
 
 class MyApp extends StatefulWidget {

@@ -8,6 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'home_dog_owner_model.dart';
 export 'home_dog_owner_model.dart';
+import '/user_provider.dart';
+import '/user_prefs.dart';
+import '/backend/supabase/supabase.dart';
+import '/auth/supabase_auth/auth_util.dart';
+import 'package:provider/provider.dart';
+
 
 class HomeDogOwnerWidget extends StatefulWidget {
   const HomeDogOwnerWidget({super.key});
@@ -28,7 +34,11 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => HomeDogOwnerModel());
+    //recarga el cached del usuario
+    context.read<UserProvider>().loadUser();
+    //context.read<UserProvider>().loadUser(forceRefresh: true);
   }
+  
 
   @override
   void dispose() {
@@ -133,22 +143,25 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                     Align(
                       alignment: AlignmentDirectional(-1.0, 0.0),
                       child: Padding(
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(30.0, 0.0, 0.0, 0.0),
-                        child: AutoSizeText(
-                          'Hola User!',
-                          textAlign: TextAlign.start,
-                          maxLines: 1,
-                          minFontSize: 18.0,
-                          style:
-                              FlutterFlowTheme.of(context).bodyMedium.override(
+                        padding: const EdgeInsetsDirectional.fromSTEB(30.0, 0.0, 0.0, 0.0),
+                        child: Builder(
+                          builder: (context) {
+                            final user = context.watch<UserProvider>().user;
+                            final nombre = (user?.name?.split(" ").first) ?? "User";
+
+                            return AutoSizeText(
+                              'Hola $nombre!',
+                              textAlign: TextAlign.start,
+                              maxLines: 1,
+                              minFontSize: 18.0,
+                              style: FlutterFlowTheme.of(context).bodyMedium.override(
                                     font: GoogleFonts.lexend(
                                       fontWeight: FontWeight.bold,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .bodyMedium
                                           .fontStyle,
                                     ),
-                                    color: Color(0xFFCCDBFF),
+                                    color: const Color(0xFFCCDBFF),
                                     fontSize: 32.0,
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.bold,
@@ -156,6 +169,8 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                         .bodyMedium
                                         .fontStyle,
                                   ),
+                            );
+                          },
                         ),
                       ),
                     ),

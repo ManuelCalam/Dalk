@@ -17,6 +17,7 @@ export 'serialization_util.dart';
 
 const kTransitionInfoKey = '__transition_info__';
 
+
 GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
 class AppStateNotifier extends ChangeNotifier {
@@ -81,9 +82,9 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         final loggedIn = appStateNotifier.loggedIn;
 
         // Si no está logeado mandar al usuario a la ventana del login
-        // if (!loggedIn && state.matchedLocation != LoginWidget.routePath) {
-        //   return LoginWidget.routePath;
-        // }
+        // // if (!loggedIn && state.matchedLocation != LoginWidget.routePath) {
+        // //   return LoginWidget.routePath;
+        // // }
 
         // Si está logeado y trata de entrar, mándalo a raíz con navBar
         if (loggedIn && state.matchedLocation == LoginWidget.routePath) {
@@ -284,7 +285,7 @@ extension NavigationExtensions on BuildContext {
     Object? extra,
     bool ignoreRedirect = false,
   }) =>
-      !mounted || GoRouter.of(this).shouldRedirect(ignoreRedirect)
+      !mounted || GoRouterExtensions(GoRouter.of(this)).shouldRedirect(ignoreRedirect)
           ? null
           : goNamed(
               name,
@@ -301,7 +302,7 @@ extension NavigationExtensions on BuildContext {
     Object? extra,
     bool ignoreRedirect = false,
   }) =>
-      !mounted || GoRouter.of(this).shouldRedirect(ignoreRedirect)
+      !mounted || GoRouterExtensions(GoRouter.of(this)).shouldRedirect(ignoreRedirect)
           ? null
           : pushNamed(
               name,

@@ -19,6 +19,9 @@ import 'sing_in_dog_owner_model.dart';
 export 'sing_in_dog_owner_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import '/user_provider.dart';
+import '/user_prefs.dart';
+import 'package:provider/provider.dart';
 
 class SingInDogOwnerWidget extends StatefulWidget {
   const SingInDogOwnerWidget({super.key});
@@ -147,6 +150,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -265,22 +269,22 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                               ),
                             ),
                             Align(
-  alignment: AlignmentDirectional(0, 0),
-  child: Padding(
-    padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
-    child: GestureDetector(
-      onTap: () => _showImagePickerOptions(context, true), // true = dueño
-      child: CircleAvatar(
-        radius: 60,
-        backgroundImage: _ownerImage != null
-            ? FileImage(_ownerImage!)
-            : const NetworkImage(
-                'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/sign/profile_pics/fondo.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85ZTI2NTk2MC1mMDYzLTQ2Y2YtYjQ2MS1iMzllNjYwOThjNzUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9maWxlX3BpY3MvZm9uZG8uanBnIiwiaWF0IjoxNzU3MzE5NTMyLCJleHAiOjE3NTk5MTE1MzJ9.l6Wcm5GtTl9tsqdcIKRT1VHlvLsZH6KuZsK0A9_vDuU',
-              ) as ImageProvider,
-      ),
-    ),
-  ),
-),
+                              alignment: AlignmentDirectional(0, 0),
+                              child: Padding(
+                                padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                child: GestureDetector(
+                                  onTap: () => _showImagePickerOptions(context, true), // true = dueño
+                                  child: CircleAvatar(
+                                    radius: 60,
+                                    backgroundImage: _ownerImage != null
+                                        ? FileImage(_ownerImage!)
+                                        : const NetworkImage(
+                                            'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/sign/profile_pics/fondo.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85ZTI2NTk2MC1mMDYzLTQ2Y2YtYjQ2MS1iMzllNjYwOThjNzUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9maWxlX3BpY3MvZm9uZG8uanBnIiwiaWF0IjoxNzU3MzE5NTMyLCJleHAiOjE3NTk5MTE1MzJ9.l6Wcm5GtTl9tsqdcIKRT1VHlvLsZH6KuZsK0A9_vDuU',
+                                          ) as ImageProvider,
+                                  ),
+                                ),
+                              ),
+                            ),
                             Expanded(
                               child: Padding(
                                 padding:
@@ -2564,10 +2568,10 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
 
                                                   setState(() => isRegistering = true);
 
-String? ownerImageUrl;
-if (_ownerImage != null) {
-  ownerImageUrl = await _uploadOwnerImage(currentUserUid, _ownerImage!);
-}
+                                                  String? ownerImageUrl;
+                                                  if (_ownerImage != null) {
+                                                    ownerImageUrl = await _uploadOwnerImage(currentUserUid, _ownerImage!);
+                                                  }
 
                                                   // Registro en la tabla users
                                                   try {

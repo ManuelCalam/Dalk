@@ -15,6 +15,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'scheduled_walk_container_model.dart';
 export 'scheduled_walk_container_model.dart';
 
+
 class ScheduledWalkContainerWidget extends StatefulWidget {
 
   
@@ -125,7 +126,7 @@ class _ScheduledWalkContainerWidgetState
   // Método aplicado al paseador para mandar su ubicación
   void _startSendingLocation() async {
     const interval = Duration(seconds: 6);
-    final ref = FirebaseDatabase.instance.ref('walk_locations/${widget.walkId}');
+    final ref = FirebaseDatabase.instance.ref('dog_locations/${widget.walkId}');
 
     _locationTimer = Timer.periodic(interval, (timer) async {
       final hasPermission = await _handleLocationPermission();
@@ -184,7 +185,7 @@ class _ScheduledWalkContainerWidgetState
 
   // Método aplicado para el dueño para obtener la ubicación del paseador
   void _listenToWalkerLocation() {
-    final ref = FirebaseDatabase.instance.ref('walk_locations/${widget.walkId}');
+    final ref = FirebaseDatabase.instance.ref('dog_locations/${widget.walkId}');
 
     _locationSubscription = ref.onValue.listen((event) async {
       final data = event.snapshot.value as Map?;

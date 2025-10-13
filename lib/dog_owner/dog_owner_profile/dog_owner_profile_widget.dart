@@ -1,4 +1,4 @@
-
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dalk/SubscriptionProvider.dart';
 import 'package:dalk/common/payment_methods/payment_methods_widget.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +15,12 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'dog_owner_profile_model.dart';
 export 'dog_owner_profile_model.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import '/user_provider.dart';
+import '/user_prefs.dart';
+import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class DogOwnerProfileWidget extends StatefulWidget {
   
@@ -29,6 +35,12 @@ class DogOwnerProfileWidget extends StatefulWidget {
 
 class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
   late DogOwnerProfileModel _model;
+
+  //imagen
+  File? _ownerImage;
+  File? _walkerImage;
+  File? _tempImage;
+  final ImagePicker _picker = ImagePicker();
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -50,6 +62,9 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
   @override
   Widget build(BuildContext context) {
     final isPremium = context.watch<SubscriptionProvider>().isPremium;
+    final user = context.watch<UserProvider>().user;
+    final nombre = (user?.name?.split(" ").first) ?? "User";
+    final photoUrl = user?.photoUrl ?? "";
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -108,21 +123,18 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                               children: [
                                 Align(
                                   alignment: AlignmentDirectional(0, 0),
-                                  child: Container(
-                                    width: 120,
-                                    height: 120,
-                                    clipBehavior: Clip.antiAlias,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Image.network(
-                                      'https://images.unsplash.com/photo-1495567720989-cebdbdd97913?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxfHxzdW5zZXR8ZW58MHx8fHwxNzQ3MDA2NTczfDA&ixlib=rb-4.1.0&q=80&w=1080',
-                                      fit: BoxFit.cover,
+                                  child: Padding(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                    child: CircleAvatar(
+                                      radius: 60,
+                                      //funcion de la imagen
+                                      backgroundImage: photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+                                      child: photoUrl.isEmpty ? const Icon(Icons.person, size: 60) : null,
                                     ),
                                   ),
                                 ),
-                                Text(
-                                  'Nombre',
+                                AutoSizeText(
+                                '$nombre',
                                   textAlign: TextAlign.center,
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
@@ -860,6 +872,23 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                       await authManager.signOut();
                                       GoRouter.of(context)
                                           .clearRedirectLocation();
+                                      
+                                      // 4️⃣ Limpiar Provider de usuario
+                                      context.read<UserProvider>().clearUser();
+
+                                      // 5️⃣ Revisar qué hay en SharedPreferences antes de borrar
+                                      final prefs = await SharedPreferences.getInstance();
+                                      final userData = prefs.getString('user_data');
+                                      debugPrint("Antes de borrar user_data: $userData");
+
+                                      // 6️⃣ Borrar solo la información del usuario
+                                      await prefs.remove('user_data');
+                                      debugPrint("user_data borrado correctamente");
+
+                                      // 7️⃣ Verificar que se borró
+                                      final checkData = prefs.getString('user_data');
+                                      debugPrint("Después de borrar user_data: $checkData"); // debería ser null
+                                      
 
                                       context.goNamedAuth(LoginWidget.routeName,
                                           context.mounted);
