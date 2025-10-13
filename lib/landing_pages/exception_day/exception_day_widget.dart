@@ -10,11 +10,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '/backend/supabase/supabase.dart';
+import '/auth/supabase_auth/auth_util.dart';
+
+
 
 import 'exception_day_model.dart';
 export 'exception_day_model.dart';
 
 class ExceptionDayWidget extends StatefulWidget {
+  
   const ExceptionDayWidget({super.key});
 
   static String routeName = 'exceptionDay';
@@ -26,8 +31,46 @@ class ExceptionDayWidget extends StatefulWidget {
 
 class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
   late ExceptionDayModel _model;
+  String? walkerId = currentUserUid;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  Future<void> _insertRestDay() async {
+    if (_model.datePicked1 == null || _model.workZoneInputTextController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Selecciona la fecha y la zona.')),
+      );
+      return;
+    }
+
+    if (!_model.wilDogWalkerWorkSwitchValue! && (_model.datePicked2 == null || _model.datePicked3 == null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Selecciona la hora de inicio y fin.')),
+      );
+      return;
+    }
+
+    try {
+      await Supabase.instance.client.from('walker_exception_days').insert({
+        'walker_id': walkerId,
+        'rest_date': _model.datePicked1!.toIso8601String(),
+        'zone': _model.workZoneInputTextController.text,
+        'is_full_day': _model.wilDogWalkerWorkSwitchValue!,
+        'start_time': _model.wilDogWalkerWorkSwitchValue! ? null : _model.datePicked2!.toIso8601String(),
+        'end_time': _model.wilDogWalkerWorkSwitchValue! ? null : _model.datePicked3!.toIso8601String(),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Día de descanso guardado correctamente ✅')),
+      );
+
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al guardar: $e')),
+      );
+    }
+  }
 
   @override
   void initState() {
@@ -454,7 +497,9 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                                                         0,
                                                                         0),
                                                             child: AutoSizeText(
-                                                              'Fecha',
+                                                              _model.datePicked1 == null
+                    ? 'Seleccionar fecha'
+                    : '${_model.datePicked1!.day}/${_model.datePicked1!.month}/${_model.datePicked1!.year}',
                                                               textAlign:
                                                                   TextAlign
                                                                       .start,
@@ -516,7 +561,12 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                                           InputDecoration(
                                                         isDense: true,
                                                         labelText:
-                                                            'Zona de Paseo',
+                                                           'Zona de Paseo',
+                                                        hintText:
+                                                            _model.workZoneInputTextController?.text ==
+                                                                    ''
+                                                                ? _model.workZoneInputTextController!.text
+                                                                : '',
                                                         labelStyle:
                                                             FlutterFlowTheme.of(
                                                                     context)
@@ -725,8 +775,10 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                                                 highlightColor:
                                                                     Colors
                                                                         .transparent,
-                                                                onTap:
-                                                                    () async {
+                                                                onTap: _model.wilDogWalkerWorkSwitchValue!
+    ? null
+    //////////////////////////////////////////////
+                                                                    :() async {
                                                                   await showModalBottomSheet<
                                                                           bool>(
                                                                       context:
@@ -831,7 +883,10 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                                                               0),
                                                                           child:
                                                                               AutoSizeText(
-                                                                            'Hora',
+                                                                            _model.datePicked2 == null
+    ? 'Hora'
+    : dateTimeFormat('jm', _model.datePicked2),
+                                                                            
                                                                             textAlign:
                                                                                 TextAlign.start,
                                                                             maxLines:
@@ -910,6 +965,7 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                                                           0,
                                                                           0,
                                                                           0),
+                                                                          
                                                               child: InkWell(
                                                                 splashColor: Colors
                                                                     .transparent,
@@ -920,8 +976,9 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                                                 highlightColor:
                                                                     Colors
                                                                         .transparent,
-                                                                onTap:
-                                                                    () async {
+                                                                onTap: _model.wilDogWalkerWorkSwitchValue!
+    ? null
+                                                                    :() async {
                                                                   await showModalBottomSheet<
                                                                           bool>(
                                                                       context:
@@ -1026,7 +1083,9 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                                                               0),
                                                                           child:
                                                                               AutoSizeText(
-                                                                            'Hora',
+                                                                            _model.datePicked3 == null
+    ? 'Hora'
+    : dateTimeFormat('jm', _model.datePicked3),
                                                                             textAlign:
                                                                                 TextAlign.start,
                                                                             maxLines:
@@ -1062,11 +1121,7 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                                   padding: EdgeInsetsDirectional
                                                       .fromSTEB(0, 18, 0, 18),
                                                   child: FFButtonWidget(
-                                                    onPressed: () async {
-                                                      context.pushNamed(
-                                                          HomeDogOwnerWidget
-                                                              .routeName);
-                                                    },
+                                                    onPressed: _insertRestDay,
                                                     text: 'Guardar',
                                                     options: FFButtonOptions(
                                                       width: 360,

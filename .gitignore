@@ -120,3 +120,5 @@ Thumbs.db
 # ----------------------------
 firebase/functions/lib/
 firebase/functions/node_modules/
+firebase/functions
+firebase/smartpaws
