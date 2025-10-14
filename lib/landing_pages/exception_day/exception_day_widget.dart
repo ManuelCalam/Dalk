@@ -33,9 +33,19 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
   late ExceptionDayModel _model;
   String? walkerId = currentUserUid;
 
+  final timeFormat = DateFormat('HH:mm:ss');
+
+
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   Future<void> _insertRestDay() async {
+    final startTime = _model.wilDogWalkerWorkSwitchValue!
+      ? null
+      : timeFormat.format(_model.datePicked2!);
+
+  final endTime = _model.wilDogWalkerWorkSwitchValue!
+      ? null
+      : timeFormat.format(_model.datePicked3!);
     if (_model.datePicked1 == null || _model.workZoneInputTextController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Selecciona la fecha y la zona.')),
@@ -56,9 +66,12 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
         'rest_date': _model.datePicked1!.toIso8601String(),
         'zone': _model.workZoneInputTextController.text,
         'is_full_day': _model.wilDogWalkerWorkSwitchValue!,
-        'start_time': _model.wilDogWalkerWorkSwitchValue! ? null : _model.datePicked2!.toIso8601String(),
-        'end_time': _model.wilDogWalkerWorkSwitchValue! ? null : _model.datePicked3!.toIso8601String(),
+        'start_time': startTime,
+        'end_time': endTime,
       });
+
+
+  
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Día de descanso guardado correctamente ✅')),
