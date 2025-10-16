@@ -7,15 +7,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'auth/supabase_auth/supabase_user_provider.dart';
 import 'auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import 'backend/firebase/firebase_config.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
-import 'user_provider.dart';
-import 'user_prefs.dart';
-import 'package:provider/provider.dart';    
+import 'user_provider.dart'; 
 import '/services/notification_service.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 
@@ -49,31 +48,17 @@ void main() async {
 
   Stripe.publishableKey = "pk_test_51S48646aB9DzvCSx9BqLEjUIcmpXvTuIU1elVEauQmFwOT2Ww3Sj2idqp148wcPsNWnbmtibCwCzgMjMfx02w08h00mNNCCfbB";  
 
-  final savedUser = await UserPrefs.getUser();
-
-   runApp(
+  runApp(
     MultiProvider(
       providers: [
+        // UserProvider siempre disponible
         ChangeNotifierProvider(create: (_) => UserProvider()),
       ],
-      child: MyAppWrapper(savedUser: savedUser),
+      child: MyApp(),
     ),
   );
 }
-class MyAppWrapper extends StatelessWidget {
-  final UserModel? savedUser;
-  const MyAppWrapper({super.key, this.savedUser});
 
-  @override
-  Widget build(BuildContext context) {
-    // Si había un usuario guardado, lo ponemos en Provider al iniciar
-    if (savedUser != null) {
-      context.read<UserProvider>().setUser(savedUser!);
-    }
-
-    return MyApp();
-  }
-}
 
 class MyApp extends StatefulWidget {
   @override
@@ -91,6 +76,9 @@ class _MyAppState extends State<MyApp> {
   late Stream<BaseAuthUser> userStream;
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
+  
+  // Flag para asegurar que la caché solo se carga una vez al inicio
+  bool _isCacheLoaded = false;
 
   String getRoute([RouteMatch? routeMatch]) {
     final RouteMatch lastMatch =
@@ -123,6 +111,17 @@ class _MyAppState extends State<MyApp> {
     userStream = dalkSupabaseUserStream()
       ..listen((user) {
         _appStateNotifier.update(user);
+        
+        // Cargar caché de usuario si existe un UID y la caché no ha sido cargada
+        if (user.uid != null && !_isCacheLoaded) {
+             context.read<UserProvider>().loadUser();
+             _isCacheLoaded = true; // Marca como cargado
+        } else if (user.uid == null) {
+            // Si el usuario no está logueado, limpiamos el provider por si acaso
+            context.read<UserProvider>().clearUser();
+            _isCacheLoaded = false;
+        }
+
         // Actualizar token FCM cuando hay usuario logueado
         if (user.uid != null) {
           notificationService.updateFcmToken(user.uid!);
@@ -144,42 +143,45 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     // Use StreamBuilder to listen for auth state changes
-    return StreamBuilder<AuthState>(stream: Supabase.instance.client.auth.onAuthStateChange, builder: (context, snapshot) {
-      // Check if a user session exists
-      final isAuthenticated = snapshot.data?.session?.user != null;
+    return StreamBuilder<AuthState>(
+      stream: Supabase.instance.client.auth.onAuthStateChange, 
+      builder: (context, snapshot) {
+        // Check if a user session exists
+        final isAuthenticated = snapshot.data?.session?.user != null;
 
-      // Conditional provider creation based on auth state
-      Widget appRouter = MaterialApp.router(
-        debugShowCheckedModeBanner: false,
-        title: 'Dalk',
-        scaffoldMessengerKey: scaffoldMessengerKey,
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [Locale('en', '')],
-        theme: ThemeData(
-          brightness: Brightness.light,
-          useMaterial3: false,
-        ),
-        darkTheme: ThemeData(
-          brightness: Brightness.dark,
-          useMaterial3: false,
-        ),
-        themeMode: _themeMode,
-        routerConfig: _router,
-      );
-
-      if (isAuthenticated) {
-      // Wrap the router with the provider only if authenticated
-        return ChangeNotifierProvider(
-          create: (context) => SubscriptionProvider(Supabase.instance.client),
-          child: appRouter,
+        // Conditional provider creation based on auth state
+        Widget appRouter = MaterialApp.router(
+          debugShowCheckedModeBanner: false,
+          title: 'Dalk',
+          scaffoldMessengerKey: scaffoldMessengerKey,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('en', '')],
+          theme: ThemeData(
+            brightness: Brightness.light,
+            useMaterial3: false,
+          ),
+          darkTheme: ThemeData(
+            brightness: Brightness.dark,
+            useMaterial3: false,
+          ),
+          themeMode: _themeMode,
+          routerConfig: _router,
         );
-      } else {
-        return appRouter;
+
+        if (isAuthenticated) {
+          // Wrap the router with the SubscriptionProvider only if authenticated
+          return ChangeNotifierProvider(
+            create: (context) => SubscriptionProvider(Supabase.instance.client),
+            child: appRouter,
+          );
+        } else {
+          return appRouter;
+        }
       }
-    });
+    );
   }
 }

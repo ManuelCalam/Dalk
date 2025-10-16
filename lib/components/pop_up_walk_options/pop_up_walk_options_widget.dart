@@ -502,11 +502,11 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
             mainAxisSize: MainAxisSize.max,
             children: [
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0, 15, 0, 0),
+                padding: const EdgeInsetsDirectional.fromSTEB(0, 15, 0, 0),
                 child: Container(
                   width: MediaQuery.sizeOf(context).width * 0.92,
                   height: MediaQuery.sizeOf(context).height * 0.05,
-                  decoration: BoxDecoration(),
+                  decoration: const BoxDecoration(),
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     children: [
@@ -524,7 +524,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                       ),
                       Expanded(
                         child: Align(
-                          alignment: AlignmentDirectional(1, 0),
+                          alignment: const AlignmentDirectional(1, 0),
                           child: FlutterFlowIconButton(
                             borderRadius: 8,
                             buttonSize: 40,
@@ -546,10 +546,10 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
               ),
               Expanded(
                 child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 20),
+                  padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 20),
                   child: Container(
                     width: MediaQuery.sizeOf(context).width * 0.9,
-                    decoration: BoxDecoration(),
+                    decoration: const BoxDecoration(),
                     child: SingleChildScrollView(
                       primary: false,
                       child: Column(
@@ -559,7 +559,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                             width: 120,
                             height: 120,
                             clipBehavior: Clip.antiAlias,
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               shape: BoxShape.circle,
                             ),
                             child: Image.network(
@@ -604,7 +604,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                                 ),
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                            padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                             child: Container(
                               width: MediaQuery.sizeOf(context).width,
                               height: MediaQuery.sizeOf(context).height * 0.065,
@@ -616,9 +616,9 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Align(
-                                    alignment: AlignmentDirectional(-1, 0),
+                                    alignment: const AlignmentDirectional(-1, 0),
                                     child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           10, 0, 0, 0),
                                       child: Icon(
                                         Icons.watch_sharp,
@@ -629,7 +629,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                                   ),
                                   Padding(
                                     padding:
-                                        EdgeInsetsDirectional.fromSTEB(8, 0, 0, 0),
+                                        const EdgeInsetsDirectional.fromSTEB(8, 0, 0, 0),
                                     child: AutoSizeText(
                                       time,
                                       maxLines: 1,
@@ -659,7 +659,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                            padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                             child: Container(
                               width: MediaQuery.sizeOf(context).width,
                               height: MediaQuery.sizeOf(context).height * 0.065,
@@ -669,14 +669,14 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                               ),
                               child: Padding(
                                 padding:
-                                    EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                    const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Align(
-                                      alignment: AlignmentDirectional(-1, 0),
+                                      alignment: const AlignmentDirectional(-1, 0),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(
                                             10, 0, 0, 0),
                                         child: Icon(
                                           Icons.calendar_month,
@@ -687,7 +687,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                                       ),
                                     ),
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           8, 0, 0, 0),
                                       child: AutoSizeText(
                                         date,
@@ -720,7 +720,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                            padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                             child: Container(
                               width: MediaQuery.sizeOf(context).width,
                               constraints: BoxConstraints(
@@ -733,16 +733,16 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                               ),
                               child: Padding(
                                 padding:
-                                    EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                    const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Align(
-                                      alignment: AlignmentDirectional(-1, 0),
+                                      alignment: const AlignmentDirectional(-1, 0),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(
                                             10, 0, 0, 0),
                                         child: Icon(
                                           Icons.home_rounded,
@@ -754,13 +754,13 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                                     ),
                                     Flexible(
                                       child: Align(
-                                        alignment: AlignmentDirectional(-1, 0),
+                                        alignment: const AlignmentDirectional(-1, 0),
                                         child: Column(
                                           mainAxisSize: MainAxisSize.max,
                                           children: [
                                             Padding(
                                               padding:
-                                                  EdgeInsetsDirectional.fromSTEB(
+                                                  const EdgeInsetsDirectional.fromSTEB(
                                                       8, 0, 10, 0),
                                               child: AutoSizeText(
                                                 address,
@@ -801,7 +801,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                            padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                             child: Container(
                               width: MediaQuery.sizeOf(context).width,
                               constraints: BoxConstraints(
@@ -814,16 +814,16 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                               ),
                               child: Padding(
                                 padding:
-                                    EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                    const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Align(
-                                      alignment: AlignmentDirectional(-1, 0),
+                                      alignment: const AlignmentDirectional(-1, 0),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(
                                             10, 0, 0, 0),
                                         child: Icon(
                                           Icons.timer,
@@ -835,13 +835,13 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                                     ),
                                     Flexible(
                                       child: Align(
-                                        alignment: AlignmentDirectional(-1, 0),
+                                        alignment: const AlignmentDirectional(-1, 0),
                                         child: Column(
                                           mainAxisSize: MainAxisSize.max,
                                           children: [
                                             Padding(
                                               padding:
-                                                  EdgeInsetsDirectional.fromSTEB(
+                                                  const EdgeInsetsDirectional.fromSTEB(
                                                       8, 0, 10, 0),
                                               child: AutoSizeText(
                                                 '$duration minutos',
@@ -882,7 +882,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                            padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                             child: Container(
                               width: MediaQuery.sizeOf(context).width,
                               constraints: BoxConstraints(
@@ -895,16 +895,16 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                               ),
                               child: Padding(
                                 padding:
-                                    EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                    const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Align(
-                                      alignment: AlignmentDirectional(-1, 0),
+                                      alignment: const AlignmentDirectional(-1, 0),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(
                                             10, 0, 0, 0),
                                         child: FaIcon(
                                           FontAwesomeIcons.solidHandshake,
@@ -916,13 +916,13 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                                     ),
                                     Flexible(
                                       child: Align(
-                                        alignment: AlignmentDirectional(-1, 0),
+                                        alignment: const AlignmentDirectional(-1, 0),
                                         child: Column(
                                           mainAxisSize: MainAxisSize.max,
                                           children: [
                                             Padding(
                                               padding:
-                                                  EdgeInsetsDirectional.fromSTEB(
+                                                  const EdgeInsetsDirectional.fromSTEB(
                                                       8, 0, 10, 0),
                                               child: AutoSizeText(
                                                 instructions,
@@ -963,7 +963,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                            padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                             child: Container(
                               width: MediaQuery.sizeOf(context).width,
                               constraints: BoxConstraints(
@@ -976,16 +976,16 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                               ),
                               child: Padding(
                                 padding:
-                                    EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                    const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Align(
-                                      alignment: AlignmentDirectional(-1, 0),
+                                      alignment: const AlignmentDirectional(-1, 0),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(
                                             10, 0, 0, 0),
                                         child: Icon(
                                           Icons.monetization_on_rounded,
@@ -997,13 +997,13 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                                     ),
                                     Flexible(
                                       child: Align(
-                                        alignment: AlignmentDirectional(-1, 0),
+                                        alignment: const AlignmentDirectional(-1, 0),
                                         child: Column(
                                           mainAxisSize: MainAxisSize.max,
                                           children: [
                                             Padding(
                                               padding:
-                                                  EdgeInsetsDirectional.fromSTEB(
+                                                  const EdgeInsetsDirectional.fromSTEB(
                                                       8, 0, 10, 0),
                                               child: AutoSizeText(
                                                 fee,
@@ -1044,9 +1044,9 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                             ),
                           ),
                           Align(
-                            alignment: AlignmentDirectional(-1, 0),
+                            alignment: const AlignmentDirectional(-1, 0),
                             child: Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(0, 18, 0, 10),
+                              padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 10),
                               child: Text(
                                 'Opciones de viaje',
                                 style: FlutterFlowTheme.of(context)

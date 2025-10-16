@@ -207,13 +207,13 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
               Container(
                 width: MediaQuery.sizeOf(context).width,
                 height: MediaQuery.sizeOf(context).height * 0.1,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Color(0xFF162C43),
                 ),
                 child: wrapWithModel(
                   model: _model.notificationContainerModel,
                   updateCallback: () => safeSetState(() {}),
-                  child: NotificationContainerWidget(),
+                  child: const NotificationContainerWidget(),
                 ),
               ),
               Expanded(
@@ -221,7 +221,7 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
                   width: MediaQuery.sizeOf(context).width,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).tertiary,
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(0),
                       bottomRight: Radius.circular(0),
                       topLeft: Radius.circular(50),
@@ -234,14 +234,14 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
                       wrapWithModel(
                         model: _model.goBackContainerModel,
                         updateCallback: () => safeSetState(() {}),
-                        child: GoBackContainerWidget(),
+                        child: const GoBackContainerWidget(),
                       ),
                       Expanded(
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 0.9,
-                            decoration: BoxDecoration(),
+                            decoration: const BoxDecoration(),
                             child: ListView(
                               padding: EdgeInsets.zero,
                               shrinkWrap: true,
@@ -374,7 +374,7 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
                                     await openSetupPaymentSheet(context);
                                   },
                                   child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                                    padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
                                     child: Container(
                                       width: 100,
                                       decoration: BoxDecoration(
@@ -382,13 +382,13 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
                                         borderRadius: BorderRadius.circular(20),
                                       ),
                                       child: Padding(
-                                        padding: EdgeInsets.all(17),
+                                        padding: const EdgeInsets.all(17),
                                         child: Column(
                                           mainAxisSize: MainAxisSize.max,
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
                                             Align(
-                                              alignment: AlignmentDirectional(0, 0),
+                                              alignment: const AlignmentDirectional(0, 0),
                                               child: Icon(
                                                 Icons.add_card_rounded,
                                                 color: FlutterFlowTheme.of(context).primary,

@@ -1,17 +1,20 @@
 import 'package:dalk/auth/supabase_auth/auth_util.dart';
-import 'package:dalk/backend/supabase/supabase.dart';
-import 'package:dalk/flutter_flow/flutter_flow_util.dart';
-import 'package:dalk/index.dart';
+import 'package:dalk/backend/supabase/database/database.dart';
+import 'package:dalk/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
+import 'package:dalk/dog_owner/set_walk_schedule/set_walk_schedule_widget.dart';
+import 'package:dalk/dog_owner/walks_dog_owner/walks_dog_owner_widget.dart';
+
 import '/components/pop_up_dog_walker_profile/pop_up_dog_walker_profile_widget.dart';
+import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 export 'find_dog_walker_card_model.dart';
-import '/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
-
-
 
 class FindDogWalkerCardWidget extends StatelessWidget {
   final String nombre;
@@ -28,7 +31,6 @@ class FindDogWalkerCardWidget extends StatelessWidget {
   final bool recomendado;
 
   const FindDogWalkerCardWidget({
-    Key? key,
     required this.nombre,
     required this.precio,
     required this.calificacion,
@@ -41,142 +43,209 @@ class FindDogWalkerCardWidget extends StatelessWidget {
     required this.walkDuration,
     required this.instructions,
     this.recomendado = false,
-    // Key? key, required bool recomendado,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: const AlignmentDirectional(-1, -1),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 5),
-        child: Container(
-          //color: recomendado ? Colors.amber.shade50 : Colors.white,
-          width: MediaQuery.sizeOf(context).width,
-          height: MediaQuery.sizeOf(context).height * 0.12,
-          decoration: BoxDecoration(
-            color: FlutterFlowTheme.of(context).alternate,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: recomendado ? Colors.amber.shade50 : FlutterFlowTheme.of(context).alternate,
-              width: 2,
-            ),
+    final primerNombre = nombre.split(" ").first;
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
+      child: Container(
+        width: MediaQuery.sizeOf(context).width,
+        decoration: BoxDecoration(
+          color: FlutterFlowTheme.of(context).alternate,
+          borderRadius: BorderRadius.circular(5),
+          border: Border.all(
+            color: recomendado ? Colors.amber.shade50 : FlutterFlowTheme.of(context).alternate,
+            width: 2,
           ),
-          
-          child: Row(
-            
-            children: [
-              /// FOTO
-              Container(
-                width: MediaQuery.sizeOf(context).width * 0.2,
-                height: MediaQuery.sizeOf(context).height,
-                decoration: BoxDecoration(),
-                child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: Image.network(
-                      fotoUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.person, size: 80),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 5, 0),
+                  child: Container(
+                    width: MediaQuery.sizeOf(context).width * 0.15,
+                    height: MediaQuery.sizeOf(context).height * 0.1,
+                    decoration: const BoxDecoration(),
+                    child: Container(
+                      width: MediaQuery.sizeOf(context).width,
+                      height: MediaQuery.sizeOf(context).width,
+                      clipBehavior: Clip.antiAlias,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                      ),
+                      child: Image.network(
+                        fotoUrl,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                 ),
-              ),
-
-              /// NOMBRE + PRECIO
-              Container(
-                width: MediaQuery.sizeOf(context).width * 0.3,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    /// Nombre
-                    InkWell(
-                      onTap: () async {
-                        await showModalBottomSheet(
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          enableDrag: false,
-                          context: context,
-                          builder: (context) {
-                            return Padding(
-                              padding: MediaQuery.viewInsetsOf(context),
-                              child: PopUpDogWalkerProfileWidget(walkerId: uuidPaseador),
-                            );
-                          },
-                        );
-                      },
-                      child: AutoSizeText(
-                        nombre,
-                        maxLines: 2,
-                        minFontSize: 12,
-                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                              font: GoogleFonts.lexend(
-                                fontWeight: FontWeight.w600,
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(0, 15, 0, 15),
+                    child: Container(
+                      decoration: const BoxDecoration(),
+                      child: Align(
+                        alignment: const AlignmentDirectional(0, 0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Align(
+                              alignment: const AlignmentDirectional(-1, 1),
+                              child: InkWell(
+                                splashColor: Colors.transparent,
+                                focusColor: Colors.transparent,
+                                hoverColor: Colors.transparent,
+                                highlightColor: Colors.transparent,
+                                onTap: () async {
+                                  await showModalBottomSheet(
+                                    isScrollControlled: true,
+                                    backgroundColor: Colors.transparent,
+                                    enableDrag: false,
+                                    context: context,
+                                    builder: (context) {
+                                      return Padding(
+                                        padding:
+                                            MediaQuery.viewInsetsOf(context),
+                                        child: PopUpDogWalkerProfileWidget(walkerId: uuidPaseador),
+                                      );
+                                    },
+                                  );
+                                },
+                                child: AutoSizeText(
+                                  primerNombre,
+                                  textAlign: TextAlign.start,
+                                  maxLines: 2,
+                                  minFontSize: 12,
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        font: GoogleFonts.lexend(
+                                          fontWeight: FontWeight.w600,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle,
+                                        ),
+                                        color: FlutterFlowTheme.of(context)
+                                            .primary,
+                                        fontSize: 18,
+                                        letterSpacing: 0.0,
+                                        fontWeight: FontWeight.w600,
+                                        fontStyle: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontStyle,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                ),
                               ),
-                              color: FlutterFlowTheme.of(context).primary,
-                              fontSize: 18,
-                              decoration: TextDecoration.underline,
                             ),
+                            Row(
+                              mainAxisSize: MainAxisSize.max,
+                              children: [
+                                Icon(
+                                  Icons.paid_sharp,
+                                  color:
+                                      FlutterFlowTheme.of(context).primaryText,
+                                  size: 24,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
+                                      5, 2, 0, 0),
+                                  child: AutoSizeText(
+                                     '$precio MXN', 
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    style: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .override(
+                                          font: GoogleFonts.lexend(
+                                            fontWeight: FontWeight.w500,
+                                            fontStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .bodyMedium
+                                                    .fontStyle,
+                                          ),
+                                          color: FlutterFlowTheme.of(context)
+                                              .secondaryBackground,
+                                          letterSpacing: 0.0,
+                                          fontWeight: FontWeight.w500,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle,
+                                        ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-
-                    /// Precio
-                    const SizedBox(height: 4),
-                    AutoSizeText(
-                      '\$$precio MXN',
-                      maxLines: 1,
-                      minFontSize: 11,
-                      style: FlutterFlowTheme.of(context).bodyMedium.override(
-                            font: GoogleFonts.lexend(
-                              fontWeight: FontWeight.w500,
-                            ),
-                            color:
-                                FlutterFlowTheme.of(context).secondaryBackground,
-                            fontSize: 16,
-                          ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-
-              /// CALIFICACIÓN (ESTRELLA + VALOR)
-              Container(
-                width: MediaQuery.sizeOf(context).width * 0.17,
-                height: 100,
-                child: Row(
-                  children: [
-                    const Icon(Icons.star, color: Color(0xFFE2B433), size: 24),
-                    const SizedBox(width: 4),
-                    AutoSizeText(
-                      calificacion,
-                      maxLines: 1,
-                      minFontSize: 10,
-                      style: FlutterFlowTheme.of(context).bodyMedium.override(
-                            font: GoogleFonts.lexend(
-                              fontWeight: FontWeight.w500,
-                            ),
-                            color:
-                                FlutterFlowTheme.of(context).secondaryBackground,
-                            fontSize: 20,
-                          ),
-                    ),
-                  ],
+                Container(
+                  decoration: const BoxDecoration(),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      const Icon(
+                        Icons.star,
+                        color: Color(0xFFE2B433),
+                        size: 24,
+                      ),
+                      Align(
+                        alignment: const AlignmentDirectional(-1, 0),
+                        child: AutoSizeText(
+                          calificacion,
+                          maxLines: 1,
+                          minFontSize: 10,
+                          style:
+                              FlutterFlowTheme.of(context).bodyMedium.override(
+                                    font: GoogleFonts.lexend(
+                                      fontWeight: FontWeight.w500,
+                                      fontStyle: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .fontStyle,
+                                    ),
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryBackground,
+                                    fontSize: 20,
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.w500,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontStyle,
+                                  ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-
-              /// BOTÓN "SOLICITAR"
-              Container(
-                width: MediaQuery.sizeOf(context).width * 0.23,
-                height: MediaQuery.sizeOf(context).height,
-                child: Align(
-                  alignment: Alignment.center,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: FFButtonWidget(
-                      onPressed: () async {
+                Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 10, 0),
+                  child: Container(
+                    decoration: const BoxDecoration(),
+                    alignment: const AlignmentDirectional(0, 0),
+                    child: FlutterFlowIconButton(
+                      borderRadius: 0,
+                      icon: Icon(
+                        Icons.sms,
+                        color: FlutterFlowTheme.of(context).primary,
+                        size: 35,
+                      ),
+                        onPressed: () async {
                         // Unir fecha y hora para el registro de startTime como timestamp
                           final DateTime? startDateTime = (date != null && time != null)
                           ? DateTime(
@@ -194,17 +263,7 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                             endDateTime = startDateTime.add(Duration(minutes: walkDuration));
                           }
 
-                          final jwt = Supabase.instance.client.auth.currentSession?.accessToken;
-                            if (jwt == null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Error: Usuario no autenticado')),
-                              );
-                              return;
-                            }
-
                             try {
-                              print('🚀 Iniciando solicitud de paseo...');
-
                               if (petId == null || addressId == null || currentUserUid.isEmpty) {
                                 throw Exception('Datos insuficientes para crear el paseo');
                               } else {
@@ -223,7 +282,8 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                                           : null,
                                           
                                         'walk_duration_minutes': walkDuration,
-                                        'walker_instructions': instructions.trim().isEmpty ? null : instructions.trim()
+                                        'walker_instructions': instructions.trim().isEmpty ? null : instructions.trim(),
+                                        'payment_status': 'Pendiente'
                                       })
                                       .select('id')
                                       .single();
@@ -236,9 +296,8 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                                   final walkId = walkIdRaw is int
                                       ? walkIdRaw
                                       : int.parse(walkIdRaw.toString());
-                                  print('Paseo insertado con ID: $walkId');
 
-                                  // 2. Obtener datos adicionales para la notificación
+                                  // Obtener datos adicionales para la notificación
                                   final userResponse = await Supabase.instance.client
                                       .from('users')
                                       .select('name')
@@ -264,7 +323,7 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                                       : 'fecha por confirmar';
 
                                   print(
-                                    'Datos para notificación: Owner: $ownerName, Pet: $petName, Date: $dateString',
+                                    '📊 Datos para notificación: Owner: $ownerName, Pet: $petName, Date: $dateString',
                                   );
 
                                   // 3. Llamar a la Edge Function para enviar notificación
@@ -276,30 +335,27 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                                     'date': dateString,
                                   };
 
-                                  print('Enviando notificación con payload: $notificationPayload');
 
                                   final notificationResponse = await Supabase.instance.client.functions
                                       .invoke('send-walk-notification', body: notificationPayload);
 
-                                  print('Respuesta de notificación: ${notificationResponse.data}');
-                                  print('ipo de respuesta: ${notificationResponse.data.runtimeType}');
 
-                                  // Verificar el tipo de dato antes de acceder
-                                  dynamic responseData = notificationResponse.data;
-                                  if (responseData != null) {
-                                    if (responseData is Map<String, dynamic>) {
-                                      if (responseData['success'] == true) {
-                                        print('✅ Notificación enviada exitosamente');
-                                      } else {
-                                        print('⚠️ Respuesta de notificación: $responseData');
-                                      }
-                                    } else {
-                                      print('⚠️ Tipo de respuesta inesperado: ${responseData.runtimeType}');
-                                      print('⚠️ Contenido: $responseData');
-                                    }
-                                  } else {
-                                    print('⚠️ Respuesta nula');
-                                  }
+                                  // // Verificar el tipo de dato antes de acceder
+                                  // dynamic responseData = notificationResponse.data;
+                                  // if (responseData != null) {
+                                  //   if (responseData is Map<String, dynamic>) {
+                                  //     if (responseData['success'] == true) {
+                                  //       print('✅ Notificación enviada exitosamente');
+                                  //     } else {
+                                  //       print('⚠️ Respuesta de notificación: $responseData');
+                                  //     }
+                                  //   } else {
+                                  //     print('⚠️ Tipo de respuesta inesperado: ${responseData.runtimeType}');
+                                  //     print('⚠️ Contenido: $responseData');
+                                  //   }
+                                  // } else {
+                                  //   print('⚠️ Respuesta nula');
+                                  // }
 
                                   // ScaffoldMessenger.of(context).showSnackBar(
                                   //   SnackBar(content: Text('¡Paseo solicitado!')),
@@ -339,38 +395,64 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(content: Text('Error al registrar solicitud: $e')),
                                   );
-                                  print(e);
                                 }
                               }
                             } catch (e) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text('Error al registrar solicitud: $e')),
                               );
-                              print(e);
                             }
                       },
-                      text: 'Solicitar',
-                      options: FFButtonOptions(
-                        width: double.infinity,
-                        height: MediaQuery.sizeOf(context).height * 0.05,
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        color: FlutterFlowTheme.of(context).accent1,
-                        textStyle: FlutterFlowTheme.of(context)
-                            .titleSmall
-                            .override(
-                              font: GoogleFonts.lexend(),
-                              color: Colors.white,
-                              fontWeight: FontWeight.normal,
-                            ),
-                        elevation: 0,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
                     ),
                   ),
                 ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 10, 15),
+              child: Container(
+                width: MediaQuery.sizeOf(context).width,
+                height: 35,
+                decoration: const BoxDecoration(),
+                child: FFButtonWidget(
+                  onPressed: () {
+                    print('Button pressed ...');
+                  },
+                  text: 'Solicitar paseo',
+                  icon: const FaIcon(
+                    FontAwesomeIcons.solidHandPointUp,
+                    size: 20,
+                  ),
+                  options: FFButtonOptions(
+                    height: 40,
+                    padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+                    iconAlignment: IconAlignment.end,
+                    iconPadding: const EdgeInsetsDirectional.fromSTEB(5, 0, 0, 0),
+                    color: FlutterFlowTheme.of(context).primary,
+                    textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                          font: GoogleFonts.lexend(
+                            fontWeight: FlutterFlowTheme.of(context)
+                                .titleSmall
+                                .fontWeight,
+                            fontStyle: FlutterFlowTheme.of(context)
+                                .titleSmall
+                                .fontStyle,
+                          ),
+                          color: Colors.white,
+                          letterSpacing: 0.0,
+                          fontWeight: FlutterFlowTheme.of(context)
+                              .titleSmall
+                              .fontWeight,
+                          fontStyle:
+                              FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                        ),
+                    elevation: 0,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

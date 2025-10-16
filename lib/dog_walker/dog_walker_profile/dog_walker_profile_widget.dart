@@ -1,3 +1,6 @@
+import 'package:dalk/user_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dalk/auth/supabase_auth/auth_util.dart';
 import 'package:dalk/common/payment_methods/payment_methods_widget.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
@@ -11,12 +14,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dog_walker_profile_model.dart';
 export 'dog_walker_profile_model.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-import '/user_provider.dart';
-import '/user_prefs.dart';
-import 'package:provider/provider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 class DogWalkerProfileWidget extends StatefulWidget {
   const DogWalkerProfileWidget({super.key});
@@ -37,7 +34,6 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => DogWalkerProfileModel());
-    
   }
 
   @override
@@ -77,319 +73,279 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                   child: const NotificationContainerWidget(),
                 ),
               ),
-              Container(
-                width: MediaQuery.sizeOf(context).width * 1.0,
-                height: MediaQuery.sizeOf(context).height * 0.82,
-                decoration: BoxDecoration(
-                  color: Color(0xFFE0ECFF),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(0.0),
-                    bottomRight: Radius.circular(0.0),
-                    topLeft: Radius.circular(50.0),
-                    topRight: Radius.circular(50.0),
-                  ),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    wrapWithModel(
-                      model: _model.goBackContainerModel,
-                      updateCallback: () => safeSetState(() {}),
-                      child: GoBackContainerWidget(),
+              Expanded(
+                child: Container(
+                  width: MediaQuery.sizeOf(context).width,
+                  decoration: BoxDecoration(
+                    color: FlutterFlowTheme.of(context).tertiary,
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(0),
+                      bottomRight: Radius.circular(0),
+                      topLeft: Radius.circular(50),
+                      topRight: Radius.circular(50),
                     ),
-                    Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 15.0),
-                      child: Container(
-                        width: MediaQuery.sizeOf(context).width * 0.9,
-                        height: MediaQuery.sizeOf(context).height * 0.73,
-                        decoration: BoxDecoration(),
-                        child: ListView(
-                          padding: EdgeInsets.zero,
-                          shrinkWrap: true,
-                          scrollDirection: Axis.vertical,
-                          children: [
-                            Align(
-                                alignment: AlignmentDirectional(0, 0),
-                                child: Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
-                                  child: CircleAvatar(
-                                    radius: 60,
-                                    //funcion de la imagen
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      wrapWithModel(
+                        model: _model.goBackContainerModel,
+                        updateCallback: () => safeSetState(() {}),
+                        child: const GoBackContainerWidget(),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
+                          child: Container(
+                            width: MediaQuery.sizeOf(context).width * 0.9,
+                            decoration: const BoxDecoration(),
+                            child: ListView(
+                              padding: EdgeInsets.zero,
+                              shrinkWrap: true,
+                              scrollDirection: Axis.vertical,
+                              children: [
+                                Align(
+                                  alignment: const AlignmentDirectional(0, 0),
+                                  child: Padding(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                    child: CircleAvatar(
+                                      radius: 60,
+                                      //funcion de la imagen
                                       backgroundImage: photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
                                       child: photoUrl.isEmpty ? const Icon(Icons.person, size: 60) : null,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            Text(
-                              'Nombre',
-                              textAlign: TextAlign.center,
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    font: GoogleFonts.lexend(
-                                      fontWeight: FontWeight.w800,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                                    color: FlutterFlowTheme.of(context).primary,
-                                    fontSize: 25.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w800,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
-                            ),
-                            Align(
-                              alignment: AlignmentDirectional(-1.0, 0.0),
-                              child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 18.0, 0.0, 0.0),
-                                child: AutoSizeText(
-                                  'Información personal',
-                                  textAlign: TextAlign.start,
-                                  minFontSize: 12.0,
+                                Text(
+                                  '$nombre',
+                                  textAlign: TextAlign.center,
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
                                       .override(
                                         font: GoogleFonts.lexend(
-                                          fontWeight: FontWeight.w500,
+                                          fontWeight: FontWeight.w800,
                                           fontStyle:
                                               FlutterFlowTheme.of(context)
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
                                         color: FlutterFlowTheme.of(context)
-                                            .accent1,
-                                        fontSize: 16.0,
+                                            .primary,
+                                        fontSize: 25,
                                         letterSpacing: 0.0,
-                                        fontWeight: FontWeight.w500,
+                                        fontWeight: FontWeight.w800,
                                         fontStyle: FlutterFlowTheme.of(context)
                                             .bodyMedium
                                             .fontStyle,
                                       ),
                                 ),
-                              ),
-                            ),
-                            Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 5.0, 0.0, 0.0),
-                              child: Container(
-                                width: MediaQuery.sizeOf(context).width * 1.0,
-                                height:
-                                    MediaQuery.sizeOf(context).height * 0.047,
-                                decoration: BoxDecoration(
-                                  color: Color(0xFFCCDBFF),
-                                  borderRadius: BorderRadius.only(
-                                    bottomLeft: Radius.circular(5.0),
-                                    bottomRight: Radius.circular(5.0),
-                                    topLeft: Radius.circular(5.0),
-                                    topRight: Radius.circular(5.0),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          8.0, 0.0, 0.0, 0.0),
-                                      child: Icon(
-                                        Icons.account_circle_sharp,
-                                        color: FlutterFlowTheme.of(context)
-                                            .primary,
-                                        size: 25.0,
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          8.0, 0.0, 0.0, 0.0),
-                                      child: Text(
-                                        'Mi perfil',
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              font: GoogleFonts.lexend(
-                                                fontWeight: FontWeight.w500,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                              fontSize: 16.0,
-                                              letterSpacing: 0.0,
+                               
+                                Align(
+                                  alignment: const AlignmentDirectional(-1, 0),
+                                  child: Padding(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
+                                        0, 25, 0, 0),
+                                    child: AutoSizeText(
+                                      'Información personal',
+                                      textAlign: TextAlign.start,
+                                      minFontSize: 12,
+                                      style: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .override(
+                                            font: GoogleFonts.lexend(
                                               fontWeight: FontWeight.w500,
                                               fontStyle:
                                                   FlutterFlowTheme.of(context)
                                                       .bodyMedium
                                                       .fontStyle,
                                             ),
-                                      ),
+                                            color: FlutterFlowTheme.of(context)
+                                                .accent1,
+                                            fontSize: 16,
+                                            letterSpacing: 0.0,
+                                            fontWeight: FontWeight.w500,
+                                            fontStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .bodyMedium
+                                                    .fontStyle,
+                                          ),
                                     ),
-                                    Flexible(
-                                      child: Align(
-                                        alignment:
-                                            AlignmentDirectional(1.0, 0.0),
-                                        child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 0.0, 10.0, 0.0),
-                                          child: FFButtonWidget(
-                                            onPressed: () async {
-                                              context.pushNamed(
-                                                  DogOwnerUpdateProfileWidget
-                                                      .routeName);
-                                            },
-                                            text: '',
-                                            icon: Icon(
-                                              Icons.arrow_forward_ios,
-                                              size: 20.0,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(0, 5, 0, 0),
+                                  child: InkWell(
+                                    splashColor: Colors.transparent,
+                                    focusColor: Colors.transparent,
+                                    hoverColor: Colors.transparent,
+                                    highlightColor: Colors.transparent,
+                                    onTap: () async {
+                                      context.pushNamed(
+                                          DogOwnerUpdateProfileWidget.routeName);
+                                    },
+                                    child: Container(
+                                      width: MediaQuery.sizeOf(context).width,
+                                      height:
+                                          MediaQuery.sizeOf(context).height *
+                                              0.055,
+                                      decoration: BoxDecoration(
+                                        color: FlutterFlowTheme.of(context)
+                                            .alternate,
+                                        borderRadius: const BorderRadius.only(
+                                          bottomLeft: Radius.circular(5),
+                                          bottomRight: Radius.circular(5),
+                                          topLeft: Radius.circular(5),
+                                          topRight: Radius.circular(5),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Align(
+                                            alignment:
+                                                const AlignmentDirectional(-1, 0),
+                                            child: Padding(
+                                              padding: const EdgeInsetsDirectional
+                                                  .fromSTEB(8, 0, 0, 0),
+                                              child: Icon(
+                                                Icons.account_circle_sharp,
+                                                color:
+                                                    FlutterFlowTheme.of(context)
+                                                        .primary,
+                                                size: 25,
+                                              ),
                                             ),
-                                            options: FFButtonOptions(
-                                              width: 29.6,
-                                              height: 28.8,
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
-                                                      6.0, 0.0, 16.0, 0.0),
-                                              iconAlignment:
-                                                  IconAlignment.start,
-                                              iconPadding: EdgeInsetsDirectional
-                                                  .fromSTEB(0.0, 0.0, 0.0, 0.0),
-                                              iconColor: Color(0xFFCCDBFF),
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primary,
-                                              textStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .titleSmall
+                                          ),
+                                          Flexible(
+                                            child: Align(
+                                              alignment:
+                                                  const AlignmentDirectional(-1, 0),
+                                              child: Padding(
+                                                padding: const EdgeInsetsDirectional
+                                                    .fromSTEB(8, 0, 0, 0),
+                                                child: Text(
+                                                  'Mi perfil',
+                                                  style: FlutterFlowTheme.of(
+                                                          context)
+                                                      .bodyMedium
                                                       .override(
                                                         font:
                                                             GoogleFonts.lexend(
                                                           fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .titleSmall
-                                                                  .fontWeight,
+                                                              FontWeight.w500,
                                                           fontStyle:
                                                               FlutterFlowTheme.of(
                                                                       context)
-                                                                  .titleSmall
+                                                                  .bodyMedium
                                                                   .fontStyle,
                                                         ),
-                                                        color: Colors.white,
+                                                        color: FlutterFlowTheme
+                                                                .of(context)
+                                                            .secondaryBackground,
+                                                        fontSize: 16,
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .titleSmall
-                                                                .fontWeight,
+                                                            FontWeight.w500,
                                                         fontStyle:
                                                             FlutterFlowTheme.of(
                                                                     context)
-                                                                .titleSmall
+                                                                .bodyMedium
                                                                 .fontStyle,
                                                       ),
-                                              elevation: 0.0,
-                                              borderRadius:
-                                                  BorderRadius.circular(20.0),
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                        ),
+                                          Align(
+                                            alignment:
+                                                const AlignmentDirectional(1, 0),
+                                            child: Padding(
+                                              padding: const EdgeInsetsDirectional
+                                                  .fromSTEB(0, 0, 15, 0),
+                                              child: InkWell(
+                                                splashColor: Colors.transparent,
+                                                focusColor: Colors.transparent,
+                                                hoverColor: Colors.transparent,
+                                                highlightColor:
+                                                    Colors.transparent,
+                                                onTap: () async {
+                                                  context.pushNamed(
+                                                      DogOwnerUpdateProfileWidget
+                                                          .routeName);
+                                                },
+                                                child: Icon(
+                                                  Icons.arrow_forward_ios,
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .primary,
+                                                  size: 25,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 10.0, 0.0, 0.0),
-                              child: Container(
-                                width: MediaQuery.sizeOf(context).width * 1.0,
-                                height:
-                                    MediaQuery.sizeOf(context).height * 0.047,
-                                decoration: BoxDecoration(
-                                  color: Color(0xFFCCDBFF),
-                                  borderRadius: BorderRadius.only(
-                                    bottomLeft: Radius.circular(5.0),
-                                    bottomRight: Radius.circular(5.0),
-                                    topLeft: Radius.circular(5.0),
-                                    topRight: Radius.circular(5.0),
                                   ),
                                 ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          8.0, 0.0, 0.0, 0.0),
-                                      child: Icon(
-                                        Icons.wallet_rounded,
+                                Padding(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
+                                      0, 10, 0, 0),
+                                  child: InkWell(
+                                    splashColor: Colors.transparent,
+                                    focusColor: Colors.transparent,
+                                    hoverColor: Colors.transparent,
+                                    highlightColor: Colors.transparent,
+                                    onTap: () async {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => const PaymentMethodsWidget()),
+                                      );
+                                    },
+                                    child: Container(
+                                      width: MediaQuery.sizeOf(context).width,
+                                      height:
+                                          MediaQuery.sizeOf(context).height *
+                                              0.055,
+                                      decoration: BoxDecoration(
                                         color: FlutterFlowTheme.of(context)
-                                            .primary,
-                                        size: 25.0,
+                                            .alternate,
+                                        borderRadius: const BorderRadius.only(
+                                          bottomLeft: Radius.circular(5),
+                                          bottomRight: Radius.circular(5),
+                                          topLeft: Radius.circular(5),
+                                          topRight: Radius.circular(5),
+                                        ),
                                       ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          8.0, 0.0, 0.0, 0.0),
-                                      child: Text(
-                                        'Métodos de pago',
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              font: GoogleFonts.lexend(
-                                                fontWeight: FontWeight.w500,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                              fontSize: 16.0,
-                                              letterSpacing: 0.0,
-                                              fontWeight: FontWeight.w500,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                            ),
-                                      ),
-                                    ),
-                                    Flexible(
-                                      child: Align(
-                                        alignment:
-                                            AlignmentDirectional(1.0, 0.0),
-                                        child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 0.0, 10.0, 0.0),
-                                          child: FFButtonWidget(
-                                            onPressed: () {
-                                              print('Payment_Btn pressed ...');
-                                            },
-                                            text: '',
-                                            icon: Icon(
-                                              Icons.arrow_forward_ios,
-                                              size: 20.0,
-                                            ),
-                                            options: FFButtonOptions(
-                                              width: 29.6,
-                                              height: 28.8,
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
-                                                      6.0, 0.0, 16.0, 0.0),
-                                              iconAlignment:
-                                                  IconAlignment.start,
-                                              iconPadding: EdgeInsetsDirectional
-                                                  .fromSTEB(0.0, 0.0, 0.0, 0.0),
-                                              iconColor: Color(0xFFCCDBFF),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.max,
+                                        children: [
+                                          Padding(
+                                            padding:
+                                                const EdgeInsetsDirectional.fromSTEB(
+                                                    8, 0, 0, 0),
+                                            child: Icon(
+                                              Icons.wallet_rounded,
                                               color:
                                                   FlutterFlowTheme.of(context)
                                                       .primary,
-                                              textStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .titleSmall
+                                              size: 25,
+                                            ),
+                                          ),
+                                          Flexible(
+                                            child: Align(
+                                              alignment:
+                                                  const AlignmentDirectional(-1, 0),
+                                              child: Padding(
+                                                padding: const EdgeInsetsDirectional
+                                                    .fromSTEB(8, 0, 0, 0),
+                                                child: Text(
+                                                  'Métodos de pago',
+                                                  style: FlutterFlowTheme.of(
+                                                          context)
+                                                      .bodyMedium
                                                       .override(
                                                         font:
                                                             GoogleFonts.lexend(
@@ -880,13 +836,41 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                       0, 30, 0, 0),
                                   child: FFButtonWidget(
                                     onPressed: () async {
-                                      GoRouter.of(context).prepareAuthEvent();
-                                      await authManager.signOut();
-                                      GoRouter.of(context)
-                                          .clearRedirectLocation();
+                                      // Preparamos el evento de autenticación ANTES de signOut.
+                                      GoRouter.of(context).prepareAuthEvent(); 
 
-                                      context.goNamedAuth(LoginWidget.routeName,
-                                          context.mounted);
+                                      // 2. Limpiar datos del usuario guardados localmente PRIMERO.
+                                      // Esto no usa 'context', por lo que es seguro antes del signOut.
+                                      final prefs = await SharedPreferences.getInstance();
+                                      await prefs.remove('user_data');
+
+                                      try {
+                                        // Cerrar sesión de Supabase (asíncrono)
+                                        await authManager.signOut();
+
+                                        // Verificamos si el widget fue desmontado por la navegación automática.
+                                        if (!context.mounted) {
+                                          return; 
+                                        }
+
+                                        // Limpiar Provider de usuario (redundante si main.dart actuó)
+                                        context.read<UserProvider>().clearUser();
+
+                                        // Limpiar rutas protegidas de GoRouter
+                                        GoRouter.of(context).clearRedirectLocation();
+
+                                        // Redirigir a Login
+                                        context.goNamedAuth(LoginWidget.routeName, context.mounted);
+
+                                      } catch (e) {
+                                        
+                                        // Mostrar error si el contexto todavía está vivo
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text("Error cerrando sesión: $e")),
+                                          );
+                                        }
+                                      }
                                     },
                                     text: 'Cerrar Sesión',
                                     options: FFButtonOptions(

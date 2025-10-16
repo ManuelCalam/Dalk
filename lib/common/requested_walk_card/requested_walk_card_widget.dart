@@ -77,7 +77,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
   Widget build(BuildContext context) {
     print(widget.usertype);
     return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
+      padding: const EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
       child: Container(
         width: MediaQuery.sizeOf(context).width,
         decoration: BoxDecoration(
@@ -92,16 +92,16 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(10, 0, 5, 0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 5, 0),
                   child: Container(
                     width: MediaQuery.sizeOf(context).width * 0.15,
                     height: MediaQuery.sizeOf(context).height * 0.1,
-                    decoration: BoxDecoration(),
+                    decoration: const BoxDecoration(),
                     child: Container(
                       width: MediaQuery.sizeOf(context).width,
                       height: MediaQuery.sizeOf(context).width,
                       clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                       ),
                       child: Image.network(
@@ -113,18 +113,18 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                 ),
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(0, 15, 0, 15),
+                    padding: const EdgeInsetsDirectional.fromSTEB(0, 15, 0, 15),
                     child: Container(
-                      decoration: BoxDecoration(),
+                      decoration: const BoxDecoration(),
                       child: Align(
-                        alignment: AlignmentDirectional(0, 0),
+                        alignment: const AlignmentDirectional(0, 0),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Align(
-                              alignment: AlignmentDirectional(-1, 0),
+                              alignment: const AlignmentDirectional(-1, 0),
                               child: AutoSizeText(
                                 widget.status,
                                 maxLines: 2,
@@ -153,7 +153,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 2, 0, 0),
                                   child: AutoSizeText(
                                     'Mascota:',
@@ -180,7 +180,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       5, 2, 0, 0),
                                   child: InkWell(
                                     splashColor: Colors.transparent,
@@ -237,7 +237,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 2, 0, 0),
                                   child: AutoSizeText(
                                     widget.usertype == 'Paseador' ? 'Dueño:' : 'Paseador:',
@@ -265,7 +265,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       5, 2, 0, 0),
                                   child: AutoSizeText(
                                     widget.userName,
@@ -296,7 +296,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 2, 0, 0),
                                   child: AutoSizeText(
                                     'Fecha:',
@@ -322,7 +322,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       5, 2, 0, 0),
                                   child: AutoSizeText(
                                     dateTimeFormat("d/M/y", widget.date),
@@ -355,7 +355,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 2, 0, 0),
                                   child: AutoSizeText(
                                     'Hora:',
@@ -382,7 +382,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       5, 2, 0, 0),
                                   child: AutoSizeText(
                                     dateTimeFormat("Hm", widget.time),
@@ -418,13 +418,13 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0, 0, 10, 0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 10, 0),
                   child: Container(
                     height: 90,
-                    decoration: BoxDecoration(),
+                    decoration: const BoxDecoration(),
                     child: Container(
                       height: MediaQuery.sizeOf(context).height,
-                      decoration: BoxDecoration(),
+                      decoration: const BoxDecoration(),
                       child: FlutterFlowIconButton(
                         borderRadius: 0,
                         buttonSize: MediaQuery.sizeOf(context).width * 0.18,
@@ -451,11 +451,11 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
               ],
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(10, 0, 10, 15),
+              padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 10, 15),
               child: Container(
                 width: MediaQuery.sizeOf(context).width,
                 height: 35,
-                decoration: BoxDecoration(),
+                decoration: const BoxDecoration(),
                 child: FFButtonWidget(
                 onPressed: () async {
                   await showModalBottomSheet(
@@ -473,15 +473,15 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                   ).then((value) => safeSetState(() {}));
                 },
                   text: 'Ver detalles',
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.keyboard_double_arrow_up_rounded,
                     size: 30,
                   ),
                   options: FFButtonOptions(
                     height: 40,
-                    padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
                     iconAlignment: IconAlignment.end,
-                    iconPadding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                    iconPadding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
                     color: FlutterFlowTheme.of(context).primary,
                     textStyle: FlutterFlowTheme.of(context).titleSmall.override(
                           font: GoogleFonts.lexend(

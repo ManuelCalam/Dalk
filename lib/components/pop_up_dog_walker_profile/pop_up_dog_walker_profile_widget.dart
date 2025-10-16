@@ -5,9 +5,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
-import '/index.dart';
 import 'package:dalk/common/review_details_card/review_details_card_widget.dart';
 
 import 'pop_up_dog_walker_profile_model.dart';
@@ -33,15 +31,13 @@ class _PopUpDogWalkerProfileWidgetState
   // final int dogId = 12;
   // final int dogId = ;
 
-  // 🔹 Variables para mostrar datos
-   // Reemplaza con el UUID real del paseador
-   String get walkerId => widget.walkerId;
+  String get walkerId => widget.walkerId;
   String? walkerName;
   String? walkerUuid;
   String? walkerArea;
   int? walkerAge;
   String? walkerAboutMe;
-  int? walkerPrice;
+  int? walkerFee;
   double? walkerAvgRating;
   int? walkerTotalWalks;
   String? walkerJoinedAgo;
@@ -79,11 +75,10 @@ class _PopUpDogWalkerProfileWidgetState
   }
   Future<void> fetchWalkerData() async {
     try {
-      // Llamada a la vista walkers_with_stats
       final response = await Supabase.instance.client
-          .from('walkers_with_stats')
-          .select('uuid,name,working_area,age,about_me,price,average_rating,total_walks,joined_at,last_walk_date, photo_url')
-          .eq('uuid', walkerId ) // usa aquí tu variable con el UUID del paseador
+          .from('walkers_info')
+          .select('uuid,name,working_area,age,about_me,fee,average_rating,total_walks,joined_at,last_walk_date,photo_url')
+          .eq('uuid', walkerId ) 
           .maybeSingle();
 
       if (response != null) {
@@ -93,8 +88,8 @@ class _PopUpDogWalkerProfileWidgetState
           walkerArea = response['working_area'];
           walkerAge = response['age'];
           walkerAboutMe = response['about_me'];
-          walkerPrice = response['price'];
-          walkerAvgRating = (response['average_rating'] as num?)?.toDouble();
+          walkerFee = response['fee'] ?? '0';
+          walkerAvgRating = (response['average_rating'] as num?)?.toDouble() ?? 0;
           walkerTotalWalks = response['total_walks'] as int?;
           walkerLastWalk = response['last_walk_date'];
           walkerPhotoUrl = response['photo_url'];
@@ -129,23 +124,20 @@ class _PopUpDogWalkerProfileWidgetState
           .eq('reviewed_user_id', walkerId)
           .order('created_at', ascending: false);
 
-      // Log para revisar qué trae la respuesta
-      print('Reviews raw response: $response');
 
-      if (response == null || response.isEmpty) {
+      if (response.isEmpty) {
         print('No reviews found');
       }
-      //print('walkerId used: $walkerId');
 
       setState(() {
         _reviews = response.map<Map<String, dynamic>>((review) {
-          print('Review item: $review'); // log de cada review
+          print('Review item: $review');
           return {
             'user_name': review['users']?['name'] ?? 'Usuario',
             'rating': review['rating'],
             'comments': review['comments'],
             'created_at': review['created_at'],
-            'walk_id': review['walk_id'], // ojo que antes tenías 'walker_id' que probablemente es nulo
+            'walk_id': review['walk_id'], 
             'reviewer_photo': review['reviewer_photo'],
           };
         }).toList();
@@ -167,7 +159,7 @@ class _PopUpDogWalkerProfileWidgetState
       height: MediaQuery.sizeOf(context).height * 0.85,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).tertiary,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(0),
           bottomRight: Radius.circular(0),
           topLeft: Radius.circular(50),
@@ -178,11 +170,11 @@ class _PopUpDogWalkerProfileWidgetState
         mainAxisSize: MainAxisSize.max,
         children: [
           Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(0, 15, 0, 0),
+            padding: const EdgeInsetsDirectional.fromSTEB(0, 15, 0, 0),
             child: Container(
               width: MediaQuery.sizeOf(context).width * 0.92,
               height: MediaQuery.sizeOf(context).height * 0.05,
-              decoration: BoxDecoration(),
+              decoration: const BoxDecoration(),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 children: [
@@ -200,7 +192,7 @@ class _PopUpDogWalkerProfileWidgetState
                   ),
                   Expanded(
                     child: Align(
-                      alignment: AlignmentDirectional(1, 0),
+                      alignment: const AlignmentDirectional(1, 0),
                       child: FlutterFlowIconButton(
                         borderRadius: 8,
                         buttonSize: 40,
@@ -222,10 +214,10 @@ class _PopUpDogWalkerProfileWidgetState
           ),
           Expanded(
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 20),
+              padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 20),
               child: Container(
                 width: MediaQuery.sizeOf(context).width * 0.9,
-                decoration: BoxDecoration(),
+                decoration: const BoxDecoration(),
                 child: SingleChildScrollView(
                   primary: false,
                   child: Column(
@@ -233,7 +225,7 @@ class _PopUpDogWalkerProfileWidgetState
                     children: [
                       Container(
                         width: MediaQuery.sizeOf(context).width * 0.9,
-                        decoration: BoxDecoration(),
+                        decoration: const BoxDecoration(),
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
                           children: [
@@ -241,7 +233,7 @@ class _PopUpDogWalkerProfileWidgetState
                               width: 120,
                               height: 120,
                               clipBehavior: Clip.antiAlias,
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                 shape: BoxShape.circle,
                               ),
                               child: Image.network(
@@ -296,21 +288,21 @@ class _PopUpDogWalkerProfileWidgetState
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
+                        padding: const EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
                         child: Row(
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Padding(
                               padding:
-                                  EdgeInsetsDirectional.fromSTEB(5, 5, 0, 0),
+                                  const EdgeInsetsDirectional.fromSTEB(5, 5, 0, 0),
                               child: Container(
                                 width: MediaQuery.sizeOf(context).width * 0.25,
                                 height:
                                     MediaQuery.sizeOf(context).height * 0.15,
                                 decoration: BoxDecoration(
                                   color: FlutterFlowTheme.of(context).alternate,
-                                  borderRadius: BorderRadius.only(
+                                  borderRadius: const BorderRadius.only(
                                     bottomLeft: Radius.circular(20),
                                     bottomRight: Radius.circular(0),
                                     topLeft: Radius.circular(20),
@@ -321,15 +313,15 @@ class _PopUpDogWalkerProfileWidgetState
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Align(
-                                      alignment: AlignmentDirectional(0, -1),
+                                      alignment: const AlignmentDirectional(0, -1),
                                       child: Container(
                                         width: MediaQuery.sizeOf(context).width,
                                         height:
                                             MediaQuery.sizeOf(context).height *
                                                 0.08,
-                                        decoration: BoxDecoration(),
+                                        decoration: const BoxDecoration(),
                                         child: Align(
-                                          alignment: AlignmentDirectional(0, 1),
+                                          alignment: const AlignmentDirectional(0, 1),
                                           child: Icon(
                                             Icons.star_border,
                                             color: FlutterFlowTheme.of(context)
@@ -340,7 +332,7 @@ class _PopUpDogWalkerProfileWidgetState
                                       ),
                                     ),
                                     Align(
-                                      alignment: AlignmentDirectional(0, -1),
+                                      alignment: const AlignmentDirectional(0, -1),
                                       child: AutoSizeText(
                                         walkerAvgRating.toString()?? '0',
                                         textAlign: TextAlign.center,
@@ -374,7 +366,7 @@ class _PopUpDogWalkerProfileWidgetState
                             ),
                             Padding(
                               padding:
-                                  EdgeInsetsDirectional.fromSTEB(10, 5, 0, 0),
+                                  const EdgeInsetsDirectional.fromSTEB(10, 5, 0, 0),
                               child: Container(
                                 width: MediaQuery.sizeOf(context).width * 0.25,
                                 height:
@@ -387,15 +379,15 @@ class _PopUpDogWalkerProfileWidgetState
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Align(
-                                      alignment: AlignmentDirectional(0, -1),
+                                      alignment: const AlignmentDirectional(0, -1),
                                       child: Container(
                                         width: MediaQuery.sizeOf(context).width,
                                         height:
                                             MediaQuery.sizeOf(context).height *
                                                 0.08,
-                                        decoration: BoxDecoration(),
+                                        decoration: const BoxDecoration(),
                                         child: Align(
-                                          alignment: AlignmentDirectional(0, 1),
+                                          alignment: const AlignmentDirectional(0, 1),
                                           child: Icon(
                                             Icons.hail,
                                             color: FlutterFlowTheme.of(context)
@@ -406,7 +398,7 @@ class _PopUpDogWalkerProfileWidgetState
                                       ),
                                     ),
                                     Align(
-                                      alignment: AlignmentDirectional(0, 0),
+                                      alignment: const AlignmentDirectional(0, 0),
                                       child: AutoSizeText(
                                         walkerTotalWalks != null 
                                           ? '${walkerTotalWalks} Viajes' 
@@ -443,14 +435,14 @@ class _PopUpDogWalkerProfileWidgetState
                             ),
                             Padding(
                               padding:
-                                  EdgeInsetsDirectional.fromSTEB(10, 5, 0, 0),
+                                  const EdgeInsetsDirectional.fromSTEB(10, 5, 0, 0),
                               child: Container(
                                 width: MediaQuery.sizeOf(context).width * 0.25,
                                 height:
                                     MediaQuery.sizeOf(context).height * 0.15,
                                 decoration: BoxDecoration(
                                   color: FlutterFlowTheme.of(context).alternate,
-                                  borderRadius: BorderRadius.only(
+                                  borderRadius: const BorderRadius.only(
                                     bottomLeft: Radius.circular(0),
                                     bottomRight: Radius.circular(20),
                                     topLeft: Radius.circular(0),
@@ -461,15 +453,15 @@ class _PopUpDogWalkerProfileWidgetState
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Align(
-                                      alignment: AlignmentDirectional(0, -1),
+                                      alignment: const AlignmentDirectional(0, -1),
                                       child: Container(
                                         width: MediaQuery.sizeOf(context).width,
                                         height:
                                             MediaQuery.sizeOf(context).height *
                                                 0.08,
-                                        decoration: BoxDecoration(),
+                                        decoration: const BoxDecoration(),
                                         child: Align(
-                                          alignment: AlignmentDirectional(0, 1),
+                                          alignment: const AlignmentDirectional(0, 1),
                                           child: Icon(
                                             Icons.calendar_month,
                                             color: FlutterFlowTheme.of(context)
@@ -480,7 +472,7 @@ class _PopUpDogWalkerProfileWidgetState
                                       ),
                                     ),
                                     Align(
-                                      alignment: AlignmentDirectional(0, -1),
+                                      alignment: const AlignmentDirectional(0, -1),
                                       child: AutoSizeText(
                                         walkerJoinedAgo?? 'mes',
                                         textAlign: TextAlign.center,
@@ -515,9 +507,9 @@ class _PopUpDogWalkerProfileWidgetState
                         ),
                       ),
                       Align(
-                        alignment: AlignmentDirectional(-1, -1),
+                        alignment: const AlignmentDirectional(-1, -1),
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
                           child: Text(
                             'Conóceme',
                             style: FlutterFlowTheme.of(context)
@@ -541,9 +533,9 @@ class _PopUpDogWalkerProfileWidgetState
                         ),
                       ),
                       Align(
-                        alignment: AlignmentDirectional(-1, 0),
+                        alignment: const AlignmentDirectional(-1, 0),
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 13),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 13),
                           child: AutoSizeText(
                             walkerAboutMe?? 'No hay información disponible.' ,
                             textAlign: TextAlign.justify,
@@ -572,7 +564,7 @@ class _PopUpDogWalkerProfileWidgetState
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                        padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                         child: Container(
                           width: MediaQuery.sizeOf(context).width,
                           height: MediaQuery.sizeOf(context).height * 0.065,
@@ -584,9 +576,9 @@ class _PopUpDogWalkerProfileWidgetState
                             mainAxisSize: MainAxisSize.max,
                             children: [
                               Align(
-                                alignment: AlignmentDirectional(-1, 0),
+                                alignment: const AlignmentDirectional(-1, 0),
                                 child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       10, 0, 0, 0),
                                   child: Icon(
                                     Icons.calendar_today_outlined,
@@ -597,7 +589,7 @@ class _PopUpDogWalkerProfileWidgetState
                               ),
                               Padding(
                                 padding:
-                                    EdgeInsetsDirectional.fromSTEB(8, 0, 0, 0),
+                                    const EdgeInsetsDirectional.fromSTEB(8, 0, 0, 0),
                                 child: AutoSizeText(
                                   (walkerAge != null ? '${walkerAge} años' : '[age]'),
                                   maxLines: 1,
@@ -627,7 +619,7 @@ class _PopUpDogWalkerProfileWidgetState
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                        padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
                         child: Container(
                           width: MediaQuery.sizeOf(context).width,
                           height: MediaQuery.sizeOf(context).height * 0.065,
@@ -637,14 +629,14 @@ class _PopUpDogWalkerProfileWidgetState
                           ),
                           child: Padding(
                             padding:
-                                EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
                             child: Row(
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Align(
-                                  alignment: AlignmentDirectional(-1, 0),
+                                  alignment: const AlignmentDirectional(-1, 0),
                                   child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         10, 0, 0, 0),
                                     child: Icon(
                                       Icons.monetization_on_outlined,
@@ -655,10 +647,10 @@ class _PopUpDogWalkerProfileWidgetState
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       8, 0, 0, 0),
                                   child: AutoSizeText(
-                                    (walkerPrice != null ? '\$${walkerPrice} ' : '[Price]'),
+                                    (walkerFee != null ? '\$${walkerFee} ' : '[Fee]'),
                                     maxLines: 1,
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
@@ -688,9 +680,9 @@ class _PopUpDogWalkerProfileWidgetState
                         ),
                       ),
                       Align(
-                        alignment: AlignmentDirectional(-1, 0),
+                        alignment: const AlignmentDirectional(-1, 0),
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
                           child: Text(
                             'Reseñas',
                             style: FlutterFlowTheme.of(context)
@@ -722,8 +714,10 @@ class _PopUpDogWalkerProfileWidgetState
                         Padding(
                           padding: const EdgeInsets.only(top: 10),
                           child: Text(
-                            'Aún no hay reseñas para este Paseador.',
-                            style: FlutterFlowTheme.of(context).bodyMedium,
+                            'Aún no hay reseñas para este paseador.',
+                              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                              color: FlutterFlowTheme.of(context).secondaryBackground,
+                            ),
                           ),
                         )
                       else

@@ -9,10 +9,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'home_dog_owner_model.dart';
 export 'home_dog_owner_model.dart';
 import '/user_provider.dart';
-import '/user_prefs.dart';
-import '/backend/supabase/supabase.dart';
-import '/auth/supabase_auth/auth_util.dart';
-import 'package:provider/provider.dart';
 
 
 class HomeDogOwnerWidget extends StatefulWidget {
@@ -36,7 +32,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
     _model = createModel(context, () => HomeDogOwnerModel());
     //recarga el cached del usuario
     context.read<UserProvider>().loadUser();
-    //context.read<UserProvider>().loadUser(forceRefresh: true);
+    // context.read<UserProvider>().loadUser(forceRefresh: true);
   }
   
 
@@ -49,6 +45,8 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<UserProvider>().user;
+    final nombre = (user?.name?.split(" ").first) ?? "User";
     final isPremium = context.watch<SubscriptionProvider>().isPremium;
     
     return GestureDetector(
@@ -63,7 +61,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 1.0),
+              padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 1.0),
               child: Container(
                 width: MediaQuery.sizeOf(context).width * 1.0,
                 height: MediaQuery.sizeOf(context).height * 0.2,
@@ -73,13 +71,13 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                     BoxShadow(
                       blurRadius: 4.0,
                       color: FlutterFlowTheme.of(context).secondary,
-                      offset: Offset(
+                      offset: const Offset(
                         0.0,
                         2.0,
                       ),
                     )
                   ],
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(50.0),
                     bottomRight: Radius.circular(50.0),
                     topLeft: Radius.circular(0.0),
@@ -95,7 +93,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                       child: Opacity(
                         opacity: 0.0,
                         child: Align(
-                          alignment: AlignmentDirectional(0.0, -0.5),
+                          alignment: const AlignmentDirectional(0.0, -0.5),
                           child: Text(
                             'Home',
                             style: FlutterFlowTheme.of(context)
@@ -120,10 +118,10 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                       ),
                     ),
                     Align(
-                      alignment: AlignmentDirectional(1.0, -1.0),
+                      alignment: const AlignmentDirectional(1.0, -1.0),
                       child: Padding(
                         padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 20.0, 0.0),
+                            const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 20.0, 0.0),
                         child: InkWell(
                           splashColor: Colors.transparent,
                           focusColor: Colors.transparent,
@@ -132,7 +130,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                           onTap: () async {
                             context.pushNamed(NotificationsWidget.routeName);
                           },
-                          child: Icon(
+                          child: const Icon(
                             Icons.notifications_sharp,
                             color: Color(0xFFCCDBFF),
                             size: 32.0,
@@ -141,13 +139,11 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                       ),
                     ),
                     Align(
-                      alignment: AlignmentDirectional(-1.0, 0.0),
+                      alignment: const AlignmentDirectional(-1.0, 0.0),
                       child: Padding(
                         padding: const EdgeInsetsDirectional.fromSTEB(30.0, 0.0, 0.0, 0.0),
                         child: Builder(
                           builder: (context) {
-                            final user = context.watch<UserProvider>().user;
-                            final nombre = (user?.name?.split(" ").first) ?? "User";
 
                             return AutoSizeText(
                               'Hola $nombre!',
@@ -176,9 +172,9 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                     ),
                     Flexible(
                       child: Align(
-                        alignment: AlignmentDirectional(-1.0, -1.0),
+                        alignment: const AlignmentDirectional(-1.0, -1.0),
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               30.0, 0.0, 0.0, 0.0),
                           child: AutoSizeText(
                             'Agenda un paseo!',
@@ -212,20 +208,20 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
             ),
             Expanded(
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 15.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 15.0),
                 child: Container(
                   width: MediaQuery.sizeOf(context).width * 0.9,
-                  decoration: BoxDecoration(),
+                  decoration: const BoxDecoration(),
                   child: Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+                        const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
                     child: ListView(
                       padding: EdgeInsets.zero,
                       shrinkWrap: true,
                       scrollDirection: Axis.vertical,
                       children:  [ 
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 5.0, 0.0, 0.0),
                           child: InkWell(
                             splashColor: Colors.transparent,
@@ -251,9 +247,9 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Align(
-                                    alignment: AlignmentDirectional(-1.0, 0.0),
+                                    alignment: const AlignmentDirectional(-1.0, 0.0),
                                     child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           5.0, 0.0, 0.0, 0.0),
                                       child: AutoSizeText(
                                                                 isPremium ? "Revisa tus beneficios premium!" :
@@ -290,9 +286,9 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                   ),
                                   Flexible(
                                     child: Align(
-                                      alignment: AlignmentDirectional(1.0, 0.0),
+                                      alignment: const AlignmentDirectional(1.0, 0.0),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(
                                             0.0, 0.0, 5.0, 0.0),
                                         child: Icon(
                                           Icons.chevron_right_outlined,
@@ -309,7 +305,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 15.0, 0.0, 15.0),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 1.0,
@@ -328,7 +324,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           12.0, 12.0, 6.0, 6.0),
                                       child: InkWell(
                                         splashColor: Colors.transparent,
@@ -358,24 +354,24 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                           ),
                                           child: Align(
                                             alignment:
-                                                AlignmentDirectional(0.0, 0.0),
+                                                const AlignmentDirectional(0.0, 0.0),
                                             child: Column(
                                               mainAxisSize: MainAxisSize.min,
                                               mainAxisAlignment:
                                                   MainAxisAlignment.start,
                                               children: [
-                                                Icon(
+                                                const Icon(
                                                   Icons.calendar_month,
                                                   color: Color(0xFF0080C4),
                                                   size: 80.0,
                                                 ),
                                                 Align(
                                                   alignment:
-                                                      AlignmentDirectional(
+                                                      const AlignmentDirectional(
                                                           0.0, 1.0),
                                                   child: Padding(
                                                     padding:
-                                                        EdgeInsetsDirectional
+                                                        const EdgeInsetsDirectional
                                                             .fromSTEB(0.0, 0.0,
                                                                 0.0, 6.0),
                                                     child: AutoSizeText(
@@ -420,7 +416,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                       ),
                                     ),
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           6.0, 12.0, 12.0, 6.0),
                                       child: InkWell(
                                         splashColor: Colors.transparent,
@@ -443,7 +439,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                           ),
                                           child: Align(
                                             alignment:
-                                                AlignmentDirectional(0.0, 0.0),
+                                                const AlignmentDirectional(0.0, 0.0),
                                             child: Column(
                                               mainAxisSize: MainAxisSize.min,
                                               mainAxisAlignment:
@@ -458,11 +454,11 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                                 ),
                                                 Align(
                                                   alignment:
-                                                      AlignmentDirectional(
+                                                      const AlignmentDirectional(
                                                           0.0, 1.0),
                                                   child: Padding(
                                                     padding:
-                                                        EdgeInsetsDirectional
+                                                        const EdgeInsetsDirectional
                                                             .fromSTEB(0.0, 0.0,
                                                                 0.0, 6.0),
                                                     child: AutoSizeText(
@@ -513,7 +509,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           12.0, 6.0, 6.0, 12.0),
                                       child: InkWell(
                                         splashColor: Colors.transparent,
@@ -536,7 +532,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                           ),
                                           child: Align(
                                             alignment:
-                                                AlignmentDirectional(0.0, 0.0),
+                                                const AlignmentDirectional(0.0, 0.0),
                                             child: Column(
                                               mainAxisSize: MainAxisSize.max,
                                               mainAxisAlignment:
@@ -551,11 +547,11 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                                 ),
                                                 Align(
                                                   alignment:
-                                                      AlignmentDirectional(
+                                                      const AlignmentDirectional(
                                                           0.0, 1.0),
                                                   child: Padding(
                                                     padding:
-                                                        EdgeInsetsDirectional
+                                                        const EdgeInsetsDirectional
                                                             .fromSTEB(0.0, 0.0,
                                                                 0.0, 6.0),
                                                     child: Text(
@@ -601,7 +597,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                       ),
                                     ),
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           6.0, 6.0, 12.0, 12.0),
                                       child: Container(
                                         width:
@@ -615,7 +611,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                         ),
                                         child: Align(
                                           alignment:
-                                              AlignmentDirectional(0.0, 0.0),
+                                              const AlignmentDirectional(0.0, 0.0),
                                           child: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             mainAxisAlignment:
@@ -629,10 +625,10 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                                 size: 80.0,
                                               ),
                                               Align(
-                                                alignment: AlignmentDirectional(
+                                                alignment: const AlignmentDirectional(
                                                     0.0, 1.0),
                                                 child: Padding(
-                                                  padding: EdgeInsetsDirectional
+                                                  padding: const EdgeInsetsDirectional
                                                       .fromSTEB(
                                                           0.0, 0.0, 0.0, 6.0),
                                                   child: AutoSizeText(
@@ -691,9 +687,9 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                             scrollDirection: Axis.vertical,
                             children: [
                               Align(
-                                alignment: AlignmentDirectional(-1.0, 0.0),
+                                alignment: const AlignmentDirectional(-1.0, 0.0),
                                 child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0.0, 0.0, 0.0, 3.0),
                                   child: AutoSizeText(
                                     'Veterinaria Providencia',
@@ -723,7 +719,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                 ),
                               ),
                               Align(
-                                alignment: AlignmentDirectional(-1.0, 0.0),
+                                alignment: const AlignmentDirectional(-1.0, 0.0),
                                 child: Text(
                                   'Calle #25 Colonia Providencia',
                                   textAlign: TextAlign.start,
@@ -738,7 +734,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
-                                        color: Color(0xFF999999),
+                                        color: const Color(0xFF999999),
                                         fontSize: 10.0,
                                         letterSpacing: 0.0,
                                         fontWeight: FontWeight.bold,
@@ -750,7 +746,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                               ),
                               Container(
                                 width: MediaQuery.sizeOf(context).width * 1.0,
-                                constraints: BoxConstraints(
+                                constraints: const BoxConstraints(
                                   maxHeight: 190.0,
                                 ),
                                 decoration: BoxDecoration(
@@ -763,7 +759,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                   scrollDirection: Axis.horizontal,
                                   children: [
                                     Padding(
-                                      padding: EdgeInsets.all(5.0),
+                                      padding: const EdgeInsets.all(5.0),
                                       child: Container(
                                         width: 150.0,
                                         decoration: BoxDecoration(
@@ -771,7 +767,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                               .alternate,
                                         ),
                                         child: Padding(
-                                          padding: EdgeInsets.all(5.0),
+                                          padding: const EdgeInsets.all(5.0),
                                           child: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             mainAxisAlignment:
@@ -788,7 +784,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                                 ),
                                               ),
                                               Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(
                                                         5.0, 8.0, 5.0, 8.0),
                                                 child: AutoSizeText(
