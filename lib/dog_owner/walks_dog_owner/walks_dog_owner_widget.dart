@@ -503,6 +503,7 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                                         photoUrl: fullWalkData['walker_photo_url'],
                                                         walkerId: fullWalkData['walker_id'],
                                                         ownerId: fullWalkData['owner_id'],
+                                                        dogId: fullWalkData['dog_id'], 
                                                       );
                                                     },
                                                   );

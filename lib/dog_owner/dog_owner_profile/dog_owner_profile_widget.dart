@@ -1,8 +1,6 @@
-
 import 'package:dalk/SubscriptionProvider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dalk/common/payment_methods/payment_methods_widget.dart';
-import 'package:dalk/common/walk_payment_window/walk_payment_window_widget.dart';
-import 'package:provider/provider.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
@@ -16,9 +14,12 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'dog_owner_profile_model.dart';
 export 'dog_owner_profile_model.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import '/user_provider.dart';
+import 'package:provider/provider.dart';
 
 class DogOwnerProfileWidget extends StatefulWidget {
-  
   const DogOwnerProfileWidget({super.key});
 
   static String routeName = 'dogOwnerProfile';
@@ -30,6 +31,12 @@ class DogOwnerProfileWidget extends StatefulWidget {
 
 class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
   late DogOwnerProfileModel _model;
+
+  //imagen
+  // File? _ownerImage;
+  // File? _walkerImage;
+  // File? _tempImage;
+  // final ImagePicker _picker = ImagePicker();
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -50,7 +57,10 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final isPremium = context.watch<SubscriptionProvider>().isPremium;
+    // final isPremium = context.watch<SubscriptionProvider>().isPremium;
+    final user = context.watch<UserProvider>().user;
+    final nombre = (user?.name?.split(" ").first) ?? "User";
+    final photoUrl = user?.photoUrl ?? "";
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -109,21 +119,18 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                               children: [
                                 Align(
                                   alignment: const AlignmentDirectional(0, 0),
-                                  child: Container(
-                                    width: 120,
-                                    height: 120,
-                                    clipBehavior: Clip.antiAlias,
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Image.network(
-                                      'https://images.unsplash.com/photo-1495567720989-cebdbdd97913?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxfHxzdW5zZXR8ZW58MHx8fHwxNzQ3MDA2NTczfDA&ixlib=rb-4.1.0&q=80&w=1080',
-                                      fit: BoxFit.cover,
+                                  child: Padding(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                    child: CircleAvatar(
+                                      radius: 60,
+                                      //funcion de la imagen
+                                      backgroundImage: photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+                                      child: photoUrl.isEmpty ? const Icon(Icons.person, size: 60) : null,
                                     ),
                                   ),
                                 ),
-                                Text(
-                                  'Nombre',
+                                AutoSizeText(
+                                '$nombre',
                                   textAlign: TextAlign.center,
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
@@ -149,7 +156,8 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                   padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 5, 0, 0),
                                   child: Text(
-                                    isPremium ? 'Plan Premium' : 'Plan Gratuito',
+                                    'Plan Gratuito',
+                                    // isPremium ? 'Plan Premium' : 'Plan Gratuito',
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .override(
@@ -208,8 +216,9 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                                 padding: const EdgeInsetsDirectional
                                                     .fromSTEB(5, 0, 0, 0),
                                                 child: AutoSizeText(
-                                                  isPremium ? "Revisa tus beneficios premium!" :
-                                                    'Descubre los beneficios del plan premium!' ,
+                                                  //  isPremium ? "Revisa tus beneficios premium!" :
+                                                  //   'Descubre los beneficios del plan premium!' ,
+                                                  'Descubre los beneficios del plan premium!',
                                                   textAlign: TextAlign.start,
                                                   minFontSize: 10,
                                                   style: FlutterFlowTheme.of(
@@ -620,20 +629,10 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                                 highlightColor:
                                                     Colors.transparent,
                                                 onTap: () async {
-                                                  context.pushNamed(
+                                                  context.pushReplacementNamed(
                                                     '_initialize', 
                                                     queryParameters: {'initialPage': 'petList'},
                                                   );  
-
-                                                  // ESTO ES TEMPORAL
-                                                  // Navigator.push(
-                                                  //   context,
-                                                  //   MaterialPageRoute(builder: (context) => const WalkPaymentWindowWidget(walkId: 256, userType: 'Dueño',)),
-                                                  // );
-
-
-
-
                                                 },
                                                 child: Icon(
                                                   Icons.arrow_forward_ios,
@@ -650,7 +649,6 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                     ),
                                   ),
                                 ),
-                                
                                 Align(
                                   alignment: const AlignmentDirectional(-1, 0),
                                   child: Padding(
@@ -866,15 +864,45 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                   padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 30, 0, 0),
                                   child: FFButtonWidget(
-                                    onPressed: () async {
-                                      GoRouter.of(context).prepareAuthEvent();
-                                      await authManager.signOut();
-                                      GoRouter.of(context)
-                                          .clearRedirectLocation();
 
-                                      context.goNamedAuth(LoginWidget.routeName,
-                                          context.mounted);
+                                    onPressed: () async {
+                                      // Preparamos el evento de autenticación ANTES de signOut.
+                                      GoRouter.of(context).prepareAuthEvent(); 
+
+                                      // 2. Limpiar datos del usuario guardados localmente PRIMERO.
+                                      // Esto no usa 'context', por lo que es seguro antes del signOut.
+                                      final prefs = await SharedPreferences.getInstance();
+                                      await prefs.remove('user_data');
+
+                                      try {
+                                        // Cerrar sesión de Supabase (asíncrono)
+                                        await authManager.signOut();
+
+                                        // Verificamos si el widget fue desmontado por la navegación automática.
+                                        if (!context.mounted) {
+                                          return; 
+                                        }
+
+                                        // Limpiar Provider de usuario (redundante si main.dart actuó)
+                                        context.read<UserProvider>().clearUser();
+
+                                        // Limpiar rutas protegidas de GoRouter
+                                        GoRouter.of(context).clearRedirectLocation();
+
+                                        // Redirigir a Login
+                                        context.goNamedAuth(LoginWidget.routeName, context.mounted);
+
+                                      } catch (e) {
+                                        
+                                        // Mostrar error si el contexto todavía está vivo
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text("Error cerrando sesión: $e")),
+                                          );
+                                        }
+                                      }
                                     },
+
                                     text: 'Cerrar Sesión',
                                     options: FFButtonOptions(
                                       width: MediaQuery.sizeOf(context).width,

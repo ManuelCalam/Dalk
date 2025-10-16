@@ -1,5 +1,8 @@
 import 'package:dalk/backend/supabase/supabase.dart';
 import 'package:dalk/common/chat/chat_widget.dart';
+import 'package:dalk/components/pop_up_dog_profile/pop_up_dog_profile_widget.dart';
+import 'package:dalk/components/pop_up_dog_walker_profile/pop_up_dog_walker_profile_widget.dart';
+import 'package:dalk/components/pop_up_walk_options/pop_up_walk_options_widget.dart';
 
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -26,6 +29,7 @@ class CurrentWalkCardWidget extends StatefulWidget {
     required this.id, 
     required this.walkerId,
     required this.ownerId,
+    required this.dogId, 
   })  : this.petName = petName ?? '[petName]',
         this.userName = userName ?? '[userName]',
         this.status = status ?? '[status]',
@@ -41,6 +45,7 @@ class CurrentWalkCardWidget extends StatefulWidget {
   final String photoUrl;
   final String walkerId;
   final String ownerId;
+  final int dogId;
 
   @override
   State<CurrentWalkCardWidget> createState() => _CurrentWalkCardWidgetState();
@@ -181,9 +186,21 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
                                     focusColor: Colors.transparent,
                                     hoverColor: Colors.transparent,
                                     highlightColor: Colors.transparent,
-                                    onTap: () async {
-                                      
-                                    },
+                                      onTap: () async {
+                                        await showModalBottomSheet(
+                                          isScrollControlled: true,
+                                          backgroundColor: Colors.transparent,
+                                          enableDrag: false,
+                                          context: context,
+                                          builder: (context) {
+                                            return Padding(
+                                              padding:
+                                                  MediaQuery.viewInsetsOf(context),
+                                              child: PopUpDogProfileWidget(dogId: widget.dogId,),
+                                            );
+                                          },
+                                        ).then((value) => safeSetState(() {}));
+                                      },
                                     child: AutoSizeText(
                                       widget.petName,
                                       style: FlutterFlowTheme.of(context)

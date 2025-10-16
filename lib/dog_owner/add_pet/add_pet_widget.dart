@@ -12,6 +12,9 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
+import '/utils/validation.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 import 'add_pet_model.dart';
 export 'add_pet_model.dart';
@@ -28,8 +31,13 @@ class AddPetWidget extends StatefulWidget {
 
 class _AddPetWidgetState extends State<AddPetWidget> {
   late AddPetModel _model;
+  File? _ownerImage;
+  File? _walkerImage;
+  File? _petImage;
+  final ImagePicker _picker = ImagePicker();
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool isRegistering = false;
 
   @override
   void initState() {
@@ -55,6 +63,79 @@ class _AddPetWidgetState extends State<AddPetWidget> {
 
     super.dispose();
   }
+  bool validarCamposObligatorios() {
+    return _model.nameInputTextController.text.isNotEmpty &&
+          _model.genderDogOwnerMenuValue != null &&
+          _model.ageInputTextController.text.isNotEmpty &&
+          _model.breeInputTextController.text.isNotEmpty &&
+          _model.dogInfoInputTextController.text.isNotEmpty &&
+          _model.behaviourChipsValueController != null &&
+          _model.dogSizeMenuValue != null;
+  }
+
+  Future<String?> _uploadOwnerImage(String userId, File imageFile) async {
+    try {
+      final filePath = 'owners/$userId/profile.jpg'; // ruta dentro del bucket
+      final storage = Supabase.instance.client.storage;
+
+      // Subir la imagen, si existe reemplazar
+      await storage.from('profile_pics').upload(
+        filePath,
+        imageFile,
+        fileOptions: const FileOptions(upsert: true),
+      );
+
+      // Obtener URL pública
+      final imageUrl = storage.from('profile_pics').getPublicUrl(filePath);
+
+      return imageUrl; // ahora es un String
+    } catch (e) {
+      print('Error al subir imagen: $e');
+      return null;
+    }
+  }
+
+  //funcion para seleccionar imagen
+  Future<void> _pickImage(bool isOwner, ImageSource source) async {
+    final pickedFile = await _picker.pickImage(source: source);
+    if (pickedFile != null) {
+      setState(() {
+        if (isOwner) {
+          _ownerImage = File(pickedFile.path);
+        } else {
+          _walkerImage = File(pickedFile.path);
+        }
+      });
+    }
+  }
+
+  void _showImagePickerOptions(BuildContext context, bool isOwner) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Tomar foto'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickImage(isOwner, ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Elegir de la galería'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickImage(isOwner, ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +157,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                 height: MediaQuery.sizeOf(context).height * 0.1,
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).secondary,
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(0),
                     bottomRight: Radius.circular(0),
                     topLeft: Radius.circular(0),
@@ -86,7 +167,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                 child: wrapWithModel(
                   model: _model.notificationContainerModel,
                   updateCallback: () => safeSetState(() {}),
-                  child: NotificationContainerWidget(),
+                  child: const NotificationContainerWidget(),
                 ),
               ),
               Expanded(
@@ -94,7 +175,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                   width: MediaQuery.sizeOf(context).width,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).tertiary,
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(0),
                       bottomRight: Radius.circular(0),
                       topLeft: Radius.circular(50),
@@ -107,7 +188,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                       wrapWithModel(
                         model: _model.goBackContainerModel,
                         updateCallback: () => safeSetState(() {}),
-                        child: GoBackContainerWidget(),
+                        child: const GoBackContainerWidget(),
                       ),
                       AutoSizeText(
                         'Nueva mascota',
@@ -150,39 +231,43 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                       ),
                       Expanded(
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 0.9,
                             height: double.infinity,
-                            decoration: BoxDecoration(),
+                            decoration: const BoxDecoration(),
                             child: Padding(
                               padding:
-                                  EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+                                  const EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
                               child: SingleChildScrollView(
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Flexible(
                                       child: Align(
-                                        alignment: AlignmentDirectional(0, 0),
-                                        child: Container(
-                                          width: 120,
-                                          height: 120,
-                                          clipBehavior: Clip.antiAlias,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: Image.network(
-                                            'https://images.unsplash.com/photo-1495567720989-cebdbdd97913?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxfHxzdW5zZXR8ZW58MHx8fHwxNzQ3MDA2NTczfDA&ixlib=rb-4.1.0&q=80&w=1080',
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                      ),
+  alignment: const AlignmentDirectional(0, 0),
+  child: Padding(
+    padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+    child: GestureDetector(
+      onTap: () => _showImagePickerOptions(context, true), // true = dueño
+      child: CircleAvatar(
+        radius: 60,
+        backgroundImage: _ownerImage != null
+            ? FileImage(_ownerImage!)
+            : const NetworkImage(
+                'https://static.vecteezy.com/system/resources/previews/007/407/996/non_2x/user-icon-person-icon-client-symbol-login-head-sign-icon-design-vector.jpg',
+              ) as ImageProvider,
+      ),
+    ),
+  ),
+),
+
                                     ),
+                                    Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMedium.override()),
                                     Align(
-                                      alignment: AlignmentDirectional(-1, -1),
+                                      alignment: const AlignmentDirectional(-1, -1),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(
                                             0, 18, 0, 0),
                                         child: Container(
                                           width:
@@ -268,7 +353,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                     ),
                                                 enabledBorder:
                                                     OutlineInputBorder(
-                                                  borderSide: BorderSide(
+                                                  borderSide: const BorderSide(
                                                     color: Color(0x00000000),
                                                     width: 1,
                                                   ),
@@ -277,7 +362,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                 ),
                                                 focusedBorder:
                                                     OutlineInputBorder(
-                                                  borderSide: BorderSide(
+                                                  borderSide: const BorderSide(
                                                     color: Color(0x00000000),
                                                     width: 1,
                                                   ),
@@ -348,18 +433,17 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                               cursorColor:
                                                   FlutterFlowTheme.of(context)
                                                       .primaryText,
-                                              validator: _model
-                                                  .nameInputTextControllerValidator
-                                                  .asValidator(context),
+                                              //validar el nombre como requerido
+  validator: (value) => Validators.requiredField(value, fieldName: 'Nombre'),
                                             ),
                                           ),
                                         ),
                                       ),
                                     ),
                                     Align(
-                                      alignment: AlignmentDirectional(-1, -1),
+                                      alignment: const AlignmentDirectional(-1, -1),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(
                                             0, 18, 0, 0),
                                         child: Container(
                                           width:
@@ -444,7 +528,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                     ),
                                                 enabledBorder:
                                                     OutlineInputBorder(
-                                                  borderSide: BorderSide(
+                                                  borderSide: const BorderSide(
                                                     color: Color(0x00000000),
                                                     width: 1,
                                                   ),
@@ -453,7 +537,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                 ),
                                                 focusedBorder:
                                                     OutlineInputBorder(
-                                                  borderSide: BorderSide(
+                                                  borderSide: const BorderSide(
                                                     color: Color(0x00000000),
                                                     width: 1,
                                                   ),
@@ -527,18 +611,17 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                               cursorColor:
                                                   FlutterFlowTheme.of(context)
                                                       .primaryText,
-                                              validator: _model
-                                                  .ageInputTextControllerValidator
-                                                  .asValidator(context),
+                                              //validar el edad como requerido
+  validator: (value) => Validators.requiredField(value, fieldName: 'Edad'),
                                             ),
                                           ),
                                         ),
                                       ),
                                     ),
                                     Align(
-                                      alignment: AlignmentDirectional(-1, -1),
+                                      alignment: const AlignmentDirectional(-1, -1),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(
                                             0, 18, 0, 0),
                                         child: Container(
                                           width:
@@ -558,9 +641,10 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                 FormFieldController<String>(
                                               _model.genderDogOwnerMenuValue ??=
                                                   '',
+                                                  
                                             ),
                                             options: List<String>.from(
-                                                ['Macho', 'Hembra']),
+                                                ['Macho', 'Hembra'],),
                                             optionLabels: ['Macho', 'Hembra'],
                                             onChanged: (val) => safeSetState(() =>
                                                 _model.genderDogOwnerMenuValue =
@@ -602,6 +686,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                                   context)
                                                               .bodyMedium
                                                               .fontStyle,
+                                                              
                                                     ),
                                             hintText: 'Género',
                                             icon: Icon(
@@ -619,7 +704,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                             borderWidth: 0,
                                             borderRadius: 8,
                                             margin:
-                                                EdgeInsetsDirectional.fromSTEB(
+                                                const EdgeInsetsDirectional.fromSTEB(
                                                     12, 0, 12, 0),
                                             hidesUnderline: true,
                                             isOverButton: false,
@@ -630,9 +715,9 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                       ),
                                     ),
                                     Align(
-                                      alignment: AlignmentDirectional(-1, -1),
+                                      alignment: const AlignmentDirectional(-1, -1),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(
                                             0, 18, 0, 0),
                                         child: Container(
                                           width:
@@ -719,7 +804,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                     ),
                                                 enabledBorder:
                                                     OutlineInputBorder(
-                                                  borderSide: BorderSide(
+                                                  borderSide: const BorderSide(
                                                     color: Color(0x00000000),
                                                     width: 1,
                                                   ),
@@ -728,7 +813,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                 ),
                                                 focusedBorder:
                                                     OutlineInputBorder(
-                                                  borderSide: BorderSide(
+                                                  borderSide: const BorderSide(
                                                     color: Color(0x00000000),
                                                     width: 1,
                                                   ),
@@ -799,16 +884,15 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                               cursorColor:
                                                   FlutterFlowTheme.of(context)
                                                       .primaryText,
-                                              validator: _model
-                                                  .breeInputTextControllerValidator
-                                                  .asValidator(context),
+                                              //validar el Raza como requerido
+                                              validator: (value) => Validators.requiredField(value, fieldName: 'Raza'),
                                             ),
                                           ),
                                         ),
                                       ),
                                     ),
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           0, 18, 0, 0),
                                       child: FlutterFlowDropDown<String>(
                                         controller: _model
@@ -818,7 +902,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                         ),
                                         options: List<String>.from(
                                             ['Chico', 'Mediano', 'Grande']),
-                                        optionLabels: [
+                                        optionLabels: const [
                                           'Chico',
                                           'Mediano',
                                           'Grande'
@@ -866,7 +950,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                         borderColor: Colors.transparent,
                                         borderWidth: 0,
                                         borderRadius: 8,
-                                        margin: EdgeInsetsDirectional.fromSTEB(
+                                        margin: const EdgeInsetsDirectional.fromSTEB(
                                             12, 0, 12, 0),
                                         hidesUnderline: true,
                                         isOverButton: false,
@@ -876,20 +960,20 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                     ),
                                     Expanded(
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(
                                             0, 18, 0, 0),
                                         child: Container(
                                           width:
                                               MediaQuery.sizeOf(context).width,
-                                          decoration: BoxDecoration(),
+                                          decoration: const BoxDecoration(),
                                           child: Column(
                                             mainAxisSize: MainAxisSize.max,
                                             children: [
                                               Align(
                                                 alignment:
-                                                    AlignmentDirectional(-1, 0),
+                                                    const AlignmentDirectional(-1, 0),
                                                 child: Padding(
-                                                  padding: EdgeInsetsDirectional
+                                                  padding: const EdgeInsetsDirectional
                                                       .fromSTEB(0, 0, 0, 5),
                                                   child: AutoSizeText(
                                                     'Comportamiento',
@@ -931,7 +1015,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                               ),
                                               Align(
                                                 alignment:
-                                                    AlignmentDirectional(0, 0),
+                                                    const AlignmentDirectional(0, 0),
                                                 child: FlutterFlowChoiceChips(
                                                   options: const [
                                                     ChipData(
@@ -995,7 +1079,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                             .info,
                                                     iconSize: 16,
                                                     labelPadding:
-                                                        EdgeInsets.all(5),
+                                                        const EdgeInsets.all(5),
                                                     elevation: 0,
                                                     borderRadius:
                                                         BorderRadius.circular(
@@ -1045,7 +1129,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                         .secondaryBackground,
                                                     iconSize: 16,
                                                     labelPadding:
-                                                        EdgeInsets.all(5),
+                                                        const EdgeInsets.all(5),
                                                     elevation: 0,
                                                     borderRadius:
                                                         BorderRadius.circular(
@@ -1074,9 +1158,9 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                       ),
                                     ),
                                     Align(
-                                      alignment: AlignmentDirectional(-1, -1),
+                                      alignment: const AlignmentDirectional(-1, -1),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(
                                             0, 18, 0, 0),
                                         child: Container(
                                           width:
@@ -1127,7 +1211,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                   borderRadius: BorderRadius.circular(30),
                                                 ),
                                                 focusedBorder: OutlineInputBorder(
-                                                  borderSide: BorderSide(
+                                                  borderSide: const BorderSide(
                                                     color: Color(0x00000000),
                                                     width: 1,
                                                   ),
@@ -1170,8 +1254,8 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                               minLines: 5,
                                               keyboardType: TextInputType.multiline,
                                               cursorColor: FlutterFlowTheme.of(context).primaryText,
-                                              validator:
-                                                  _model.dogInfoInputTextControllerValidator.asValidator(context),
+                                              //validar el Acerca de tu perro como requerido
+                                              validator: (value) => Validators.requiredField(value, fieldName: ''),
                                             ),
                                           )
 
@@ -1180,10 +1264,17 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                     ),
                                     Flexible(
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(
                                             0, 18, 0, 0),
                                         child: FFButtonWidget(
                                           onPressed: () async {
+
+                                            if (!validarCamposObligatorios()) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('Completa todos los campos ')),
+  );
+  return;
+}
                                             try{
                                               final response = await Supabase.instance.client
                                               .from('pets')
@@ -1233,10 +1324,10 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                     .height *
                                                 0.05,
                                             padding:
-                                                EdgeInsetsDirectional.fromSTEB(
+                                                const EdgeInsetsDirectional.fromSTEB(
                                                     0, 0, 0, 0),
                                             iconPadding:
-                                                EdgeInsetsDirectional.fromSTEB(
+                                                const EdgeInsetsDirectional.fromSTEB(
                                                     0, 0, 0, 0),
                                             color: FlutterFlowTheme.of(context)
                                                 .accent1,
