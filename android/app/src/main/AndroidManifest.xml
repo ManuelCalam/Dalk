@@ -94,8 +94,15 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="dalk" android:host="dalk.com" />
+
+                <!-- URL general de autenticación -->
+                <data android:scheme="dalkpaseos" android:host="auth" />
+
+                <!-- URL específica para cambio de contraseña -->
+                <data android:scheme="dalkpaseos" android:host="changePassword" />
             </intent-filter>
+
+
 
         </activity>
 

@@ -1,3 +1,5 @@
+import 'package:dalk/backend/supabase/database/database.dart';
+
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
 import '/flutter_flow/flutter_flow_choice_chips.dart';
@@ -11,12 +13,17 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 
 import 'pet_update_profile_model.dart';
 export 'pet_update_profile_model.dart';
 
 class PetUpdateProfileWidget extends StatefulWidget {
-  const PetUpdateProfileWidget({super.key});
+  final Map<String, dynamic>? petData;
+
+  //const PetUpdateProfileWidget({super.key, required Map<String, dynamic> petData, this.petData});
+  const PetUpdateProfileWidget({Key? key, this.petData}) : super(key: key);
 
   static String routeName = 'petUpdateProfile';
   static String routePath = '/petUpdateProfile';
@@ -28,30 +35,198 @@ class PetUpdateProfileWidget extends StatefulWidget {
 class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
   late PetUpdateProfileModel _model;
 
+  // Valores posibles (ajusta si tus etiquetas son otras)
+    final List<String> behaviourOptions = [
+      'Sociable con otros perros',
+      'Nervioso',
+      'Tranquilo',
+      'Obediente',
+      'Energético',
+      'Tira de la correa',
+      'No se lleva con otros perros',
+      'Amigable con personas',
+    ];
+
+    // Estado local para chips / dropdowns
+    Set<String> selectedBehaviours = {};
+    String? selectedGender;
+    String? selectedSize;
+
+
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isSaving = false;
+  final supabase = Supabase.instance.client;
+
 
   @override
   void initState() {
     super.initState();
+
+    // Asegúrate de crear el modelo primero
     _model = createModel(context, () => PetUpdateProfileModel());
 
-    _model.nameInputTextController ??= TextEditingController();
+    final pet = widget.petData ?? {};
+
+    // ---- Text controllers ----
+    _model.nameInputTextController ??=
+        TextEditingController(text: pet['name'] ?? '');
     _model.nameInputFocusNode ??= FocusNode();
 
-    _model.ageInputTextController ??= TextEditingController();
+    _model.ageInputTextController ??=
+        TextEditingController(text: pet['age']?.toString() ?? '');
     _model.ageInputFocusNode ??= FocusNode();
 
-    _model.raceInputTextController ??= TextEditingController();
+    _model.raceInputTextController ??=
+        TextEditingController(text: pet['bree'] ?? '');
     _model.raceInputFocusNode ??= FocusNode();
 
-    _model.dogInfoInputTextController ??= TextEditingController();
+    _model.dogInfoInputTextController ??=
+        TextEditingController(text: pet['aboutme'] ?? '');
     _model.dogInfoInputFocusNode ??= FocusNode();
+    
+    // ---- Campos seleccionables (gender, behaviour, etc.) ----
+
+    final genderVal = pet['gender']?.toString() ??
+    pet['sexo']?.toString() ??
+    pet['genero']?.toString();
+
+    if (genderVal != null && genderVal.isNotEmpty) {
+      _model.genderDogOwnerMenuValue = genderVal;
+
+      // Si el controlador ya existe, actualiza el valor.
+      if (_model.genderDogOwnerMenuValueController != null) {
+        _model.genderDogOwnerMenuValueController!.value = genderVal;
+      } else {
+        _model.genderDogOwnerMenuValueController =
+            FormFieldController<String>(genderVal);
+      }
+    }
+
+    final dynamic behaviourRaw =
+        pet['behavior'] ?? pet['behaviour'] ?? pet['characteristics'];
+
+    if (behaviourRaw != null) {
+      if (behaviourRaw is List) {
+        selectedBehaviours = behaviourRaw.map((e) => e.toString()).toSet();
+      } else if (behaviourRaw is String) {
+        selectedBehaviours = behaviourRaw
+            .split(',')
+            .map((s) => s.trim())
+            .where((s) => s.isNotEmpty)
+            .toSet();
+      } else {
+        selectedBehaviours = {behaviourRaw.toString()};
+      }
+    }
+
+    // TAMAÑO (Size)
+    final sizeVal = pet['size']?.toString() ?? pet['tamaño']?.toString();
+    if (sizeVal != null && sizeVal.isNotEmpty) {
+      _model.dogSizeMenuValue = sizeVal;
+      _model.dogSizeMenuValueController =
+          FormFieldController<String>(sizeVal);
+    }
+
+    _model.onUpdate();
   }
+
+
+Future<void> _saveChanges() async {
+  final petId = widget.petData?['id'];
+
+  if (petId == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('No se encontró el ID de la mascota')),
+    );
+    return;
+  }
+
+  // --- obtener los valores de los campos ---
+  final name = _model.nameInputTextController?.text ?? '';
+  final age = int.tryParse(_model.ageInputTextController?.text ?? '');
+  final race = _model.raceInputTextController?.text ?? '';
+  final about = _model.dogInfoInputTextController?.text ?? '';
+
+  final sizeValue =
+      _model.dogSizeMenuValue ?? _model.dogSizeMenuValueController?.value;
+  final genderValue = _model.genderDogOwnerMenuValue ??
+      _model.genderDogOwnerMenuValueController?.value;
+
+  List<String> behaviourList = [];
+  if (_model.behaviourChipsValues != null) {
+    behaviourList = List<String>.from(_model.behaviourChipsValues!);
+  } else if (_model.behaviourChipsValueController?.value != null) {
+    behaviourList =
+        List<String>.from(_model.behaviourChipsValueController!.value ?? []);
+  }
+
+  final payload = <String, dynamic>{
+    'name': name,
+    if (age != null) 'age': age,
+    'bree': race,
+    'aboutme': about,
+    'size': sizeValue,
+    'gender': genderValue,
+    'behaviour': behaviourList,
+  };
+
+  try {
+    setState(() => _isSaving = true);
+
+    print('🔹 Enviando actualización para ID: $petId');
+    print('🔹 Payload: $payload');
+
+    final response = await supabase
+        .from('pets')
+        .update(payload)
+        .eq('id', petId)
+        .select();
+
+    print('🔹 Supabase response: $response');
+
+    if (response is List && response.isNotEmpty) {
+      final updated = Map<String, dynamic>.from(response.first);
+
+      // Actualiza los datos en memoria
+      widget.petData?.addAll(updated);
+
+      setState(() {
+        _isSaving = false;
+        _model.nameInputTextController?.text = updated['name'] ?? '';
+        _model.ageInputTextController?.text = updated['age']?.toString() ?? '';
+        _model.raceInputTextController?.text = updated['bree'] ?? '';
+        _model.dogInfoInputTextController?.text = updated['aboutme'] ?? '';
+        _model.dogSizeMenuValue = updated['size'];
+        _model.dogSizeMenuValueController?.value = updated['size'];
+        _model.genderDogOwnerMenuValue = updated['gender'];
+        _model.genderDogOwnerMenuValueController?.value = updated['gender'];
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('✅ Datos actualizados correctamente')),
+      );
+    } else {
+      setState(() => _isSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('⚠️ No se pudo actualizar la mascota (sin coincidencias)')),
+      );
+    }
+  } catch (e) {
+    setState(() => _isSaving = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('❌ Error al actualizar: $e')),
+    );
+  }
+}
+
+
+
+
 
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
   }
 
@@ -129,7 +304,7 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                             ),
                       ),
                       AutoSizeText(
-                        '!Edita los datos de tu mascota!',
+                        '¡Edita los datos de tu mascota!',
                         textAlign: TextAlign.center,
                         minFontSize: 10,
                         style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -602,7 +777,7 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                                                               .bodyMedium
                                                               .fontStyle,
                                                     ),
-                                            hintText: 'GÃ©nero',
+                                            hintText: 'Género',
                                             icon: Icon(
                                               Icons.keyboard_arrow_down_rounded,
                                               color:
@@ -852,7 +1027,7 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                                                       .bodyMedium
                                                       .fontStyle,
                                             ),
-                                        hintText: 'TamaÃ±o',
+                                        hintText: 'Tamaño',
                                         icon: Icon(
                                           Icons.keyboard_arrow_down_rounded,
                                           color: FlutterFlowTheme.of(context)
@@ -929,143 +1104,77 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                                                 ),
                                               ),
                                               Align(
-                                                alignment:
-                                                    AlignmentDirectional(0, 0),
+                                                alignment: AlignmentDirectional(0, 0),
                                                 child: FlutterFlowChoiceChips(
                                                   options: [
-                                                    ChipData(
-                                                        'Sociable con otros perros'),
+                                                    ChipData('Sociable con otros perros'),
                                                     ChipData('Nervioso'),
                                                     ChipData('Tranquilo'),
                                                     ChipData('Obediente'),
-                                                    ChipData('EnergÃ©tico'),
-                                                    ChipData(
-                                                        'Tira de la correa'),
-                                                    ChipData(
-                                                        'No se lleva con otros perros'),
-                                                    ChipData(
-                                                        'Amigable con personas')
+                                                    ChipData('Energético'),
+                                                    ChipData('Tira de la correa'),
+                                                    ChipData('No se lleva con otros perros'),
+                                                    ChipData('Amigable con personas'),
                                                   ],
-                                                  onChanged: (val) =>
-                                                      safeSetState(() => _model
-                                                              .behaviourChipsValues =
-                                                          val),
+
+                                                  // ✅ Solo un controller
+                                                  controller: _model.behaviourChipsValueController ??=
+                                                      FormFieldController<List<String>>(
+                                                        selectedBehaviours?.toList() ?? [],
+                                                      ),
+
+                                                  // ✅ Solo un multiselect
+                                                  multiselect: true,
+
+                                                  onChanged: (val) {
+                                                    setState(() => selectedBehaviours = val?.toSet() ?? {});
+                                                  },
                                                   selectedChipStyle: ChipStyle(
-                                                    backgroundColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .primary,
-                                                    textStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .override(
-                                                              font: GoogleFonts
-                                                                  .lexend(
-                                                                fontWeight: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontWeight,
-                                                                fontStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                              ),
-                                                              color: FlutterFlowTheme
-                                                                      .of(context)
-                                                                  .info,
-                                                              letterSpacing:
-                                                                  0.0,
-                                                              fontWeight:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontWeight,
-                                                              fontStyle:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                            ),
-                                                    iconColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .info,
+                                                    backgroundColor: FlutterFlowTheme.of(context).primary,
+                                                    textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                          font: GoogleFonts.lexend(
+                                                            fontWeight:
+                                                                FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                            fontStyle:
+                                                                FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                          ),
+                                                          color: FlutterFlowTheme.of(context).info,
+                                                          letterSpacing: 0.0,
+                                                        ),
+                                                    iconColor: FlutterFlowTheme.of(context).info,
                                                     iconSize: 16,
-                                                    labelPadding:
-                                                        EdgeInsets.all(5),
+                                                    labelPadding: EdgeInsets.all(5),
                                                     elevation: 0,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            8),
+                                                    borderRadius: BorderRadius.circular(8),
                                                   ),
-                                                  unselectedChipStyle:
-                                                      ChipStyle(
-                                                    backgroundColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .alternate,
-                                                    textStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .override(
-                                                              font: GoogleFonts
-                                                                  .lexend(
-                                                                fontWeight: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontWeight,
-                                                                fontStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                              ),
-                                                              color: FlutterFlowTheme
-                                                                      .of(context)
-                                                                  .secondaryBackground,
-                                                              fontSize: 16,
-                                                              letterSpacing:
-                                                                  0.0,
-                                                              fontWeight:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontWeight,
-                                                              fontStyle:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                            ),
-                                                    iconColor: FlutterFlowTheme
-                                                            .of(context)
-                                                        .secondaryBackground,
+                                                  unselectedChipStyle: ChipStyle(
+                                                    backgroundColor: FlutterFlowTheme.of(context).alternate,
+                                                    textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                          font: GoogleFonts.lexend(
+                                                            fontWeight:
+                                                                FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                            fontStyle:
+                                                                FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                          ),
+                                                          color:
+                                                              FlutterFlowTheme.of(context).secondaryBackground,
+                                                          fontSize: 16,
+                                                          letterSpacing: 0.0,
+                                                        ),
+                                                    iconColor:
+                                                        FlutterFlowTheme.of(context).secondaryBackground,
                                                     iconSize: 16,
-                                                    labelPadding:
-                                                        EdgeInsets.all(5),
+                                                    labelPadding: EdgeInsets.all(5),
                                                     elevation: 0,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            8),
+                                                    borderRadius: BorderRadius.circular(8),
                                                   ),
                                                   chipSpacing: 2,
                                                   rowSpacing: 5,
-                                                  multiselect: true,
-                                                  initialized: _model
-                                                          .behaviourChipsValues !=
-                                                      null,
-                                                  alignment:
-                                                      WrapAlignment.center,
-                                                  controller: _model
-                                                          .behaviourChipsValueController ??=
-                                                      FormFieldController<
-                                                          List<String>>(
-                                                    [],
-                                                  ),
+                                                  initialized: _model.behaviourChipsValues != null,
+                                                  alignment: WrapAlignment.center,
                                                   wrapped: true,
                                                 ),
-                                              ),
+                                              )
                                             ],
                                           ),
                                         ),
@@ -1253,10 +1362,11 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                                         padding: EdgeInsetsDirectional.fromSTEB(
                                             0, 18, 0, 0),
                                         child: FFButtonWidget(
-                                          onPressed: () {
-                                            print('addPet_btn pressed ...');
+                                          onPressed: () async {
+                                            await _saveChanges();
                                           },
-                                          text: 'Guardar cambios',
+                                          //text: 'Guardar cambios',
+                                          text: _isSaving ? 'Guardando...' : 'Guardar',
                                           options: FFButtonOptions(
                                             width: MediaQuery.sizeOf(context)
                                                 .width,
@@ -1325,3 +1435,4 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
     );
   }
 }
+

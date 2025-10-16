@@ -1,3 +1,6 @@
+import 'package:dalk/backend/supabase/supabase.dart';
+import 'package:dalk/cards/pet_list_card/pet_list_card_widget.dart';
+
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -24,10 +27,39 @@ class _PetListWidgetState extends State<PetListWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  final supabase = Supabase.instance.client;
+  List<Map<String, dynamic>> pets = [];
+  bool loading = true;
+
+
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => PetListModel());
+    _loadPets(); // 👈 carga las mascotas al iniciar
+  }
+
+  Future<void> _loadPets() async {
+    try {
+      final user = supabase.auth.currentUser;
+      if (user == null) {
+        setState(() => loading = false);
+        return;
+      }
+
+      final response = await supabase
+          .from('pets')
+          .select()
+          .eq('uuid', user.id);
+
+      setState(() {
+        pets = List<Map<String, dynamic>>.from(response);
+        loading = false;
+      });
+    } catch (e) {
+      print('Error al cargar mascotas: $e');
+      setState(() => loading = false);
+    }
   }
 
   @override
@@ -127,7 +159,31 @@ class _PetListWidgetState extends State<PetListWidget> {
                                 primary: false,
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
-                                  children: [],
+                                  children: [
+                                    if (loading)
+                                      const Center(child: CircularProgressIndicator())
+                                    else if (pets.isEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.all(20.0),
+                                        child: Text(
+                                          'No tienes mascotas registradas 🐾',
+                                          style: FlutterFlowTheme.of(context).bodyMedium,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      )
+                                    else
+                                      for (final pet in pets)
+                                        PetListCardWidget(
+                                        petData: pet,
+                                        onPetDeleted: () async {
+                                          if (!mounted) return;  // seguridad si el widget fue desmontado
+                                          await _loadPets();      // recarga la lista desde Supabase
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(content: Text('Mascota eliminada correctamente 🐾')),
+                                          );
+                                        },
+                                      ),
+                                  ],
                                 ),
                               ),
                             ),
@@ -145,3 +201,4 @@ class _PetListWidgetState extends State<PetListWidget> {
     );
   }
 }
+

@@ -1,10 +1,6 @@
 
-import 'package:dalk/dog_walker/walks_dog_walker/walks_dog_walker_widget.dart';
-
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +9,7 @@ import 'package:provider/provider.dart';
 
 import 'home_dog_walker_model.dart';
 export 'home_dog_walker_model.dart';
+import '/user_provider.dart';
 
 class HomeDogWalkerWidget extends StatefulWidget {
   const HomeDogWalkerWidget({super.key});
@@ -34,6 +31,9 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => HomeDogWalkerModel());
+    //recarga el cached del usuario
+    context.read<UserProvider>().loadUser();
+    //context.read<UserProvider>().loadUser(forceRefresh: true);
   }
 
   @override
@@ -45,6 +45,9 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<UserProvider>().user;
+    final nombre = (user?.name?.split(" ").first) ?? "User";
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -57,7 +60,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 1),
+              padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 1),
               child: Container(
                 width: MediaQuery.sizeOf(context).width,
                 height: MediaQuery.sizeOf(context).height * 0.2,
@@ -67,13 +70,13 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                     BoxShadow(
                       blurRadius: 4,
                       color: FlutterFlowTheme.of(context).secondary,
-                      offset: Offset(
+                      offset: const Offset(
                         0,
                         2,
                       ),
                     )
                   ],
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(50),
                     bottomRight: Radius.circular(50),
                     topLeft: Radius.circular(0),
@@ -89,7 +92,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                       child: Opacity(
                         opacity: 0,
                         child: Align(
-                          alignment: AlignmentDirectional(0, -0.5),
+                          alignment: const AlignmentDirectional(0, -0.5),
                           child: Text(
                             'Home',
                             style: FlutterFlowTheme.of(context)
@@ -114,9 +117,9 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                       ),
                     ),
                     Align(
-                      alignment: AlignmentDirectional(1, -1),
+                      alignment: const AlignmentDirectional(1, -1),
                       child: Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(0, 0, 20, 0),
+                        padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 20, 0),
                         child: InkWell(
                           splashColor: Colors.transparent,
                           focusColor: Colors.transparent,
@@ -125,7 +128,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                           onTap: () async {
                             context.pushNamed(NotificationsWidget.routeName);
                           },
-                          child: Icon(
+                          child: const Icon(
                             Icons.notifications_sharp,
                             color: Color(0xFFCCDBFF),
                             size: 32,
@@ -134,38 +137,42 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                       ),
                     ),
                     Align(
-                      alignment: AlignmentDirectional(-1, 0),
+                      alignment: const AlignmentDirectional(-1.0, 0.0),
                       child: Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(30, 0, 0, 0),
-                        child: AutoSizeText(
-                          'Hola User!',
-                          textAlign: TextAlign.start,
-                          maxLines: 1,
-                          minFontSize: 18,
-                          style:
-                              FlutterFlowTheme.of(context).bodyMedium.override(
+                        padding: const EdgeInsetsDirectional.fromSTEB(30.0, 0.0, 0.0, 0.0),
+                        child: Builder(
+                          builder: (context) {
+
+                            return AutoSizeText(
+                              'Hola $nombre!',
+                              textAlign: TextAlign.start,
+                              maxLines: 1,
+                              minFontSize: 18.0,
+                              style: FlutterFlowTheme.of(context).bodyMedium.override(
                                     font: GoogleFonts.lexend(
                                       fontWeight: FontWeight.bold,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .bodyMedium
                                           .fontStyle,
                                     ),
-                                    color: Color(0xFFCCDBFF),
-                                    fontSize: 32,
+                                    color: const Color(0xFFCCDBFF),
+                                    fontSize: 32.0,
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.bold,
                                     fontStyle: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .fontStyle,
                                   ),
+                            );
+                          },
                         ),
                       ),
                     ),
                     Flexible(
                       child: Align(
-                        alignment: AlignmentDirectional(-1, -1),
+                        alignment: const AlignmentDirectional(-1, -1),
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(30, 0, 0, 0),
+                          padding: const EdgeInsetsDirectional.fromSTEB(30, 0, 0, 0),
                           child: AutoSizeText(
                             'Agenda un paseo!',
                             textAlign: TextAlign.start,
@@ -198,19 +205,19 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
             ),
             Expanded(
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
+                padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
                 child: Container(
                   width: MediaQuery.sizeOf(context).width * 0.9,
-                  decoration: BoxDecoration(),
+                  decoration: const BoxDecoration(),
                   child: Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
                     child: ListView(
                       padding: EdgeInsets.zero,
                       shrinkWrap: true,
                       scrollDirection: Axis.vertical,
                       children: [
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 15, 0, 15),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 15, 0, 15),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width,
                             decoration: BoxDecoration(
@@ -228,7 +235,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           12, 12, 6, 6),
                                       child: InkWell(
                                         splashColor: Colors.transparent,
@@ -251,24 +258,24 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                           ),
                                           child: Align(
                                             alignment:
-                                                AlignmentDirectional(0, 0),
+                                                const AlignmentDirectional(0, 0),
                                             child: Column(
                                               mainAxisSize: MainAxisSize.min,
                                               mainAxisAlignment:
                                                   MainAxisAlignment.start,
                                               children: [
-                                                Icon(
+                                                const Icon(
                                                   Icons.perm_contact_cal,
                                                   color: Color(0xFF0080C4),
                                                   size: 80,
                                                 ),
                                                 Align(
                                                   alignment:
-                                                      AlignmentDirectional(
+                                                      const AlignmentDirectional(
                                                           0, 1),
                                                   child: Padding(
                                                     padding:
-                                                        EdgeInsetsDirectional
+                                                        const EdgeInsetsDirectional
                                                             .fromSTEB(
                                                                 0, 0, 0, 6),
                                                     child: AutoSizeText(
@@ -313,7 +320,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                       ),
                                     ),
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           6, 12, 12, 6),
                                       child: InkWell(
                                         splashColor: Colors.transparent,
@@ -336,7 +343,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                           ),
                                           child: Align(
                                             alignment:
-                                                AlignmentDirectional(0, 0),
+                                                const AlignmentDirectional(0, 0),
                                             child: Column(
                                               mainAxisSize: MainAxisSize.min,
                                               mainAxisAlignment:
@@ -351,11 +358,11 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                                 ),
                                                 Align(
                                                   alignment:
-                                                      AlignmentDirectional(
+                                                      const AlignmentDirectional(
                                                           0, 1),
                                                   child: Padding(
                                                     padding:
-                                                        EdgeInsetsDirectional
+                                                        const EdgeInsetsDirectional
                                                             .fromSTEB(
                                                                 0, 0, 0, 6),
                                                     child: AutoSizeText(
@@ -406,7 +413,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           12, 6, 6, 12),
                                       child: InkWell(
                                         splashColor: Colors.transparent,
@@ -429,7 +436,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                           ),
                                           child: Align(
                                             alignment:
-                                                AlignmentDirectional(0, 0),
+                                                const AlignmentDirectional(0, 0),
                                             child: Column(
                                               mainAxisSize: MainAxisSize.max,
                                               mainAxisAlignment:
@@ -444,11 +451,11 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                                 ),
                                                 Align(
                                                   alignment:
-                                                      AlignmentDirectional(
+                                                      const AlignmentDirectional(
                                                           0, 1),
                                                   child: Padding(
                                                     padding:
-                                                        EdgeInsetsDirectional
+                                                        const EdgeInsetsDirectional
                                                             .fromSTEB(
                                                                 0, 0, 0, 6),
                                                     child: Text(
@@ -494,7 +501,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                       ),
                                     ),
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           6, 6, 12, 12),
                                       child: Container(
                                         width:
@@ -507,7 +514,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                               BorderRadius.circular(10),
                                         ),
                                         child: Align(
-                                          alignment: AlignmentDirectional(0, 0),
+                                          alignment: const AlignmentDirectional(0, 0),
                                           child: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             mainAxisAlignment:
@@ -522,9 +529,9 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                               ),
                                               Align(
                                                 alignment:
-                                                    AlignmentDirectional(0, 1),
+                                                    const AlignmentDirectional(0, 1),
                                                 child: Padding(
-                                                  padding: EdgeInsetsDirectional
+                                                  padding: const EdgeInsetsDirectional
                                                       .fromSTEB(0, 0, 0, 6),
                                                   child: AutoSizeText(
                                                     'Nosotros',
@@ -582,9 +589,9 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                             scrollDirection: Axis.vertical,
                             children: [
                               Align(
-                                alignment: AlignmentDirectional(-1, 0),
+                                alignment: const AlignmentDirectional(-1, 0),
                                 child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 0, 0, 3),
                                   child: AutoSizeText(
                                     'Veterinaria Providencia',
@@ -614,7 +621,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                 ),
                               ),
                               Align(
-                                alignment: AlignmentDirectional(-1, 0),
+                                alignment: const AlignmentDirectional(-1, 0),
                                 child: Text(
                                   'Calle #25 Colonia Providencia',
                                   textAlign: TextAlign.start,
@@ -629,7 +636,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
-                                        color: Color(0xFF999999),
+                                        color: const Color(0xFF999999),
                                         fontSize: 10,
                                         letterSpacing: 0.0,
                                         fontWeight: FontWeight.bold,
@@ -641,7 +648,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                               ),
                               Container(
                                 width: MediaQuery.sizeOf(context).width,
-                                constraints: BoxConstraints(
+                                constraints: const BoxConstraints(
                                   maxHeight: 190,
                                 ),
                                 decoration: BoxDecoration(
@@ -654,7 +661,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                   scrollDirection: Axis.horizontal,
                                   children: [
                                     Padding(
-                                      padding: EdgeInsets.all(5),
+                                      padding: const EdgeInsets.all(5),
                                       child: Container(
                                         width: 150,
                                         decoration: BoxDecoration(
@@ -662,7 +669,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                               .alternate,
                                         ),
                                         child: Padding(
-                                          padding: EdgeInsets.all(5),
+                                          padding: const EdgeInsets.all(5),
                                           child: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             mainAxisAlignment:
@@ -679,7 +686,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                                 ),
                                               ),
                                               Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(5, 8, 5, 8),
                                                 child: AutoSizeText(
                                                   'Croquetas 2 kg Marca Ganador',
