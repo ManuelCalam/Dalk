@@ -16,6 +16,7 @@ import 'package:provider/provider.dart';
 class AddPetModel extends FlutterFlowModel<AddPetWidget> {
   ///  State fields for stateful widgets in this page.
 
+  final formKey = GlobalKey<FormState>();
   // Model for notificationContainer component.
   late NotificationContainerModel notificationContainerModel;
   // Model for goBackContainer component.
@@ -48,6 +49,8 @@ class AddPetModel extends FlutterFlowModel<AddPetWidget> {
   FocusNode? dogInfoInputFocusNode;
   TextEditingController? dogInfoInputTextController;
   String? Function(BuildContext, String?)? dogInfoInputTextControllerValidator;
+
+ 
 
   @override
   void initState(BuildContext context) {

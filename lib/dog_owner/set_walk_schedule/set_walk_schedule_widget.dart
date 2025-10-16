@@ -14,9 +14,11 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '/utils/validation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'set_walk_schedule_model.dart';
 export 'set_walk_schedule_model.dart';
+
 
 class SetWalkScheduleWidget extends StatefulWidget {
   const SetWalkScheduleWidget({
@@ -43,6 +45,8 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   int? selectedAddressId;
   int? selectedPetId;
+
+  
 
   @override
   void initState() {
@@ -1191,6 +1195,7 @@ Align(
                                         0.0, 20.0, 0.0, 0.0),
                                     child: FFButtonWidget(
                                       onPressed: () async {
+                                        
                                         int finalWalkDurationInMinutes;
 
                                         if (_model.selectedWalkDuration == 'Personalizado') {

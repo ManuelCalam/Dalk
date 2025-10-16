@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '/utils/validation.dart';
 
 import 'sing_in_dog_owner_model.dart';
 export 'sing_in_dog_owner_model.dart';
@@ -36,6 +37,19 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
   File? _ownerImage;
   File? _walkerImage;
   final ImagePicker _picker = ImagePicker();
+
+  bool validarCamposObligatorios() {
+    return _model.emailDogOwnerInputTextController.text.trim().isNotEmpty &&
+          _model.passDogOwnerInputTextController.text.trim().isNotEmpty &&
+          _model.nameDogOwnerInputTextController.text.trim().isNotEmpty &&
+          _model.phoneDogOwnerInputTextController.text.trim().isNotEmpty &&
+          _model.genderDogOwnerMenuValue != null &&
+          _model.streetDogOwnerInputTextController.text.trim().isNotEmpty &&
+          _model.apartamentNumDogOwnerInputTextController.text.trim().isNotEmpty &&
+          _model.zipCodeDogOwnerInputTextController.text.trim().isNotEmpty &&
+          _model.neighborhoodDogOwnerInputTextController.text.trim().isNotEmpty &&
+          _model.cityDogOwnerInputTextController.text.trim().isNotEmpty;
+  }
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
   bool isRegistering = false;
@@ -275,12 +289,13 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
         backgroundImage: _ownerImage != null
             ? FileImage(_ownerImage!)
             : const NetworkImage(
-                'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/sign/profile_pics/fondo.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85ZTI2NTk2MC1mMDYzLTQ2Y2YtYjQ2MS1iMzllNjYwOThjNzUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9maWxlX3BpY3MvZm9uZG8uanBnIiwiaWF0IjoxNzU3MzE5NTMyLCJleHAiOjE3NTk5MTE1MzJ9.l6Wcm5GtTl9tsqdcIKRT1VHlvLsZH6KuZsK0A9_vDuU',
+                'https://static.vecteezy.com/system/resources/previews/007/407/996/non_2x/user-icon-person-icon-client-symbol-login-head-sign-icon-design-vector.jpg',
               ) as ImageProvider,
       ),
     ),
   ),
 ),
+Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMedium.override()),
                             Expanded(
                               child: Padding(
                                 padding:
@@ -293,7 +308,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                         MediaQuery.sizeOf(context).width * 0.6,
                                     child: Form(
                                       key: _model.formKey,
-                                      autovalidateMode: AutovalidateMode.always,
+                                      autovalidateMode: AutovalidateMode.onUserInteraction,
                                       child: SingleChildScrollView(
                                         child: Column(
                                           mainAxisSize: MainAxisSize.max,
@@ -486,9 +501,8 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                       FlutterFlowTheme.of(
                                                               context)
                                                           .primaryText,
-                                                  validator: _model
-                                                      .nameDogOwnerInputTextControllerValidator
-                                                      .asValidator(context),
+                                                  //validar el nombre como requerido
+  validator: (value) => Validators.requiredField(value, fieldName: 'Nombre'),
                                                 ),
                                               ),
                                             ),
@@ -676,9 +690,8 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                       FlutterFlowTheme.of(
                                                               context)
                                                           .primaryText,
-                                                  validator: _model
-                                                      .emailDogOwnerInputTextControllerValidator
-                                                      .asValidator(context),
+                                                  //validar el correo como valido
+  validator: (value) => Validators.email(value),
                                                 ),
                                               ),
                                             ),
@@ -866,9 +879,14 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                       FlutterFlowTheme.of(
                                                               context)
                                                           .primaryText,
-                                                  validator: _model
-                                                      .phoneDogOwnerInputTextControllerValidator
-                                                      .asValidator(context),
+                                                  validator: (value) => Validators.phone(value),
+                                                  inputFormatters: [
+                                                    FilteringTextInputFormatter
+                                                        .allow(RegExp(
+                                                            '[0-9]'))
+                                                  ],
+                                                  keyboardType:
+                                                      TextInputType.phone,
                                                 ),
                                               ),
                                             ),
@@ -1010,9 +1028,9 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                                 .fromSTEB(
                                                                     7, 0, 0, 0),
                                                         child: AutoSizeText(
-                                                          _model.datePicked != null
-                                                            ? '${dateTimeFormat('d/M/y', _model.datePicked)}'
-                                                            : 'Fecha de nacimiento',
+                                                           _model.datePicked == null
+                    ? 'Fecha de nacimiento\n'
+                    : '${_model.datePicked!.day}/${_model.datePicked!.month}/${_model.datePicked!.year}',
                                                           textAlign:
                                                               TextAlign.start,
                                                           maxLines: 1,
@@ -1328,9 +1346,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                       FlutterFlowTheme.of(
                                                               context)
                                                           .primaryText,
-                                                  validator: _model
-                                                      .streetDogOwnerInputTextControllerValidator
-                                                      .asValidator(context),
+                                                  validator: (value) => Validators.requiredField(value, fieldName: 'Calle'),
                                                 ),
                                               ),
                                             ),
@@ -1338,10 +1354,10 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(0, 18, 0, 0),
                                               child: Container(
-                                                height:
-                                                    MediaQuery.sizeOf(context)
-                                                            .height *
-                                                        0.05,
+                                                // height:
+                                                //     MediaQuery.sizeOf(context)
+                                                //             .height *
+                                                //         0.05,
                                                 decoration: BoxDecoration(),
                                                 child: Row(
                                                   mainAxisSize:
@@ -1368,6 +1384,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                             decoration:
                                                                 InputDecoration(
                                                               isDense: true,
+  contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
                                                               labelText: 'Int',
                                                               labelStyle:
                                                                   FlutterFlowTheme.of(
@@ -1434,7 +1451,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                                 borderRadius:
                                                                     BorderRadius
                                                                         .circular(
-                                                                            20),
+                                                                            30),
                                                               ),
                                                               focusedBorder:
                                                                   OutlineInputBorder(
@@ -1447,7 +1464,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                                 borderRadius:
                                                                     BorderRadius
                                                                         .circular(
-                                                                            20),
+                                                                            30),
                                                               ),
                                                               errorBorder:
                                                                   OutlineInputBorder(
@@ -1461,7 +1478,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                                 borderRadius:
                                                                     BorderRadius
                                                                         .circular(
-                                                                            20),
+                                                                            30),
                                                               ),
                                                               focusedErrorBorder:
                                                                   OutlineInputBorder(
@@ -1475,7 +1492,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                                 borderRadius:
                                                                     BorderRadius
                                                                         .circular(
-                                                                            20),
+                                                                            30),
                                                               ),
                                                               filled: true,
                                                               fillColor:
@@ -1528,10 +1545,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                                 FlutterFlowTheme.of(
                                                                         context)
                                                                     .primaryText,
-                                                            validator: _model
-                                                                .apartamentNumDogOwnerInputTextControllerValidator
-                                                                .asValidator(
-                                                                    context),
+                                                            validator: (value) => Validators.requiredField(value, fieldName: ''),
                                                             inputFormatters: [
                                                               FilteringTextInputFormatter
                                                                   .allow(RegExp(
@@ -1562,6 +1576,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                             decoration:
                                                                 InputDecoration(
                                                               isDense: true,
+                                                              contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
                                                               labelText: 'Cp',
                                                               labelStyle:
                                                                   FlutterFlowTheme.of(
@@ -1628,7 +1643,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                                 borderRadius:
                                                                     BorderRadius
                                                                         .circular(
-                                                                            20),
+                                                                            30),
                                                               ),
                                                               focusedBorder:
                                                                   OutlineInputBorder(
@@ -1641,7 +1656,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                                 borderRadius:
                                                                     BorderRadius
                                                                         .circular(
-                                                                            20),
+                                                                            30),
                                                               ),
                                                               errorBorder:
                                                                   OutlineInputBorder(
@@ -1655,7 +1670,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                                 borderRadius:
                                                                     BorderRadius
                                                                         .circular(
-                                                                            20),
+                                                                            30),
                                                               ),
                                                               focusedErrorBorder:
                                                                   OutlineInputBorder(
@@ -1669,7 +1684,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                                 borderRadius:
                                                                     BorderRadius
                                                                         .circular(
-                                                                            20),
+                                                                            30),
                                                               ),
                                                               filled: true,
                                                               fillColor:
@@ -1722,10 +1737,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                                 FlutterFlowTheme.of(
                                                                         context)
                                                                     .primaryText,
-                                                            validator: _model
-                                                                .zipCodeDogOwnerInputTextControllerValidator
-                                                                .asValidator(
-                                                                    context),
+                                                            validator: (value) => Validators.postalCode(value),
                                                             inputFormatters: [
                                                               FilteringTextInputFormatter
                                                                   .allow(RegExp(
@@ -1917,9 +1929,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                 cursorColor:
                                                     FlutterFlowTheme.of(context)
                                                         .primaryText,
-                                                validator: _model
-                                                    .neighborhoodDogOwnerInputTextControllerValidator
-                                                    .asValidator(context),
+                                                validator: (value) => Validators.requiredField(value, fieldName: 'Colonia'),
                                               ),
                                             ),
                                             Padding(
@@ -2100,9 +2110,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                 cursorColor:
                                                     FlutterFlowTheme.of(context)
                                                         .primaryText,
-                                                validator: _model
-                                                    .cityDogOwnerInputTextControllerValidator
-                                                    .asValidator(context),
+                                                validator: (value) => Validators.requiredField(value, fieldName: 'Ciudad'),
                                               ),
                                             ),
                                             Padding(
@@ -2307,9 +2315,8 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                 cursorColor:
                                                     FlutterFlowTheme.of(context)
                                                         .primaryText,
-                                                validator: _model
-                                                    .passDogOwnerInputTextControllerValidator
-                                                    .asValidator(context),
+                                                validator: (value) => Validators.password(value),
+                                                maxLength: 30,
                                               ),
                                             ),
                                             Padding(
@@ -2515,9 +2522,8 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                 cursorColor:
                                                     FlutterFlowTheme.of(context)
                                                         .primaryText,
-                                                validator: _model
-                                                    .confirmPassDogOwnerInputTextControllerValidator
-                                                    .asValidator(context),
+                                                validator: (value) => Validators.password(value),
+                                                maxLength: 30,
                                               ),
                                             ),
                                             Padding(
@@ -2528,51 +2534,44 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                   setState(() => isRegistering = true);
                                                   GoRouter.of(context).prepareAuthEvent();
 
-                                                  if (_model.passDogOwnerInputTextController.text !=
-                                                      _model.confirmPassDogOwnerInputTextController.text) {
+                                                  if (!_model.formKey.currentState!.validate()) {
                                                     ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(
-                                                        content: Text('Las contraseñas no coinciden!'),
-                                                      ),
+                                                      SnackBar(content: Text('Corrige los campos con errores')),
                                                     );
                                                     setState(() => isRegistering = false);
                                                     return;
                                                   }
 
-                                                  // Autenticación en Supabase
-                                                  try{
-
-                                                    final user = await authManager.createAccountWithEmail(
-                                                      context,
-                                                      _model.emailDogOwnerInputTextController.text,
-                                                      _model.passDogOwnerInputTextController.text,
-                                                    );
-                                                    if (user == null) {
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        SnackBar(content: Text('No se pudo crear el usuario.')),
-                                                      );
-                                                      setState(() => isRegistering = false);
-                                                      return;
-                                                    }
-                                                  } catch (e, st){
+                                                  if (_model.datePicked == null) {
                                                     ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(content: Text('Error al crear usuario: $e')),
+                                                      SnackBar(content: Text('Selecciona una fecha de nacimiento')),
                                                     );
-                                                    setState(() => isRegistering = false);    
+                                                    setState(() => isRegistering = false);
                                                     return;
                                                   }
 
-                                                  setState(() => isRegistering = true);
-
+                                                  if (_model.passDogOwnerInputTextController.text !=
+                                                      _model.confirmPassDogOwnerInputTextController.text) {
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(content: Text('Las contraseñas no coinciden')),
+                                                    );
+                                                    setState(() => isRegistering = false);
+                                                    return;
+                                                  }
 String? ownerImageUrl;
 if (_ownerImage != null) {
   ownerImageUrl = await _uploadOwnerImage(currentUserUid, _ownerImage!);
 }
 
-                                                  // Registro en la tabla users
                                                   try {
-                                                    final response = await Supabase.instance.client
-                                                    .from('users')
+                                                    final user = await authManager.createAccountWithEmail(
+                                                      context,
+                                                      _model.emailDogOwnerInputTextController.text,
+                                                      _model.passDogOwnerInputTextController.text,
+                                                    );
+                                                    if (user == null) throw 'No se pudo crear el usuario.';
+
+                                                    await Supabase.instance.client.from('users')
                                                     .insert({
                                                       'uuid': currentUserUid,
                                                       'name': _model.nameDogOwnerInputTextController.text,
@@ -2585,49 +2584,32 @@ if (_ownerImage != null) {
                                                       'zipCode': _model.zipCodeDogOwnerInputTextController.text,
                                                       'neighborhood': _model.neighborhoodDogOwnerInputTextController.text,
                                                       'city': _model.cityDogOwnerInputTextController.text,
+                                                      'photo_url': ownerImageUrl,
                                                       'usertype': 'Dueño'
                                                     });
+                                                    await Supabase.instance.client.from('addresses')
+                                                    .insert({
+                                                      'uuid': currentUserUid,
+                                                      'alias': 'Mi Dirección',
+                                                      'address': _model.streetDogOwnerInputTextController.text,
+                                                      'houseNumber': _model.apartamentNumDogOwnerInputTextController.text,
+                                                      'zipCode': _model.zipCodeDogOwnerInputTextController.text,
+                                                      'neighborhood': _model.neighborhoodDogOwnerInputTextController.text,
+                                                      'city': _model.cityDogOwnerInputTextController.text,
+                                                      
+                                                  });
 
-                                                    // Registro en la tabla addresses
-                                                    try{
-                                                      final response = await Supabase.instance.client
-                                                      .from('addresses')
-                                                      .insert({
-                                                        'uuid': currentUserUid,
-                                                        'alias': 'Mi Dirección',
-                                                        'address': _model.streetDogOwnerInputTextController.text,
-                                                        'houseNumber': _model.apartamentNumDogOwnerInputTextController.text,
-                                                        'zipCode': _model.zipCodeDogOwnerInputTextController.text,
-                                                        'neighborhood': _model.neighborhoodDogOwnerInputTextController.text,
-                                                        'city': _model.cityDogOwnerInputTextController.text,
-                                                        'photo_url': ownerImageUrl,
-                                                    });
-                                                  } catch (e, st) {
                                                     ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(
-                                                        content: Text('Error al registrar dirección: $e')
-                                                      ),
+                                                      SnackBar(content: Text('¡Registro exitoso!')),
                                                     );
-                                                    setState(() => isRegistering = false);
-                                                    return;
-                                                  }
-
-                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                    SnackBar(content: Text('¡Registro exitoso!')),
-                                                  );
-                                                  context.goNamedAuth(HomeDogOwnerWidget.routeName, context.mounted);
-
-                                                  } catch (e, st) {
+                                                    
+                                                  } catch (e) {
                                                     ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(
-                                                        content: Text('Error al registrar usuario: $e')
-                                                      ),
+                                                      SnackBar(content: Text('Error: $e')),
                                                     );
+                                                  } finally {
                                                     setState(() => isRegistering = false);
-                                                    return;
                                                   }
-
-                                                  
                                                 },
                                                 text: 'Registrarse',
                                                 options: FFButtonOptions(

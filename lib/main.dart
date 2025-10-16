@@ -63,7 +63,7 @@ class _MyAppState extends State<MyApp> {
 
   ThemeMode _themeMode = FlutterFlowTheme.themeMode;
 
-  final _supabaseAuthStream = Supabase.instance.client.auth.onAuthStateChange;
+  //final _supabaseAuthStream = Supabase.instance.client.auth.onAuthStateChange;
   late Stream<BaseAuthUser> userStream;
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;

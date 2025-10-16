@@ -12,6 +12,9 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
+import '/utils/validation.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 import 'add_pet_model.dart';
 export 'add_pet_model.dart';
@@ -28,8 +31,13 @@ class AddPetWidget extends StatefulWidget {
 
 class _AddPetWidgetState extends State<AddPetWidget> {
   late AddPetModel _model;
+  File? _ownerImage;
+  File? _walkerImage;
+  File? _petImage;
+  final ImagePicker _picker = ImagePicker();
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool isRegistering = false;
 
   @override
   void initState() {
@@ -54,6 +62,102 @@ class _AddPetWidgetState extends State<AddPetWidget> {
     _model.dispose();
 
     super.dispose();
+  }
+  bool validarCamposObligatorios() {
+    return _model.nameInputTextController.text.isNotEmpty &&
+          _model.genderDogOwnerMenuValue != null &&
+          _model.ageInputTextController.text.isNotEmpty &&
+          _model.breeInputTextController.text.isNotEmpty &&
+          _model.dogInfoInputTextController.text.isNotEmpty &&
+          _model.behaviourChipsValueController != null &&
+          _model.dogSizeMenuValue != null;
+  }
+
+  // Sube la imagen (dueño, paseador o perro)
+  Future<String?> _uploadOwnerImage(String userId,File imageFile, {int? petId, }) async {
+    //  si se pasa este parámetro, se guarda la imagen del perro
+    try {
+      final storage = Supabase.instance.client.storage;
+      final supabase = Supabase.instance.client;
+
+      // Ruta dentro del bucket
+      final filePath = petId != null
+          ? 'owners/$userId/pets/$petId/profile.jpg' // 👈 para perros
+          : 'owners/$userId/profile.jpg'; // 👈 para dueño/paseador
+
+      // Subir la imagen al bucket con reemplazo habilitado
+      await storage.from('profile_pics').upload(
+            filePath,
+            imageFile,
+            fileOptions: const FileOptions(upsert: true),
+          );
+
+      // Obtener URL pública
+      final imageUrl = storage.from('profile_pics').getPublicUrl(filePath);
+
+      // Si es imagen de perro, actualizar su registro en la tabla pets
+      if (petId != null) {
+        await supabase
+            .from('pets')
+            .update({'photo_url': imageUrl})
+            .eq('id', petId);
+      }
+
+      return imageUrl;
+    } catch (e) {
+      print('Error al subir imagen: $e');
+      return null;
+    }
+  }
+
+  //funcion para seleccionar imagen
+    Future<void> _pickImage(bool isOwner, ImageSource source, {int? petId}) async {
+    final pickedFile = await _picker.pickImage(source: source);
+    if (pickedFile != null) {
+      setState(() {
+        if (isOwner) {
+          _ownerImage = File(pickedFile.path);
+        } else {
+          _walkerImage = File(pickedFile.path);
+        }
+      });
+
+      // Subir imagen si es de perro
+      if (petId != null) {
+        final userId = Supabase.instance.client.auth.currentUser?.id;
+        if (userId != null) {
+          await _uploadOwnerImage(userId, File(pickedFile.path), petId: petId);
+        }
+      }
+    }
+  }
+
+  void _showImagePickerOptions(BuildContext context, bool isOwner, {int? petId}) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Tomar foto'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickImage(isOwner, ImageSource.camera, petId: petId);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Elegir de la galería'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickImage(isOwner, ImageSource.gallery, petId: petId);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -164,21 +268,25 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                   children: [
                                     Flexible(
                                       child: Align(
-                                        alignment: AlignmentDirectional(0, 0),
-                                        child: Container(
-                                          width: 120,
-                                          height: 120,
-                                          clipBehavior: Clip.antiAlias,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: Image.network(
-                                            'https://images.unsplash.com/photo-1495567720989-cebdbdd97913?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxfHxzdW5zZXR8ZW58MHx8fHwxNzQ3MDA2NTczfDA&ixlib=rb-4.1.0&q=80&w=1080',
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                      ),
+  alignment: AlignmentDirectional(0, 0),
+  child: Padding(
+    padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+    child: GestureDetector(
+      onTap: () => _showImagePickerOptions(context, true, petId: 2), // true = dueño
+      child: CircleAvatar(
+        radius: 60,
+        backgroundImage: _ownerImage != null
+            ? FileImage(_ownerImage!)
+            : const NetworkImage(
+                'https://static.vecteezy.com/system/resources/previews/007/407/996/non_2x/user-icon-person-icon-client-symbol-login-head-sign-icon-design-vector.jpg',
+              ) as ImageProvider,
+      ),
+    ),
+  ),
+),
+
                                     ),
+                                    Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMedium.override()),
                                     Align(
                                       alignment: AlignmentDirectional(-1, -1),
                                       child: Padding(
@@ -348,9 +456,8 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                               cursorColor:
                                                   FlutterFlowTheme.of(context)
                                                       .primaryText,
-                                              validator: _model
-                                                  .nameInputTextControllerValidator
-                                                  .asValidator(context),
+                                              //validar el nombre como requerido
+  validator: (value) => Validators.requiredField(value, fieldName: 'Nombre'),
                                             ),
                                           ),
                                         ),
@@ -527,9 +634,8 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                               cursorColor:
                                                   FlutterFlowTheme.of(context)
                                                       .primaryText,
-                                              validator: _model
-                                                  .ageInputTextControllerValidator
-                                                  .asValidator(context),
+                                              //validar el edad como requerido
+  validator: (value) => Validators.requiredField(value, fieldName: 'Edad'),
                                             ),
                                           ),
                                         ),
@@ -558,9 +664,10 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                 FormFieldController<String>(
                                               _model.genderDogOwnerMenuValue ??=
                                                   '',
+                                                  
                                             ),
                                             options: List<String>.from(
-                                                ['Macho', 'Hembra']),
+                                                ['Macho', 'Hembra'],),
                                             optionLabels: ['Macho', 'Hembra'],
                                             onChanged: (val) => safeSetState(() =>
                                                 _model.genderDogOwnerMenuValue =
@@ -602,6 +709,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                                                   context)
                                                               .bodyMedium
                                                               .fontStyle,
+                                                              
                                                     ),
                                             hintText: 'Género',
                                             icon: Icon(
@@ -799,9 +907,8 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                               cursorColor:
                                                   FlutterFlowTheme.of(context)
                                                       .primaryText,
-                                              validator: _model
-                                                  .breeInputTextControllerValidator
-                                                  .asValidator(context),
+                                              //validar el Raza como requerido
+                                              validator: (value) => Validators.requiredField(value, fieldName: 'Raza'),
                                             ),
                                           ),
                                         ),
@@ -1170,8 +1277,8 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                               minLines: 5,
                                               keyboardType: TextInputType.multiline,
                                               cursorColor: FlutterFlowTheme.of(context).primaryText,
-                                              validator:
-                                                  _model.dogInfoInputTextControllerValidator.asValidator(context),
+                                              //validar el Acerca de tu perro como requerido
+                                              validator: (value) => Validators.requiredField(value, fieldName: ''),
                                             ),
                                           )
 
@@ -1184,6 +1291,13 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                             0, 18, 0, 0),
                                         child: FFButtonWidget(
                                           onPressed: () async {
+
+                                            if (!validarCamposObligatorios()) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('Completa todos los campos ')),
+  );
+  return;
+}
                                             try{
                                               final response = await Supabase.instance.client
                                               .from('pets')
