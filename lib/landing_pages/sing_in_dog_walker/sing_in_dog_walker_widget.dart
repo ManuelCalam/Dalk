@@ -2817,178 +2817,20 @@ String? _lastTestSessionId;
 
 
 Future<void> _startRealVerification() async {
-  debugPrint('🚀 ========================================');
-  debugPrint('🚀 INICIANDO VERIFICACIÓN REAL CON VERIFICAMEX');
-  debugPrint('🚀 ========================================');
+  debugPrint('🚀 INICIANDO VERIFICACIÓN CON VERIFICAMEX');
   
   if (!mounted) return;
   setState(() => isRegistering = true);
 
   try {
-    // Validar campos obligatorios
+    // ✅ VALIDAR FORMULARIO
     if (!_validateRequiredFields()) {
       return;
     }
 
-    final tempUserId = 'user_${DateTime.now().millisecondsSinceEpoch}';
-    debugPrint('🆔 TempUserId: $tempUserId');
-    debugPrint('📧 Email: ${_model.emailDogWalkerInputTextController.text}');
-    
-    // ✅ LLAMAR A EDGE FUNCTION PARA CREAR SESIÓN CON VERIFICAMEX
-    final response = await Supabase.instance.client.functions.invoke(
-      'ine-validation',
-      body: {
-        'action': 'create_session',
-        'user_id': tempUserId,
-        'email': _model.emailDogWalkerInputTextController.text,
-      },
-    );
-
-    debugPrint('📊 ========================================');
-    debugPrint('📊 RESPUESTA DE EDGE FUNCTION');
-    debugPrint('📊 Status: ${response.status}');
-    debugPrint('📊 Data: ${response.data}');
-    debugPrint('📊 ========================================');
-
-    if (response.status != 200) {
-      throw Exception('Error del servidor: ${response.status}');
-    }
-
-    final data = response.data;
-    if (data == null || data['success'] != true) {
-      throw Exception(data?['error'] ?? 'Error desconocido del servidor');
-    }
-
-    final formUrl = data['form_url'];
-    final sessionId = data['session_id'];
-
-    if (formUrl == null || formUrl.isEmpty) {
-      throw Exception('No se obtuvo URL de verificación');
-    }
-
-    debugPrint('✅ ========================================');
-    debugPrint('✅ SESIÓN CREADA EXITOSAMENTE');
-    debugPrint('✅ Session ID: $sessionId');
-    debugPrint('✅ Form URL: $formUrl');
-    debugPrint('✅ ========================================');
-
-    // ✅ ABRIR WEBVIEW CON URL REAL DE VERIFICAMEX
-    if (mounted) {
-      final result = await Navigator.of(context).push<bool>(
-        MaterialPageRoute(
-          builder: (context) => IneValidationWebviewWidget(
-            formUrl: formUrl,
-            sessionId: sessionId,
-          ),
-        ),
-      );
-
-      debugPrint('🔙 WebView cerrado con resultado: $result');
-
-      if (result == true) {
-        debugPrint('✅ Verificación exitosa, esperando confirmación de BD...');
-        
-        // ✅ VERIFICAR QUE LA VERIFICACIÓN ESTÉ REALMENTE COMPLETADA EN BD
-        await _waitForVerificationCompletion(sessionId);
-        
-        debugPrint('✅ Verificación confirmada en BD, creando usuario...');
-        await _createUserAfterValidation(sessionId);
-      } else {
-        debugPrint('❌ Verificación falló o fue cancelada');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Verificación no completada. El registro fue cancelado.'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
-    }
-    
-  } catch (e) {
-    debugPrint('💥 Error en verificación real: $e');
-    
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error en la verificación: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  } finally {
-    if (mounted) {
-      setState(() => isRegistering = false);
-    }
-  }
-}
-
-// ✅ FUNCIÓN PARA ESPERAR CONFIRMACIÓN EN BD
-// ✅ FUNCIÓN ACTUALIZADA EN SING_IN_DOG_WALKER_WIDGET.DART
-Future<void> _waitForVerificationCompletion(String sessionId) async {
-  debugPrint('⏳ Esperando confirmación de verificación en BD...');
-  
-  for (int i = 0; i < 40; i++) { // 40 intentos = 2 minutos
-    try {
-      final response = await Supabase.instance.client
-          .from('identity_verifications')
-          .select('status, verification_result, failure_reason, completed_at')
-          .eq('session_id', sessionId)
-          .single();
-      
-      debugPrint('🔄 Intento ${i + 1}/40: Status = ${response['status']}');
-      
-      if (response['status'] == 'completed') {
-        debugPrint('✅ ¡Verificación completada en BD!');
-        debugPrint('📊 Result: ${response['verification_result']}');
-        debugPrint('⏰ Completado en: ${response['completed_at']}');
-        return;
-      } else if (response['status'] == 'failed') {
-        debugPrint('❌ Verificación falló: ${response['failure_reason']}');
-        throw Exception('Verificación falló: ${response['failure_reason']}');
-      }
-      
-      // Log cada 10 intentos para no spamear
-      if ((i + 1) % 10 == 0) {
-        debugPrint('⏱️ ${i + 1} intentos completados. Estado: ${response['status']}');
-      }
-    } catch (e) {
-      debugPrint('❌ Error verificando status (intento ${i + 1}): $e');
-    }
-    
-    // Esperar 3 segundos antes del próximo intento
-    await Future.delayed(Duration(seconds: 3));
-  }
-  
-  throw Exception('Timeout: No se pudo confirmar la verificación en BD después de 2 minutos');
-}
-
-
-// ✅ CORRECCIÓN EN sing_in_dog_walker_widget.dart
-Future<void> _createUserAfterValidation(String sessionId) async {
-  debugPrint('🏁 Iniciando _createUserAfterValidation');
-  
-  try {
-    // ✅ VERIFICAR ESTADO FINAL DE LA VERIFICACIÓN
-    final verificationData = await Supabase.instance.client
-        .from('identity_verifications')
-        .select('*')
-        .eq('session_id', sessionId)
-        .single();
-
-    debugPrint('📊 Datos de verificación: ${verificationData['status']}');
-    debugPrint('🎯 Resultado: ${verificationData['verification_result']}');
-
-    if (verificationData['status'] != 'completed') {
-      throw Exception('Verificación no completada. Status: ${verificationData['status']}');
-    }
-
-    if (verificationData['verification_result'] < 90) {
-      throw Exception('Verificación no pasó el umbral mínimo. Resultado: ${verificationData['verification_result']}');
-    }
-
-    // ✅ CREAR USUARIO EN SUPABASE AUTH
+    // ✅ CREAR USUARIO EN SUPABASE AUTH PRIMERO
     debugPrint('👤 Creando usuario en Supabase Auth...');
-    GoRouter.of(context).prepareAuthEvent();
+    GoRouter.of(context).prepareAuthEvent(true);
     
     final user = await authManager.createAccountWithEmail(
       context,
@@ -3000,73 +2842,16 @@ Future<void> _createUserAfterValidation(String sessionId) async {
       throw Exception('No se pudo crear el usuario en Supabase Auth');
     }
 
-    debugPrint('✅ Usuario Auth creado. UUID: $currentUserUid');
+    final userUuid = currentUserUid!;
+    final userEmail = currentUserEmail!;
+    
+    debugPrint('✅ Usuario Auth creado. UUID: $userUuid');
 
-    // ✅ CREAR REGISTRO EN TABLA USERS
-    await _completeUserRegistration();
-    
-    // ✅ ACTUALIZAR VERIFICACIÓN CON UUID REAL
-    await Supabase.instance.client
-        .from('identity_verifications')
-        .update({'user_uuid': currentUserUid})
-        .eq('session_id', sessionId);
-    
-    debugPrint('✅ Verificación actualizada con UUID real');
-    
-    // ✅ MOSTRAR SUCCESS Y REDIRIGIR AL HOME DEL PASEADOR
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('¡Registro y verificación completados exitosamente!'),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 2),
-        ),
-      );
-      
-      await Future.delayed(Duration(seconds: 1));
-      
-      if (mounted) {
-        debugPrint('🏠 Redirigiendo al home del paseador...');
-        context.goNamedAuth(HomeDogWalkerWidget.routeName, context.mounted);
-      }
-    }
-    
-  } catch (e) {
-    debugPrint('💥 Error en verificación: $e');
-    
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Verificación falló: ${e.toString()}'),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 3),
-        ),
-      );
-      
-      // ✅ REDIRIGIR AL LOGIN EN CASO DE FALLO
-      await Future.delayed(Duration(seconds: 2));
-      
-      if (mounted) {
-        debugPrint('🔐 Redirigiendo al login por fallo en verificación...');
-        context.goNamedAuth('signIn', context.mounted);
-      }
-    }
-  } finally {
-    if (mounted) {
-      setState(() => isRegistering = false);
-    }
-  }
-}
-
-Future<void> _completeUserRegistration() async {
-  debugPrint('🏁 Iniciando _completeUserRegistration');
-  
-  try {
-    debugPrint('💾 Guardando usuario en tabla users...');
+    // ✅ CREAR REGISTRO EN TABLA USERS (con verification_status='pending_verification')
     await Supabase.instance.client.from('users').insert({
-      'uuid': currentUserUid,
+      'uuid': userUuid,
       'name': _model.nameDogWalkerInputTextController.text,
-      'email': currentUserEmail,
+      'email': userEmail,
       'phone': _model.phoneDogWalkerInputTextController.text,
       'birthdate': supaSerialize<DateTime>(_model.datePicked),
       'gender': _model.genderDogWalkerMenuValue,
@@ -3076,12 +2861,15 @@ Future<void> _completeUserRegistration() async {
       'neighborhood': _model.neighborhoodDogWalkerInputTextController.text,
       'city': _model.cityDogWalkerInputTextController.text,
       'usertype': 'Paseador',
+      'verification_status': 'pending_verification', // ✅ IMPORTANTE
     });
-    debugPrint('✅ Usuario guardado en tabla users');
+    
+    debugPrint('✅ Usuario guardado en BD con verification_status=pending_verification');
+    debugPrint('🔄 AppStateNotifier actualizado a pending_verification');
 
-    debugPrint('🏠 Guardando dirección en tabla addresses...');
+    // ✅ CREAR DIRECCIÓN
     await Supabase.instance.client.from('addresses').insert({
-      'uuid': currentUserUid,
+      'uuid': userUuid,
       'alias': 'Mi Dirección',
       'address': _model.streetDogWalkerInputTextController.text,
       'houseNumber': _model.apartamentNumDogWalkerInputTextController.text,
@@ -3089,32 +2877,93 @@ Future<void> _completeUserRegistration() async {
       'neighborhood': _model.neighborhoodDogWalkerInputTextController.text,
       'city': _model.cityDogWalkerInputTextController.text,
     });
-    debugPrint('✅ Dirección guardada en tabla addresses');
 
-    // ✅ SOLO MOSTRAR SUCCESS Y REDIRIGIR SI TODO SALE BIEN
+    debugPrint('✅ Dirección guardada');
+    
+    // ✅ LLAMAR A EDGE FUNCTION PARA CREAR SESIÓN CON VERIFICAMEX
+    debugPrint('📡 Llamando a Edge Function...');
+    final response = await Supabase.instance.client.functions.invoke(
+      'ine-validation',
+      body: {
+        'action': 'create_session',
+        'user_id': userUuid, // ✅ USER_UUID REAL
+        'email': userEmail,
+      },
+    );
+
+    debugPrint('📊 Response status: ${response.status}');
+    debugPrint('📊 Response data: ${response.data}');
+
+    if (response.status != 200 || response.data['success'] != true) {
+      throw Exception(response.data['error'] ?? 'Error creando sesión');
+    }
+
+    final formUrl = response.data['form_url'];
+    final sessionId = response.data['session_id'];
+
+    if (formUrl == null || sessionId == null) {
+      throw Exception('No se obtuvo form_url o session_id');
+    }
+
+    debugPrint('✅ Sesión creada:');
+    debugPrint('  - Form URL: $formUrl');
+    debugPrint('  - Session ID: $sessionId');
+
+    // ✅ ABRIR WEBVIEW CON VERIFICAMEX
+    // ✅ ABRIR WEBVIEW CON URL REAL DE VERIFICAMEX
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('¡Registro y verificación completados exitosamente!'),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 2),
+      final result = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (context) => IneValidationWebviewWidget(
+            formUrl: formUrl,
+            sessionId: sessionId,
+          ),
         ),
       );
+
+      
+      // ✅ EL DEEP LINK YA NAVEGÓ A redirect_verificamex_widget
+      // No necesitamos hacer nada aquí
     }
     
   } catch (e) {
-    debugPrint('💥 Error en _completeUserRegistration: $e');
+    debugPrint('💥 Error en verificación: $e');
+    
+    // ❌ SI FALLA, ELIMINAR USUARIO CREADO
+    if (currentUserUid != null) {
+      try {
+        debugPrint('🗑️ Eliminando usuario fallido...');
+        
+        // Eliminar de tabla users
+        await Supabase.instance.client
+            .from('users')
+            .delete()
+            .eq('uuid', currentUserUid!);
+        
+        // Eliminar de Auth
+        await authManager.signOut();
+        
+        debugPrint('✅ Usuario eliminado correctamente');
+      } catch (deleteError) {
+        debugPrint('❌ Error eliminando usuario: $deleteError');
+      }
+    }
+    
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error completando el registro: ${e.toString()}'),
+          content: Text('Error: ${e.toString()}'),
           backgroundColor: Colors.red,
         ),
       );
     }
-    rethrow; // Re-lanzar el error
+  } finally {
+    if (mounted) {
+      setState(() => isRegistering = false);
+    }
   }
 }
+
 
 }
 

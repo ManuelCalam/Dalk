@@ -1,3 +1,5 @@
+import 'package:dalk/dog_walker/home_dog_walker/home_dog_walker_widget.dart';
+
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -269,43 +271,89 @@ class _RedirectVerificamexWidgetState
   /// ✅ VERIFICAR STATUS EN SUPABASE
   Future<void> _checkVerificationStatus() async {
     try {
-      final response = await SupaFlow.client
+      // 1) Consultar identity_verifications (incluyendo temp_user_id y user_uuid)
+      final iv = await SupaFlow.client
           .from('identity_verifications')
-          .select('status, verification_result, failure_reason')
+          .select('status, verification_result, failure_reason, temp_user_id, user_uuid')
           .eq('session_id', widget.sessionId)
           .maybeSingle();
 
-      if (response == null) {
+      if (iv == null) {
         debugPrint('❌ No se encontró la sesión: ${widget.sessionId}');
         return;
       }
 
-      final status = response['status'] as String?;
-      final result = response['verification_result'] as int?;
-      final failureReason = response['failure_reason'] as String?;
+      final status = (iv['status'] as String?)?.toLowerCase();
+      final result = iv['verification_result'] as int?;
+      final failureReason = iv['failure_reason'] as String?;
+      final tempUserId = iv['temp_user_id'] as String?;
+      final ivUserUuid = iv['user_uuid'] as String?;
 
-      debugPrint('📊 Status actual: $status (result: $result)');
+      debugPrint('📊 IV status: $status (result: $result) tempUserId: $tempUserId user_uuid: $ivUserUuid');
 
-      setState(() {
-        _model.verificationStatus = status ?? 'pending';
-      });
+      // 2) Consultar estado actual del usuario en users
+      final userRow = await SupaFlow.client
+          .from('users')
+          .select('verification_status, createdAt')
+          .eq('uuid', widget.userId)
+          .maybeSingle();
 
-      // ✅ VERIFICACIÓN COMPLETADA CON ÉXITO
-      if (status == 'completed' && result != null && result >= 90) {
-        debugPrint('✅ Verificación exitosa (result: $result)');
+      final userVerificationStatus = userRow?['verification_status'] as String?;
+      final createdAtStr = userRow?['createdAt'] as String?;
+      DateTime? userCreatedAt;
+      if (createdAtStr != null) {
+        try { userCreatedAt = DateTime.tryParse(createdAtStr); } catch (_) { userCreatedAt = null; }
+      }
+
+      debugPrint('📊 User verification_status: $userVerificationStatus createdAt: $userCreatedAt');
+
+      // 3) Si el usuario ya está verificado en la tabla users → success inmediato
+      if (userVerificationStatus == 'verified') {
+        debugPrint('✅ Usuario ya marcado como verified en users → éxito');
         _stopPolling();
         await _handleSuccess();
         return;
       }
 
-      // ❌ VERIFICACIÓN FALLIDA
-      if (status == 'failed') {
-        debugPrint('❌ Verificación fallida: $failureReason');
+      // 4) Si identity_verifications indica completado y result >= 90 → marcar user y success
+      final isCompleted = status == 'completed' || status == 'finished' || status == 'verifying' || status == 'open';
+      const successThreshold = 90;
+      if (isCompleted && result != null && result >= successThreshold) {
+        debugPrint('✅ IV reporta completed con resultado >= $successThreshold → actualizar users y navegar');
+        // Asegurar marcar usuario como verified
+        await Supabase.instance.client
+            .from('users')
+            .update({'verification_status': 'verified'})
+            .eq('uuid', widget.userId);
         _stopPolling();
-        await _handleFailure(failureReason);
+        await _handleSuccess();
         return;
       }
 
+      // 5) Si IV indica fallo explícito o resultado por debajo del umbral → failure
+      if (status == 'failed' || (result != null && result < successThreshold)) {
+        debugPrint('❌ IV indica failure o resultado insuficiente ($result)');
+
+        // Decidir si eliminar usuario: solo si está en pending_verification y fue creado recientemente
+        bool shouldDeleteUser = false;
+        if (userVerificationStatus == 'pending_verification') {
+          if (userCreatedAt != null) {
+            final age = DateTime.now().difference(userCreatedAt);
+            // criterio: cuenta creada hace menos de 15 minutos → borrar (ajustable)
+            if (age <= const Duration(minutes: 15)) shouldDeleteUser = true;
+          } else {
+            // si no conocemos createdAt, conservador: no borrar automáticamente
+            shouldDeleteUser = false;
+          }
+        }
+
+        _stopPolling();
+        await _handleFailure(failureReason, shouldDeleteUser);
+        return;
+      }
+
+      // 6) Si ninguno de los casos anteriores, continuar esperando
+      debugPrint('⏳ Still waiting for final result (status: $status, result: $result)');
     } catch (e) {
       debugPrint('💥 Error en polling: $e');
     }
@@ -325,52 +373,137 @@ class _RedirectVerificamexWidgetState
 
   /// ✅ MANEJAR ÉXITO
   Future<void> _handleSuccess() async {
-    debugPrint('🎉 Creando usuario en Supabase Auth...');
+    debugPrint('🎉 ========================================');
+    debugPrint('🎉 VERIFICACIÓN EXITOSA');
+    debugPrint('🎉 ========================================');
 
     try {
-      // Crear usuario en Supabase Auth (si no existe)
-      // Aquí deberías tener el email del usuario
-      // Por ahora, asumimos que ya está autenticado o se maneja en otro lugar
+      // ✅ ACTUALIZAR VERIFICATION_STATUS EN TABLA USERS
+      debugPrint('💾 Actualizando verification_status a "verified"...');
+      
+      await Supabase.instance.client
+          .from('users')
+          .update({'verification_status': 'verified'})
+          .eq('uuid', widget.userId);
+
+      debugPrint('✅ Usuario verificado en BD');
+      
 
       if (mounted) {
-        // Navegar al Home del Dog Walker
-        context.goNamed(
-          'home_dog_walker',
-          extra: <String, dynamic>{
-            kTransitionInfoKey: const TransitionInfo(
-              hasTransition: true,
-              transitionType: PageTransitionType.fade,
-              duration: Duration(milliseconds: 300),
-            ),
-          },
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('¡Verificación completada exitosamente!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        
+        await Future.delayed(const Duration(seconds: 1));
+        
+        if (mounted) {
+          debugPrint('🏠 Navegando al home del paseador...');
+          GoRouter.of(context).goNamed(HomeDogWalkerWidget.routeName);
+
+        }
+      }
+      
+    } catch (e) {
+      debugPrint('❌ Error actualizando usuario: $e');
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
-    } catch (e) {
-      debugPrint('❌ Error al crear usuario: $e');
-      _showErrorDialog('Error al crear cuenta', e.toString());
     }
   }
 
-  /// ❌ MANEJAR FALLO
-  Future<void> _handleFailure(String? reason) async {
+  /// ❌ MANEJAR FALLO (ahora con flag para borrar usuario)
+  Future<void> _handleFailure(String? reason, [bool deleteUser = true]) async {
+    debugPrint('❌ ========================================');
+    debugPrint('❌ VERIFICACIÓN FALLIDA - deleteUser: $deleteUser');
+    debugPrint('❌ Razón: $reason');
+    debugPrint('❌ ========================================');
+
     if (!mounted) return;
 
-    _showErrorDialog(
-      'Verificación Fallida',
-      reason ?? 'No se pudo completar la verificación de identidad',
-    );
+    try {
+      if (deleteUser) {
+        debugPrint('🗑️ Eliminando usuario fallido (direcciones + users + logout)...');
+
+        await Supabase.instance.client
+            .from('addresses')
+            .delete()
+            .eq('uuid', widget.userId);
+
+        await Supabase.instance.client
+            .from('users')
+            .delete()
+            .eq('uuid', widget.userId);
+
+        await authManager.signOut();
+
+        debugPrint('✅ Usuario eliminado correctamente');
+      } else {
+        debugPrint('⚠️ No se borrará al usuario (flujo de registro existente). Solo redirigiendo a login.');
+        // opcional: enviar notificación o dejar registro en DB con status rejected
+        await Supabase.instance.client
+            .from('users')
+            .update({'verification_status': 'rejected'})
+            .eq('uuid', widget.userId);
+      }
+
+      if (mounted) {
+        _showErrorDialog(
+          'Verificación Fallida',
+          reason ?? 'No se pudo completar la verificación de identidad.\n\nPor favor, intenta nuevamente o contacta a soporte.',
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ Error procesando fallo: $e');
+      if (mounted) {
+        _showErrorDialog('Error', 'Ocurrió un error al procesar el resultado.\nPor favor, contacta a soporte.');
+      }
+    }
   }
 
   /// ⏱️ MANEJAR TIMEOUT
   Future<void> _handleTimeout() async {
+    debugPrint('⏱️ ========================================');
+    debugPrint('⏱️ TIMEOUT - VERIFICACIÓN TARDANDO MUCHO');
+    debugPrint('⏱️ ========================================');
+
     if (!mounted) return;
 
-    _showErrorDialog(
-      'Tiempo de Espera Agotado',
-      'La verificación está tomando más tiempo del esperado.\n\n'
-      'Por favor, contacta a soporte con tu ID de sesión:\n'
-      '${widget.sessionId}',
-    );
+    // ❌ ELIMINAR USUARIO (timeout = fallo)
+    try {
+      await Supabase.instance.client
+          .from('addresses')
+          .delete()
+          .eq('uuid', widget.userId);
+      
+      await Supabase.instance.client
+          .from('users')
+          .delete()
+          .eq('uuid', widget.userId);
+      
+      await authManager.signOut();
+      
+    } catch (e) {
+      debugPrint('❌ Error eliminando usuario en timeout: $e');
+    }
+
+    if (mounted) {
+      _showErrorDialog(
+        'Tiempo de Espera Agotado',
+        'La verificación está tomando más tiempo del esperado.\n\n'
+        'ID de sesión: ${widget.sessionId}\n\n'
+        'Por favor, contacta a soporte o intenta registrarte nuevamente.',
+      );
+    }
   }
 
   /// 🚨 MOSTRAR DIÁLOGO DE ERROR
@@ -380,15 +513,40 @@ class _RedirectVerificamexWidgetState
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(title),
-          content: Text(message),
+          backgroundColor: const Color(0xFF1A2332),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          title: Text(
+            title,
+            style: FlutterFlowTheme.of(context).headlineSmall.override(
+                  fontFamily: 'Outfit',
+                  color: Colors.white,
+                ),
+          ),
+          content: Text(
+            message,
+            style: FlutterFlowTheme.of(context).bodyMedium.override(
+                  fontFamily: 'Readex Pro',
+                  color: Colors.white70,
+                ),
+          ),
           actions: [
-            TextButton(
+            ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                context.goNamed('sing_in_dog_walker');
+                context.goNamed('singInDogWalker'); // ✅ Volver al registro
               },
-              child: const Text('Volver al Login'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: FlutterFlowTheme.of(context).primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'Volver al Registro',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );

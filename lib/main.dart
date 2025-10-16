@@ -140,68 +140,57 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  void _handleDeepLink(Uri uri) {
-  debugPrint('🔍 Procesando deep link:');
-  debugPrint('  Scheme: ${uri.scheme}');
-  debugPrint('  Host: ${uri.host}');
-  debugPrint('  Path: ${uri.path}');
-  debugPrint('  Query: ${uri.queryParameters}');
 
-  // ✅ CASO 1: dalkpaseos://redirect/verificamex?session_id=xxx&user_id=yyy
-  if (uri.host == 'redirect' && uri.path.startsWith('/verificamex')) {
+void _handleDeepLink(Uri uri) {
+  debugPrint('🔍 ========================================');
+  debugPrint('🔍 PROCESANDO DEEP LINK');
+  debugPrint('🔍 URI completo: $uri');
+  debugPrint('🔍 Scheme: ${uri.scheme}');
+  debugPrint('🔍 Host: ${uri.host}');
+  debugPrint('🔍 Path: ${uri.path}');
+  debugPrint('🔍 Query: ${uri.queryParameters}');
+  debugPrint('🔍 ========================================');
+
+  // ✅ CASO 1: dalkpaseos://redirect_verificamex?session_id=xxx&user_id=yyy
+  if (uri.scheme == 'dalkpaseos' && uri.host == 'redirect_verificamex') {
+    
     final sessionId = uri.queryParameters['session_id'] ?? '';
     final userId = uri.queryParameters['user_id'] ?? '';
 
-    if (sessionId.isNotEmpty && userId.isNotEmpty) {
-      debugPrint('✅ Navegando a redirect_verificamex');
-      debugPrint('  Session ID: $sessionId');
-      debugPrint('  User ID: $userId');
+    debugPrint('✅ Deep link de verificación detectado');
+    debugPrint('  Session ID: $sessionId');
+    debugPrint('  User ID: $userId');
 
+    if (sessionId.isNotEmpty && userId.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // ✅ OPCIÓN 1: Usar context.go (si estás en un BuildContext)
-        // context.go('/redirect_verificamex?session_id=$sessionId&user_id=$userId');
+        debugPrint('📱 Navegando a redirect_verificamex...');
         
-        // ✅ OPCIÓN 2: Usar _router.go directamente
-        _router.go('/redirect_verificamex?session_id=$sessionId&user_id=$userId');
-        
-        // ✅ OPCIÓN 3: Usar pushNamed (recomendado para deep links)
-        // _router.pushNamed(
-        //   'redirect_verificamex',
-        //   queryParameters: {
-        //     'session_id': sessionId,
-        //     'user_id': userId,
-        //   },
-        // );
+        _router.go(
+          '/redirect_verificamex?session_id=$sessionId&user_id=$userId'
+        );
       });
     } else {
-      debugPrint('❌ Faltan parámetros: session_id o user_id');
+      debugPrint('❌ Faltan parámetros obligatorios');
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        scaffoldMessengerKey.currentState?.showSnackBar(
+          const SnackBar(
+            content: Text('Error: Faltan datos de verificación'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      });
     }
     return;
   }
 
-  // ✅ CASO 2: dalkpaseos://verificamex/success (webhook exitoso)
-  if (uri.host == 'verificamex' && uri.path == '/success') {
-    debugPrint('✅ Verificación exitosa - navegando a HomeDogWalker');
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _router.go('/homeDogWalker');
-    });
-    return;
-  }
-
-  // ✅ CASO 3: dalkpaseos://verificamex/failed (webhook fallido)
-  if (uri.host == 'verificamex' && uri.path == '/failed') {
-    debugPrint('❌ Verificación fallida - navegando a Login');
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _router.go('/singInDogWalker');
-    });
-    return;
-  }
-
-  // ✅ CASO 4: Otros deep links (auth, changePassword, etc)
+  // ✅ CASO 2: Otros deep links (auth, changePassword)
   if (uri.host == 'auth' || uri.host == 'changePassword') {
-    debugPrint('🔐 Deep link de autenticación');
+    debugPrint('🔐 Deep link de autenticación detectado');
   }
+
+  debugPrint('⚠️ Deep link no manejado: $uri');
 }
+
 
   void setThemeMode(ThemeMode mode) => safeSetState(() {
         _themeMode = mode;

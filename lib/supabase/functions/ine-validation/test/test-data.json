@@ -1,0 +1,125 @@
+{
+  "test_user": {
+    "uuid": "00000000-0000-0000-0000-000000000001",
+    "name": "Juan Pérez Test",
+    "email": "test.verificamex@dalk.com",
+    "phone": "5512345678",
+    "birthdate": "1990-01-01",
+    "gender": "Masculino",
+    "address": "Calle Test 123",
+    "houseNumber": "10",
+    "zipCode": "06000",
+    "neighborhood": "Centro",
+    "city": "Ciudad de México",
+    "password": "TestPass123!"
+  },
+  "verificamex_success_response": {
+    "data": {
+      "object": "VerificationSession",
+      "id": "test-verificamex-session-123",
+      "status": "FINISHED",
+      "result": 95,
+      "errors": [],
+      "comments": null,
+      "only_mobile_devices": true,
+      "redirect_url": "dalkpaseos://redirect/verificamex?session_id=test_session_123&user_id=00000000-0000-0000-0000-000000000001",
+      "webhook": "https://bsactypehgxluqyaymui.supabase.co/functions/v1/ine-validation",
+      "validations": ["INE", "CURP"],
+      "ine_reading": {
+        "DocumentData": [
+          {
+            "field": "nombre",
+            "value": "JUAN PÉREZ GARCÍA",
+            "confidence": 0.98
+          },
+          {
+            "field": "curp",
+            "value": "PEGJ900101HDFRRN09",
+            "confidence": 0.99
+          },
+          {
+            "field": "fecha_nacimiento",
+            "value": "01/01/1990",
+            "confidence": 0.97
+          },
+          {
+            "field": "clave_elector",
+            "value": "PGJN900101HDFRXX00",
+            "confidence": 0.96
+          }
+        ],
+        "DocumentVerifications": [
+          {
+            "check": "mrz_match",
+            "status": true
+          },
+          {
+            "check": "face_match",
+            "status": true,
+            "confidence": 0.94
+          }
+        ]
+      },
+      "ine": {
+        "data": {
+          "status": true,
+          "message": "Credencial vigente",
+          "nombre_completo": "JUAN PÉREZ GARCÍA",
+          "clave_elector": "PGJN900101HDFRXX00"
+        }
+      },
+      "renapo": {
+        "data": {
+          "status": true,
+          "curp": "PEGJ900101HDFRRN09",
+          "nombre": "JUAN",
+          "apellido_paterno": "PÉREZ",
+          "apellido_materno": "GARCÍA",
+          "fecha_nacimiento": "1990-01-01",
+          "sexo": "HOMBRE",
+          "entidad_nacimiento": "DISTRITO FEDERAL",
+          "nacionalidad": "MEX"
+        }
+      },
+      "optionals": {
+        "session_id": "test_session_123",
+        "user_id": "00000000-0000-0000-0000-000000000001",
+        "email": "test.verificamex@dalk.com",
+        "timestamp": "2024-01-15T10:30:00.000Z"
+      },
+      "form_url": "https://verificamex.com/verification/test-session-123",
+      "created_at": "2024-01-15T10:25:00.000000Z",
+      "updated_at": "2024-01-15T10:35:00.000000Z"
+    }
+  },
+  "verificamex_failed_response": {
+    "data": {
+      "object": "VerificationSession",
+      "id": "test-verificamex-session-456",
+      "status": "FAILED",
+      "result": 45,
+      "errors": [
+        {
+          "code": "FACE_MISMATCH",
+          "message": "La fotografía no coincide con la INE"
+        }
+      ],
+      "comments": "No se pudo validar la identidad",
+      "ine": {
+        "data": {
+          "status": false
+        }
+      },
+      "renapo": {
+        "data": {
+          "status": false
+        }
+      },
+      "optionals": {
+        "session_id": "test_session_456",
+        "user_id": "00000000-0000-0000-0000-000000000002",
+        "email": "test.fail@dalk.com"
+      }
+    }
+  }
+}

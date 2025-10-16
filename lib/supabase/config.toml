@@ -23,5 +23,6 @@ entrypoint = "./functions/verificamex-redirect/index.ts"
 
 [functions.ine-validation]
 enabled = true
-verify_jwt = false 
+verify_jwt = false
+import_map = "./functions/ine-validation/deno.json"
 entrypoint = "./functions/ine-validation/index.ts"

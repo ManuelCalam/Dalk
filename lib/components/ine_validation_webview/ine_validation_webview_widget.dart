@@ -31,7 +31,6 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
   InAppWebViewController? _webViewController;
   bool _isLoading = true;
   double _progress = 0.0;
-  Timer? _statusCheckTimer;
   Timer? _timeoutTimer;
 
   @override
@@ -54,39 +53,9 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
 
   @override
   void dispose() {
-    _statusCheckTimer?.cancel();
     _timeoutTimer?.cancel();
     _model.dispose();
     super.dispose();
-  }
-
-  // ✅ VERIFICAR ESTADO EN BASE DE DATOS CADA 10 SEGUNDOS
-  void _checkVerificationStatus() async {
-    if (!mounted) return;
-    
-    try {
-      debugPrint('🔄 Verificando status en BD para session: ${widget.sessionId}');
-      
-      final response = await Supabase.instance.client
-          .from('identity_verifications')
-          .select('status, verification_result, completed_at, failure_reason, verification_data')
-          .eq('session_id', widget.sessionId)
-          .single();
-      
-      debugPrint('📊 Status en BD: ${response['status']}');
-      
-      if (response['status'] == 'completed') {
-        debugPrint('✅ ¡VERIFICACIÓN COMPLETADA EN BD!');
-        _statusCheckTimer?.cancel();
-        _closeWithResult(true);
-      } else if (response['status'] == 'failed') {
-        debugPrint('❌ Verificación falló en BD: ${response['failure_reason']}');
-        _statusCheckTimer?.cancel();
-        _closeWithResult(false);
-      }
-    } catch (e) {
-      debugPrint('❌ Error verificando status: $e');
-    }
   }
 
   void _closeWithResult(bool success) {
@@ -170,7 +139,6 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
                             handlerName: 'verification_success',
                             callback: (args) {
                               debugPrint('✅ Verificación exitosa detectada: ${args.first}');
-                              _statusCheckTimer?.cancel();
                               Future.delayed(Duration(seconds: 1), () {
                                 if (mounted) _closeWithResult(true);
                               });
@@ -181,7 +149,6 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
                             handlerName: 'verification_failed',
                             callback: (args) {
                               debugPrint('❌ Verificación fallida detectada: ${args.first}');
-                              _statusCheckTimer?.cancel();
                               Future.delayed(Duration(seconds: 1), () {
                                 if (mounted) _closeWithResult(false);
                               });
@@ -198,20 +165,10 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
                           debugPrint('✅ Página cargada: ${url?.toString()}');
                           if (mounted) setState(() => _isLoading = false);
                           
+                          // ✅ SOLO LOG - NO ACTIVAR POLLING AQUÍ
                           final urlString = url?.toString() ?? '';
-                          
-                          // ✅ ACTIVAR POLLING CUANDO ESTÉ EN PÁGINA DE VERIFICAMEX
                           if (urlString.contains('verificamex.com/verification/')) {
-                            debugPrint('📸 ========================================');
-                            debugPrint('📸 EN PÁGINA DE VERIFICAMEX - ACTIVANDO POLLING');
-                            debugPrint('📸 ========================================');
-                            
-                            _statusCheckTimer?.cancel();
-                            // ✅ POLLING MÁS FRECUENTE (cada 2 segundos)
-                            _statusCheckTimer = Timer.periodic(Duration(seconds: 2), (_) {
-                              debugPrint('🔄 Polling cada 2s - verificando webhook...');
-                              _checkVerificationStatus();
-                            });
+                            debugPrint('📸 Usuario en página de captura de fotos');
                           }
                         },
 
@@ -278,13 +235,10 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
                           final url = navigationAction.request.url?.toString() ?? '';
                           debugPrint('🔄 Navegación interceptada: $url');
                           
-                          // ✅ DETECTAR DEEP LINK Y CERRAR WEBVIEW INMEDIATAMENTE
-                          if (url.startsWith('dalkpaseos://verificamex/success')) {
-                            debugPrint('🎉 Deep link detectado - cerrando WebView y navegando');
-                            _statusCheckTimer?.cancel();
+                          if (url.startsWith('dalkpaseos://redirect/verificamex')) {
+                            debugPrint('🎉 Deep link detectado - cerrando WebView');
                             _timeoutTimer?.cancel();
                             
-                            // ✅ CERRAR WEBVIEW PRIMERO, LUEGO LA APP NAVEGA
                             _closeWithResult(true);
                             return NavigationActionPolicy.CANCEL;
                           }
@@ -316,7 +270,7 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
                             ),
                             SizedBox(height: 8),
                             Text(
-                              'Verificando estado automáticamente cada 10s',
+                              'Por favor, completa la verificación',
                               style: FlutterFlowTheme.of(context).bodySmall.override(
                                 font: GoogleFonts.lexend(),
                                 color: FlutterFlowTheme.of(context).secondaryText,
