@@ -1,4 +1,5 @@
 import 'package:dalk/SubscriptionProvider.dart';
+import 'package:dalk/flutter_flow/flutter_flow_widgets.dart';
 import 'package:provider/provider.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -676,23 +677,21 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                           ),
                         ),
                         Container(
-                          width: MediaQuery.sizeOf(context).width * 1.0,
+                          width: MediaQuery.sizeOf(context).width,
                           decoration: BoxDecoration(
                             color: FlutterFlowTheme.of(context).tertiary,
                           ),
-                          child: ListView(
-                            padding: EdgeInsets.zero,
-                            primary: false,
-                            shrinkWrap: true,
-                            scrollDirection: Axis.vertical,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Align(
-                                alignment: const AlignmentDirectional(-1.0, 0.0),
+                                alignment: AlignmentDirectional(-1, 0),
                                 child: Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, 3.0),
+                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                      0, 0, 0, 3),
                                   child: AutoSizeText(
-                                    'Veterinaria Providencia',
+                                    'ArtÃ­culos de interÃ©s',
                                     textAlign: TextAlign.start,
                                     maxLines: 1,
                                     style: FlutterFlowTheme.of(context)
@@ -707,7 +706,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                           ),
                                           color: FlutterFlowTheme.of(context)
                                               .accent1,
-                                          fontSize: 18.0,
+                                          fontSize: 18,
                                           letterSpacing: 0.0,
                                           fontWeight: FontWeight.bold,
                                           fontStyle:
@@ -719,9 +718,9 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                 ),
                               ),
                               Align(
-                                alignment: const AlignmentDirectional(-1.0, 0.0),
+                                alignment: AlignmentDirectional(-1, 0),
                                 child: Text(
-                                  'Calle #25 Colonia Providencia',
+                                  'Explorando el mundo perruno',
                                   textAlign: TextAlign.start,
                                   maxLines: 2,
                                   style: FlutterFlowTheme.of(context)
@@ -734,8 +733,8 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
-                                        color: const Color(0xFF999999),
-                                        fontSize: 10.0,
+                                        color: Color(0xFF999999),
+                                        fontSize: 10,
                                         letterSpacing: 0.0,
                                         fontWeight: FontWeight.bold,
                                         fontStyle: FlutterFlowTheme.of(context)
@@ -744,88 +743,27 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                       ),
                                 ),
                               ),
-                              Container(
-                                width: MediaQuery.sizeOf(context).width * 1.0,
-                                constraints: const BoxConstraints(
-                                  maxHeight: 190.0,
-                                ),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(0.0),
-                                ),
-                                child: ListView(
-                                  padding: EdgeInsets.zero,
-                                  primary: false,
-                                  shrinkWrap: true,
-                                  scrollDirection: Axis.horizontal,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(5.0),
-                                      child: Container(
-                                        width: 150.0,
-                                        decoration: BoxDecoration(
-                                          color: FlutterFlowTheme.of(context)
-                                              .alternate,
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(5.0),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                                child: Image.asset(
-                                                  'assets/images/croquetas-Ganador.png',
-                                                  width: 100.0,
-                                                  height: 100.0,
-                                                  fit: BoxFit.contain,
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        5.0, 8.0, 5.0, 8.0),
-                                                child: AutoSizeText(
-                                                  'Croquetas 2 kg Marca Ganador',
-                                                  textAlign: TextAlign.start,
-                                                  minFontSize: 5.0,
-                                                  style: FlutterFlowTheme.of(
-                                                          context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font:
-                                                            GoogleFonts.lexend(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        color: FlutterFlowTheme
-                                                                .of(context)
-                                                            .secondaryBackground,
-                                                        fontSize: 8.0,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                              Padding(
+                                padding:
+                                    EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                                child: Container(
+                                  width: MediaQuery.sizeOf(context).width,
+                                  height:
+                                      MediaQuery.sizeOf(context).height * 0.3,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(0),
+                                  ),
+                                  child: ListView(
+                                    padding: EdgeInsets.zero,
+                                    primary: false,
+                                    shrinkWrap: true,
+                                    scrollDirection: Axis.horizontal,
+                                    children:  [
+
+                                      // AQUI ES DONDE PONDRAS EL FUTURE BUILDER Y UTILIZARÁS EL article_widget_card
+
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],

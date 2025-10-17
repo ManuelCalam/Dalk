@@ -582,19 +582,17 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                           decoration: BoxDecoration(
                             color: FlutterFlowTheme.of(context).tertiary,
                           ),
-                          child: ListView(
-                            padding: EdgeInsets.zero,
-                            primary: false,
-                            shrinkWrap: true,
-                            scrollDirection: Axis.vertical,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Align(
-                                alignment: const AlignmentDirectional(-1, 0),
+                                alignment: AlignmentDirectional(-1, 0),
                                 child: Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(
+                                  padding: EdgeInsetsDirectional.fromSTEB(
                                       0, 0, 0, 3),
                                   child: AutoSizeText(
-                                    'Veterinaria Providencia',
+                                    'ArtÃ­culos de interÃ©s',
                                     textAlign: TextAlign.start,
                                     maxLines: 1,
                                     style: FlutterFlowTheme.of(context)
@@ -621,9 +619,9 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                 ),
                               ),
                               Align(
-                                alignment: const AlignmentDirectional(-1, 0),
+                                alignment: AlignmentDirectional(-1, 0),
                                 child: Text(
-                                  'Calle #25 Colonia Providencia',
+                                  'Explorando el mundo perruno',
                                   textAlign: TextAlign.start,
                                   maxLines: 2,
                                   style: FlutterFlowTheme.of(context)
@@ -636,7 +634,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
-                                        color: const Color(0xFF999999),
+                                        color: Color(0xFF999999),
                                         fontSize: 10,
                                         letterSpacing: 0.0,
                                         fontWeight: FontWeight.bold,
@@ -646,87 +644,27 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                       ),
                                 ),
                               ),
-                              Container(
-                                width: MediaQuery.sizeOf(context).width,
-                                constraints: const BoxConstraints(
-                                  maxHeight: 190,
-                                ),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(0),
-                                ),
-                                child: ListView(
-                                  padding: EdgeInsets.zero,
-                                  primary: false,
-                                  shrinkWrap: true,
-                                  scrollDirection: Axis.horizontal,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(5),
-                                      child: Container(
-                                        width: 150,
-                                        decoration: BoxDecoration(
-                                          color: FlutterFlowTheme.of(context)
-                                              .alternate,
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(5),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                                child: Image.asset(
-                                                  'assets/images/croquetas-Ganador.png',
-                                                  width: 100,
-                                                  height: 100,
-                                                  fit: BoxFit.contain,
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsetsDirectional
-                                                    .fromSTEB(5, 8, 5, 8),
-                                                child: AutoSizeText(
-                                                  'Croquetas 2 kg Marca Ganador',
-                                                  textAlign: TextAlign.start,
-                                                  minFontSize: 5,
-                                                  style: FlutterFlowTheme.of(
-                                                          context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font:
-                                                            GoogleFonts.lexend(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        color: FlutterFlowTheme
-                                                                .of(context)
-                                                            .secondaryBackground,
-                                                        fontSize: 8,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                              Padding(
+                                padding:
+                                    EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                                child: Container(
+                                  width: MediaQuery.sizeOf(context).width,
+                                  height:
+                                      MediaQuery.sizeOf(context).height * 0.3,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(0),
+                                  ),
+                                  child: ListView(
+                                    padding: EdgeInsets.zero,
+                                    primary: false,
+                                    shrinkWrap: true,
+                                    scrollDirection: Axis.horizontal,
+                                    children:  [
+
+                                      // AQUI ES DONDE PONDRAS EL FUTURE BUILDER Y UTILIZARÁS EL article_widget_card
+
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],

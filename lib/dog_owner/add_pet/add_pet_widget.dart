@@ -73,22 +73,36 @@ class _AddPetWidgetState extends State<AddPetWidget> {
           _model.dogSizeMenuValue != null;
   }
 
-  Future<String?> _uploadOwnerImage(String userId, File imageFile) async {
+Future<String?> _uploadOwnerImage(String userId,File imageFile, {int? petId, }) async {
+    //  si se pasa este parámetro, se guarda la imagen del perro
     try {
-      final filePath = 'owners/$userId/profile.jpg'; // ruta dentro del bucket
       final storage = Supabase.instance.client.storage;
+      final supabase = Supabase.instance.client;
 
-      // Subir la imagen, si existe reemplazar
+      // Ruta dentro del bucket
+      final filePath = petId != null
+          ? 'owners/$userId/pets/$petId/profile.jpg' // 👈 para perros
+          : 'owners/$userId/profile.jpg'; // 👈 para dueño/paseador
+
+      // Subir la imagen al bucket con reemplazo habilitado
       await storage.from('profile_pics').upload(
-        filePath,
-        imageFile,
-        fileOptions: const FileOptions(upsert: true),
-      );
+            filePath,
+            imageFile,
+            fileOptions: const FileOptions(upsert: true),
+          );
 
       // Obtener URL pública
       final imageUrl = storage.from('profile_pics').getPublicUrl(filePath);
 
-      return imageUrl; // ahora es un String
+      // Si es imagen de perro, actualizar su registro en la tabla pets
+      if (petId != null) {
+        await supabase
+            .from('pets')
+            .update({'photo_url': imageUrl})
+            .eq('id', petId);
+      }
+
+      return imageUrl;
     } catch (e) {
       print('Error al subir imagen: $e');
       return null;
@@ -96,7 +110,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
   }
 
   //funcion para seleccionar imagen
-  Future<void> _pickImage(bool isOwner, ImageSource source) async {
+    Future<void> _pickImage(bool isOwner, ImageSource source, {int? petId}) async {
     final pickedFile = await _picker.pickImage(source: source);
     if (pickedFile != null) {
       setState(() {
@@ -106,10 +120,18 @@ class _AddPetWidgetState extends State<AddPetWidget> {
           _walkerImage = File(pickedFile.path);
         }
       });
+
+      // Subir imagen si es de perro
+      if (petId != null) {
+        final userId = Supabase.instance.client.auth.currentUser?.id;
+        if (userId != null) {
+          await _uploadOwnerImage(userId, File(pickedFile.path), petId: petId);
+        }
+      }
     }
   }
 
-  void _showImagePickerOptions(BuildContext context, bool isOwner) {
+  void _showImagePickerOptions(BuildContext context, bool isOwner, int? petId) {
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
@@ -120,7 +142,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
               title: const Text('Tomar foto'),
               onTap: () {
                 Navigator.of(context).pop();
-                _pickImage(isOwner, ImageSource.camera);
+                _pickImage(isOwner, ImageSource.camera, petId: petId);
               },
             ),
             ListTile(
@@ -128,7 +150,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
               title: const Text('Elegir de la galería'),
               onTap: () {
                 Navigator.of(context).pop();
-                _pickImage(isOwner, ImageSource.gallery);
+                _pickImage(isOwner, ImageSource.gallery, petId: petId);
               },
             ),
           ],
@@ -249,7 +271,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
   child: Padding(
     padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
     child: GestureDetector(
-      onTap: () => _showImagePickerOptions(context, true), // true = dueño
+      onTap: () => _showImagePickerOptions(context, true, 2), 
       child: CircleAvatar(
         radius: 60,
         backgroundImage: _ownerImage != null
@@ -1270,11 +1292,13 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                           onPressed: () async {
 
                                             if (!validarCamposObligatorios()) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text('Completa todos los campos ')),
-  );
-  return;
-}
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(content: Text('Completa todos los campos ')),
+                                              );
+                                              return;
+                                            }
+
+
                                             try{
                                               final response = await Supabase.instance.client
                                               .from('pets')
@@ -1291,9 +1315,6 @@ class _AddPetWidgetState extends State<AddPetWidget> {
 
                                               });
 
-                                              // ScaffoldMessenger.of(context).showSnackBar(
-                                              //           SnackBar(content: Text('¡Registro exitoso!')),
-                                              // );
                                               showDialog(
                                                 context: context,
                                                 builder: (_) => PopUpConfirmDialogWidget(

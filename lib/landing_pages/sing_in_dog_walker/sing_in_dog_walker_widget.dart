@@ -2626,7 +2626,7 @@ if (_ownerImage != null) {
                                                     ScaffoldMessenger.of(context).showSnackBar(
                                                       const SnackBar(content: Text('¡Registro exitoso!')),
                                                     );
-                                                    context.goNamedAuth(HomeDogWalkerWidget.routeName, context.mounted);
+                                                    context.go('/');
                                                   } catch (e) {
                                                     ScaffoldMessenger.of(context).showSnackBar(
                                                       SnackBar(content: Text('Error: $e')),

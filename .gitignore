@@ -46,8 +46,7 @@ android/captures/
 android/gradle-wrapper.jar
 android/gradlew
 android/gradlew.bat
-android/key.properties
-android/local.properties
+android/app/release-key.jks
 
 # ----------------------------
 # 🍏 iOS
@@ -120,3 +119,10 @@ Thumbs.db
 # ----------------------------
 firebase/functions/lib/
 firebase/functions/node_modules/
+
+# ----------------------------
+# 📦 Archivos generados del build
+# ----------------------------
+*.aab
+*.apk
+*.ipa

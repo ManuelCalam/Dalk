@@ -795,7 +795,7 @@ class _SignInWithGoogleDogOwnerWidgetState
                                                           ScaffoldMessenger.of(context).showSnackBar(
                                                             SnackBar(content: Text('¡Registro exitoso!')),
                                                           );
-                                                          context.goNamed(HomeDogOwnerWidget.routeName);
+                                                          context.go('/');
                                                         } catch (e) {
                                                           ScaffoldMessenger.of(context).showSnackBar(
                                                             SnackBar(content: Text('Error al registrar usuario: $e')),
