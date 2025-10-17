@@ -592,7 +592,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0, 0, 0, 3),
                                   child: AutoSizeText(
-                                    'ArtÃ­culos de interÃ©s',
+                                    'Artículos de interés',
                                     textAlign: TextAlign.start,
                                     maxLines: 1,
                                     style: FlutterFlowTheme.of(context)
