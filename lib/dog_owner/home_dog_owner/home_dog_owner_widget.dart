@@ -1,5 +1,4 @@
 import 'package:dalk/SubscriptionProvider.dart';
-import 'package:dalk/flutter_flow/flutter_flow_widgets.dart';
 import 'package:provider/provider.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -686,9 +685,9 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Align(
-                                alignment: AlignmentDirectional(-1, 0),
+                                alignment: const AlignmentDirectional(-1, 0),
                                 child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 0, 0, 3),
                                   child: AutoSizeText(
                                     'Artículos de interés',
@@ -718,7 +717,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                 ),
                               ),
                               Align(
-                                alignment: AlignmentDirectional(-1, 0),
+                                alignment: const AlignmentDirectional(-1, 0),
                                 child: Text(
                                   'Explorando el mundo perruno',
                                   textAlign: TextAlign.start,
@@ -733,7 +732,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
-                                        color: Color(0xFF999999),
+                                        color: const Color(0xFF999999),
                                         fontSize: 10,
                                         letterSpacing: 0.0,
                                         fontWeight: FontWeight.bold,
@@ -745,7 +744,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                               ),
                               Padding(
                                 padding:
-                                    EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                                    const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                                 child: Container(
                                   width: MediaQuery.sizeOf(context).width,
                                   height:

@@ -91,7 +91,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                         decoration: BoxDecoration(
                           color: FlutterFlowTheme.of(context).secondary,
                           boxShadow: [
-                            BoxShadow(
+                            const BoxShadow(
                               blurRadius: 4.0,
                               color: Color(0xFF162C43),
                               offset: Offset(
@@ -100,7 +100,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                               ),
                             )
                           ],
-                          borderRadius: BorderRadius.only(
+                          borderRadius: const BorderRadius.only(
                             bottomLeft: Radius.circular(40.0),
                             bottomRight: Radius.circular(40.0),
                             topLeft: Radius.circular(0.0),
@@ -111,9 +111,9 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                           mainAxisSize: MainAxisSize.max,
                           children: [
                             Align(
-                              alignment: AlignmentDirectional(-1.0, 0.0),
+                              alignment: const AlignmentDirectional(-1.0, 0.0),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     15.0, 0.0, 0.0, 0.0),
                                 child: InkWell(
                                   splashColor: Colors.transparent,
@@ -133,7 +133,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                             ),
                             Expanded(
                               child: Align(
-                                alignment: AlignmentDirectional(0.0, 0.0),
+                                alignment: const AlignmentDirectional(0.0, 0.0),
                                 child: Text(
                                   'Agendar',
                                   textAlign: TextAlign.center,
@@ -160,7 +160,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                               ),
                             ),
                             Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 15.0, 0.0),
                               child: Icon(
                                 Icons.notifications_sharp,
@@ -173,17 +173,17 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                       ),
                       Expanded(
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 15.0, 0.0, 15.0),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 0.9,
-                            decoration: BoxDecoration(),
+                            decoration: const BoxDecoration(),
                             child: SingleChildScrollView(
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Align(
-                                    alignment: AlignmentDirectional(-1.0, 0.0),
+                                    alignment: const AlignmentDirectional(-1.0, 0.0),
                                     child: AutoSizeText(
                                       'Escoge la fecha',
                                       maxLines: 1,
@@ -210,7 +210,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                     ),
                                   ),
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         0.0, 18.0, 0.0, 0.0),
                                     child: InkWell(
                                       splashColor: Colors.transparent,
@@ -310,7 +310,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                           mainAxisSize: MainAxisSize.max,
                                           children: [
                                             Padding(
-                                              padding: EdgeInsetsDirectional
+                                              padding: const EdgeInsetsDirectional
                                                   .fromSTEB(8.0, 0.0, 0.0, 0.0),
                                               child: Icon(
                                                 Icons.calendar_month,
@@ -321,7 +321,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                               ),
                                             ),
                                             Padding(
-                                              padding: EdgeInsetsDirectional
+                                              padding: const EdgeInsetsDirectional
                                                   .fromSTEB(7.0, 0.0, 0.0, 0.0),
                                               child: AutoSizeText(
                                                 _model.datePicked1 != null
@@ -358,7 +358,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                     ),
                                   ),
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         0.0, 18.0, 0.0, 0.0),
                                     child: InkWell(
                                       splashColor: Colors.transparent,
@@ -462,13 +462,13 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                         ),
                                         child: Padding(
                                           padding:
-                                              EdgeInsetsDirectional.fromSTEB(
+                                              const EdgeInsetsDirectional.fromSTEB(
                                                   0.0, 1.0, 0.0, 0.0),
                                           child: Row(
                                             mainAxisSize: MainAxisSize.max,
                                             children: [
                                               Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(
                                                         8.0, 0.0, 0.0, 0.0),
                                                 child: Icon(
@@ -480,7 +480,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                 ),
                                               ),
                                               Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(
                                                         7.0, 0.0, 0.0, 0.0),
                                                 child: AutoSizeText(
@@ -521,9 +521,9 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                   
 
                                   Align(
-                                    alignment: AlignmentDirectional(-1.0, 0.0),
+                                    alignment: const AlignmentDirectional(-1.0, 0.0),
                                     child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 25.0, 0.0, 0.0),
+                                      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 25.0, 0.0, 0.0),
                                       child: AutoSizeText(
                                         'Escoge tiempo de paseo',
                                         textAlign: TextAlign.start,
@@ -619,7 +619,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                             color: isSelected
                                                                 ? Colors.white
                                                                 : isLocked
-                                                                    ? Color(0xFF717981) 
+                                                                    ? const Color(0xFF717981) 
                                                                     : FlutterFlowTheme.of(context).primaryText,
                                                             fontWeight: FontWeight.w600,
                                                           ),
@@ -676,14 +676,14 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                       size: 25,
                                                     ),
                                                     enabledBorder: OutlineInputBorder(
-                                                      borderSide: BorderSide(
+                                                      borderSide: const BorderSide(
                                                         color: Color(0x00000000),
                                                         width: 1,
                                                       ),
                                                       borderRadius: BorderRadius.circular(20),
                                                     ),
                                                     focusedBorder: OutlineInputBorder(
-                                                      borderSide: BorderSide(
+                                                      borderSide: const BorderSide(
                                                         color: Color(0x00000000),
                                                         width: 1,
                                                       ),
@@ -737,9 +737,9 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
 
                                   
                                   Align(
-                                    alignment: AlignmentDirectional(-1.0, 0.0),
+                                    alignment: const AlignmentDirectional(-1.0, 0.0),
                                     child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           0.0, 25.0, 0.0, 0.0),
                                       child: AutoSizeText(
                                         'Escoge la dirección',
@@ -772,13 +772,13 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
         
                                   // ListView Dinamico de las Direcciones
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         0.0, 10.0, 0.0, 0.0),
                                     child: Container(
                                       width: MediaQuery.sizeOf(context).width *
                                           1.0,
                                       height: 110.0,
-                                      decoration: BoxDecoration(),
+                                      decoration: const BoxDecoration(),
                                       
                                       child: StreamBuilder<List<AddressesRow>>(
                                         stream: _model.addressesListViewSupabaseStream ??=
@@ -809,7 +809,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                             shrinkWrap: true,
                                             scrollDirection: Axis.horizontal,
                                             itemCount: addressesList.length + 1, // +1 para el botón extra
-                                            separatorBuilder: (_, __) => SizedBox(width: 10.0),
+                                            separatorBuilder: (_, __) => const SizedBox(width: 10.0),
                                             itemBuilder: (context, index) {
                                               if (index < addressesList.length) {
                                                 final address = addressesList[index];
@@ -853,7 +853,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                         Container(
                                                           width: 100.0,
                                                           height: 70.0,
-                                                          decoration: BoxDecoration(),
+                                                          decoration: const BoxDecoration(),
                                                           child: Icon(
                                                             Icons.add_home_work_rounded,
                                                             color: FlutterFlowTheme.of(context).primary,
@@ -863,9 +863,9 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                         Container(
                                                           width: 100.0,
                                                           height: 30.0,
-                                                          decoration: BoxDecoration(),
+                                                          decoration: const BoxDecoration(),
                                                           child: Align(
-                                                            alignment: AlignmentDirectional(0.0, 0.0),
+                                                            alignment: const AlignmentDirectional(0.0, 0.0),
                                                             child: AutoSizeText(
                                                               'Agregar dirección',
                                                               textAlign: TextAlign.center,
@@ -904,9 +904,9 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                     ),
                                   ),
                                   Align(
-                                    alignment: AlignmentDirectional(-1.0, 0.0),
+                                    alignment: const AlignmentDirectional(-1.0, 0.0),
                                     child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           0.0, 25.0, 0.0, 0.0),
                                       child: AutoSizeText(
                                         'Selecciona tu mascota',
@@ -937,11 +937,11 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                   ),
                                   
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
+                                    padding: const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
                                     child: Container(
                                       width: MediaQuery.sizeOf(context).width * 1.0,
                                       height: 110.0,
-                                      decoration: BoxDecoration(),
+                                      decoration: const BoxDecoration(),
                                       child: StreamBuilder<List<Map<String, dynamic>>>(
                                         stream: SupaFlow.client
                                             .from("pets")
@@ -968,7 +968,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                             shrinkWrap: true,
                                             scrollDirection: Axis.horizontal,
                                             itemCount: petsList.length + 1, // +1 para el botón extra
-                                            separatorBuilder: (_, __) => SizedBox(width: 10.0),
+                                            separatorBuilder: (_, __) => const SizedBox(width: 10.0),
                                             itemBuilder: (context, index) {
                                               if (index < petsList.length) {
                                                 final pet = petsList[index];
@@ -1012,7 +1012,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                         Container(
                                                           width: 100.0,
                                                           height: 70.0,
-                                                          decoration: BoxDecoration(),
+                                                          decoration: const BoxDecoration(),
                                                           child: Icon(
                                                             Icons.add_box,
                                                             color: FlutterFlowTheme.of(context).primary,
@@ -1022,9 +1022,9 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                         Container(
                                                           width: 100.0,
                                                           height: 30.0,
-                                                          decoration: BoxDecoration(),
+                                                          decoration: const BoxDecoration(),
                                                           child: Align(
-                                                            alignment: AlignmentDirectional(0.0, 0.0),
+                                                            alignment: const AlignmentDirectional(0.0, 0.0),
                                                             child: AutoSizeText(
                                                               'Agregar mascota',
                                                               textAlign: TextAlign.center,
@@ -1068,9 +1068,9 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
 
 if(isPremium)
 Align(
-  alignment: AlignmentDirectional(-1.0, 0.0),
+  alignment: const AlignmentDirectional(-1.0, 0.0),
   child: Padding(
-    padding: EdgeInsetsDirectional.fromSTEB(0.0, 25.0, 0.0, 0.0),
+    padding: const EdgeInsetsDirectional.fromSTEB(0.0, 25.0, 0.0, 0.0),
     child: AutoSizeText(
       'Instrucciones especiales para el paseador',
       textAlign: TextAlign.start,
@@ -1094,9 +1094,9 @@ Align(
 
 if(isPremium)
 Align(
-  alignment: AlignmentDirectional(-1.0, 0.0),
+  alignment: const AlignmentDirectional(-1.0, 0.0),
   child: Padding(
-    padding: EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+    padding: const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
     child: TextFormField(
       controller: _model.instructionsTextController,
       focusNode: _model.instructionsFocusNode,
@@ -1137,14 +1137,14 @@ Align(
           size: 25,
         ),
         enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(
+          borderSide: const BorderSide(
             color: Color(0x00000000),
             width: 1,
           ),
           borderRadius: BorderRadius.circular(20),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(
+          borderSide: const BorderSide(
             color: Color(0x00000000),
             width: 1,
           ),
@@ -1187,7 +1187,7 @@ Align(
 
                                   
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         0.0, 20.0, 0.0, 0.0),
                                     child: FFButtonWidget(
                                       onPressed: () async {

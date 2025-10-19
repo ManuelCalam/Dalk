@@ -1,4 +1,5 @@
 import 'package:dalk/backend/supabase/supabase.dart';
+import 'package:dalk/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
@@ -83,7 +84,7 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                 height: MediaQuery.sizeOf(context).height * 0.1,
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).secondary,
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(0),
                     bottomRight: Radius.circular(0),
                     topLeft: Radius.circular(0),
@@ -94,7 +95,7 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                 child: wrapWithModel(
                   model: _model.notificationContainerModel,
                   updateCallback: () => safeSetState(() {}),
-                  child: NotificationContainerWidget(),
+                  child: const NotificationContainerWidget(),
                 ),
               ),
               Expanded(
@@ -103,7 +104,7 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                   height: MediaQuery.sizeOf(context).height * 0.9,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).tertiary,
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(0),
                       bottomRight: Radius.circular(0),
                       topLeft: Radius.circular(50),
@@ -116,12 +117,12 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                       wrapWithModel(
                         model: _model.goBackContainerModel,
                         updateCallback: () => safeSetState(() {}),
-                        child: GoBackContainerWidget(),
+                        child: const GoBackContainerWidget(),
                       ),
                       Container(
                         width: MediaQuery.sizeOf(context).width * 0.9,
                         height: MediaQuery.sizeOf(context).height * 0.08,
-                        decoration: BoxDecoration(),
+                        decoration: const BoxDecoration(),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -175,19 +176,19 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                       ),
                       Expanded(
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 0.9,
                             height: double.infinity,
-                            decoration: BoxDecoration(),
+                            decoration: const BoxDecoration(),
                             child: SingleChildScrollView(
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Align(
-                                    alignment: AlignmentDirectional(-1, -1),
+                                    alignment: const AlignmentDirectional(-1, -1),
                                     child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           0, 10, 0, 0),
                                       child: Container(
                                         width: MediaQuery.sizeOf(context).width,
@@ -270,7 +271,7 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                                             .fontStyle,
                                                   ),
                                               enabledBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0x00000000),
                                                   width: 1,
                                                 ),
@@ -278,7 +279,7 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                                     BorderRadius.circular(8),
                                               ),
                                               focusedBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0x00000000),
                                                   width: 1,
                                                 ),
@@ -357,9 +358,9 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                     ),
                                   ),
                                   Align(
-                                    alignment: AlignmentDirectional(-1, -1),
+                                    alignment: const AlignmentDirectional(-1, -1),
                                     child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           0, 18, 0, 0),
                                       child: Container(
                                         width: MediaQuery.sizeOf(context).width,
@@ -442,7 +443,7 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                                             .fontStyle,
                                                   ),
                                               enabledBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0x00000000),
                                                   width: 1,
                                                 ),
@@ -450,7 +451,7 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                                     BorderRadius.circular(8),
                                               ),
                                               focusedBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0x00000000),
                                                   width: 1,
                                                 ),
@@ -529,21 +530,21 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                     ),
                                   ),
                                   Align(
-                                    alignment: AlignmentDirectional(-1, -1),
+                                    alignment: const AlignmentDirectional(-1, -1),
                                     child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           0, 18, 0, 0),
                                       child: Container(
                                         height:
                                             MediaQuery.sizeOf(context).height *
                                                 0.05,
-                                        decoration: BoxDecoration(),
+                                        decoration: const BoxDecoration(),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.max,
                                           children: [
                                             Expanded(
                                               child: Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(0, 0, 10, 0),
                                                 child: Container(
                                                   width: 350,
@@ -625,7 +626,7 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                                               ),
                                                       enabledBorder:
                                                           OutlineInputBorder(
-                                                        borderSide: BorderSide(
+                                                        borderSide: const BorderSide(
                                                           color:
                                                               Color(0x00000000),
                                                           width: 1,
@@ -636,7 +637,7 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                                       ),
                                                       focusedBorder:
                                                           OutlineInputBorder(
-                                                        borderSide: BorderSide(
+                                                        borderSide: const BorderSide(
                                                           color:
                                                               Color(0x00000000),
                                                           width: 1,
@@ -731,7 +732,7 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                             ),
                                             Expanded(
                                               child: Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(10, 0, 0, 0),
                                                 child: Container(
                                                   width: 350,
@@ -813,7 +814,7 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                                               ),
                                                       enabledBorder:
                                                           OutlineInputBorder(
-                                                        borderSide: BorderSide(
+                                                        borderSide: const BorderSide(
                                                           color:
                                                               Color(0x00000000),
                                                           width: 1,
@@ -824,7 +825,7 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                                       ),
                                                       focusedBorder:
                                                           OutlineInputBorder(
-                                                        borderSide: BorderSide(
+                                                        borderSide: const BorderSide(
                                                           color:
                                                               Color(0x00000000),
                                                           width: 1,
@@ -923,9 +924,9 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                     ),
                                   ),
                                   Align(
-                                    alignment: AlignmentDirectional(-1, -1),
+                                    alignment: const AlignmentDirectional(-1, -1),
                                     child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           0, 18, 0, 0),
                                       child: Container(
                                         width: MediaQuery.sizeOf(context).width,
@@ -1006,7 +1007,7 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                                             .fontStyle,
                                                   ),
                                               enabledBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0x00000000),
                                                   width: 1,
                                                 ),
@@ -1014,7 +1015,7 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                                     BorderRadius.circular(0),
                                               ),
                                               focusedBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0x00000000),
                                                   width: 1,
                                                 ),
@@ -1093,9 +1094,9 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                     ),
                                   ),
                                   Align(
-                                    alignment: AlignmentDirectional(-1, -1),
+                                    alignment: const AlignmentDirectional(-1, -1),
                                     child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           0, 18, 0, 0),
                                       child: Container(
                                         width: MediaQuery.sizeOf(context).width,
@@ -1181,7 +1182,7 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                                                 .fontStyle,
                                                       ),
                                               enabledBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0x00000000),
                                                   width: 1,
                                                 ),
@@ -1189,7 +1190,7 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                                     BorderRadius.circular(8),
                                               ),
                                               focusedBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0x00000000),
                                                   width: 1,
                                                 ),
@@ -1268,7 +1269,7 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                     ),
                                   ),
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         0, 15, 0, 0),
                                     child: FFButtonWidget(
                                       onPressed: () async {
@@ -1286,25 +1287,37 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
 
                                           });
 
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                                    SnackBar(content: Text('¡Registro exitoso!')),
+                                          showDialog(
+                                            context: context,
+                                            builder: (_) => PopUpConfirmDialogWidget(
+                                              title: "Dirección registrada",
+                                              message: "¡La direccion ha sido registrada con éxito!",
+                                              confirmText: "Agregar otra dirección",
+                                              cancelText: "Manú principal",
+                                              confirmColor: FlutterFlowTheme.of(context).accent1,
+                                              cancelColor: FlutterFlowTheme.of(context).primary,
+                                              icon: Icons.check_circle,
+                                              iconColor: FlutterFlowTheme.of(context).success,
+                                              onConfirm: () => context.goNamed(AddAddressWidget.routeName),
+                                              onCancel: () => context.go('/'),
+                                            ), 
                                           );
-                                        } catch (e, st) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                                    SnackBar(content: Text('Error al registrar la dirección: $e')),
-                                            );
+                                        } catch (e) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(content: Text('Error al registrar la dirección: $e')),
+                                          );
                                         }
                                       },
-                                      text: 'Registrar',
+                                      text: 'Registrar dirección',
                                       options: FFButtonOptions(
                                         width: double.infinity,
                                         height:
                                             MediaQuery.sizeOf(context).height *
                                                 0.05,
-                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(
                                             0, 0, 0, 0),
                                         iconPadding:
-                                            EdgeInsetsDirectional.fromSTEB(
+                                            const EdgeInsetsDirectional.fromSTEB(
                                                 0, 0, 0, 0),
                                         color: FlutterFlowTheme.of(context)
                                             .accent1,
