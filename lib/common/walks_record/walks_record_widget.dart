@@ -132,91 +132,88 @@ class _WalksRecordWidgetState extends State<WalksRecordWidget> {
                             width: MediaQuery.sizeOf(context).width * 0.9,
                             height: double.infinity,
                             decoration: const BoxDecoration(),
-                            child:  Padding(
-                              padding:
-                                  const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                            child: Padding(
+                              padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                               child: SingleChildScrollView(
                                 primary: false,
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
-
                                     if(widget.userType == 'Paseador') ...[
-                                    Padding( 
-                                      padding: const EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
-                                      child: 
-                                      StreamBuilder<List<Map<String, dynamic>>>(
-                                        stream: SupaFlow.client
-                                          .from('walks_with_names')
-                                          .stream(primaryKey: ['id'])
-                                          .eq('walker_id', currentUserUid),
-                                        builder: (context, snapshot) {
-                                          if (!snapshot.hasData) {
-                                            return const Center(child: CircularProgressIndicator());
-                                          }
-                                          final finishedWalks = snapshot.data!
-                                            .where((walk) => walk['status'] == 'Finalizado')
-                                            .toList();
-
-                                          if (finishedWalks.isEmpty) {
-                                            return const Center(child: Text('No hay paseos finalizados.'));
-                                          }
-
-                                          return ListView.builder(
-                                            padding: EdgeInsets.zero,
-                                            shrinkWrap: true,
-                                            itemCount: finishedWalks.length,
-                                            itemBuilder: (context, index) {
-                                              final walk = finishedWalks[index];
-                                              return FutureBuilder<List<Map<String, dynamic>>>(
-                                                future: SupaFlow.client
-                                                  .from('reviews')
-                                                  .select()
-                                                  .eq('walk_id', walk['id']),
-                                                builder: (context, reviewSnapshot) {
-                                                  if (!reviewSnapshot.hasData) {
-                                                    return const SizedBox();
-                                                  }
-                                                  final reviews = reviewSnapshot.data!;
-                                                  if (reviews.isNotEmpty) {
-                                                    final review = reviews.first;
-                                                    return ReviewedDogCardWidget(
-                                                      id: walk['id'],
-                                                      petName: walk['pet_name'] ?? '',
-                                                      dogOwner: walk['owner_name'] ?? '',
-                                                      duration: (walk['walk_duration_minutes'] as int?)?.toString() ?? '', 
-                                                      fee: (walk['fee'] as int?)?.toString() ?? '', 
-                                                      rate: review['rating']?.toString() ?? '',
-                                                      photoUrl: walk['dog_photo_url'] ?? '', 
-                                                      dogId: walk['dog_id'] ?? 0, 
-                                                    );
-                                                  } else {
-                                                    return NonReviewedDogCardWidget(
-                                                      id: walk['id'],
-                                                      petName: walk['pet_name'] ?? '',
-                                                      dogOwner: walk['owner_name'] ?? '',
-                                                      duration: (walk['walk_duration_minutes'] as int?)?.toString() ?? '', 
-                                                      fee: (walk['fee'] as int?)?.toString() ?? '', 
-                                                      photoUrl: walk['dog_photo_url'] ?? '',
-                                                      walkerId: walk['walker_id'] ?? '',
-                                                      dogId: walk['dog_id'] ?? 0, 
-                                                    );
-                                                  }
-                                                },
-                                              );
-                                            },
-                                          );
-                                        },
-                                      ),
-                                      
-                                    ),
-                                    
-                                    // Widget de paseos finalizados para usuario "Dueño"
-                                    ] else if (widget.userType == 'Dueño') ...[
                                       Padding( 
                                         padding: const EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
-                                        child: 
-                                        StreamBuilder<List<Map<String, dynamic>>>(
+                                        child: StreamBuilder<List<Map<String, dynamic>>>(
+                                          stream: SupaFlow.client
+                                            .from('walks_with_names')
+                                            .stream(primaryKey: ['id'])
+                                            .eq('walker_id', currentUserUid),
+                                          builder: (context, snapshot) {
+                                            if (!snapshot.hasData) {
+                                              return const Center(child: CircularProgressIndicator());
+                                            }
+                                            final finishedWalks = snapshot.data!
+                                              .where((walk) => walk['status'] == 'Finalizado')
+                                              .toList();
+
+                                            if (finishedWalks.isEmpty) {
+                                              return const Center(child: Text('No hay paseos finalizados.'));
+                                            }
+
+                                            return ListView.builder(
+                                              padding: EdgeInsets.zero,
+                                              shrinkWrap: true, // ← MANTENER
+                                              physics: const ClampingScrollPhysics(), // ← AGREGAR ESTO
+                                              itemCount: finishedWalks.length,
+                                              itemBuilder: (context, index) {
+                                                final walk = finishedWalks[index];
+                                                return FutureBuilder<List<Map<String, dynamic>>>(
+                                                  future: SupaFlow.client
+                                                    .from('reviews')
+                                                    .select()
+                                                    .eq('walk_id', walk['id']),
+                                                  builder: (context, reviewSnapshot) {
+                                                    if (!reviewSnapshot.hasData) {
+                                                      return const SizedBox();
+                                                    }
+                                                    final reviews = reviewSnapshot.data!;
+                                                    if (reviews.isNotEmpty) {
+                                                      final review = reviews.first;
+                                                      return ReviewedDogCardWidget(
+                                                        id: walk['id'],
+                                                        petName: walk['pet_name'] ?? '',
+                                                        dogOwner: walk['owner_name'] ?? '',
+                                                        duration: (walk['walk_duration_minutes'] as int?)?.toString() ?? '', 
+                                                        fee: (walk['fee'] as int?)?.toString() ?? '', 
+                                                        rate: review['rating']?.toString() ?? '',
+                                                        photoUrl: walk['dog_photo_url'] ?? '', 
+                                                        dogId: walk['dog_id'] ?? 0, 
+                                                      );
+                                                    } else {
+                                                      return NonReviewedDogCardWidget(
+                                                        id: walk['id'],
+                                                        petName: walk['pet_name'] ?? '',
+                                                        dogOwner: walk['owner_name'] ?? '',
+                                                        duration: (walk['walk_duration_minutes'] as int?)?.toString() ?? '', 
+                                                        fee: (walk['fee'] as int?)?.toString() ?? '', 
+                                                        photoUrl: walk['dog_photo_url'] ?? '',
+                                                        walkerId: walk['walker_id'] ?? '',
+                                                        dogId: walk['dog_id'] ?? 0, 
+                                                      );
+                                                    }
+                                                  },
+                                                );
+                                              },
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                    
+                                    // Widget de paseos finalizados para usuario "Dueño"
+                                    if (widget.userType == 'Dueño') ...[
+                                      Padding( 
+                                        padding: const EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+                                        child: StreamBuilder<List<Map<String, dynamic>>>(
                                           stream: SupaFlow.client
                                             .from('walks_with_names')
                                             .stream(primaryKey: ['id'])
@@ -235,7 +232,8 @@ class _WalksRecordWidgetState extends State<WalksRecordWidget> {
 
                                             return ListView.builder(
                                               padding: EdgeInsets.zero,
-                                              shrinkWrap: true,
+                                              shrinkWrap: true, // ← MANTENER
+                                              physics: const ClampingScrollPhysics(), // ← AGREGAR ESTO
                                               itemCount: finishedWalks.length,
                                               itemBuilder: (context, index) {
                                                 final walk = finishedWalks[index];
@@ -280,9 +278,7 @@ class _WalksRecordWidgetState extends State<WalksRecordWidget> {
                                             );
                                           },
                                         ),
-                                        
                                       ),
-
                                     ]
                                   ],
                                 ),

@@ -8,7 +8,6 @@ import '/components/go_back_container/go_back_container_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -36,10 +35,8 @@ class _CurrentWalkWidgetState extends State<CurrentWalkWidget> {
   @override
   void initState() {
     super.initState();
-    checkCurrentWalk();
     _model = createModel(context, () => CurrentWalkModel());
-
-
+    checkCurrentWalk();
   }
 
   @override
@@ -49,9 +46,7 @@ class _CurrentWalkWidgetState extends State<CurrentWalkWidget> {
     super.dispose();
   }
 
-    Future<void> checkCurrentWalk() async {
-
-
+  Future<void> checkCurrentWalk() async {
     // Obtener tipo de usuario
     final userRes = await Supabase.instance.client
         .from('users')
@@ -101,7 +96,7 @@ class _CurrentWalkWidgetState extends State<CurrentWalkWidget> {
                 height: MediaQuery.sizeOf(context).height * 0.1,
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).secondary,
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(0),
                     bottomRight: Radius.circular(0),
                     topLeft: Radius.circular(0),
@@ -113,14 +108,14 @@ class _CurrentWalkWidgetState extends State<CurrentWalkWidget> {
                   children: [
                     Flexible(
                       child: Align(
-                        alignment: AlignmentDirectional(1, 0),
+                        alignment: const AlignmentDirectional(1, 0),
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 0, 15, 5),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 15, 5),
                           child: Container(
                             width: 40,
                             height: 70,
-                            decoration: BoxDecoration(),
-                            alignment: AlignmentDirectional(1, 0),
+                            decoration: const BoxDecoration(),
+                            alignment: const AlignmentDirectional(1, 0),
                             child: FlutterFlowIconButton(
                               borderRadius: 8,
                               buttonSize: 40,
@@ -146,7 +141,7 @@ class _CurrentWalkWidgetState extends State<CurrentWalkWidget> {
                   height: MediaQuery.sizeOf(context).height * 0.9,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).tertiary,
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(0),
                       bottomRight: Radius.circular(0),
                       topLeft: Radius.circular(50),
@@ -159,10 +154,10 @@ class _CurrentWalkWidgetState extends State<CurrentWalkWidget> {
                       wrapWithModel(
                         model: _model.goBackContainerModel,
                         updateCallback: () => safeSetState(() {}),
-                        child: GoBackContainerWidget(),
+                        child: const GoBackContainerWidget(),
                       ),
                       Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 8),
+                        padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 8),
                         child: Text(
                           'Paseos',
                           style:
@@ -184,10 +179,10 @@ class _CurrentWalkWidgetState extends State<CurrentWalkWidget> {
                       ),
                       Expanded(
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 0.9,
-                            decoration: BoxDecoration(),
+                            decoration: const BoxDecoration(),
                             child: ListView(
                               padding: EdgeInsets.zero,
                               shrinkWrap: true,
@@ -206,7 +201,7 @@ class _CurrentWalkWidgetState extends State<CurrentWalkWidget> {
                                           userType: userType!,
                                         )
                                       else
-                                        const NotScheduledWalkContainerWidget(),
+                                        NotScheduledWalkContainerWidget(userType: '',),
                                     ],
                                   ),
 

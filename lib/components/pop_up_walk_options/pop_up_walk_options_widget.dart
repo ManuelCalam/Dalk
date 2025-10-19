@@ -1,5 +1,7 @@
 import 'package:dalk/backend/supabase/supabase.dart';
 import 'package:dalk/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
+import 'package:dalk/components/scheduled_walk_container/scheduled_walk_container_widget.dart';
+import 'package:geolocator/geolocator.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -12,15 +14,20 @@ import 'package:google_fonts/google_fonts.dart';
 import 'pop_up_walk_options_model.dart';
 export 'pop_up_walk_options_model.dart';
 
+
+typedef WalkCompletionCallback = Future<void> Function(); 
+
 class PopUpWalkOptionsWidget extends StatefulWidget {
   const PopUpWalkOptionsWidget({
     super.key,
     required this.walkId,
     required this.usertype,
+    this.onWalkCompletion,
   });
 
   final int walkId;
   final String? usertype;
+  final WalkCompletionCallback? onWalkCompletion;
 
   @override
   State<PopUpWalkOptionsWidget> createState() => _PopUpWalkOptionsWidgetState();
@@ -28,6 +35,7 @@ class PopUpWalkOptionsWidget extends StatefulWidget {
 
 class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
   late PopUpWalkOptionsModel _model;
+  final currentUserId = SupaFlow.client.auth.currentUser?.id;
 
   @override
   void setState(VoidCallback callback) {
@@ -59,6 +67,52 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
 
     return response;
   }
+
+  Future<bool> _checkAndRequestAlwaysPermission() async {
+    // 1. Verificar el permiso actual
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    bool requiresUpgrade = permission == LocationPermission.whileInUse || permission == LocationPermission.denied;
+
+    if (requiresUpgrade) {
+      // 2. Mostrar Diálogo de Explicación y Redirección
+      bool? confirmed = await showDialog<bool>(
+        context: context,
+        builder: (_) => PopUpConfirmDialogWidget(
+          title: "Permiso de Ubicación Crítico",
+          message:
+              "Para que el dueño pueda seguir el paseo y garantizar el servicio, necesitamos permiso de ubicación 'Permitir siempre'. Esto nos permite rastrear tu ubicación incluso cuando la aplicación no está abierta. ¿Deseas ir a configuración para cambiarlo?",
+          confirmText: "Ir a Configuración",
+          cancelText: "Cerrar",
+          confirmColor: FlutterFlowTheme.of(context).primary,
+          cancelColor: FlutterFlowTheme.of(context).accent1,
+          icon: Icons.location_on,
+          iconColor: FlutterFlowTheme.of(context).primary,
+          onConfirm: () => Navigator.pop(context, true),
+          onCancel: () => Navigator.pop(context, false), 
+        ),
+      );
+
+      if (confirmed == true) {
+        // 3. Redirigir a Configuración de la App
+        await Geolocator.openAppSettings();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                "Busca el permiso de Ubicación y selecciona 'Permitir siempre'."),
+            duration: Duration(seconds: 5),
+          ),
+        );
+        return false; 
+      } else {
+        return false; 
+      }
+    }
+
+    // El permiso ya es "AllowAlways" o "deniedForever" 
+    return true; 
+  }
+  
 
   // Helper Function: Construye un botón con el formato necesario
   Widget _buildActionButton({
@@ -113,8 +167,8 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
     // LÓGICA DEL USUARIO DUEÑO ("Dueño")
     // ------------------------------------
     if (userType == 'Dueño') {
-      if (walkStatus == 'Por confirmar' || walkStatus == 'Aceptado') {
-        // Estatus "Por confirmar" o "Aceptado": Botón "Cancelar"
+      if (walkStatus == 'Por confirmar' || walkStatus == 'Aceptado' || walkStatus == 'En curso') {
+        // Estatus "Por confirmar" o "Aceptado" o "En curso": Botón "Cancelar"
         buttons.add(_buildActionButton(
           context: context,
           text: 'Cancelar paseo',
@@ -188,7 +242,8 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
           },
           icon: Icons.delete_forever_rounded,
         ));
-      }
+      } 
+
     }
 
     // ------------------------------------
@@ -200,53 +255,59 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
         
         // Botón 1: Aceptar
         buttons.add(_buildActionButton(
-          context: context,
-          text: 'Aceptar',
-          color: FlutterFlowTheme.of(context).success, 
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (_) => PopUpConfirmDialogWidget(
-                title: "Aceptar paseo",
-                message: "¿Estás seguro de que deseas aceptar este paseo?",
-                confirmText: "Aceptar paseo",
-                cancelText: "Cerrar",
-                confirmColor: FlutterFlowTheme.of(context).success,
-                cancelColor: FlutterFlowTheme.of(context).accent1,
-                icon: Icons.check_circle_rounded,
-                iconColor: FlutterFlowTheme.of(context).success,
-                onConfirm: () async => {
-                  await SupaFlow.client
+        context: context,
+        text: 'Aceptar paseo',
+        color: FlutterFlowTheme.of(context).success,
+        onPressed: () async {
+          // VERIFICAR/SOLICITAR PERMISO DE UBICACIÓN "PERMITIR SIEMPRE"
+          final canProceed = await _checkAndRequestAlwaysPermission();
+          
+          if (!canProceed) {
+            return; 
+          }
+
+          // PROCEDER CON EL DIÁLOGO DE CONFIRMACIÓN DEL PASEO
+          showDialog(
+            context: context,
+            builder: (_) => PopUpConfirmDialogWidget(
+              title: "Aceptar paseo",
+              message: "¿Estás seguro de que deseas aceptar este paseo?",
+              confirmText: "Aceptar paseo",
+              cancelText: "Cerrar",
+              confirmColor: FlutterFlowTheme.of(context).success,
+              cancelColor: FlutterFlowTheme.of(context).accent1,
+              icon: Icons.check_circle_rounded,
+              iconColor: FlutterFlowTheme.of(context).success,
+              onConfirm: () async {
+                await SupaFlow.client
                     .from('walks')
                     .update({'status': 'Aceptado'})
-                    .eq('id', widget.walkId),
+                    .eq('id', widget.walkId);
 
+                // NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
+                Navigator.pop(context); 
+                Navigator.pop(context); 
 
-                  //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
-                  Navigator.pop(context),
-                  Navigator.pop(context),
-
-                  //Envío de notificacion después de cerrar los menús
-                  await Supabase.instance.client.functions.invoke(
-                    'send-walk-notification',
-                    body: {
-                      'walk_id': widget.walkId,
-                      'new_status': 'Aceptado',
-                    },
-                  )
-                },
-                onCancel: () => Navigator.pop(context),
-              ), 
-            );
-
-          },
-          icon: Icons.check_circle,
-        ));
+                // Envío de notificacion después de cerrar los menús
+                await Supabase.instance.client.functions.invoke(
+                  'send-walk-notification',
+                  body: {
+                    'walk_id': widget.walkId,
+                    'new_status': 'Aceptado',
+                  },
+                );
+              },
+              onCancel: () => Navigator.pop(context),
+            ),
+          );
+        },
+        icon: Icons.check_circle,
+      ));
 
         // Botón 2: Rechazar
         buttons.add(_buildActionButton(
           context: context,
-          text: 'Rechazar',
+          text: 'Rechazar paseo',
           color: FlutterFlowTheme.of(context).error,
           onPressed: () {
            showDialog(
@@ -291,7 +352,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
       } else if (walkStatus == 'Aceptado') {
         // Estatus "Aceptado": "Iniciar Viaje" y "Cancelar"
         
-        // Botón 1: Iniciar Viaje (Color de acción principal)
+        // Botón 1: Iniciar paseo
         buttons.add(_buildActionButton(
           context: context,
           text: 'Iniciar paseo',
@@ -301,7 +362,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
               context: context,
               builder: (_) => PopUpConfirmDialogWidget(
                 title: "Iniciar paseo",
-                message: "¿Estás seguro de que deseas inniciar este paseo?",
+                message: "¿Estás seguro de que deseas iniciar este paseo?",
                 confirmText: "Iniciar paseo",
                 cancelText: "Cerrar",
                 confirmColor: FlutterFlowTheme.of(context).success,
@@ -309,23 +370,36 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                 icon: FontAwesomeIcons.dog,
                 iconColor: FlutterFlowTheme.of(context).primary,
                 onConfirm: () async => {
+                  
+
                   await SupaFlow.client
                     .from('walks')
                     .update({'status': 'En curso'})
                     .eq('id', widget.walkId),
 
+                  context.pushReplacementNamed(
+                    '_initialize',
+                    queryParameters: {'initialPage': 'CurrentWalk'},
+                  ),
                   //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
                   Navigator.pop(context),
                   Navigator.pop(context),
 
+                  await SupaFlow.client
+                    .from('users') 
+                    .update({'current_walk_id': widget.walkId}) 
+                    .eq('uuid', currentUserId!) 
+                    .maybeSingle(),
+
+
                   //Envío de notificacion después de cerrar los menús
                   await Supabase.instance.client.functions.invoke(
-                          'send-walk-notification',
-                          body: {
-                            'walk_id': widget.walkId,
-                            'new_status': 'En curso',
-                          },
-                  )
+                    'send-walk-notification',
+                    body: {
+                      'walk_id': widget.walkId,
+                      'new_status': 'En curso',
+                    },
+                  ),
                 },
                 onCancel: () => Navigator.pop(context),
               ), 
@@ -334,7 +408,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
           icon: FontAwesomeIcons.dog,
         ));
 
-        // Botón 2: Cancelar (Color rojo)
+        // Botón 2: Cancelar 
         buttons.add(_buildActionButton(
           context: context,
           text: 'Cancelar paseo',
@@ -408,6 +482,90 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
           },
           icon: Icons.delete_forever_rounded,
         ));
+      } else if(walkStatus == 'En curso'){
+        // Estatus "En curso": "Terminar" y "Cancelar"
+        
+        // Botón 1: Terminar
+        buttons.add(_buildActionButton(
+          context: context,
+          text: 'Terminar paseo',
+          color: FlutterFlowTheme.of(context).primary, 
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (_) => PopUpConfirmDialogWidget(
+                title: "Terminar paseo",
+                message: "¿Estás seguro de que deseas terminar este paseo?",
+                confirmText: "Terminar paseo",
+                cancelText: "Cerrar",
+                confirmColor: FlutterFlowTheme.of(context).primary,
+                cancelColor: FlutterFlowTheme.of(context).accent1,
+                icon: Icons.check_circle_rounded,
+                iconColor: FlutterFlowTheme.of(context).primary,
+
+            onConfirm: () async {
+              // ✅ CAMBIO CLAVE 3: Llamamos a la función usando ?.call()
+              // Esto solo ejecuta la función si widget.onWalkCompletion NO es null.
+              await widget.onWalkCompletion?.call(); 
+              
+              // Cerramos el PopUp, usando el contexto del diálogo
+              if (Navigator.canPop(context)) {
+                  Navigator.pop(context); 
+              }
+            },
+
+
+                onCancel: () => Navigator.pop(context),
+              ), 
+            );
+
+          },
+          icon: Icons.check_circle,
+        ));
+
+
+        // Botón 2: Cancelar (Color rojo)
+        buttons.add(_buildActionButton(
+          context: context,
+          text: 'Cancelar paseo',
+          color: FlutterFlowTheme.of(context).error,
+          onPressed: () {
+             showDialog(
+              context: context,
+              builder: (_) => PopUpConfirmDialogWidget(
+                title: "Cancelar paseo",
+                message: "¿Estás seguro de que deseas cancelar este paseo?",
+                confirmText: "Cancelar paseo",
+                cancelText: "Cerrar",
+                confirmColor: FlutterFlowTheme.of(context).error,
+                cancelColor: FlutterFlowTheme.of(context).accent1,
+                icon: Icons.cancel_rounded,
+                iconColor: FlutterFlowTheme.of(context).error,
+                onConfirm: () async => {
+                  await SupaFlow.client
+                    .from('walks')
+                    .update({'status': 'Cancelado'})
+                    .eq('id', widget.walkId),
+
+                  //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
+                  Navigator.pop(context),
+                  Navigator.pop(context),
+                  
+                  //Envío de notificacion después de cerrar los menús
+                  await Supabase.instance.client.functions.invoke(
+                    'send-walk-notification',
+                    body: {
+                      'walk_id': widget.walkId,
+                      'new_status': 'Cancelado',
+                    },
+                  )
+                },
+                onCancel: () => Navigator.pop(context),
+              ), 
+            );
+          },
+          icon: Icons.cancel_rounded,
+        ));
       }
     }
 
@@ -472,7 +630,6 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
         final DateTime? startTime = DateTime.tryParse(walkInfo['startTime'] as String? ?? '');
 
         
-        // Aquí puedes extraer los datos para usarlos en el widget:
         final String dogName = walkInfo['pet_name'] as String? ?? 'N/A';
         final String userName = widget.usertype == 'Dueño' ? walkInfo['walker_name'] : walkInfo['owner_name'];
         final String photoUrl = walkInfo['dog_photo_url'] as String? ?? 'N/A';
@@ -502,11 +659,11 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
             mainAxisSize: MainAxisSize.max,
             children: [
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0, 15, 0, 0),
+                padding: const EdgeInsetsDirectional.fromSTEB(0, 15, 0, 0),
                 child: Container(
                   width: MediaQuery.sizeOf(context).width * 0.92,
                   height: MediaQuery.sizeOf(context).height * 0.05,
-                  decoration: BoxDecoration(),
+                  decoration: const BoxDecoration(),
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     children: [
@@ -524,7 +681,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                       ),
                       Expanded(
                         child: Align(
-                          alignment: AlignmentDirectional(1, 0),
+                          alignment: const AlignmentDirectional(1, 0),
                           child: FlutterFlowIconButton(
                             borderRadius: 8,
                             buttonSize: 40,
@@ -546,10 +703,10 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
               ),
               Expanded(
                 child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 20),
+                  padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 20),
                   child: Container(
                     width: MediaQuery.sizeOf(context).width * 0.9,
-                    decoration: BoxDecoration(),
+                    decoration: const BoxDecoration(),
                     child: SingleChildScrollView(
                       primary: false,
                       child: Column(
@@ -559,7 +716,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                             width: 120,
                             height: 120,
                             clipBehavior: Clip.antiAlias,
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               shape: BoxShape.circle,
                             ),
                             child: Image.network(
@@ -604,7 +761,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                                 ),
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                            padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                             child: Container(
                               width: MediaQuery.sizeOf(context).width,
                               height: MediaQuery.sizeOf(context).height * 0.065,
@@ -616,9 +773,9 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Align(
-                                    alignment: AlignmentDirectional(-1, 0),
+                                    alignment: const AlignmentDirectional(-1, 0),
                                     child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           10, 0, 0, 0),
                                       child: Icon(
                                         Icons.watch_sharp,
@@ -629,7 +786,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                                   ),
                                   Padding(
                                     padding:
-                                        EdgeInsetsDirectional.fromSTEB(8, 0, 0, 0),
+                                        const EdgeInsetsDirectional.fromSTEB(8, 0, 0, 0),
                                     child: AutoSizeText(
                                       time,
                                       maxLines: 1,
@@ -659,7 +816,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                            padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                             child: Container(
                               width: MediaQuery.sizeOf(context).width,
                               height: MediaQuery.sizeOf(context).height * 0.065,
@@ -669,14 +826,14 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                               ),
                               child: Padding(
                                 padding:
-                                    EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                    const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Align(
-                                      alignment: AlignmentDirectional(-1, 0),
+                                      alignment: const AlignmentDirectional(-1, 0),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(
                                             10, 0, 0, 0),
                                         child: Icon(
                                           Icons.calendar_month,
@@ -687,7 +844,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                                       ),
                                     ),
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           8, 0, 0, 0),
                                       child: AutoSizeText(
                                         date,
@@ -720,7 +877,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                            padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                             child: Container(
                               width: MediaQuery.sizeOf(context).width,
                               constraints: BoxConstraints(
@@ -733,16 +890,16 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                               ),
                               child: Padding(
                                 padding:
-                                    EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                    const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Align(
-                                      alignment: AlignmentDirectional(-1, 0),
+                                      alignment: const AlignmentDirectional(-1, 0),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(
                                             10, 0, 0, 0),
                                         child: Icon(
                                           Icons.home_rounded,
@@ -754,13 +911,13 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                                     ),
                                     Flexible(
                                       child: Align(
-                                        alignment: AlignmentDirectional(-1, 0),
+                                        alignment: const AlignmentDirectional(-1, 0),
                                         child: Column(
                                           mainAxisSize: MainAxisSize.max,
                                           children: [
                                             Padding(
                                               padding:
-                                                  EdgeInsetsDirectional.fromSTEB(
+                                                  const EdgeInsetsDirectional.fromSTEB(
                                                       8, 0, 10, 0),
                                               child: AutoSizeText(
                                                 address,
@@ -801,7 +958,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                            padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                             child: Container(
                               width: MediaQuery.sizeOf(context).width,
                               constraints: BoxConstraints(
@@ -814,16 +971,16 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                               ),
                               child: Padding(
                                 padding:
-                                    EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                    const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Align(
-                                      alignment: AlignmentDirectional(-1, 0),
+                                      alignment: const AlignmentDirectional(-1, 0),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(
                                             10, 0, 0, 0),
                                         child: Icon(
                                           Icons.timer,
@@ -835,13 +992,13 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                                     ),
                                     Flexible(
                                       child: Align(
-                                        alignment: AlignmentDirectional(-1, 0),
+                                        alignment: const AlignmentDirectional(-1, 0),
                                         child: Column(
                                           mainAxisSize: MainAxisSize.max,
                                           children: [
                                             Padding(
                                               padding:
-                                                  EdgeInsetsDirectional.fromSTEB(
+                                                  const EdgeInsetsDirectional.fromSTEB(
                                                       8, 0, 10, 0),
                                               child: AutoSizeText(
                                                 '$duration minutos',
@@ -882,7 +1039,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                            padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                             child: Container(
                               width: MediaQuery.sizeOf(context).width,
                               constraints: BoxConstraints(
@@ -895,16 +1052,16 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                               ),
                               child: Padding(
                                 padding:
-                                    EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                    const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Align(
-                                      alignment: AlignmentDirectional(-1, 0),
+                                      alignment: const AlignmentDirectional(-1, 0),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(
                                             10, 0, 0, 0),
                                         child: FaIcon(
                                           FontAwesomeIcons.solidHandshake,
@@ -916,13 +1073,13 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                                     ),
                                     Flexible(
                                       child: Align(
-                                        alignment: AlignmentDirectional(-1, 0),
+                                        alignment: const AlignmentDirectional(-1, 0),
                                         child: Column(
                                           mainAxisSize: MainAxisSize.max,
                                           children: [
                                             Padding(
                                               padding:
-                                                  EdgeInsetsDirectional.fromSTEB(
+                                                  const EdgeInsetsDirectional.fromSTEB(
                                                       8, 0, 10, 0),
                                               child: AutoSizeText(
                                                 instructions,
@@ -963,7 +1120,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                            padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                             child: Container(
                               width: MediaQuery.sizeOf(context).width,
                               constraints: BoxConstraints(
@@ -976,16 +1133,16 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                               ),
                               child: Padding(
                                 padding:
-                                    EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                    const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Align(
-                                      alignment: AlignmentDirectional(-1, 0),
+                                      alignment: const AlignmentDirectional(-1, 0),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(
                                             10, 0, 0, 0),
                                         child: Icon(
                                           Icons.monetization_on_rounded,
@@ -997,13 +1154,13 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                                     ),
                                     Flexible(
                                       child: Align(
-                                        alignment: AlignmentDirectional(-1, 0),
+                                        alignment: const AlignmentDirectional(-1, 0),
                                         child: Column(
                                           mainAxisSize: MainAxisSize.max,
                                           children: [
                                             Padding(
                                               padding:
-                                                  EdgeInsetsDirectional.fromSTEB(
+                                                  const EdgeInsetsDirectional.fromSTEB(
                                                       8, 0, 10, 0),
                                               child: AutoSizeText(
                                                 fee,
@@ -1044,9 +1201,9 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                             ),
                           ),
                           Align(
-                            alignment: AlignmentDirectional(-1, 0),
+                            alignment: const AlignmentDirectional(-1, 0),
                             child: Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(0, 18, 0, 10),
+                              padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 10),
                               child: Text(
                                 'Opciones de viaje',
                                 style: FlutterFlowTheme.of(context)
@@ -1072,81 +1229,6 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                               ),
                             ),
                           ),
-                          // FFButtonWidget(
-                          //   onPressed: () {
-                          //     print('Button pressed ...');
-                          //   },
-                          //   text: '[Confirm]',
-                          //   options: FFButtonOptions(
-                          //     width: MediaQuery.sizeOf(context).width,
-                          //     height: MediaQuery.sizeOf(context).height * 0.05,
-                          //     padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
-                          //     iconPadding:
-                          //         EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                          //     color: FlutterFlowTheme.of(context).primary,
-                          //     textStyle:
-                          //         FlutterFlowTheme.of(context).titleSmall.override(
-                          //               font: GoogleFonts.lexend(
-                          //                 fontWeight: FlutterFlowTheme.of(context)
-                          //                     .titleSmall
-                          //                     .fontWeight,
-                          //                 fontStyle: FlutterFlowTheme.of(context)
-                          //                     .titleSmall
-                          //                     .fontStyle,
-                          //               ),
-                          //               color: Colors.white,
-                          //               letterSpacing: 0.0,
-                          //               fontWeight: FlutterFlowTheme.of(context)
-                          //                   .titleSmall
-                          //                   .fontWeight,
-                          //               fontStyle: FlutterFlowTheme.of(context)
-                          //                   .titleSmall
-                          //                   .fontStyle,
-                          //             ),
-                          //     elevation: 0,
-                          //     borderRadius: BorderRadius.circular(8),
-                          //   ),
-                          // ),
-                          // Padding(
-                          //   padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
-                          //   child: FFButtonWidget(
-                          //     onPressed: () {
-                          //       print('Button pressed ...');
-                          //     },
-                          //     text: '[Cancel]',
-                          //     options: FFButtonOptions(
-                          //       width: MediaQuery.sizeOf(context).width,
-                          //       height: MediaQuery.sizeOf(context).height * 0.05,
-                          //       padding:
-                          //           EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
-                          //       iconPadding:
-                          //           EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                          //       color: Color(0xFFC40606),
-                          //       textStyle: FlutterFlowTheme.of(context)
-                          //           .titleSmall
-                          //           .override(
-                          //             font: GoogleFonts.lexend(
-                          //               fontWeight: FlutterFlowTheme.of(context)
-                          //                   .titleSmall
-                          //                   .fontWeight,
-                          //               fontStyle: FlutterFlowTheme.of(context)
-                          //                   .titleSmall
-                          //                   .fontStyle,
-                          //             ),
-                          //             color: Colors.white,
-                          //             letterSpacing: 0.0,
-                          //             fontWeight: FlutterFlowTheme.of(context)
-                          //                 .titleSmall
-                          //                 .fontWeight,
-                          //             fontStyle: FlutterFlowTheme.of(context)
-                          //                 .titleSmall
-                          //                 .fontStyle,
-                          //           ),
-                          //       elevation: 0,
-                          //       borderRadius: BorderRadius.circular(8),
-                          //     ),
-                          //   ),
-                          // ),
                           ..._getButtonsBasedOnStatus(context, widget.usertype, walkStatus),
                         ],
                       ),

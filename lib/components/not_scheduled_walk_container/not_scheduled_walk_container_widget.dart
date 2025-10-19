@@ -1,21 +1,22 @@
-import 'package:dalk/dog_owner/set_walk_schedule/set_walk_schedule_widget.dart';
-import 'package:dalk/dog_owner/walks_dog_owner/walks_dog_owner_widget.dart';
+import 'package:dalk/common/walks_record/walks_record_widget.dart';
 
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
+import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 import 'not_scheduled_walk_container_model.dart';
 export 'not_scheduled_walk_container_model.dart';
 
 class NotScheduledWalkContainerWidget extends StatefulWidget {
-  const NotScheduledWalkContainerWidget({super.key});
+  const NotScheduledWalkContainerWidget({
+    required this.userType,
+    super.key});
 
+    final String userType;
   @override
   State<NotScheduledWalkContainerWidget> createState() =>
       _NotScheduledWalkContainerWidgetState();
@@ -46,78 +47,131 @@ class _NotScheduledWalkContainerWidgetState
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: MediaQuery.sizeOf(context).width,
-      height: MediaQuery.sizeOf(context).height,
-      decoration: const BoxDecoration(),
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          Container(
-            width: 370,
-            height: 400,
-            decoration: const BoxDecoration(),
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Container(
-                  width: 370,
-                  height: 350,
-                  decoration: const BoxDecoration(),
-                  child: Align(
-                    alignment: const AlignmentDirectional(0, 0),
-                    child: FaIcon(
-                      FontAwesomeIcons.dog,
-                      color: FlutterFlowTheme.of(context).primary,
-                      size: 180,
+    return Align(
+      alignment: const AlignmentDirectional(0, 0),
+      child: Container(
+        width: MediaQuery.sizeOf(context).width * 0.9,
+        height: MediaQuery.sizeOf(context).height,
+        decoration: const BoxDecoration(),
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Container(
+              width: 370,
+              height: MediaQuery.sizeOf(context).height * 0.45,
+              decoration: const BoxDecoration(),
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Container(
+                    height: 350,
+                    decoration: const BoxDecoration(),
+                    child: Align(
+                      alignment: const AlignmentDirectional(0, 0),
+                      child: FaIcon(
+                        FontAwesomeIcons.dog,
+                        color: FlutterFlowTheme.of(context).primary,
+                        size: 180,
+                      ),
                     ),
                   ),
-                ),
-                Text(
-                  '¡No tienes ningun paseo activo!',
-                  style: FlutterFlowTheme.of(context).bodyMedium.override(
-                        font: GoogleFonts.lexend(
+                  Text(
+                    '¡No tienes ningún paseo activo!',
+                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                          font: GoogleFonts.lexend(
+                            fontWeight: FontWeight.bold,
+                            fontStyle: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .fontStyle,
+                          ),
+                          color: FlutterFlowTheme.of(context).primary,
+                          fontSize: 18,
+                          letterSpacing: 0.0,
                           fontWeight: FontWeight.bold,
                           fontStyle:
                               FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                         ),
-                        color: FlutterFlowTheme.of(context).primary,
-                        fontSize: 18,
-                        letterSpacing: 0.0,
-                        fontWeight: FontWeight.bold,
-                        fontStyle:
-                            FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: MediaQuery.sizeOf(context).width,
+              height: MediaQuery.sizeOf(context).height * 0.15,
+              decoration: const BoxDecoration(),
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(0, 8, 0, 0),
+                    child: FFButtonWidget(
+                      onPressed: () {
+                        widget.userType == 'Dueño' ? 
+                          context.pushNamed(SetWalkScheduleWidget.routeName)
+                          :
+                          context.pushNamed(WalksDogWalkerWidget.routeName);   
+
+                      },
+                      text: 
+                        widget.userType == 'Dueño' ? 'Agendar Paseo' : 'Ver Paseos Pendientes',
+                      options: FFButtonOptions(
+                        width: MediaQuery.sizeOf(context).width,
+                        height: 40,
+                        padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+                        iconPadding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                        color: FlutterFlowTheme.of(context).accent1,
+                        textStyle:
+                            FlutterFlowTheme.of(context).titleSmall.override(
+                                  font: GoogleFonts.lexend(
+                                    fontWeight: FlutterFlowTheme.of(context)
+                                        .titleSmall
+                                        .fontWeight,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .titleSmall
+                                        .fontStyle,
+                                  ),
+                                  color: Colors.white,
+                                  letterSpacing: 0.0,
+                                  fontWeight: FlutterFlowTheme.of(context)
+                                      .titleSmall
+                                      .fontWeight,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .titleSmall
+                                      .fontStyle,
+                                ),
+                        elevation: 0,
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            width: 370,
-            height: 100,
-            decoration: const BoxDecoration(),
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(0, 8, 0, 0),
-                  child: FFButtonWidget(
-                    onPressed: () {
-                      Navigator.push(
-                        context, 
-                        MaterialPageRoute(builder: (context) => const SetWalkScheduleWidget(selectedAddress: null, selectedPet: null,))
-                      );                   
-                    },
-                    text: 'Agendar Paseo',
-                    options: FFButtonOptions(
-                      width: 360,
-                      height: 40,
-                      padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
-                      iconPadding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                      color: FlutterFlowTheme.of(context).accent1,
-                      textStyle:
-                          FlutterFlowTheme.of(context).titleSmall.override(
-                                font: GoogleFonts.lexend(
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(0, 8, 0, 0),
+                    child: FFButtonWidget(
+                      onPressed: () async {
+                        widget.userType == 'Dueño' ? 
+                        context.pushNamed(WalksDogOwnerWidget.routeName)
+                        :
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const WalksRecordWidget(userType: 'Paseador',)));
+                                              },
+                      text: widget.userType == 'Dueño' ? 'Ver mi Agenda' : 'Ver Historial',
+                      options: FFButtonOptions(
+                        width: MediaQuery.sizeOf(context).width,
+                        height: 40,
+                        padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+                        iconPadding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                        color: FlutterFlowTheme.of(context).primary,
+                        textStyle:
+                            FlutterFlowTheme.of(context).titleSmall.override(
+                                  font: GoogleFonts.lexend(
+                                    fontWeight: FlutterFlowTheme.of(context)
+                                        .titleSmall
+                                        .fontWeight,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .titleSmall
+                                        .fontStyle,
+                                  ),
+                                  color: Colors.white,
+                                  letterSpacing: 0.0,
                                   fontWeight: FlutterFlowTheme.of(context)
                                       .titleSmall
                                       .fontWeight,
@@ -125,64 +179,16 @@ class _NotScheduledWalkContainerWidgetState
                                       .titleSmall
                                       .fontStyle,
                                 ),
-                                color: Colors.white,
-                                letterSpacing: 0.0,
-                                fontWeight: FlutterFlowTheme.of(context)
-                                    .titleSmall
-                                    .fontWeight,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .titleSmall
-                                    .fontStyle,
-                              ),
-                      elevation: 0,
-                      borderRadius: BorderRadius.circular(8),
+                        elevation: 0,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(0, 8, 0, 0),
-                  child: FFButtonWidget(
-                    onPressed: () {
-                      Navigator.push(
-                        context, 
-                        MaterialPageRoute(builder: (context) => const WalksDogOwnerWidget())
-                      );                    
-                    },
-                    text: 'Ver mi agenda',
-                    options: FFButtonOptions(
-                      width: 360,
-                      height: 40,
-                      padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
-                      iconPadding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                      color: FlutterFlowTheme.of(context).primary,
-                      textStyle:
-                          FlutterFlowTheme.of(context).titleSmall.override(
-                                font: GoogleFonts.lexend(
-                                  fontWeight: FlutterFlowTheme.of(context)
-                                      .titleSmall
-                                      .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .titleSmall
-                                      .fontStyle,
-                                ),
-                                color: Colors.white,
-                                letterSpacing: 0.0,
-                                fontWeight: FlutterFlowTheme.of(context)
-                                    .titleSmall
-                                    .fontWeight,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .titleSmall
-                                    .fontStyle,
-                              ),
-                      elevation: 0,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

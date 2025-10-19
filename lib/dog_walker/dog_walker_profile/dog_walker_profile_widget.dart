@@ -1,5 +1,9 @@
+import 'package:dalk/user_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dalk/auth/supabase_auth/auth_util.dart';
 import 'package:dalk/common/payment_methods/payment_methods_widget.dart';
+import 'package:dalk/common/walk_payment_window/walk_payment_window_widget.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -42,6 +46,9 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<UserProvider>().user;
+    final nombre = (user?.name?.split(" ").first) ?? "User";
+    final photoUrl = user?.photoUrl ?? "";
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -100,21 +107,18 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                               children: [
                                 Align(
                                   alignment: const AlignmentDirectional(0, 0),
-                                  child: Container(
-                                    width: 120,
-                                    height: 120,
-                                    clipBehavior: Clip.antiAlias,
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Image.network(
-                                      'https://images.unsplash.com/photo-1495567720989-cebdbdd97913?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxfHxzdW5zZXR8ZW58MHx8fHwxNzQ3MDA2NTczfDA&ixlib=rb-4.1.0&q=80&w=1080',
-                                      fit: BoxFit.cover,
+                                  child: Padding(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                    child: CircleAvatar(
+                                      radius: 60,
+                                      //funcion de la imagen
+                                      backgroundImage: photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+                                      child: photoUrl.isEmpty ? const Icon(Icons.person, size: 60) : null,
                                     ),
                                   ),
                                 ),
                                 Text(
-                                  'Nombre',
+                                  '$nombre',
                                   textAlign: TextAlign.center,
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
@@ -240,8 +244,7 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                                         ),
                                                         color: FlutterFlowTheme
                                                                 .of(context)
-                                                            .secondaryBackground,
-                                                        fontSize: 16,
+                                                            .secondaryBackground,fontSize: 16,
                                                         letterSpacing: 0.0,
                                                         fontWeight:
                                                             FontWeight.w500,
@@ -404,6 +407,17 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                         '_initialize', 
                                         queryParameters: {'initialPage': 'walkerService'},
                                       );  
+
+
+
+                                    // // ESTO ES TEMPORAL
+                                    // Navigator.push(
+                                    //   context,
+                                    //   MaterialPageRoute(builder: (context) => const WalkPaymentWindowWidget(walkId: 256, userType: 'Paseador',)),
+                                    // );
+
+
+
                                     },
                                     child: Container(
                                       width: MediaQuery.sizeOf(context).width,
@@ -833,13 +847,41 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                       0, 30, 0, 0),
                                   child: FFButtonWidget(
                                     onPressed: () async {
-                                      GoRouter.of(context).prepareAuthEvent();
-                                      await authManager.signOut();
-                                      GoRouter.of(context)
-                                          .clearRedirectLocation();
+                                      // Preparamos el evento de autenticación ANTES de signOut.
+                                      GoRouter.of(context).prepareAuthEvent(); 
 
-                                      context.goNamedAuth(LoginWidget.routeName,
-                                          context.mounted);
+                                      // 2. Limpiar datos del usuario guardados localmente PRIMERO.
+                                      // Esto no usa 'context', por lo que es seguro antes del signOut.
+                                      final prefs = await SharedPreferences.getInstance();
+                                      await prefs.remove('user_data');
+
+                                      try {
+                                        // Cerrar sesión de Supabase (asíncrono)
+                                        await authManager.signOut();
+
+                                        // Verificamos si el widget fue desmontado por la navegación automática.
+                                        if (!context.mounted) {
+                                          return; 
+                                        }
+
+                                        // Limpiar Provider de usuario (redundante si main.dart actuó)
+                                        context.read<UserProvider>().clearUser();
+
+                                        // Limpiar rutas protegidas de GoRouter
+                                        GoRouter.of(context).clearRedirectLocation();
+
+                                        // Redirigir a Login
+                                        context.goNamedAuth(LoginWidget.routeName, context.mounted);
+
+                                      } catch (e) {
+                                        
+                                        // Mostrar error si el contexto todavía está vivo
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text("Error cerrando sesión: $e")),
+                                          );
+                                        }
+                                      }
                                     },
                                     text: 'Cerrar Sesión',
                                     options: FFButtonOptions(

@@ -5,9 +5,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
-import '/index.dart';
 import 'package:dalk/common/review_details_card/review_details_card_widget.dart';
 
 import 'pop_up_dog_profile_model.dart';
@@ -32,7 +30,7 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
   late PopUpDogProfileModel _model;
   // final int dogId = ;
 
-  // 🔹 Variables para mostrar datos
+  // Variables para mostrar datos
   String? dogName;
   String ? dogOwner;
   int? dogAge;
@@ -74,7 +72,7 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
           'comments': review['comments'],
           'created_at': review['created_at'],
           'walk_id': review['walker_id'],
-          'reviewer_photo': review['reviewer_photo'] , // puedes usar la foto del usuario si la tienes
+          'reviewer_photo': review['reviewer_photo'] ,
         };
       }).toList();
       _loading = false;
@@ -82,17 +80,15 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
   }
 
   Future<void> fetchDogData() async {
-    // final supabase = Supabase.instance.client;
     final response = await Supabase.instance.client
-        .from('pets_with_stats') 
-        .select('id,uuid,name,age,gender,bree,size,behaviour,aboutme,photo_url,rate,total_walks,created_at')
+        .from('pets_info') 
+        .select('id,name,age,gender,bree,size,behaviour,aboutme,photo_url,average_rating,total_walks,created_at')
         .eq('id', widget.dogId)
         .maybeSingle();
 
     if (response != null) {
       setState(() {
         dogName = response['name'];
-        dogOwner = response['uuid'];
         dogAge = response['age'];
         dogGender = response['gender'];
         dogBree = response['bree'];
@@ -101,7 +97,7 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
         dogAboutMe = response['aboutme'];
         dogPhotoUrl = response['photo_url'];
 
-        _avgDogRating = (response['rate'] as num?)?.toDouble();
+        _avgDogRating = (response['average_rating'] as num?)?.toDouble();
         _totalWalks = response['total_walks'] as int?;
 
         //  Calcular hace cuánto fue creado
@@ -145,7 +141,7 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
       height: MediaQuery.sizeOf(context).height * 0.85,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).tertiary,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(0),
           bottomRight: Radius.circular(0),
           topLeft: Radius.circular(50),
@@ -156,11 +152,11 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
         mainAxisSize: MainAxisSize.max,
         children: [
           Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(0, 15, 0, 0),
+            padding: const EdgeInsetsDirectional.fromSTEB(0, 15, 0, 0),
             child: Container(
               width: MediaQuery.sizeOf(context).width * 0.92,
               height: MediaQuery.sizeOf(context).height * 0.05,
-              decoration: BoxDecoration(),
+              decoration: const BoxDecoration(),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 children: [
@@ -178,7 +174,7 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                   ),
                   Expanded(
                     child: Align(
-                      alignment: AlignmentDirectional(1, 0),
+                      alignment: const AlignmentDirectional(1, 0),
                       child: FlutterFlowIconButton(
                         borderRadius: 8,
                         buttonSize: 40,
@@ -200,10 +196,10 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
           ),
           Expanded(
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 20),
+              padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 20),
               child: Container(
                 width: MediaQuery.sizeOf(context).width * 0.9,
-                decoration: BoxDecoration(),
+                decoration: const BoxDecoration(),
                 child: SingleChildScrollView(
                   primary: false,
                   child: Column(
@@ -211,7 +207,7 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                     children: [
                       Container(
                         width: MediaQuery.sizeOf(context).width * 0.9,
-                        decoration: BoxDecoration(),
+                        decoration: const BoxDecoration(),
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
                           children: [
@@ -219,7 +215,7 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                               width: 120,
                               height: 120,
                               clipBehavior: Clip.antiAlias,
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                 shape: BoxShape.circle,
                               ),
                               child: Image.network(
@@ -270,21 +266,21 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
+                        padding: const EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
                         child: Row(
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Padding(
                               padding:
-                                  EdgeInsetsDirectional.fromSTEB(5, 5, 0, 0),
+                                  const EdgeInsetsDirectional.fromSTEB(5, 5, 0, 0),
                               child: Container(
                                 width: MediaQuery.sizeOf(context).width * 0.25,
                                 height:
                                     MediaQuery.sizeOf(context).height * 0.15,
                                 decoration: BoxDecoration(
                                   color: FlutterFlowTheme.of(context).alternate,
-                                  borderRadius: BorderRadius.only(
+                                  borderRadius: const BorderRadius.only(
                                     bottomLeft: Radius.circular(20),
                                     bottomRight: Radius.circular(0),
                                     topLeft: Radius.circular(20),
@@ -295,15 +291,15 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Align(
-                                      alignment: AlignmentDirectional(0, -1),
+                                      alignment: const AlignmentDirectional(0, -1),
                                       child: Container(
                                         width: MediaQuery.sizeOf(context).width,
                                         height:
                                             MediaQuery.sizeOf(context).height *
                                                 0.08,
-                                        decoration: BoxDecoration(),
+                                        decoration: const BoxDecoration(),
                                         child: Align(
-                                          alignment: AlignmentDirectional(0, 1),
+                                          alignment: const AlignmentDirectional(0, 1),
                                           child: Icon(
                                             Icons.star_border,
                                             color: FlutterFlowTheme.of(context)
@@ -314,7 +310,7 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                                       ),
                                     ),
                                     Align(
-                                      alignment: AlignmentDirectional(0, -1),
+                                      alignment: const AlignmentDirectional(0, -1),
                                       child: AutoSizeText(
                                         _avgDogRating != null 
                                         ? _avgDogRating!.toStringAsFixed(1)  // ejemplo: 4.8
@@ -350,7 +346,7 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                             ),
                             Padding(
                               padding:
-                                  EdgeInsetsDirectional.fromSTEB(10, 5, 0, 0),
+                                  const EdgeInsetsDirectional.fromSTEB(10, 5, 0, 0),
                               child: Container(
                                 width: MediaQuery.sizeOf(context).width * 0.25,
                                 height:
@@ -363,15 +359,15 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Align(
-                                      alignment: AlignmentDirectional(0, -1),
+                                      alignment: const AlignmentDirectional(0, -1),
                                       child: Container(
                                         width: MediaQuery.sizeOf(context).width,
                                         height:
                                             MediaQuery.sizeOf(context).height *
                                                 0.08,
-                                        decoration: BoxDecoration(),
+                                        decoration: const BoxDecoration(),
                                         child: Align(
-                                          alignment: AlignmentDirectional(0, 1),
+                                          alignment: const AlignmentDirectional(0, 1),
                                           child: Icon(
                                             Icons.hail,
                                             color: FlutterFlowTheme.of(context)
@@ -382,7 +378,7 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                                       ),
                                     ),
                                     Align(
-                                      alignment: AlignmentDirectional(0, 0),
+                                      alignment: const AlignmentDirectional(0, 0),
                                       child: AutoSizeText(
                                         _totalWalks != null 
                                           ? '${_totalWalks} Viajes' 
@@ -419,14 +415,14 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                             ),
                             Padding(
                               padding:
-                                  EdgeInsetsDirectional.fromSTEB(10, 5, 0, 0),
+                                  const EdgeInsetsDirectional.fromSTEB(10, 5, 0, 0),
                               child: Container(
                                 width: MediaQuery.sizeOf(context).width * 0.25,
                                 height:
                                     MediaQuery.sizeOf(context).height * 0.15,
                                 decoration: BoxDecoration(
                                   color: FlutterFlowTheme.of(context).alternate,
-                                  borderRadius: BorderRadius.only(
+                                  borderRadius: const BorderRadius.only(
                                     bottomLeft: Radius.circular(0),
                                     bottomRight: Radius.circular(20),
                                     topLeft: Radius.circular(0),
@@ -437,15 +433,15 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Align(
-                                      alignment: AlignmentDirectional(0, -1),
+                                      alignment: const AlignmentDirectional(0, -1),
                                       child: Container(
                                         width: MediaQuery.sizeOf(context).width,
                                         height:
                                             MediaQuery.sizeOf(context).height *
                                                 0.08,
-                                        decoration: BoxDecoration(),
+                                        decoration: const BoxDecoration(),
                                         child: Align(
-                                          alignment: AlignmentDirectional(0, 1),
+                                          alignment: const AlignmentDirectional(0, 1),
                                           child: Icon(
                                             Icons.calendar_month,
                                             color: FlutterFlowTheme.of(context)
@@ -456,7 +452,7 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                                       ),
                                     ),
                                     Align(
-                                      alignment: AlignmentDirectional(0, -1),
+                                      alignment: const AlignmentDirectional(0, -1),
                                       child: AutoSizeText(
                                         _createdAgo ?? '',
                                         textAlign: TextAlign.center,
@@ -491,9 +487,9 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                         ),
                       ),
                       Align(
-                        alignment: AlignmentDirectional(-1, -1),
+                        alignment: const AlignmentDirectional(-1, -1),
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
                           child: Text(
                             'Conóceme',
                             style: FlutterFlowTheme.of(context)
@@ -517,7 +513,7 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                         ),
                       ),
                       Align(
-                        alignment: AlignmentDirectional(-1, 0),
+                        alignment: const AlignmentDirectional(-1, 0),
                         child: AutoSizeText(
                           dogAboutMe ?? "No hay informacion",
                           textAlign: TextAlign.justify,
@@ -544,7 +540,7 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                         ),
                       ),
                       Align(
-                        alignment: AlignmentDirectional(0, 0),
+                        alignment: const AlignmentDirectional(0, 0),
                         child: Padding(
                           padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 18),
                           child: Wrap(
@@ -587,7 +583,7 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                        padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                         child: Container(
                           width: MediaQuery.sizeOf(context).width,
                           height: MediaQuery.sizeOf(context).height * 0.065,
@@ -599,9 +595,9 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                             mainAxisSize: MainAxisSize.max,
                             children: [
                               Align(
-                                alignment: AlignmentDirectional(-1, 0),
+                                alignment: const AlignmentDirectional(-1, 0),
                                 child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       10, 0, 0, 0),
                                   child: Icon(
                                     Icons.calendar_today_outlined,
@@ -612,7 +608,7 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                               ),
                               Padding(
                                 padding:
-                                    EdgeInsetsDirectional.fromSTEB(8, 0, 0, 0),
+                                    const EdgeInsetsDirectional.fromSTEB(8, 0, 0, 0),
                                 child: AutoSizeText(
                                   //Esta mal --------------------------------------
                                   (dogAge != null ? '${dogAge} años' : '[age]'),
@@ -643,7 +639,7 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                        padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                         child: Container(
                           width: MediaQuery.sizeOf(context).width,
                           height: MediaQuery.sizeOf(context).height * 0.065,
@@ -653,14 +649,14 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                           ),
                           child: Padding(
                             padding:
-                                EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
                             child: Row(
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Align(
-                                  alignment: AlignmentDirectional(-1, 0),
+                                  alignment: const AlignmentDirectional(-1, 0),
                                   child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         10, 0, 0, 0),
                                     child: Icon(
                                       Icons.pets_outlined,
@@ -671,7 +667,7 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       8, 0, 0, 0),
                                   child: AutoSizeText(
                                     dogGender ?? '[gender]',
@@ -704,7 +700,7 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                        padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
                         child: Container(
                           width: MediaQuery.sizeOf(context).width,
                           height: MediaQuery.sizeOf(context).height * 0.065,
@@ -714,14 +710,14 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                           ),
                           child: Padding(
                             padding:
-                                EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
                             child: Row(
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Align(
-                                  alignment: AlignmentDirectional(-1, 0),
+                                  alignment: const AlignmentDirectional(-1, 0),
                                   child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         10, 0, 0, 0),
                                     child: FaIcon(
                                       FontAwesomeIcons.dog,
@@ -732,7 +728,7 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       8, 0, 0, 0),
                                   child: AutoSizeText(
                                     dogSize?? '[size]',
@@ -765,9 +761,9 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                         ),
                       ),
                       Align(
-                        alignment: AlignmentDirectional(-1, 0),
+                        alignment: const AlignmentDirectional(-1, 0),
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
                           child: Text(
                             'Reseñas',
                             style: FlutterFlowTheme.of(context)

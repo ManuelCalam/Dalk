@@ -6,17 +6,19 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
-import 'dart:ui';
-import '/index.dart';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 import 'dog_owner_update_profile_model.dart';
 export 'dog_owner_update_profile_model.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import '/user_provider.dart';
+import '/user_prefs.dart';
+import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class DogOwnerUpdateProfileWidget extends StatefulWidget {
   const DogOwnerUpdateProfileWidget({super.key});
@@ -24,6 +26,7 @@ class DogOwnerUpdateProfileWidget extends StatefulWidget {
   static String routeName = 'dogOwnerUpdateProfile';
   static String routePath = '/dogOwnerUpdateProfile';
 
+  
   @override
   State<DogOwnerUpdateProfileWidget> createState() =>
       _DogOwnerUpdateProfileWidgetState();
@@ -33,9 +36,19 @@ class _DogOwnerUpdateProfileWidgetState
     extends State<DogOwnerUpdateProfileWidget> {
   late DogOwnerUpdateProfileModel _model;
 
+  //imagen
+  File? _ownerImage;
+  File? _walkerImage;
+  File? _tempImage;
+  final ImagePicker _picker = ImagePicker();
+  //final user = context.watch<UserProvider>().user;
+  //final PhotoUrl = user?.photoUrl ?? '';
+
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  
 
   Future<void> cargarDatosUsuario() async {
+    
     final response = await Supabase.instance.client
         .from('users')
         .select()
@@ -50,6 +63,7 @@ class _DogOwnerUpdateProfileWidgetState
       _model.zipCodeDogOwnerInputTextController.text = response['zipCode'] ?? '';
       _model.neighborhoodDogOwnerInputTextController.text = response['neighborhood'] ?? '';
       _model.cityDogOwnerInputTextController.text = response['city'] ?? '';
+      
       _model.genderDogOwnerMenuValue = response['gender'] ?? '';
       if (response['birthdate'] != null) {
         _model.datePicked = DateTime.tryParse(response['birthdate']);
@@ -59,6 +73,7 @@ class _DogOwnerUpdateProfileWidgetState
       setState(() {});
     }
   } 
+  
 
   @override
   void initState() {
@@ -85,7 +100,7 @@ class _DogOwnerUpdateProfileWidgetState
 
     _model.cityDogOwnerInputTextController ??= TextEditingController();
     _model.cityDogOwnerInputFocusNode ??= FocusNode();
-      
+
     cargarDatosUsuario();
   }
 
@@ -94,10 +109,87 @@ class _DogOwnerUpdateProfileWidgetState
     _model.dispose();
 
     super.dispose();
+    
+  }
+
+  Future<String?> _uploadOwnerImage(String userId, File imageFile) async {
+    try {
+      final filePath = 'owners/$userId/profile.jpg';
+      final storage = Supabase.instance.client.storage;
+
+      // Subir a storage (sobrescribir si ya existe)
+      await storage.from('profile_pics').upload(
+            filePath,
+            imageFile,
+            fileOptions: const FileOptions(upsert: true),
+          );
+
+      // Generar URL pública
+      final imageUrl = storage.from('profile_pics').getPublicUrl(filePath);
+
+      // 🔑 Agregar versión única para forzar refresh solo cuando cambie
+      final uniqueUrl = '$imageUrl?version=${DateTime.now().millisecondsSinceEpoch}';
+
+      // Actualizar en tabla users con el nuevo link
+      await Supabase.instance.client
+          .from('users')
+          .update({'photo_url': uniqueUrl})
+          .eq('uuid', userId);
+
+      return uniqueUrl;
+    } catch (e) {
+      debugPrint('Error al subir imagen: $e');
+      return null;
+    }
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final pickedFile = await _picker.pickImage(source: source);
+    if (pickedFile != null) {
+      setState(() {
+        _tempImage = File(pickedFile.path);
+      });
+
+      
+
+    }
+  }
+
+  void _showImagePickerOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Tomar foto'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Elegir de la galería'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<UserProvider>().user;
+    final photoUrl = user?.photoUrl ?? "";
+    final supabase = Supabase.instance.client;
+    final user1 = supabase.auth.currentUser;
+      
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -116,7 +208,7 @@ class _DogOwnerUpdateProfileWidgetState
                 height: MediaQuery.sizeOf(context).height * 0.1,
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).secondary,
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(0),
                     bottomRight: Radius.circular(0),
                     topLeft: Radius.circular(0),
@@ -130,7 +222,7 @@ class _DogOwnerUpdateProfileWidgetState
                   height: MediaQuery.sizeOf(context).height * 0.82,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).tertiary,
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(0),
                       bottomRight: Radius.circular(0),
                       topLeft: Radius.circular(40),
@@ -143,12 +235,12 @@ class _DogOwnerUpdateProfileWidgetState
                       wrapWithModel(
                         model: _model.goBackContainerModel,
                         updateCallback: () => safeSetState(() {}),
-                        child: GoBackContainerWidget(),
+                        child: const GoBackContainerWidget(),
                       ),
                       Expanded(
                         child: Container(
                           width: MediaQuery.sizeOf(context).width * 0.9,
-                          decoration: BoxDecoration(),
+                          decoration: const BoxDecoration(),
                           child: ListView(
                             padding: EdgeInsets.zero,
                             shrinkWrap: true,
@@ -156,7 +248,7 @@ class _DogOwnerUpdateProfileWidgetState
                             children: [
                               Container(
                                 width: MediaQuery.sizeOf(context).width,
-                                decoration: BoxDecoration(),
+                                decoration: const BoxDecoration(),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -216,55 +308,38 @@ class _DogOwnerUpdateProfileWidgetState
                                 ),
                               ),
                               Align(
-                                alignment: AlignmentDirectional(0, 0),
+                                alignment: const AlignmentDirectional(0, 0),
                                 child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      0, 10, 0, 10),
-                                  child: Container(
-                                    width:
-                                        MediaQuery.sizeOf(context).width * 0.3,
-                                    height: MediaQuery.sizeOf(context).height *
-                                        0.15,
-                                    decoration: BoxDecoration(),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Flexible(
-                                          child: Container(
-                                            width: MediaQuery.sizeOf(context)
-                                                .width,
-                                            height: MediaQuery.sizeOf(context)
-                                                .height,
-                                            decoration: BoxDecoration(),
-                                            child: Align(
-                                              alignment:
-                                                  AlignmentDirectional(0, 0),
-                                              child: Container(
-                                                width: 120,
-                                                height: 120,
-                                                clipBehavior: Clip.antiAlias,
-                                                decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: Image.network(
-                                                  'https://picsum.photos/seed/182/600',
-                                                  fit: BoxFit.cover,
-                                                ),
+                                  padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                  child: GestureDetector(
+                                    onTap: () => _showImagePickerOptions(context),
+                                    child: _tempImage != null
+                                        // Si eligió una imagen local (File)
+                                        ? CircleAvatar(
+                                            radius: 60,
+                                            backgroundImage: FileImage(_tempImage!),
+                                          )
+                                        //Si ya tiene foto en Supabase (con cache)
+                                        : (photoUrl.isNotEmpty)
+                                            ? CircleAvatar(
+                                                radius: 60,
+                                                backgroundImage:
+                                                    CachedNetworkImageProvider(photoUrl),
+                                              )
+                                            // Si no hay imagen
+                                            : const CircleAvatar(
+                                                radius: 60,
+                                                child: Icon(Icons.person, size: 60),
                                               ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
                                   ),
                                 ),
                               ),
                               Padding(
                                 padding:
-                                    EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
+                                    const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
                                 child: Container(
                                   width: MediaQuery.sizeOf(context).width * 0.9,
-                                  decoration: BoxDecoration(),
+                                  decoration: const BoxDecoration(),
                                   child: Column(
                                     mainAxisSize: MainAxisSize.max,
                                     children: [
@@ -366,7 +441,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                     ),
                                                     focusedBorder:
                                                         OutlineInputBorder(
-                                                      borderSide: BorderSide(
+                                                      borderSide: const BorderSide(
                                                         color:
                                                             Color(0x00000000),
                                                         width: 1,
@@ -407,7 +482,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                                 context)
                                                             .alternate,
                                                     contentPadding:
-                                                        EdgeInsetsDirectional
+                                                        const EdgeInsetsDirectional
                                                             .fromSTEB(
                                                                 10, 0, 0, 20),
                                                     prefixIcon: Icon(
@@ -462,7 +537,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                 ),
                                               ),
                                               Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(0, 18, 0, 0),
                                                 child: Container(
                                                   width:
@@ -554,7 +629,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                       ),
                                                       focusedBorder:
                                                           OutlineInputBorder(
-                                                        borderSide: BorderSide(
+                                                        borderSide: const BorderSide(
                                                           color:
                                                               Color(0x00000000),
                                                           width: 1,
@@ -593,7 +668,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                                   context)
                                                               .alternate,
                                                       contentPadding:
-                                                          EdgeInsetsDirectional
+                                                          const EdgeInsetsDirectional
                                                               .fromSTEB(
                                                                   0, 0, 0, 20),
                                                       prefixIcon: Icon(
@@ -649,7 +724,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                 ),
                                               ),
                                               Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(0, 18, 0, 0),
                                                 child: InkWell(
                                                   splashColor:
@@ -775,7 +850,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                       children: [
                                                         Padding(
                                                           padding:
-                                                              EdgeInsetsDirectional
+                                                              const EdgeInsetsDirectional
                                                                   .fromSTEB(8,
                                                                       0, 0, 0),
                                                           child: Icon(
@@ -789,7 +864,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                         ),
                                                         Padding(
                                                           padding:
-                                                              EdgeInsetsDirectional
+                                                              const EdgeInsetsDirectional
                                                                   .fromSTEB(7,
                                                                       0, 0, 0),
                                                           child: AutoSizeText(
@@ -835,7 +910,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                 ),
                                               ),
                                               Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(0, 18, 0, 0),
                                                 child:
                                                     FlutterFlowDropDown<String>(
@@ -915,7 +990,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                       Colors.transparent,
                                                   borderWidth: 0,
                                                   borderRadius: 8,
-                                                  margin: EdgeInsetsDirectional
+                                                  margin: const EdgeInsetsDirectional
                                                       .fromSTEB(12, 0, 12, 0),
                                                   hidesUnderline: true,
                                                   isOverButton: false,
@@ -924,7 +999,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                 ),
                                               ),
                                               Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(0, 18, 0, 0),
                                                 child: Container(
                                                   width:
@@ -1016,7 +1091,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                       ),
                                                       focusedBorder:
                                                           OutlineInputBorder(
-                                                        borderSide: BorderSide(
+                                                        borderSide: const BorderSide(
                                                           color:
                                                               Color(0x00000000),
                                                           width: 1,
@@ -1055,7 +1130,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                                   context)
                                                               .alternate,
                                                       contentPadding:
-                                                          EdgeInsetsDirectional
+                                                          const EdgeInsetsDirectional
                                                               .fromSTEB(
                                                                   0, 0, 0, 20),
                                                       prefixIcon: Icon(
@@ -1111,11 +1186,11 @@ class _DogOwnerUpdateProfileWidgetState
                                                 ),
                                               ),
                                               Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(0, 18, 0, 0),
                                                 child: Container(
                                                   height: 50,
-                                                  decoration: BoxDecoration(),
+                                                  decoration: const BoxDecoration(),
                                                   child: Row(
                                                     mainAxisSize:
                                                         MainAxisSize.max,
@@ -1123,7 +1198,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                       Expanded(
                                                         child: Padding(
                                                           padding:
-                                                              EdgeInsetsDirectional
+                                                              const EdgeInsetsDirectional
                                                                   .fromSTEB(0,
                                                                       0, 10, 0),
                                                           child: Container(
@@ -1203,7 +1278,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                                 enabledBorder:
                                                                     OutlineInputBorder(
                                                                   borderSide:
-                                                                      BorderSide(
+                                                                      const BorderSide(
                                                                     color: Color(
                                                                         0x00000000),
                                                                     width: 1,
@@ -1216,7 +1291,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                                 focusedBorder:
                                                                     OutlineInputBorder(
                                                                   borderSide:
-                                                                      BorderSide(
+                                                                      const BorderSide(
                                                                     color: Color(
                                                                         0x00000000),
                                                                     width: 1,
@@ -1322,7 +1397,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                       Expanded(
                                                         child: Padding(
                                                           padding:
-                                                              EdgeInsetsDirectional
+                                                              const EdgeInsetsDirectional
                                                                   .fromSTEB(10,
                                                                       0, 0, 0),
                                                           child: Container(
@@ -1401,7 +1476,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                                 enabledBorder:
                                                                     OutlineInputBorder(
                                                                   borderSide:
-                                                                      BorderSide(
+                                                                      const BorderSide(
                                                                     color: Color(
                                                                         0x00000000),
                                                                     width: 1,
@@ -1414,7 +1489,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                                 focusedBorder:
                                                                     OutlineInputBorder(
                                                                   borderSide:
-                                                                      BorderSide(
+                                                                      const BorderSide(
                                                                     color: Color(
                                                                         0x00000000),
                                                                     width: 1,
@@ -1522,7 +1597,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                 ),
                                               ),
                                               Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(0, 18, 0, 0),
                                                 child: TextFormField(
                                                   controller: _model
@@ -1609,7 +1684,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                     ),
                                                     focusedBorder:
                                                         OutlineInputBorder(
-                                                      borderSide: BorderSide(
+                                                      borderSide: const BorderSide(
                                                         color:
                                                             Color(0x00000000),
                                                         width: 1,
@@ -1650,7 +1725,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                                 context)
                                                             .alternate,
                                                     contentPadding:
-                                                        EdgeInsetsDirectional
+                                                        const EdgeInsetsDirectional
                                                             .fromSTEB(
                                                                 0, 0, 0, 20),
                                                     prefixIcon: Icon(
@@ -1705,7 +1780,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                 ),
                                               ),
                                               Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(0, 18, 0, 0),
                                                 child: TextFormField(
                                                   controller: _model
@@ -1792,7 +1867,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                     ),
                                                     focusedBorder:
                                                         OutlineInputBorder(
-                                                      borderSide: BorderSide(
+                                                      borderSide: const BorderSide(
                                                         color:
                                                             Color(0x00000000),
                                                         width: 1,
@@ -1833,7 +1908,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                                 context)
                                                             .alternate,
                                                     contentPadding:
-                                                        EdgeInsetsDirectional
+                                                        const EdgeInsetsDirectional
                                                             .fromSTEB(
                                                                 0, 0, 0, 20),
                                                     prefixIcon: Icon(
@@ -1888,7 +1963,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                 ),
                                               ),
                                               Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(0, 18, 0, 18),
                                                 child: FFButtonWidget(
                                                   onPressed: () async {
@@ -1909,13 +1984,39 @@ class _DogOwnerUpdateProfileWidgetState
                                                           .eq('uuid', currentUserUid); 
 
                                                           ScaffoldMessenger.of(context).showSnackBar(
-                                                            SnackBar(content: Text('¡Perfil actualizado exitosamente!')),
+                                                            const SnackBar(content: Text('¡Perfil actualizado exitosamente!')),
                                                           );
                                                     } catch (e) {
                                                       ScaffoldMessenger.of(context).showSnackBar(
                                                         SnackBar(content: Text('Error al actualizar el perfil: $e')),
                                                       );
                                                     }
+                                                    //setState(() {});
+                                                    //PaintingBinding.instance.imageCache.clear();
+                                                    //PaintingBinding.instance.imageCache.clearLiveImages();
+                                                    // 2. Limpiar la imagen vieja del caché
+                                                    await CachedNetworkImage.evictFromCache(photoUrl);
+                                                    if (user1 == null) return;
+                                                    // Subir a Supabase
+                                                    final uploadedUrl = await _uploadOwnerImage(user1.id, _tempImage!);
+                                                    if (uploadedUrl != null) {
+                                                      // Solo actualizar Provider y SharedPrefs
+                                                      final currentUser = context.read<UserProvider>().user;
+                                                      final updatedUser = UserModel(
+                                                        name: currentUser?.name ?? "User",
+                                                        photoUrl: uploadedUrl,
+                                                      );
+                                                      context.read<UserProvider>().setUser(updatedUser);
+                                                      await UserPrefs.saveUser(updatedUser);
+
+                                                      // Limpiar temporal para que NetworkImage tome la nueva URL
+                                                      setState(() {
+                                                        _tempImage = null;
+                                                      });
+                                                    }
+
+                                                    // 3. Refrescar el widget
+                                                    setState(() {});
 
                                                   },
                                                   text: 'Guardar cambios',
@@ -1923,11 +2024,11 @@ class _DogOwnerUpdateProfileWidgetState
                                                     width: 360,
                                                     height: 40,
                                                     padding:
-                                                        EdgeInsetsDirectional
+                                                        const EdgeInsetsDirectional
                                                             .fromSTEB(
                                                                 0, 0, 0, 0),
                                                     iconPadding:
-                                                        EdgeInsetsDirectional
+                                                        const EdgeInsetsDirectional
                                                             .fromSTEB(
                                                                 0, 0, 0, 0),
                                                     color: FlutterFlowTheme.of(
