@@ -6,12 +6,26 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'article_card_model.dart';
 export 'article_card_model.dart';
 
 class ArticleCardWidget extends StatefulWidget {
-  const ArticleCardWidget({super.key});
+  final String title;
+  final String subtitle;
+  final String imageUrl;
+  final String actionUrl;
+  final bool isActive;
+
+  const ArticleCardWidget({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.imageUrl,
+    required this.actionUrl,
+    required this.isActive,
+  });
 
   @override
   State<ArticleCardWidget> createState() => _ArticleCardWidgetState();
@@ -80,7 +94,7 @@ class _ArticleCardWidgetState extends State<ArticleCardWidget> {
                   topRight: Radius.circular(12),
                 ),
                 child: Image.network(
-                  'https://picsum.photos/seed/572/600',
+                  widget.imageUrl,
                   width: 200,
                   height: 100,
                   fit: BoxFit.fill,
@@ -90,7 +104,7 @@ class _ArticleCardWidgetState extends State<ArticleCardWidget> {
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(0, 5, 0, 0),
               child: AutoSizeText(
-                '[Title]',
+                widget.title,
                 textAlign: TextAlign.center,
                 minFontSize: 14,
                 style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -127,7 +141,7 @@ class _ArticleCardWidgetState extends State<ArticleCardWidget> {
                             padding:
                                 EdgeInsetsDirectional.fromSTEB(10, 0, 10, 0),
                             child: AutoSizeText(
-                              'industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, ',
+                              widget.subtitle,
                               textAlign: TextAlign.justify,
                               minFontSize: 14,
                               style: FlutterFlowTheme.of(context)
@@ -160,8 +174,11 @@ class _ArticleCardWidgetState extends State<ArticleCardWidget> {
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(10, 5, 10, 10),
               child: FFButtonWidget(
-                onPressed: () {
-                  print('Button pressed ...');
+                onPressed: () async {
+                  if (widget.isActive && widget.actionUrl.isNotEmpty) {
+                    await launchUrl(Uri.parse(widget.actionUrl),
+                        mode: LaunchMode.externalApplication);
+                  }
                 },
                 text: 'Abrir',
                 options: FFButtonOptions(

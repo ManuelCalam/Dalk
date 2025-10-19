@@ -126,3 +126,4 @@ firebase/functions/node_modules/
 *.aab
 *.apk
 *.ipa
+.history/

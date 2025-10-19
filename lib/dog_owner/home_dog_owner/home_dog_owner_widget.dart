@@ -1,4 +1,5 @@
 import 'package:dalk/SubscriptionProvider.dart';
+import 'package:dalk/common/article_web_view/article_web_view_widget.dart';
 import 'package:dalk/flutter_flow/flutter_flow_widgets.dart';
 import 'package:provider/provider.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -744,25 +745,16 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                 ),
                               ),
                               Padding(
-                                padding:
-                                    EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                                padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                                 child: Container(
                                   width: MediaQuery.sizeOf(context).width,
-                                  height:
-                                      MediaQuery.sizeOf(context).height * 0.3,
+                                  height: MediaQuery.sizeOf(context).height * 0.35,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(0),
                                   ),
-                                  child: ListView(
-                                    padding: EdgeInsets.zero,
-                                    primary: false,
-                                    shrinkWrap: true,
-                                    scrollDirection: Axis.horizontal,
-                                    children:  [
-
-                                      // AQUI ES DONDE PONDRAS EL FUTURE BUILDER Y UTILIZARÁS EL article_widget_card
-
-                                    ],
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 12.0),
+                                    child: ArticleWebView(), // quitar const aquí
                                   ),
                                 ),
                               ),
