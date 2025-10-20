@@ -122,9 +122,14 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: AddAddressWidget.routeName,
           path: AddAddressWidget.routePath,
-          builder: (context, params) => AddAddressWidget(),
-          requireAuth: true
+          builder: (context, params) => AddAddressWidget (
+
+            originWindow: params.getParam('originWindow', ParamType.String),
+
+          ),
+          requireAuth: true,
         ),
+
         FFRoute(
           name: FindDogWalkerWidget.routeName,
           path: FindDogWalkerWidget.routePath,

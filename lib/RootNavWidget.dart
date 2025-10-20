@@ -23,7 +23,6 @@ class RootNavWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // print('InitialPage recibido: $initialPage');
 
     return FutureBuilder<String?>(
       future: getUserType(),
@@ -39,7 +38,6 @@ class RootNavWidget extends StatelessWidget {
         }
 
         if(userType == 'Dueño') {
-            print('NavBarOwnerPage initialPage from RootNav: $initialPage');
             return NavBarOwnerPage(
               key: ValueKey(initialPage),
               initialPage: initialPage);

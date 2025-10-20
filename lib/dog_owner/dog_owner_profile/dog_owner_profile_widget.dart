@@ -1,3 +1,4 @@
+import 'package:dalk/NavBar/nav_bar_dog_owner.dart';
 import 'package:dalk/SubscriptionProvider.dart';
 import 'package:dalk/dog_owner/tracker_details/tracker_details_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -546,6 +547,9 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                         '_initialize', 
                                         queryParameters: {'initialPage': 'petList'},
                                       );  
+                                      // final navState = navBarOwnerKey.currentState;
+
+                                      // navState?.changePage('petList');
                                     },
                                     child: Container(
                                       width: MediaQuery.sizeOf(context).width,
@@ -629,12 +633,15 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                                 hoverColor: Colors.transparent,
                                                 highlightColor:
                                                     Colors.transparent,
-                                                onTap: () async {
-                                                  context.pushReplacementNamed(
-                                                    '_initialize', 
-                                                    queryParameters: {'initialPage': 'petList'},
-                                                  );  
-                                                },
+                                    onTap: () async {
+                                      context.goNamed(
+                                        '_initialize', 
+                                        queryParameters: {'initialPage': 'petList'},
+                                      );  
+                                      // final navState = navBarOwnerKey.currentState;
+
+                                      // navState?.changePage('petList');
+                                    },
                                                 child: Icon(
                                                   Icons.arrow_forward_ios,
                                                   color: FlutterFlowTheme.of(

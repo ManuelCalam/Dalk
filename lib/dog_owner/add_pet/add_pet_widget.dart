@@ -1,4 +1,5 @@
 import 'package:dalk/backend/supabase/supabase.dart';
+import 'package:dalk/dog_owner/set_walk_schedule/set_walk_schedule_widget.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
@@ -1315,21 +1316,7 @@ Future<String?> _uploadOwnerImage(String userId,File imageFile, {int? petId, }) 
 
                                               });
 
-                                              showDialog(
-                                                context: context,
-                                                builder: (_) => PopUpConfirmDialogWidget(
-                                                  title: "Mascota registrada",
-                                                  message: "¡Mascota ya forma parte de tu familia en la app!",
-                                                  confirmText: "Agregar otra mascota",
-                                                  cancelText: "Manú principal",
-                                                  confirmColor: FlutterFlowTheme.of(context).accent1,
-                                                  cancelColor: FlutterFlowTheme.of(context).primary,
-                                                  icon: Icons.check_circle,
-                                                  iconColor: FlutterFlowTheme.of(context).success,
-                                                  onConfirm: () => context.goNamed(AddPetWidget.routeName),
-                                                  onCancel: () => context.go('/'),
-                                                ), 
-                                              );
+                                              context.pushNamed(SetWalkScheduleWidget.routeName);
 
                                             } catch (e) {
                                                 ScaffoldMessenger.of(context).showSnackBar(

@@ -241,8 +241,8 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
           merchantDisplayName: "Dalk",
           style: ThemeMode.light,
           paymentIntentClientSecret: clientSecret,
-          customerId: customerId, // CAMBIO CLAVE
-          customerEphemeralKeySecret: ephemeralKey, // CAMBIO CLAVE
+          customerId: customerId, 
+          customerEphemeralKeySecret: ephemeralKey, 
         ),
       );
 

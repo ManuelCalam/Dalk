@@ -580,7 +580,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                             action: SnackBarAction(
                                                               label: 'Ver Planes',
                                                               onPressed: () {
-                                                                context.goNamed(PremiumPlanInfoWidget.routeName);
+                                                                context.pushNamed(PremiumPlanInfoWidget.routeName);
                                                               },
                                                             ),
                                                           ),
@@ -838,8 +838,13 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                   hoverColor: Colors.transparent,
                                                   highlightColor: Colors.transparent,
                                                   onTap: () async {
-                                                    context.pushNamed(AddAddressWidget.routeName);
-                                                  },
+                                                    context.pushNamed(
+                                                        AddAddressWidget.routeName,
+                                                        queryParameters: {
+                                                          'originWindow': 'addWalk',
+                                                        },
+                                                      );                  
+                                                    },
                                                   child: Container(
                                                     width: 100.0,
                                                     height: 110.0,

@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-// Importa la configuración específica de la plataforma si es necesario (ej. webview_flutter_android)
 
-// NOTA IMPORTANTE:
-// Asegúrate de agregar la dependencia 'webview_flutter: ^4.2.0' (o la versión más reciente)
-// en tu archivo pubspec.yaml para que este código funcione.
 
 // Definimos el widget principal que recibirá las URLs.
 class StripeCheckoutScreen extends StatefulWidget {

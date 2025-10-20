@@ -379,10 +379,10 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                                           icon: Icons.check_circle,
                                           iconColor: FlutterFlowTheme.of(context).success,
                                           onConfirm: () {
-                                            context.goNamed(SetWalkScheduleWidget.routeName);
+                                            context.pushNamed(SetWalkScheduleWidget.routeName);
                                           },
                                           onCancel: () {
-                                            context.goNamed(WalksDogOwnerWidget.routeName);
+                                            context.pushNamed(WalksDogOwnerWidget.routeName);
                                           },
                                         ),
                                       );
@@ -563,10 +563,10 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                                           icon: Icons.check_circle,
                                           iconColor: FlutterFlowTheme.of(context).success,
                                           onConfirm: () {
-                                            context.goNamed(SetWalkScheduleWidget.routeName);
+                                            context.pushNamed(SetWalkScheduleWidget.routeName);
                                           },
                                           onCancel: () {
-                                            context.goNamed(WalksDogOwnerWidget.routeName);
+                                            context.pushNamed(WalksDogOwnerWidget.routeName);
                                           },
                                         ),
                                       );

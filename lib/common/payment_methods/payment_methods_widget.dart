@@ -120,7 +120,7 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
       await Stripe.instance.presentPaymentSheet();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Método de pago guardado ✅")),
+        const SnackBar(content: Text("Método de pago guardado")),
       );
 
     setState(() {

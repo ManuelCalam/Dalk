@@ -344,7 +344,7 @@ Future<bool> _handleLocationPermission() async {
     }
 
     // 5. Navegar a CurrentWalkEmptyWindow
-    context.pushReplacementNamed(
+    context.pushNamed(
       '_initialize',
       queryParameters: {'initialPage': 'CurrentWalk'},
     );

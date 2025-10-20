@@ -1,9 +1,9 @@
 import 'package:dalk/auth/supabase_auth/auth_util.dart';
-import 'package:dalk/backend/supabase/database/tables/addresses.dart';
 import 'package:dalk/backend/supabase/supabase.dart';
 import 'package:dalk/cards/address_card/address_card_widget.dart';
 import 'package:dalk/dog_owner/add_address/add_address_widget.dart';
 import 'package:dalk/dog_owner/purchase_logic.dart';
+import 'package:uuid/uuid.dart';
 
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
@@ -48,6 +48,10 @@ class _BuyTrackerWidgetState extends State<BuyTrackerWidget> {
     _model.nameDogOwnerInputTextController ??=
         TextEditingController(text: '[bill]');
     _model.nameDogOwnerInputFocusNode ??= FocusNode();
+
+    _model.trackerAliasInputTextController ??=
+        TextEditingController(text: '');
+    _model.trackerAliasInputFocusNode ??= FocusNode();
     
     _model.countControllerValue ??= 1;
 
@@ -250,6 +254,154 @@ class _BuyTrackerWidgetState extends State<BuyTrackerWidget> {
                                   ),
                                 ),
 
+                                Padding(
+                                        padding:
+                                            const EdgeInsetsDirectional.fromSTEB(
+                                                0, 20, 0, 20),
+                                        child: Container(
+                                          width: MediaQuery.sizeOf(context)
+                                                  .width *
+                                              0.8,
+                                          child: TextFormField(
+                                            controller: _model
+                                                .trackerAliasInputTextController, 
+                                            focusNode: _model
+                                                .trackerAliasInputFocusNode,
+                                            autofocus: false,
+                                            obscureText: false,
+                                            decoration: InputDecoration(
+                                              isDense: true,
+                                              labelText: 'Alias de dispositivo',
+                                              labelStyle: FlutterFlowTheme.of(
+                                                      context)
+                                                  .bodyLarge
+                                                  .override(
+                                                    font: GoogleFonts.lexend(
+                                                      fontWeight:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .bodyLarge
+                                                              .fontWeight,
+                                                      fontStyle:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .bodyLarge
+                                                              .fontStyle,
+                                                    ),
+                                                    color:
+                                                        FlutterFlowTheme.of(
+                                                                context)
+                                                            .primary,
+                                                    fontSize: 16,
+                                                    letterSpacing: 0.0,
+                                                    fontWeight:
+                                                        FlutterFlowTheme.of(
+                                                                context)
+                                                            .bodyLarge
+                                                            .fontWeight,
+                                                    fontStyle:
+                                                        FlutterFlowTheme.of(
+                                                                context)
+                                                            .bodyLarge
+                                                            .fontStyle,
+                                                  ),
+                                              enabledBorder:
+                                                  OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .tertiary,
+                                                  width: 1,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(30),
+                                              ),
+                                              focusedBorder:
+                                                  OutlineInputBorder(
+                                                borderSide: const BorderSide(
+                                                  color: Color(0x00000000),
+                                                  width: 1,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(30),
+                                              ),
+                                              errorBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .error,
+                                                  width: 1,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(30),
+                                              ),
+                                              focusedErrorBorder:
+                                                  OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .error,
+                                                  width: 1,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(30),
+                                              ),
+                                              filled: true,
+                                              fillColor:
+                                                  FlutterFlowTheme.of(context)
+                                                      .alternate,
+                                              contentPadding:
+                                                  const EdgeInsetsDirectional
+                                                      .fromSTEB(10, 0, 0, 20),
+                                              prefixIcon: Icon(
+                                                Icons.perm_device_information_rounded,
+                                                color: FlutterFlowTheme.of(
+                                                        context)
+                                                    .primary,
+                                                size: 25,
+                                              ),
+                                            ),
+                                            style: FlutterFlowTheme.of(
+                                                    context)
+                                                .bodyMedium
+                                                .override(
+                                                  font: GoogleFonts.lexend(
+                                                    fontWeight:
+                                                        FlutterFlowTheme.of(
+                                                                context)
+                                                            .bodyMedium
+                                                            .fontWeight,
+                                                    fontStyle:
+                                                        FlutterFlowTheme.of(
+                                                                context)
+                                                            .bodyMedium
+                                                            .fontStyle,
+                                                  ),
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .secondaryBackground,
+                                                  fontSize: 16,
+                                                  letterSpacing: 0.0,
+                                                  fontWeight:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .bodyMedium
+                                                          .fontWeight,
+                                                  fontStyle:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .bodyMedium
+                                                          .fontStyle,
+                                                ),
+                                            cursorColor:
+                                                FlutterFlowTheme.of(context)
+                                                    .primaryText,
+                                            validator: _model
+                                                .trackerAliasInputTextControllerValidator
+                                                .asValidator(context),
+                                          ),
+                                        ),
+                                      ),
 
                                   Padding(
                                     padding: const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
@@ -307,14 +459,19 @@ class _BuyTrackerWidgetState extends State<BuyTrackerWidget> {
                                                   ),
                                                 );
                                               } else {
-                                                // Último elemento: botón para agregar mascota
+                                                // Último elemento
                                                 return InkWell(
                                                   splashColor: Colors.transparent,
                                                   focusColor: Colors.transparent,
                                                   hoverColor: Colors.transparent,
                                                   highlightColor: Colors.transparent,
                                                   onTap: () async {
-                                                    context.pushNamed(AddAddressWidget.routeName);
+                                                    context.pushNamed(
+                                                        AddAddressWidget.routeName,
+                                                        queryParameters: {
+                                                          'originWindow': 'buyTracker', 
+                                                        },
+                                                      );                                                  
                                                   },
                                                   child: Container(
                                                     width: 100.0,
@@ -343,7 +500,7 @@ class _BuyTrackerWidgetState extends State<BuyTrackerWidget> {
                                                           child: Align(
                                                             alignment: const AlignmentDirectional(0.0, 0.0),
                                                             child: AutoSizeText(
-                                                              'Agregar mascota',
+                                                              'Agregar dirección',
                                                               textAlign: TextAlign.center,
                                                               maxLines: 1,
                                                               minFontSize: 8.0,
@@ -905,37 +1062,90 @@ class _BuyTrackerWidgetState extends State<BuyTrackerWidget> {
                                   padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 15, 0, 0),
                                   child: FFButtonWidget(
+
                                     onPressed: () async {
-                                        String? customerStripeId;
+                                      String? customerStripeId;
+                                      final db = Supabase.instance.client;
+                                      final itemCount = _model.countControllerValue as int;
+                                      final trackerAlias = _model.trackerAliasInputTextController.text;
+                                      final productsTotal = itemCount * trackerPrice;
+                                      final totalAmount = productsTotal + shippingPrice;
+                                      final trackerId = const Uuid().v4();
+                                      
+                                      try {
+                                        // 1. Obtener el Stripe Customer ID
+                                        final response = await db
+                                          .from('users')
+                                          .select('customer_stripe_id')
+                                          .eq('uuid', currentUserUid)
+                                          .maybeSingle();
 
-                                        try {
-                                            final response = await Supabase.instance.client
-                                                .from('users')
-                                                .select('customer_stripe_id')
-                                                .eq('uuid', currentUserUid)
-                                                .maybeSingle();
+                                        if (response != null && response['customer_stripe_id'] != null) {
+                                          customerStripeId = response['customer_stripe_id'] as String;
+                                        }
+                                        
 
-                                            if (response != null && response['customer_stripe_id'] != null) {
-                                                customerStripeId = response['customer_stripe_id'] as String;
-                                            }
+                                        
+                                        final existingOrderResponse = await db
+                                          .from('orders')
+                                          .select('tracker_id')
+                                          .eq('user_id', currentUserUid)
+                                          .filter('status', 'in', ['Pendiente', 'Fallida', 'Cancelada'])
+                                          .maybeSingle();
 
 
-                                        } catch (e) {
-                                            print('Error al consultar customer_stripe_id: $e');
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                                const SnackBar(content: Text('Error al verificar tu cuenta de pago. Intenta de nuevo.')),
-                                            );
-                                            return;
+                                        if (existingOrderResponse != null) {
+                                          final existingInternalOrderId = existingOrderResponse['tracker_id'] as String;
+                                          
+                                          await db.from('orders')
+                                            .update({
+                                              'status': 'Pendiente', 
+                                              'total_amount': totalAmount,
+                                              'item_count': itemCount,
+                                              'shipping_amount': shippingPrice,
+                                              'address_id': selectedAddressId,
+                                              'tracker_id': trackerId,
+                                              'tracker_alias': trackerAlias,
+                                            })
+                                            .eq('tracker_id', existingInternalOrderId);
+                                          
+                                          final orderIdToUse = existingInternalOrderId;
+                                          
+                                          print('Orden encontrada y actualizada: $orderIdToUse');
+                                          
+                                        } else {
+                                          await db.from('orders').insert({
+                                            'user_id': currentUserUid,
+                                            'tracker_id': trackerId, 
+                                            'status': 'Pendiente', 
+                                            'total_amount': totalAmount,
+                                            'item_count': itemCount,
+                                            'shipping_amount': shippingPrice,
+                                            'address_id': selectedAddressId, 
+                                            'tracker_alias': trackerAlias,
+                                          });
+                                          
+                                          
+                                          print('Nueva orden creada: $trackerId');
                                         }
 
-                                        // Llamar a la función de pago con el ID (que puede ser nulo)
-                                        handlePaymentFlow(
-                                            context, 
-                                            _model.countControllerValue ?? 0, 
-                                            shippingPrice,
-                                            customerStripeId,
+                                        await handlePaymentFlow(
+                                          context, 
+                                          itemCount, 
+                                          shippingPrice, 
+                                          customerStripeId!,
+                                          trackerId, 
                                         );
-                                      },
+
+                                      } catch (e) {
+                                        print('Error en el flujo de compra: $e');
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Error al procesar la compra. Intenta de nuevo.')),
+                                        );
+                                      }
+                                    },
+
+
                                     text: 'Comprar',
                                     icon: const Icon(
                                       Icons.keyboard_double_arrow_up_sharp,

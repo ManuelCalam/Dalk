@@ -103,7 +103,12 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
     String _paymentStatus = 'pending'; 
 
     void _handleStripePayment() => print('Acción: Abrir Stripe Payment Sheet');
-    void _handleCashPayment() => print('Acción: Registrar Pago en Efectivo y redirigir a Home');
+    void _handleCashPayment() => {
+      context.pushReplacementNamed(
+        '_initialize', 
+        queryParameters: {'initialPage': 'homeDogOwner'},
+      )
+    };
     
     Future<void> _handleReviewAction(Map<String, dynamic> walkData) async {
       // Determina el nombre del usuario/mascota para el pop-up

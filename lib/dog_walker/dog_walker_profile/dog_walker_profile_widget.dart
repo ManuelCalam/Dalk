@@ -403,7 +403,7 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                     hoverColor: Colors.transparent,
                                     highlightColor: Colors.transparent,
                                     onTap: () async {
-                                      context.pushReplacementNamed(
+                                      context.goNamed(
                                         '_initialize', 
                                         queryParameters: {'initialPage': 'walkerService'},
                                       );  
@@ -501,12 +501,12 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                                 hoverColor: Colors.transparent,
                                                 highlightColor:
                                                     Colors.transparent,
-                                                // onTap: () async {
-                                                //   context.goNamed(
-                                                //     '_initialize', 
-                                                //     queryParameters: {'initialPage': 'walkerService'},
-                                                //   );  
-                                                // },
+                                                onTap: () async {
+                                                  context.goNamed(
+                                                    '_initialize', 
+                                                    queryParameters: {'initialPage': 'walkerService'},
+                                                  );  
+                                                },
                                                 child: Icon(
                                                   Icons.arrow_forward_ios,
                                                   color: FlutterFlowTheme.of(

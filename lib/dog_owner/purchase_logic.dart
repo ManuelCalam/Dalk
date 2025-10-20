@@ -1,109 +1,104 @@
 import 'dart:convert';
 import 'package:dalk/backend/supabase/database/database.dart';
-import 'package:http/http.dart' as http; 
-import 'package:dalk/dog_owner/stripe_checkout_screen/stripe_checkout_screen.dart'; 
 import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
+// Asegúrate de tener el paquete 'http' en tu pubspec.yaml
+import 'package:http/http.dart' as http; 
 
-const String SUPABASE_EDGE_FUNCTION_URL = 'https://bsactypehgxluqyaymui.supabase.co/functions/v1/stripe_checkout_session';
+// URL de tu Edge Function (Asegúrate de reemplazar 'bsactypehgxluqyaymui' con tu propio ID de proyecto Supabase)
+const String SUPABASE_EDGE_FUNCTION_URL = 'https://bsactypehgxluqyaymui.supabase.co/functions/v1/buy-tracker-intent';
 
+/// Maneja la llamada a la Edge Function, la inicialización del Payment Sheet
+/// y el proceso final de pago.
 Future<void> handlePaymentFlow(
-  BuildContext context,
-  int itemCount, 
-  double shippingPrice,
-  String? customerStripeId, 
+ BuildContext context,
+ int itemCount, 
+ double shippingPrice,
+ String? customerStripeId,
+ String internalOrderId, 
 ) async {
-  
-  print('El customerStripeId es: $customerStripeId');
-
-  const String baseUrl = 'https://dalk.com/payment/';
-  const String successUrl = '${baseUrl}success';
-  const String cancelUrl = '${baseUrl}cancel';
   final jwt = Supabase.instance.client.auth.currentSession?.accessToken;
+  // Mostrar un indicador de carga mientras se llama a la función de Stripe
 
-  String stripeCheckoutUrl = '';
-  
-  final Map<String, dynamic> requestBody = {
-    'itemCount': itemCount,
-    'shippingPrice': shippingPrice,
-    'customer_stripe_id': customerStripeId, // Envía el ID, que puede ser null
-  };
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('Preparando pago...')),
+  );
 
-  try {
+  try { 
+
     final response = await http.post(
       Uri.parse(SUPABASE_EDGE_FUNCTION_URL),
       headers: <String, String>{
-        "Authorization": "Bearer $jwt",
-        'Content-Type': 'application/json; charset=UTF-8',
+        "Content-Type": "application/json",
+        'Authorization': 'Bearer $jwt',
       },
-      body: jsonEncode(requestBody),
+      body: jsonEncode(<String, dynamic>{
+        'itemCount': itemCount,
+        'shippingPrice': shippingPrice,
+        'customer_stripe_id': customerStripeId,
+        'internalOrderId': internalOrderId,
+      }),
     );
 
-    if (response.statusCode == 200) {
-      final jsonResponse = jsonDecode(response.body);
-      stripeCheckoutUrl = jsonResponse['checkoutUrl'] as String;
-      print('URL de Checkout recibida con éxito: $stripeCheckoutUrl');
-    } else {
-      final errorResponse = jsonDecode(response.body);
-      print('ERROR ${response.statusCode}: Fallo al generar la sesión de Stripe.');
-      print('Mensaje del servidor: ${errorResponse['error'] ?? response.reasonPhrase}');
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error en el pago: ${errorResponse['error'] ?? 'No se pudo generar el enlace.'}')),
-      );
-      return; // Detener el flujo
+    if (response.statusCode != 200) {
+      final errorBody = jsonDecode(response.body);
+      throw Exception('Error al crear Payment Intent: ${errorBody['error']}');
     }
 
-  } catch (e) {
-    print('ERROR DE CONEXIÓN/SERVIDOR: $e');
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Error de conexión con el servidor de pagos.')),
-    );
-    return; // Detener el flujo si falla la conexión
-  }
+    // 2. EXTRAER LOS SECRETOS
+    final responseBody = jsonDecode(response.body);
+    final clientSecret = responseBody['client_secret'];
+    final ephemeralKey = responseBody['ephemeralKey'];
+    
+    if (clientSecret == null) {
+      throw Exception('Falta el client_secret en la respuesta de Stripe.');
+    }
 
-
-  
-  if (stripeCheckoutUrl.isEmpty) {
-     print('ERROR: URL de Checkout vacía después de la llamada al backend.');
-     return;
-  }
-
-  final result = await Navigator.of(context).push<bool?>(
-    MaterialPageRoute(
-      builder: (context) => StripeCheckoutScreen(
-        checkoutUrl: stripeCheckoutUrl,
-        successUrl: successUrl,
-        cancelUrl: cancelUrl,
+    final hasCustomer = customerStripeId != null && ephemeralKey != null;
+    
+    await Stripe.instance.initPaymentSheet(
+      paymentSheetParameters: SetupPaymentSheetParameters(
+        paymentIntentClientSecret: clientSecret, 
+        customerEphemeralKeySecret: hasCustomer ? ephemeralKey : null,
+        customerId: hasCustomer ? customerStripeId : null,
+        merchantDisplayName: 'Dalk',
+        allowsDelayedPaymentMethods: true,
+        style: ThemeMode.light,
       ),
-    ),
-  );
+    );
 
+    await Stripe.instance.presentPaymentSheet();
 
-  // MANEJO DEL RESULTADO
-  if (result == true) {
-    print('-------------------------------------------');
-    print('PAGO EXITOSO: El WebView fue cerrado por éxito.');
-    print('Aquí deberías: Navigator.pushReplacement(OrderConfirmationScreen())');
-    print('-------------------------------------------');
-    
-  } else if (result == false) {
-    print('-------------------------------------------');
-    print('PAGO CANCELADO: El WebView fue cerrado por el cliente.');
-    print('Aquí deberías: Mostrar un Snackbar de "Cancelado".');
-    print('-------------------------------------------');
-    
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Pago cancelado por el usuario.')),
+      const SnackBar(
+        content: Text('Pago exitoso! Procesando tu orden.'),
+      ),
     );
     
-  } else {
-    print('-------------------------------------------');
-    print('CIERRE MANUAL: El WebView fue cerrado manualmente (resultado nulo).');
-    print('Aquí deberías: Mostrar un Snackbar de "Proceso no finalizado".');
-    print('-------------------------------------------');
+    // context.go('/orderConfirmation');
+    
+  } on StripeException catch (e) {
+    // Manejar errores de Stripe (ej: pago cancelado, tarjeta rechazada)
+    String message;
+    if (e.error.code == FailureCode.Canceled) {
+      message = 'Pago cancelado.';
+    } else {
+      message = 'Error de pago: ${e.error.message}';
+    }
     
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('La ventana de pago fue cerrada sin completar el proceso.')),
+      SnackBar(
+        content: Text(message),
+      ),
     );
+    print('Stripe Error: ${e.error.message}');
+    
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Error inesperado: $e. Intenta de nuevo.'),
+      ),
+    );
+    print('General Error: $e');
   }
 }

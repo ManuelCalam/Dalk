@@ -473,7 +473,7 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
                       print("Error al actualizar current_walk_id en Supabase: $e");
                     }
 
-                    context.pushReplacementNamed(
+                    context.pushNamed(
                       '_initialize',
                       queryParameters: {'initialPage': 'CurrentWalk'},
                     );

@@ -377,7 +377,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                     .update({'status': 'En curso'})
                     .eq('id', widget.walkId),
 
-                  context.pushReplacementNamed(
+                  context.pushNamed(
                     '_initialize',
                     queryParameters: {'initialPage': 'CurrentWalk'},
                   ),

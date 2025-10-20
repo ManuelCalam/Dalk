@@ -435,11 +435,73 @@ async function handleSubscriptionDeleted(subscription: any) {
   }
 }
 
+// async function handlePaymentIntentSucceeded(paymentIntent: any) {
+//   console.log("Payment intent succeeded:", paymentIntent.id);
+
+//   const subscriptionId = paymentIntent.metadata?.subscription_id;
+//   if (!subscriptionId) return;
+
+//   const { error } = await supabase
+//     .from("users")
+//     .update({
+//       subscription_status: "active",
+//     })
+//     .eq("subscription_id", subscriptionId)
+//     .in("subscription_status", ["incomplete", "past_due"]);
+
+//   if (error) {
+//     console.error("DB error [PaymentIntentSucceeded]:", error);
+//   } else {
+//     console.log("Subscription activated from incomplete state:", subscriptionId);
+//   }
+// }
+
+// async function handlePaymentIntentFailed(paymentIntent: any) {
+//   console.log("Payment intent failed:", paymentIntent.id);
+
+//   const subscriptionId = paymentIntent.metadata?.subscription_id;
+//   if (!subscriptionId) return;
+
+//   const success = await safeUpdateUser(
+//     paymentIntent.customer,
+//     { subscription_status: "past_due" },
+//     "PaymentIntentFailed"
+//   );
+
+//   if (success) {
+//     console.log("Updated to past_due for subscription:", subscriptionId);
+//   }
+// }
+
 async function handlePaymentIntentSucceeded(paymentIntent: any) {
   console.log("Payment intent succeeded:", paymentIntent.id);
 
+  // --- VERIFICAR COMPRA DE RASTREADOR ---
+  const trackerId = paymentIntent.metadata?.internal_order_id; 
+
+  if (trackerId) {
+    console.log("Processing TRACKER purchase success for order:", trackerId);
+
+    const { error } = await supabase
+      .from("orders")
+      .update({
+        status: "Pagada",
+        // payment_intent_id: paymentIntent.id,
+      })
+      .eq("tracker_id", trackerId)
+      .in("status", ["Pendiente", "Fallida", "Cancelada"]); 
+
+    if (error) {
+      console.error("DB error [TrackerOrderSucceeded]:", error);
+    } else {
+      console.log("✅ Tracker Order marked as PAID. ID:", trackerId);
+    }
+    return;
+  }
+
+  // --- LÓGICA  DE SUSCRIPCIÓN ---
   const subscriptionId = paymentIntent.metadata?.subscription_id;
-  if (!subscriptionId) return;
+  if (!subscriptionId) return; 
 
   const { error } = await supabase
     .from("users")
@@ -456,11 +518,36 @@ async function handlePaymentIntentSucceeded(paymentIntent: any) {
   }
 }
 
+/**
+ * Maneja el evento payment_intent.payment_failed.
+ */
 async function handlePaymentIntentFailed(paymentIntent: any) {
   console.log("Payment intent failed:", paymentIntent.id);
 
+  const trackerId = paymentIntent.metadata?.internal_order_id;
+  
+  if (trackerId) {
+    console.log("Processing TRACKER purchase failure for order:", trackerId);
+    
+    const { error } = await supabase
+      .from("orders")
+      .update({ 
+        status: "Fallida" 
+      })
+      .eq("tracker_id", trackerId);
+
+    if (error) {
+      console.error("DB error [TrackerOrderFailed]:", error);
+    } else {
+      console.log("Tracker Order marked as FAILED. ID:", trackerId);
+    }
+    // Si manejamos una orden de rastreador, terminamos la función aquí.
+    return;
+  }
+
+  // --- LÓGICA  DE SUSCRIPCIÓN ---
   const subscriptionId = paymentIntent.metadata?.subscription_id;
-  if (!subscriptionId) return;
+  if (!subscriptionId) return; 
 
   const success = await safeUpdateUser(
     paymentIntent.customer,

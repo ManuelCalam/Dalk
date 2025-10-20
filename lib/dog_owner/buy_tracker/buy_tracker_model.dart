@@ -19,6 +19,11 @@ class BuyTrackerModel extends FlutterFlowModel<BuyTrackerWidget> {
   String? Function(BuildContext, String?)?
       nameDogOwnerInputTextControllerValidator;
 
+  FocusNode? trackerAliasInputFocusNode;
+  TextEditingController? trackerAliasInputTextController;
+  String? Function(BuildContext, String?)?
+      trackerAliasInputTextControllerValidator;
+
   @override
   void initState(BuildContext context) {
     notificationContainerModel =
@@ -32,5 +37,7 @@ class BuyTrackerModel extends FlutterFlowModel<BuyTrackerWidget> {
     goBackContainerModel.dispose();
     nameDogOwnerInputFocusNode?.dispose();
     nameDogOwnerInputTextController?.dispose();
+    trackerAliasInputFocusNode?.dispose();
+    trackerAliasInputTextController?.dispose();
   }
 }

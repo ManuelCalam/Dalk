@@ -1,23 +1,26 @@
 import 'package:dalk/backend/supabase/supabase.dart';
-import 'package:dalk/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
+import 'package:dalk/dog_owner/buy_tracker/buy_tracker_widget.dart';
+import 'package:dalk/dog_owner/set_walk_schedule/set_walk_schedule_widget.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 import 'add_address_model.dart';
 export 'add_address_model.dart';
 
 class AddAddressWidget extends StatefulWidget {
-  const AddAddressWidget({super.key});
+  const AddAddressWidget({
+    super.key,
+    required this.originWindow
+    });
+
+    final String originWindow;
 
   static String routeName = 'addAddress';
   static String routePath = '/addAddress';
@@ -1286,22 +1289,14 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                               'city': _model.cityInputTextController.text,
 
                                           });
-
-                                          showDialog(
-                                            context: context,
-                                            builder: (_) => PopUpConfirmDialogWidget(
-                                              title: "Dirección registrada",
-                                              message: "¡La direccion ha sido registrada con éxito!",
-                                              confirmText: "Agregar otra dirección",
-                                              cancelText: "Manú principal",
-                                              confirmColor: FlutterFlowTheme.of(context).accent1,
-                                              cancelColor: FlutterFlowTheme.of(context).primary,
-                                              icon: Icons.check_circle,
-                                              iconColor: FlutterFlowTheme.of(context).success,
-                                              onConfirm: () => context.goNamed(AddAddressWidget.routeName),
-                                              onCancel: () => context.go('/'),
-                                            ), 
-                                          );
+                                            if (widget.originWindow == 'addWalk') {
+                                              context.pushReplacementNamed(SetWalkScheduleWidget.routeName);
+                                            } else if (widget.originWindow == 'buyTracker') {
+                                              Navigator.pushReplacement(
+                                                context,
+                                                MaterialPageRoute(builder: (context) => const BuyTrackerWidget()),
+                                              );                                            
+                                            }
                                         } catch (e) {
                                           ScaffoldMessenger.of(context).showSnackBar(
                                                   SnackBar(content: Text('Error al registrar la dirección: $e')),

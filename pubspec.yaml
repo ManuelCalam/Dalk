@@ -119,6 +119,7 @@ dependencies:
   image_picker: ^1.2.0
   stop_watch_timer: ^3.1.1
   carousel_slider: ^5.1.1
+  uuid: ^4.5.1
 
 flutter_icons:
   android: true
