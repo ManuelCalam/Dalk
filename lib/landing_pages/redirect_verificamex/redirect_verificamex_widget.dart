@@ -9,6 +9,7 @@ import 'dart:async';
 import 'redirect_verificamex_model.dart';
 export 'redirect_verificamex_model.dart';
 import 'package:flutter/foundation.dart' show kReleaseMode;
+import 'package:go_router/go_router.dart';
 
 /// Added fallback constants to avoid undefined reference to FFAppConstants.
 class FFAppConstants {
@@ -20,10 +21,12 @@ class RedirectVerificamexWidget extends StatefulWidget {
     super.key,
     required this.sessionId,
     required this.userId,
+    required this.accessToken,
   });
 
   final String sessionId;
   final String userId;
+  final String accessToken;
 
   static const String routeName = 'redirect_verificamex';
   static const String routePath = '/redirect_verificamex';
@@ -42,15 +45,171 @@ class _RedirectVerificamexWidgetState
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  @override
-  void initState() {
-    super.initState();
-    _model = createModel(context, () => RedirectVerificamexModel());
+@override
+void initState() {
+  super.initState();
+  _model = createModel(context, () => RedirectVerificamexModel());
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _startPolling();
-    });
-  }
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    debugPrint('🔑 ========================================');
+    debugPrint('🔑 INICIO DE RESTAURACIÓN DE SESIÓN');
+    debugPrint('🔑 ========================================');
+    
+    // 🔑 OBTENER TOKEN CON PRIORIDAD
+    String tokenToUse = widget.accessToken;
+    
+    debugPrint('📊 Información Inicial:');
+    debugPrint('   Session ID: ${widget.sessionId}');
+    debugPrint('   User ID: ${widget.userId}');
+    debugPrint('   widget.accessToken presente: ${widget.accessToken.isNotEmpty}');
+    debugPrint('   widget.accessToken length: ${widget.accessToken.length}');
+    
+    // Intentar obtener del Deep Link como segunda fuente
+    final deepLinkUrl = Uri.base.toString();
+    debugPrint('📱 Deep Link URL: $deepLinkUrl');
+    
+    final deepLinkAccessToken = Uri.parse(deepLinkUrl).queryParameters['access_token'];
+    
+    debugPrint('📊 Fuentes de Token:');
+    debugPrint('   1️⃣ Token del widget: ${widget.accessToken.isEmpty ? "❌ VACÍO" : "✅ Presente (${widget.accessToken.length} chars)"}');
+    debugPrint('   2️⃣ Token del Deep Link: ${deepLinkAccessToken?.isEmpty ?? true ? "❌ VACÍO" : "✅ Presente (${deepLinkAccessToken?.length} chars)"}');
+    
+    // Si el widget.accessToken está vacío, usar el del deep link
+    if (tokenToUse.isEmpty && deepLinkAccessToken != null && deepLinkAccessToken.isNotEmpty) {
+      debugPrint('⚠️ widget.accessToken vacío, usando token del Deep Link');
+      tokenToUse = deepLinkAccessToken;
+    }
+    
+    debugPrint('🎯 Token Final Seleccionado:');
+    debugPrint('   Fuente: ${tokenToUse == widget.accessToken ? "Widget" : "Deep Link"}');
+    debugPrint('   Presente: ${tokenToUse.isNotEmpty ? "✅ SÍ" : "❌ NO"}');
+    debugPrint('   Length: ${tokenToUse.length}');
+    
+    if (tokenToUse.isNotEmpty) {
+      debugPrint('   Preview: ${tokenToUse.substring(0, min(30, tokenToUse.length))}...');
+    }
+
+    // 🔑 VALIDAR QUE HAYA TOKEN
+    if (tokenToUse.isEmpty) {
+      debugPrint('❌ ========================================');
+      debugPrint('❌ ERROR CRÍTICO: NO HAY ACCESS TOKEN');
+      debugPrint('❌ ========================================');
+      debugPrint('❌ No se puede restaurar la sesión sin token');
+      debugPrint('❌ El usuario quedará sin autenticar');
+      debugPrint('❌ El polling fallará al intentar actualizar la BD');
+      debugPrint('❌ ========================================');
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error crítico: No se pudo restaurar la sesión de autenticación.\nPor favor, contacta a soporte.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 10),
+          ),
+        );
+      }
+      
+      // NO iniciar polling sin sesión - mostrar error y regresar
+      await Future.delayed(const Duration(seconds: 3));
+      
+      if (mounted) {
+        await _handleFailure(
+          'No se pudo restaurar la sesión de autenticación. Token no disponible.',
+          true, // Eliminar usuario
+        );
+      }
+      
+      return;
+    }
+
+    // 🔑 RESTAURAR SESIÓN CON SUPABASE
+    try {
+      debugPrint('🔄 ========================================');
+      debugPrint('🔄 RESTAURANDO SESIÓN CON SUPABASE');
+      debugPrint('🔄 ========================================');
+      debugPrint('🔄 Llamando a Supabase.auth.setSession()...');
+      debugPrint('🔄 Token length: ${tokenToUse.length}');
+      
+      final sessionResponse = await Supabase.instance.client.auth.setSession(tokenToUse);
+
+      if (sessionResponse.session != null) {
+        debugPrint('✅ ========================================');
+        debugPrint('✅ SESIÓN RESTAURADA EXITOSAMENTE');
+        debugPrint('✅ ========================================');
+        debugPrint('✅ User ID: ${sessionResponse.session!.user.id}');
+        debugPrint('✅ Email: ${sessionResponse.session!.user.email}');
+        debugPrint('✅ Access Token presente: ${sessionResponse.session!.accessToken.isNotEmpty}');
+        debugPrint('✅ Access Token length: ${sessionResponse.session!.accessToken.length}');
+        
+        // Esperar a que el AuthManager se actualice
+        await Future.delayed(const Duration(milliseconds: 500));
+        
+        debugPrint('✅ Verificando currentUserUid...');
+        debugPrint('   currentUserUid: ${currentUserUid.isEmpty ? "❌ VACÍO (PROBLEMA)" : "✅ $currentUserUid"}');
+        debugPrint('   currentUserEmail: ${currentUserEmail.isEmpty ? "❌ VACÍO" : "✅ $currentUserEmail"}');
+        
+        if (currentUserUid.isEmpty) {
+          debugPrint('⚠️ WARNING: currentUserUid aún está vacío después de restaurar sesión');
+          debugPrint('⚠️ Esperando 1 segundo más...');
+          await Future.delayed(const Duration(seconds: 1));
+          debugPrint('   currentUserUid ahora: ${currentUserUid.isEmpty ? "❌ SIGUE VACÍO" : "✅ $currentUserUid"}');
+        }
+        
+        debugPrint('✅ ========================================');
+        
+        // ✅ INICIAR POLLING SOLO SI LA SESIÓN SE RESTAURÓ
+        _startPolling();
+      } else {
+        debugPrint('❌ ========================================');
+        debugPrint('❌ FALLO AL RESTAURAR SESIÓN');
+        debugPrint('❌ ========================================');
+        debugPrint('❌ sessionResponse.session es NULL');
+        debugPrint('❌ El token proporcionado puede ser inválido o haber expirado');
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Error: No se pudo restaurar la sesión. Token inválido.'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 5),
+            ),
+          );
+          
+          await _handleFailure(
+            'No se pudo restaurar la sesión. El token de autenticación es inválido.',
+            true,
+          );
+        }
+      }
+    } catch(e, stackTrace) {
+      debugPrint('❌ ========================================');
+      debugPrint('❌ EXCEPCIÓN DURANTE RESTAURACIÓN DE SESIÓN');
+      debugPrint('❌ ========================================');
+      debugPrint('❌ Error: $e');
+      debugPrint('❌ Tipo: ${e.runtimeType}');
+      debugPrint('❌ StackTrace:');
+      debugPrint(stackTrace.toString());
+      debugPrint('❌ ========================================');
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al restaurar sesión: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+        
+        await _handleFailure(
+          'Error técnico al restaurar la sesión: ${e.toString()}',
+          true,
+        );
+      }
+    }
+  });
+}
+
+
 
   @override
   void dispose() {
@@ -268,96 +427,64 @@ class _RedirectVerificamexWidgetState
     );
   }
 
-  /// ✅ VERIFICAR STATUS EN SUPABASE
-  Future<void> _checkVerificationStatus() async {
-    try {
-      // 1) Consultar identity_verifications (incluyendo temp_user_id y user_uuid)
-      final iv = await SupaFlow.client
-          .from('identity_verifications')
-          .select('status, verification_result, failure_reason, temp_user_id, user_uuid')
-          .eq('session_id', widget.sessionId)
-          .maybeSingle();
+  /// ✅ VERIFICAR STATUS EN SUPABASE (VERSIÓN CORREGIDA)
+Future<void> _checkVerificationStatus() async {
+  try {
+    debugPrint('🔍 === INICIO POLLING ===');
+    debugPrint('🔍 Session ID: ${widget.sessionId}');
+    debugPrint('🔍 User ID: ${widget.userId}');
 
-      if (iv == null) {
-        debugPrint('❌ No se encontró la sesión: ${widget.sessionId}');
-        return;
-      }
+    // ✅ Consultar registro en identity_verifications
+    final iv = await SupaFlow.client
+        .from('identity_verifications')
+        .select('status, verification_result, failure_reason, user_uuid, updated_at')
+        .eq('session_id', widget.sessionId)
+        .maybeSingle();
 
-      final status = (iv['status'] as String?)?.toLowerCase();
-      final result = iv['verification_result'] as int?;
-      final failureReason = iv['failure_reason'] as String?;
-      final tempUserId = iv['temp_user_id'] as String?;
-      final ivUserUuid = iv['user_uuid'] as String?;
-
-      debugPrint('📊 IV status: $status (result: $result) tempUserId: $tempUserId user_uuid: $ivUserUuid');
-
-      // 2) Consultar estado actual del usuario en users
-      final userRow = await SupaFlow.client
-          .from('users')
-          .select('verification_status, createdAt')
-          .eq('uuid', widget.userId)
-          .maybeSingle();
-
-      final userVerificationStatus = userRow?['verification_status'] as String?;
-      final createdAtStr = userRow?['createdAt'] as String?;
-      DateTime? userCreatedAt;
-      if (createdAtStr != null) {
-        try { userCreatedAt = DateTime.tryParse(createdAtStr); } catch (_) { userCreatedAt = null; }
-      }
-
-      debugPrint('📊 User verification_status: $userVerificationStatus createdAt: $userCreatedAt');
-
-      // 3) Si el usuario ya está verificado en la tabla users → success inmediato
-      if (userVerificationStatus == 'verified') {
-        debugPrint('✅ Usuario ya marcado como verified en users → éxito');
-        _stopPolling();
-        await _handleSuccess();
-        return;
-      }
-
-      // 4) Si identity_verifications indica completado y result >= 90 → marcar user y success
-      final isCompleted = status == 'completed' || status == 'finished' || status == 'verifying' || status == 'open';
-      const successThreshold = 90;
-      if (isCompleted && result != null && result >= successThreshold) {
-        debugPrint('✅ IV reporta completed con resultado >= $successThreshold → actualizar users y navegar');
-        // Asegurar marcar usuario como verified
-        await Supabase.instance.client
-            .from('users')
-            .update({'verification_status': 'verified'})
-            .eq('uuid', widget.userId);
-        _stopPolling();
-        await _handleSuccess();
-        return;
-      }
-
-      // 5) Si IV indica fallo explícito o resultado por debajo del umbral → failure
-      if (status == 'failed' || (result != null && result < successThreshold)) {
-        debugPrint('❌ IV indica failure o resultado insuficiente ($result)');
-
-        // Decidir si eliminar usuario: solo si está en pending_verification y fue creado recientemente
-        bool shouldDeleteUser = false;
-        if (userVerificationStatus == 'pending_verification') {
-          if (userCreatedAt != null) {
-            final age = DateTime.now().difference(userCreatedAt);
-            // criterio: cuenta creada hace menos de 15 minutos → borrar (ajustable)
-            if (age <= const Duration(minutes: 15)) shouldDeleteUser = true;
-          } else {
-            // si no conocemos createdAt, conservador: no borrar automáticamente
-            shouldDeleteUser = false;
-          }
-        }
-
-        _stopPolling();
-        await _handleFailure(failureReason, shouldDeleteUser);
-        return;
-      }
-
-      // 6) Si ninguno de los casos anteriores, continuar esperando
-      debugPrint('⏳ Still waiting for final result (status: $status, result: $result)');
-    } catch (e) {
-      debugPrint('💥 Error en polling: $e');
+    if (iv == null) {
+      debugPrint('❌ No se encontró la sesión: ${widget.sessionId}');
+      return;
     }
+
+    final status = (iv['status'] ?? '').toString().toLowerCase();
+    final result = iv['verification_result'] ?? 0;
+
+    debugPrint('📊 === DATOS DE IDENTITY_VERIFICATIONS ===');
+    debugPrint('📊 Status: $status');
+    debugPrint('📊 Result: $result');
+    debugPrint('📊 Updated At: ${iv['updated_at']}');
+    debugPrint('📊 User UUID: ${iv['user_uuid']}');
+
+    // ✅ Verificar si cumple condiciones de éxito
+    if ((status == 'completed' || status == 'finished') && result >= 90) {
+      debugPrint('✅ Verificación completada con éxito. Redirigiendo...');
+      _stopPolling();
+      await _handleSuccess();
+      return;
+    }
+
+    // ❌ Si falló
+    if (status == 'failed' || status == 'cancelled' || result < 90) {
+      debugPrint('❌ Verificación fallida. Razón: ${iv['failure_reason']}');
+      _stopPolling();
+      await _handleFailure(iv['failure_reason']);
+      return;
+    }
+
+    // ⏳ Si sigue en proceso
+    if (status == 'pending' || status == 'open' || status == 'verifying') {
+      debugPrint('⏳ Verificación en proceso... esperando siguiente intento');
+      return;
+    }
+
+    // ⚠️ Si estado desconocido
+    debugPrint('⚠️ Estado desconocido en verificación: $status');
+  } catch (e, stackTrace) {
+    debugPrint('💥 Error en _checkVerificationStatus: $e');
+    debugPrint(stackTrace.toString());
   }
+}
+
 
   /// ✅ DETENER POLLING
   void _stopPolling() {
@@ -399,12 +526,11 @@ class _RedirectVerificamexWidgetState
         );
         
         await Future.delayed(const Duration(seconds: 1));
-        
-        if (mounted) {
-          debugPrint('🏠 Navegando al home del paseador...');
-          GoRouter.of(context).goNamed(HomeDogWalkerWidget.routeName);
 
+        if (mounted) {
+          context.goNamed('homeDogWalker');
         }
+
       }
       
     } catch (e) {
@@ -566,7 +692,8 @@ class _RedirectVerificamexWidgetState
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
-              // ✅ HEADER CON INFO DE DEBUG (solo en desarrollo)
+              // ❌ REMOVIDO: Bloque de DEBUG INFO en producción
+              /*
               if (FFAppConstants.isDevelopment)
                 Container(
                   width: double.infinity,
@@ -592,33 +719,11 @@ class _RedirectVerificamexWidgetState
                               fontSize: 10,
                             ),
                       ),
-                      Text(
-                        'User ID: ${widget.userId}',
-                        style: FlutterFlowTheme.of(context).bodySmall.override(
-                              fontFamily: 'Readex Pro',
-                              color: Colors.white70,
-                              fontSize: 10,
-                            ),
-                      ),
-                      Text(
-                        'Status: ${_model.verificationStatus}',
-                        style: FlutterFlowTheme.of(context).bodySmall.override(
-                              fontFamily: 'Readex Pro',
-                              color: Colors.white70,
-                              fontSize: 10,
-                            ),
-                      ),
-                      Text(
-                        'Polling: ${_model.isPolling ? "Activo" : "Inactivo"} ($_pollingAttempts/$_maxPollingAttempts)',
-                        style: FlutterFlowTheme.of(context).bodySmall.override(
-                              fontFamily: 'Readex Pro',
-                              color: Colors.white70,
-                              fontSize: 10,
-                            ),
-                      ),
+                      // ... (resto de info de debug)
                     ],
                   ),
                 ),
+              */
 
               // ✅ HTML EMBEBIDO
               Expanded(
@@ -835,7 +940,7 @@ class _RedirectVerificamexWidgetState
   /// ✅ OBTENER MENSAJE DE PROGRESO DINÁMICO
   String _getProgressMessage() {
     final messages = [
-      'Analizando documentos...',
+      'Analizando documentos... संधि',
       'Verificando INE...',
       'Validando CURP...',
       'Comparando datos...',

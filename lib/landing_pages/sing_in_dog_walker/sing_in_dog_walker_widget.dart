@@ -2641,153 +2641,166 @@ bool _validateRequiredFields() {
                                             Padding(
                                               padding: EdgeInsetsDirectional.fromSTEB(0.0, 18.0, 0.0, 18.0),
                                               child: FFButtonWidget(
-                                                onPressed: isRegistering ? null : () async {
-                                                  // ✅ MOSTRAR DIÁLOGO DE CONFIRMACIÓN
-                                                  final shouldContinue = await showDialog<bool>(
-                                                    context: context,
-                                                    barrierDismissible: false,
-                                                    builder: (BuildContext context) {
-                                                      return AlertDialog(
-                                                        backgroundColor: Color(0xFF1A2332),
-                                                        shape: RoundedRectangleBorder(
-                                                          borderRadius: BorderRadius.circular(16.0),
-                                                        ),
-                                                        title: Row(
-                                                          children: [
-                                                            Icon(Icons.verified_user, color: Colors.blue, size: 24),
-                                                            SizedBox(width: 8),
-                                                            Expanded(
-                                                              child: Text(
-                                                                'Verificación de Identidad',
-                                                                style: FlutterFlowTheme.of(context).headlineSmall.override(
-                                                                  font: GoogleFonts.lexend(),
-                                                                  color: Colors.white,
-                                                                  fontSize: 18,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        content: Column(
-                                                          mainAxisSize: MainAxisSize.min,
-                                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                                          children: [
-                                                            Text(
-                                                              'Para completar tu registro como paseador, necesitamos verificar tu identidad con:',
-                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                font: GoogleFonts.lexend(),
-                                                                color: Colors.white70,
-                                                              ),
-                                                            ),
-                                                            SizedBox(height: 16),
-                                                            Row(
-                                                              children: [
-                                                                Icon(Icons.credit_card, color: Colors.green, size: 20),
-                                                                SizedBox(width: 8),
-                                                                Text('• INE (Credencial de Elector)', 
-                                                                  style: TextStyle(color: Colors.white, fontSize: 14)),
-                                                              ],
-                                                            ),
-                                                            SizedBox(height: 8),
-                                                            Row(
-                                                              children: [
-                                                                Icon(Icons.fingerprint, color: Colors.green, size: 20),
-                                                                SizedBox(width: 8),
-                                                                Text('• CURP', 
-                                                                  style: TextStyle(color: Colors.white, fontSize: 14)),
-                                                              ],
-                                                            ),
-                                                            SizedBox(height: 16),
-                                                            Container(
-                                                              padding: EdgeInsets.all(12),
-                                                              decoration: BoxDecoration(
-                                                                color: Colors.blue.withOpacity(0.1),
-                                                                borderRadius: BorderRadius.circular(8),
-                                                                border: Border.all(color: Colors.blue.withOpacity(0.3)),
-                                                              ),
-                                                              child: Row(
-                                                                children: [
-                                                                  Icon(Icons.security, color: Colors.blue, size: 16),
-                                                                  SizedBox(width: 8),
-                                                                  Expanded(
-                                                                    child: Text(
-                                                                      'Tus datos están protegidos y encriptados.',
-                                                                      style: TextStyle(color: Colors.blue[200], fontSize: 12),
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        actions: [
-                                                          Row(
-                                                            children: [
-                                                              Expanded(
-                                                                child: TextButton(
-                                                                  onPressed: () => Navigator.of(context).pop(false),
-                                                                  child: Text(
-                                                                    'Cancelar',
-                                                                    style: TextStyle(color: Colors.white70),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                              SizedBox(width: 8),
-                                                              Expanded(
-                                                                child: ElevatedButton(
-                                                                  onPressed: () => Navigator.of(context).pop(true),
-                                                                  style: ElevatedButton.styleFrom(
-                                                                    backgroundColor: FlutterFlowTheme.of(context).primary,
-                                                                    shape: RoundedRectangleBorder(
-                                                                      borderRadius: BorderRadius.circular(8),
-                                                                    ),
-                                                                  ),
-                                                                  child: Text(
-                                                                    'Continuar',
-                                                                    style: TextStyle(color: Colors.white),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ],
-                                                      );
-                                                    },
-                                                  );
+  onPressed: isRegistering ? null : () async {
+    // 🔑 CORRECCIÓN: Usar mounted check y await correctamente
+    if (!mounted) return;
+    
+    final shouldContinue = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) { // Usar dialogContext
+        return AlertDialog(
+          backgroundColor: Color(0xFF1A2332),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.verified_user, color: Colors.blue, size: 24),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Verificación de Identidad',
+                  style: FlutterFlowTheme.of(context).headlineSmall.override(
+                    font: GoogleFonts.lexend(),
+                    color: Colors.white,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Para completar tu registro como paseador, necesitamos verificar tu identidad con:',
+                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                  font: GoogleFonts.lexend(),
+                  color: Colors.white70,
+                ),
+              ),
+              SizedBox(height: 16),
+              Row(
+                children: [
+                  Icon(Icons.credit_card, color: Colors.green, size: 20),
+                  SizedBox(width: 8),
+                  Text('• INE (Credencial de Elector)', 
+                    style: TextStyle(color: Colors.white, fontSize: 14)),
+                ],
+              ),
+              SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.fingerprint, color: Colors.green, size: 20),
+                  SizedBox(width: 8),
+                  Text('• CURP', 
+                    style: TextStyle(color: Colors.white, fontSize: 14)),
+                ],
+              ),
+              SizedBox(height: 16),
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.security, color: Colors.blue, size: 16),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Tus datos están protegidos y encriptados.',
+                        style: TextStyle(color: Colors.blue[200], fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    // 🔑 Usar dialogContext en lugar de context
+                    onPressed: () => Navigator.of(dialogContext).pop(false),
+                    child: Text(
+                      'Cancelar',
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    // 🔑 Usar dialogContext en lugar de context
+                    onPressed: () => Navigator.of(dialogContext).pop(true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: FlutterFlowTheme.of(context).primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      'Continuar',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
 
-                                                  if (shouldContinue != true) return;
+    // 🔑 CORRECCIÓN: Verificar mounted después del await
+    if (!mounted) return;
+    
+    if (shouldContinue != true) {
+      debugPrint('❌ Usuario canceló la verificación');
+      return;
+    }
 
-                                                  // ✅ VERIFICAR PERMISOS DE CÁMARA
-                                                  debugPrint('📷 Solicitando permisos de cámara...');
-                                                  final bool hasPermission = await _requestCameraPermission();
+    // ✅ VERIFICAR PERMISOS DE CÁMARA
+    debugPrint('📷 Solicitando permisos de cámara...');
+    final bool hasPermission = await _requestCameraPermission();
 
-                                                  if (!hasPermission) {
-                                                    debugPrint('❌ Sin permisos de cámara');
-                                                    _cancelRegistrationAndGoToLogin();
-                                                    return;
-                                                  }
+    // 🔑 Verificar mounted después del await
+    if (!mounted) return;
 
-                                                  debugPrint('✅ Permisos concedidos, iniciando verificación real...');
-                                                  
-                                                  // ✅ INICIAR VERIFICACIÓN REAL CON VERIFICAMEX
-                                                  await _startRealVerification();
-                                                },
-                                                text: isRegistering ? 'Procesando...' : 'Continuar',
-                                                options: FFButtonOptions(
-                                                  width: MediaQuery.sizeOf(context).width * 1.0,
-                                                  height: MediaQuery.sizeOf(context).height * 0.05,
-                                                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                                                  iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                                                  color: FlutterFlowTheme.of(context).accent1,
-                                                  textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                                                    font: GoogleFonts.lexend(),
-                                                    color: Colors.white,
-                                                    letterSpacing: 0.0,
-                                                  ),
-                                                  elevation: 0.0,
-                                                  borderRadius: BorderRadius.circular(10.0),
-                                                ),
-                                              ),
+    if (!hasPermission) {
+      debugPrint('❌ Sin permisos de cámara');
+      _cancelRegistrationAndGoToLogin();
+      return;
+    }
+
+    debugPrint('✅ Permisos concedidos, iniciando verificación real...');
+    
+    // ✅ INICIAR VERIFICACIÓN REAL CON VERIFICAMEX
+    await _startRealVerification();
+  },
+  text: isRegistering ? 'Procesando...' : 'Continuar',
+  options: FFButtonOptions(
+    width: MediaQuery.sizeOf(context).width * 1.0,
+    height: MediaQuery.sizeOf(context).height * 0.05,
+    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+    iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+    color: FlutterFlowTheme.of(context).accent1,
+    textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+      font: GoogleFonts.lexend(),
+      color: Colors.white,
+      letterSpacing: 0.0,
+    ),
+    elevation: 0.0,
+    borderRadius: BorderRadius.circular(10.0),
+  ),
+)
                                               
                                             ),
                                           ],
@@ -2825,10 +2838,13 @@ Future<void> _startRealVerification() async {
   try {
     // ✅ VALIDAR FORMULARIO
     if (!_validateRequiredFields()) {
+      if (mounted) {
+        setState(() => isRegistering = false);
+      }
       return;
     }
 
-    // ✅ CREAR USUARIO EN SUPABASE AUTH PRIMERO
+    // ✅ CREAR USUARIO EN SUPABASE AUTH
     debugPrint('👤 Creando usuario en Supabase Auth...');
     GoRouter.of(context).prepareAuthEvent(true);
     
@@ -2845,9 +2861,11 @@ Future<void> _startRealVerification() async {
     final userUuid = currentUserUid!;
     final userEmail = currentUserEmail!;
     
-    debugPrint('✅ Usuario Auth creado. UUID: $userUuid');
+    debugPrint('✅ Usuario Auth creado:');
+    debugPrint('  UUID: $userUuid');
+    debugPrint('  Email: $userEmail');
 
-    // ✅ CREAR REGISTRO EN TABLA USERS (con verification_status='pending_verification')
+    // ✅ CREAR REGISTRO EN TABLA USERS
     await Supabase.instance.client.from('users').insert({
       'uuid': userUuid,
       'name': _model.nameDogWalkerInputTextController.text,
@@ -2861,11 +2879,10 @@ Future<void> _startRealVerification() async {
       'neighborhood': _model.neighborhoodDogWalkerInputTextController.text,
       'city': _model.cityDogWalkerInputTextController.text,
       'usertype': 'Paseador',
-      'verification_status': 'pending_verification', // ✅ IMPORTANTE
+      'verification_status': 'pending_verification',
     });
     
-    debugPrint('✅ Usuario guardado en BD con verification_status=pending_verification');
-    debugPrint('🔄 AppStateNotifier actualizado a pending_verification');
+    debugPrint('✅ Usuario guardado en BD');
 
     // ✅ CREAR DIRECCIÓN
     await Supabase.instance.client.from('addresses').insert({
@@ -2880,19 +2897,20 @@ Future<void> _startRealVerification() async {
 
     debugPrint('✅ Dirección guardada');
     
-    // ✅ LLAMAR A EDGE FUNCTION PARA CREAR SESIÓN CON VERIFICAMEX
-    debugPrint('📡 Llamando a Edge Function...');
+    // ✅ LLAMAR A EDGE FUNCTION CON USER_UUID
+    debugPrint('📡 Llamando a Edge Function con user_id: $userUuid');
     final response = await Supabase.instance.client.functions.invoke(
       'ine-validation',
       body: {
         'action': 'create_session',
-        'user_id': userUuid, // ✅ USER_UUID REAL
+        'user_id': userUuid,
         'email': userEmail,
+        'access_token': currentJwtToken,
       },
     );
 
     debugPrint('📊 Response status: ${response.status}');
-    debugPrint('📊 Response data: ${response.data}');
+    debugPrint('📊 Response data: ${jsonEncode(response.data)}');
 
     if (response.status != 200 || response.data['success'] != true) {
       throw Exception(response.data['error'] ?? 'Error creando sesión');
@@ -2900,50 +2918,64 @@ Future<void> _startRealVerification() async {
 
     final formUrl = response.data['form_url'];
     final sessionId = response.data['session_id'];
+    final returnedUserId = response.data['user_id'];
+    
+    // 🔑 CORRECCIÓN: Leer 'refresh_token' en lugar de 'access_token'
+    final accessToken = (response.data['access_token'] ?? response.data['refresh_token']) as String?;
 
     if (formUrl == null || sessionId == null) {
       throw Exception('No se obtuvo form_url o session_id');
     }
 
-    debugPrint('✅ Sesión creada:');
-    debugPrint('  - Form URL: $formUrl');
-    debugPrint('  - Session ID: $sessionId');
+    // ✅ VALIDAR accessToken
+    if (accessToken == null || accessToken.isEmpty) {
+      debugPrint('⚠️ WARNING: No se recibió access_token');
+    } else {
+      debugPrint('✅ Access token recibido correctamente');
+    }
 
-    // ✅ ABRIR WEBVIEW CON VERIFICAMEX
-    // ✅ ABRIR WEBVIEW CON URL REAL DE VERIFICAMEX
+    // ✅ VALIDAR QUE EL USER_ID COINCIDA
+    if (returnedUserId != userUuid) {
+      debugPrint('⚠️ WARNING: user_id no coincide');
+      debugPrint('  Esperado: $userUuid');
+      debugPrint('  Recibido: $returnedUserId');
+    }
+
+    debugPrint('✅ Sesión creada exitosamente:');
+    debugPrint('  Form URL: $formUrl');
+    debugPrint('  Session ID: $sessionId');
+    debugPrint('  User ID: $returnedUserId');
+
+    // ✅ ABRIR WEBVIEW
     if (mounted) {
-      final result = await Navigator.of(context).push<bool>(
+      await Navigator.of(context).push<bool>(
         MaterialPageRoute(
           builder: (context) => IneValidationWebviewWidget(
             formUrl: formUrl,
             sessionId: sessionId,
+            accessToken: accessToken ?? '', // Usar string vacío si es null
           ),
         ),
       );
-
-      
-      // ✅ EL DEEP LINK YA NAVEGÓ A redirect_verificamex_widget
-      // No necesitamos hacer nada aquí
     }
     
   } catch (e) {
     debugPrint('💥 Error en verificación: $e');
     
-    // ❌ SI FALLA, ELIMINAR USUARIO CREADO
+    // Eliminar usuario si falla
     if (currentUserUid != null) {
       try {
-        debugPrint('🗑️ Eliminando usuario fallido...');
-        
-        // Eliminar de tabla users
+        await Supabase.instance.client
+            .from('addresses')
+            .delete()
+            .eq('uuid', currentUserUid!);
+            
         await Supabase.instance.client
             .from('users')
             .delete()
             .eq('uuid', currentUserUid!);
         
-        // Eliminar de Auth
         await authManager.signOut();
-        
-        debugPrint('✅ Usuario eliminado correctamente');
       } catch (deleteError) {
         debugPrint('❌ Error eliminando usuario: $deleteError');
       }
@@ -2963,7 +2995,6 @@ Future<void> _startRealVerification() async {
     }
   }
 }
-
 
 }
 

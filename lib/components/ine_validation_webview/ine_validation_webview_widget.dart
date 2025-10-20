@@ -1,3 +1,5 @@
+import 'package:url_launcher/url_launcher.dart';
+
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -8,6 +10,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 import 'ine_validation_webview_model.dart';
 export 'ine_validation_webview_model.dart';
+import 'dart:math';
+import '/auth/supabase_auth/auth_util.dart'; 
 
 class IneValidationWebviewWidget extends StatefulWidget {
   static const String routeName = 'ineValidationWebview';
@@ -17,10 +21,12 @@ class IneValidationWebviewWidget extends StatefulWidget {
     super.key,
     required this.formUrl,
     required this.sessionId,
+    required this.accessToken,
   });
 
   final String formUrl;
   final String sessionId;
+  final String accessToken;
 
   @override
   State<IneValidationWebviewWidget> createState() => _IneValidationWebviewWidgetState();
@@ -32,24 +38,39 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
   bool _isLoading = true;
   double _progress = 0.0;
   Timer? _timeoutTimer;
+  
 
-  @override
-  void initState() {
-    super.initState();
-    _model = createModel(context, () => IneValidationWebviewModel());
-    debugPrint('🌐 InAppWebView inicializado');
-    debugPrint('🔗 URL: ${widget.formUrl}');
-    debugPrint('🆔 Session ID: ${widget.sessionId}');
-    
-      
-    // ✅ TIMEOUT DE 15 MINUTOS
-    _timeoutTimer = Timer(Duration(minutes: 20), () {
-      if (mounted) {
-        debugPrint('⏰ Timeout alcanzado');
-        _closeWithResult(false);
-      }
-    });
+@override
+void initState() {
+  super.initState();
+  _model = createModel(context, () => IneValidationWebviewModel());
+  
+  debugPrint('🌐 InAppWebView inicializado');
+  debugPrint('🔗 URL: ${widget.formUrl}');
+  debugPrint('🆔 Session ID: ${widget.sessionId}');
+  
+  // 🔧 AGREGAR ESTAS LÍNEAS AQUÍ ⬇️
+  debugPrint('🔑 ========================================');
+  debugPrint('🔑 VALIDACIÓN DE ACCESS TOKEN');
+  debugPrint('🔑 ========================================');
+  debugPrint('🔑 Access Token presente: ${widget.accessToken.isNotEmpty}');
+  debugPrint('🔑 Token length: ${widget.accessToken.length}');
+  if (widget.accessToken.isNotEmpty) {
+    debugPrint('🔑 Token preview: ${widget.accessToken.substring(0, min(30, widget.accessToken.length))}...');
+  } else {
+    debugPrint('❌ ERROR CRÍTICO: widget.accessToken está VACÍO');
   }
+  debugPrint('🔑 ========================================');
+  // 🔧 HASTA AQUÍ ⬆️
+  
+  // ✅ TIMEOUT DE 15 MINUTOS
+  _timeoutTimer = Timer(Duration(minutes: 20), () {
+    if (mounted) {
+      debugPrint('⏰ Timeout alcanzado');
+      _closeWithResult(false);
+    }
+  });
+}
 
   @override
   void dispose() {
@@ -61,7 +82,8 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
   void _closeWithResult(bool success) {
     debugPrint('🔚 Cerrando WebView con resultado: $success');
     if (mounted) {
-      Navigator.of(context).pop(success);
+      // 🔑 RETORNAR ACCESS TOKEN (Aunque esta ruta no es la principal de éxito)
+      Navigator.of(context).pop({'success': success, 'accessToken': success ? widget.accessToken : null});
     }
   }
 
@@ -232,19 +254,89 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
                         },
 
                         shouldOverrideUrlLoading: (controller, navigationAction) async {
-                          final url = navigationAction.request.url?.toString() ?? '';
-                          debugPrint('🔄 Navegación interceptada: $url');
-                          
-                          if (url.startsWith('dalkpaseos://redirect/verificamex')) {
-                            debugPrint('🎉 Deep link detectado - cerrando WebView');
-                            _timeoutTimer?.cancel();
-                            
-                            _closeWithResult(true);
-                            return NavigationActionPolicy.CANCEL;
-                          }
-                          
-                          return NavigationActionPolicy.ALLOW;
-                        },
+  final url = navigationAction.request.url?.toString() ?? '';
+  debugPrint('🔄 Navegación interceptada: $url');
+  
+  if (url.startsWith('dalkpaseos://redirect_verificamex')) {
+    debugPrint('🎉 ========================================');
+    debugPrint('🎉 DEEP LINK DETECTADO');
+    debugPrint('🎉 ========================================');
+    
+    _timeoutTimer?.cancel();
+    
+    // 🔑 VALIDAR QUE EL TOKEN ESTÉ PRESENTE
+    if (widget.accessToken.isEmpty) {
+      debugPrint('❌ ========================================');
+      debugPrint('❌ ERROR CRÍTICO: widget.accessToken VACÍO');
+      debugPrint('❌ ========================================');
+      debugPrint('❌ No se puede construir el Deep Link sin token');
+      debugPrint('❌ Intentando usar currentJwtToken como fallback...');
+      
+      final fallbackToken = currentJwtToken;
+      
+      if (fallbackToken.isEmpty) {
+        debugPrint('❌ ERROR FATAL: No hay token disponible en ninguna fuente');
+        debugPrint('❌ currentJwtToken también está vacío');
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Error: No se pudo obtener el token de autenticación'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 5),
+            ),
+          );
+          Navigator.of(context).pop(false);
+        }
+        return NavigationActionPolicy.CANCEL;
+      }
+      
+      debugPrint('⚠️ Usando token de fallback (currentJwtToken)');
+      debugPrint('⚠️ Token fallback length: ${fallbackToken.length}');
+      
+      // Construir Deep Link con token de fallback
+      final deepLinkUrl = url + '&access_token=${Uri.encodeComponent(fallbackToken)}';
+      
+      debugPrint('🔗 Deep Link construido con FALLBACK TOKEN:');
+      debugPrint('   URL completa: $deepLinkUrl');
+      
+      await launchUrl(Uri.parse(deepLinkUrl), mode: LaunchMode.externalApplication);
+      
+      if (mounted) {
+        Navigator.of(context).pop(null);
+      }
+      
+      return NavigationActionPolicy.CANCEL;
+    }
+    
+    // 🔑 TOKEN PRESENTE - CONSTRUIR DEEP LINK NORMALMENTE
+    final deepLinkUrl = url + '&access_token=${Uri.encodeComponent(widget.accessToken)}';
+    
+    debugPrint('🔗 ========================================');
+    debugPrint('🔗 DEEP LINK CONSTRUIDO EXITOSAMENTE');
+    debugPrint('🔗 ========================================');
+    debugPrint('🔗 URL original: $url');
+    debugPrint('🔗 Token usado: widget.accessToken');
+    debugPrint('🔗 Token length: ${widget.accessToken.length}');
+    debugPrint('🔗 Token preview: ${widget.accessToken.substring(0, min(30, widget.accessToken.length))}...');
+    debugPrint('🔗 URL completa generada (con token): ${deepLinkUrl.substring(0, min(100, deepLinkUrl.length))}...');
+    debugPrint('🔗 ========================================');
+    
+    // ✅ LANZAR DEEP LINK
+    debugPrint('🚀 Lanzando Deep Link...');
+    await launchUrl(Uri.parse(deepLinkUrl), mode: LaunchMode.externalApplication);
+    
+    debugPrint('✅ Deep Link lanzado - cerrando WebView');
+    
+    if (mounted) {
+      Navigator.of(context).pop(null);
+    }
+    
+    return NavigationActionPolicy.CANCEL;
+  }
+  
+  return NavigationActionPolicy.ALLOW;
+},
 
                         
                       ),

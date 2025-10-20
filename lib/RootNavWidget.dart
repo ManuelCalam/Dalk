@@ -91,7 +91,7 @@ class RootNavWidget extends StatelessWidget {
                 final sessionId = sessionSnapshot.data ?? '';
                 return RedirectVerificamexWidget(
                   sessionId: sessionId,
-                  userId: uuid,
+                  userId: uuid, accessToken: '',
                 );
               },
             );

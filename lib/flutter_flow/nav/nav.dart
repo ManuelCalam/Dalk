@@ -258,23 +258,27 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           requireAuth: true
         ),
         FFRoute(
-          name: IneValidationWebviewWidget.routeName,
-          path: IneValidationWebviewWidget.routePath,
-          builder: (context, params) => IneValidationWebviewWidget(
-            formUrl: params.getParam('formUrl', ParamType.String) ?? '',
-            sessionId: params.getParam('sessionId', ParamType.String) ?? '',
-          ),
-          requireAuth: false
-        ),
+    name: IneValidationWebviewWidget.routeName,
+    path: IneValidationWebviewWidget.routePath,
+    builder: (context, params) => IneValidationWebviewWidget(
+        formUrl: params.getParam('formUrl', ParamType.String) ?? '',
+        sessionId: params.getParam('sessionId', ParamType.String) ?? '', 
+        // ✅ 🔑 DEBES PASAR EL ACCESS TOKEN AQUÍ DESDE sing_in_dog_walker
+        accessToken: params.getParam('accessToken', ParamType.String) ?? '', 
+    ),
+    requireAuth: false
+),
         FFRoute(
-          name: 'redirect_verificamex',
-          path: '/redirect_verificamex', // ✅ DEBE COINCIDIR CON EL PATH DEL DEEP LINK
-          builder: (context, params) => RedirectVerificamexWidget(
-            sessionId: params.getParam('session_id', ParamType.String) ?? '',
-            userId: params.getParam('user_id', ParamType.String) ?? '',
-          ),
-          requireAuth: false, // ✅ IMPORTANTE: Sin autenticación
-        ),
+    name: 'redirect_verificamex',
+    path: '/redirect_verificamex', // ✅ DEBE COINCIDIR CON EL PATH DEL DEEP LINK
+    builder: (context, params) => RedirectVerificamexWidget(
+        sessionId: params.getParam('session_id', ParamType.String) ?? '',
+        userId: params.getParam('user_id', ParamType.String) ?? '', 
+        // ✅ 🔑 PASAR EL ACCESS TOKEN DEL DEEP LINK
+        accessToken: params.getParam('access_token', ParamType.String) ?? '', 
+    ),
+    requireAuth: false,
+),
 
 
         
