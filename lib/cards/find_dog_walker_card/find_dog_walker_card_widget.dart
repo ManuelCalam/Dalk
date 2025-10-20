@@ -82,7 +82,7 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                         shape: BoxShape.circle,
                       ),
                       child: Image.network(
-                        fotoUrl,
+                        fotoUrl ,
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -323,7 +323,7 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                                       : 'fecha por confirmar';
 
                                   print(
-                                    '📊 Datos para notificación: Owner: $ownerName, Pet: $petName, Date: $dateString',
+                                    'Datos para notificación: Owner: $ownerName, Pet: $petName, Date: $dateString',
                                   );
 
                                   // 3. Llamar a la Edge Function para enviar notificación

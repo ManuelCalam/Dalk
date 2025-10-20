@@ -14,6 +14,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 
 import 'pet_update_profile_model.dart';
@@ -34,6 +36,9 @@ class PetUpdateProfileWidget extends StatefulWidget {
 
 class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
   late PetUpdateProfileModel _model;
+  File? _ownerImage;
+  File? _petImage;
+  final ImagePicker _picker = ImagePicker();
 
   // Valores posibles (ajusta si tus etiquetas son otras)
     final List<String> behaviourOptions = [
@@ -56,6 +61,87 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isSaving = false;
   final supabase = Supabase.instance.client;
+
+
+  Future<String?> _uploadPetImage(String userId, File imageFile, {int? petId}) async {
+    try {
+      final storage = Supabase.instance.client.storage;
+      final supabase = Supabase.instance.client;
+
+      final filePath = petId != null
+          ? 'owners/$userId/pets/$petId/profile.jpg'
+          : 'owners/$userId/profile.jpg';
+
+      await storage.from('profile_pics').upload(
+            filePath,
+            imageFile,
+            fileOptions: const FileOptions(upsert: true),
+          );
+
+      final imageUrl = storage.from('profile_pics').getPublicUrl(filePath);
+
+      if (petId != null) {
+        await supabase.from('pets').update({'photo_url': imageUrl}).eq('id', petId);
+      }
+
+      return imageUrl;
+    } catch (e) {
+      print('Error al subir imagen: $e');
+      return null;
+    }
+  }
+
+  Future<void> _pickImage(bool isOwner, ImageSource source, {int? petId}) async {
+    final pickedFile = await _picker.pickImage(source: source);
+    if (pickedFile != null) {
+      setState(() {
+        if (isOwner) {
+          _ownerImage = File(pickedFile.path);
+        } else {
+          _petImage = File(pickedFile.path);
+        }
+      });
+
+      if (petId != null) {
+        final userId = Supabase.instance.client.auth.currentUser?.id;
+        if (userId != null) {
+          await _uploadPetImage(userId, File(pickedFile.path), petId: petId);
+        } else {
+          print(' No hay usuario autenticado');
+        }
+      } else {
+        print(' petId es null, no se puede subir');
+      }
+    }
+  }
+
+  void _showImagePickerOptions(BuildContext context, bool isOwner, int? petId) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Tomar foto'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickImage(isOwner, ImageSource.camera, petId: petId);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Elegir de la galería'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickImage(isOwner, ImageSource.gallery, petId: petId);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
 
   @override
@@ -131,94 +217,113 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
   }
 
 
-Future<void> _saveChanges() async {
-  final petId = widget.petData?['id'];
+  Future<void> _saveChanges() async {
+    final petId = widget.petData?['id'];
 
-  if (petId == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('No se encontró el ID de la mascota')),
-    );
-    return;
-  }
-
-  // --- obtener los valores de los campos ---
-  final name = _model.nameInputTextController?.text ?? '';
-  final age = int.tryParse(_model.ageInputTextController?.text ?? '');
-  final race = _model.raceInputTextController?.text ?? '';
-  final about = _model.dogInfoInputTextController?.text ?? '';
-
-  final sizeValue =
-      _model.dogSizeMenuValue ?? _model.dogSizeMenuValueController?.value;
-  final genderValue = _model.genderDogOwnerMenuValue ??
-      _model.genderDogOwnerMenuValueController?.value;
-
-  List<String> behaviourList = [];
-  if (_model.behaviourChipsValues != null) {
-    behaviourList = List<String>.from(_model.behaviourChipsValues!);
-  } else if (_model.behaviourChipsValueController?.value != null) {
-    behaviourList =
-        List<String>.from(_model.behaviourChipsValueController!.value ?? []);
-  }
-
-  final payload = <String, dynamic>{
-    'name': name,
-    if (age != null) 'age': age,
-    'bree': race,
-    'aboutme': about,
-    'size': sizeValue,
-    'gender': genderValue,
-    'behaviour': behaviourList,
-  };
-
-  try {
-    setState(() => _isSaving = true);
-
-    print('🔹 Enviando actualización para ID: $petId');
-    print('🔹 Payload: $payload');
-
-    final response = await supabase
-        .from('pets')
-        .update(payload)
-        .eq('id', petId)
-        .select();
-
-    print('🔹 Supabase response: $response');
-
-    if (response is List && response.isNotEmpty) {
-      final updated = Map<String, dynamic>.from(response.first);
-
-      // Actualiza los datos en memoria
-      widget.petData?.addAll(updated);
-
-      setState(() {
-        _isSaving = false;
-        _model.nameInputTextController?.text = updated['name'] ?? '';
-        _model.ageInputTextController?.text = updated['age']?.toString() ?? '';
-        _model.raceInputTextController?.text = updated['bree'] ?? '';
-        _model.dogInfoInputTextController?.text = updated['aboutme'] ?? '';
-        _model.dogSizeMenuValue = updated['size'];
-        _model.dogSizeMenuValueController?.value = updated['size'];
-        _model.genderDogOwnerMenuValue = updated['gender'];
-        _model.genderDogOwnerMenuValueController?.value = updated['gender'];
-      });
-
+    if (petId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('✅ Datos actualizados correctamente')),
+        const SnackBar(content: Text('No se encontró el ID de la mascota')),
       );
-    } else {
+      return;
+    }
+
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se encontró el usuario actual')),
+      );
+      return;
+    }
+
+    // --- obtener los valores de los campos ---
+    final name = _model.nameInputTextController?.text ?? '';
+    final age = int.tryParse(_model.ageInputTextController?.text ?? '');
+    final race = _model.raceInputTextController?.text ?? '';
+    final about = _model.dogInfoInputTextController?.text ?? '';
+
+    final sizeValue =
+        _model.dogSizeMenuValue ?? _model.dogSizeMenuValueController?.value;
+    final genderValue = _model.genderDogOwnerMenuValue ??
+        _model.genderDogOwnerMenuValueController?.value;
+
+    List<String> behaviourList = [];
+    if (_model.behaviourChipsValues != null) {
+      behaviourList = List<String>.from(_model.behaviourChipsValues!);
+    } else if (_model.behaviourChipsValueController?.value != null) {
+      behaviourList =
+          List<String>.from(_model.behaviourChipsValueController!.value ?? []);
+    }
+
+    final payload = <String, dynamic>{
+      'name': name,
+      if (age != null) 'age': age,
+      'bree': race,
+      'aboutme': about,
+      'size': sizeValue,
+      'gender': genderValue,
+      'behaviour': behaviourList,
+    };
+
+    try {
+      setState(() => _isSaving = true);
+
+      // 🔹 Si hay una imagen nueva seleccionada, súbela primero
+      String? imageUrl;
+      if (_petImage  != null) {
+        imageUrl = await _uploadPetImage(userId, _petImage !, petId: petId);
+        if (imageUrl != null && imageUrl.isNotEmpty) {
+          payload['photo_url'] = imageUrl;
+        }
+      }
+
+      print('🔹 Enviando actualización para ID: $petId');
+      print('🔹 Payload: $payload');
+
+      final response = await supabase
+          .from('pets')
+          .update(payload)
+          .eq('id', petId)
+          .select();
+
+      print('🔹 Supabase response: $response');
+
+      if (response is List && response.isNotEmpty) {
+        final updated = Map<String, dynamic>.from(response.first);
+
+        widget.petData?.addAll(updated);
+
+        setState(() {
+          _isSaving = false;
+          _model.nameInputTextController?.text = updated['name'] ?? '';
+          _model.ageInputTextController?.text = updated['age']?.toString() ?? '';
+          _model.raceInputTextController?.text = updated['bree'] ?? '';
+          _model.dogInfoInputTextController?.text = updated['aboutme'] ?? '';
+          _model.dogSizeMenuValue = updated['size'];
+          _model.dogSizeMenuValueController?.value = updated['size'];
+          _model.genderDogOwnerMenuValue = updated['gender'];
+          _model.genderDogOwnerMenuValueController?.value = updated['gender'];
+          if (updated['photo_url'] != null) {
+            widget.petData?['photo_url'] = updated['photo_url'];
+          }
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(' Datos actualizados correctamente')),
+        );
+      } else {
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text(' No se pudo actualizar la mascota (sin coincidencias)')),
+        );
+      }
+    } catch (e) {
       setState(() => _isSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('⚠️ No se pudo actualizar la mascota (sin coincidencias)')),
+        SnackBar(content: Text(' Error al actualizar: $e')),
       );
     }
-  } catch (e) {
-    setState(() => _isSaving = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('❌ Error al actualizar: $e')),
-    );
   }
-}
 
 
 
@@ -339,16 +444,21 @@ Future<void> _saveChanges() async {
                                     Flexible(
                                       child: Align(
                                         alignment: AlignmentDirectional(0, 0),
-                                        child: Container(
-                                          width: 120,
-                                          height: 120,
-                                          clipBehavior: Clip.antiAlias,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: Image.network(
-                                            'https://images.unsplash.com/photo-1495567720989-cebdbdd97913?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxfHxzdW5zZXR8ZW58MHx8fHwxNzQ3MDA2NTczfDA&ixlib=rb-4.1.0&q=80&w=1080',
-                                            fit: BoxFit.cover,
+                                        child: Padding(
+                                          padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                          child: GestureDetector(
+                                            onTap: () => _showImagePickerOptions(context, false, widget.petData?['id']),
+                                            child: CircleAvatar(
+                                              radius: 60,
+                                              backgroundImage: _petImage != null
+                                                  ? FileImage(_petImage!) // Imagen nueva seleccionada
+                                                  : (widget.petData?['photo_url'] != null &&
+                                                          (widget.petData?['photo_url'] as String).isNotEmpty)
+                                                      ? NetworkImage(widget.petData!['photo_url'])
+                                                      : const NetworkImage(
+                                                          'https://static.vecteezy.com/system/resources/previews/007/407/996/non_2x/user-icon-person-icon-client-symbol-login-head-sign-icon-design-vector.jpg',
+                                                        ) as ImageProvider,
+                                            ),
                                           ),
                                         ),
                                       ),

@@ -5,6 +5,9 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 import 'pet_card_model.dart';
 export 'pet_card_model.dart';
@@ -27,6 +30,9 @@ class PetCardWidget extends StatefulWidget {
 
 class _PetCardWidgetState extends State<PetCardWidget> {
   late PetCardModel _model;
+  String? _photoUrl;
+  bool _isLoading = true;
+  final supabase = Supabase.instance.client;
 
   @override
   void setState(VoidCallback callback) {
@@ -38,6 +44,7 @@ class _PetCardWidgetState extends State<PetCardWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => PetCardModel());
+    _fetchPetPhoto();
   }
 
   @override
@@ -45,6 +52,31 @@ class _PetCardWidgetState extends State<PetCardWidget> {
     _model.maybeDispose();
 
     super.dispose();
+  }
+
+  Future<void> _fetchPetPhoto() async {
+    try {
+      if (widget.id == null) {
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      final response = await supabase
+          .from('pets')
+          .select('photo_url')
+          .eq('id', widget.id!)
+          .maybeSingle();
+
+      if (response != null && response['photo_url'] != null) {
+        setState(() {
+          _photoUrl = response['photo_url'] as String;
+        });
+      }
+    } catch (e) {
+      print('Error al obtener la foto del perro: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -72,21 +104,42 @@ class _PetCardWidgetState extends State<PetCardWidget> {
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: Align(
-                  alignment: AlignmentDirectional(0, 0),
-                  child: Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(7, 7, 7, 6),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(200),
-                      child: Image.asset(
-                        'assets/images/golden.jpg',
-                        width: 70,
-                        height: 70,
-                        fit: BoxFit.fill,
-                        alignment: Alignment(0, 0),
-                      ),
+      alignment: const AlignmentDirectional(0, 0),
+      child: Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(7, 7, 7, 6),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(200),
+          child: _isLoading
+              ? const SizedBox(
+                  width: 70,
+                  height: 70,
+                  child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                )
+              : (_photoUrl != null && _photoUrl!.isNotEmpty)
+                  ? Image.network(
+                      _photoUrl!,
+                      width: 70,
+                      height: 70,
+                      fit: BoxFit.cover,
+                      alignment: Alignment.center,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Image.asset(
+                          'assets/images/golden.jpg',
+                          width: 70,
+                          height: 70,
+                          fit: BoxFit.cover,
+                        );
+                      },
+                    )
+                  : Image.asset(
+                      'assets/images/golden.jpg',
+                      width: 70,
+                      height: 70,
+                      fit: BoxFit.cover,
                     ),
-                  ),
-                ),
+        ),
+      ),
+    ),
               ),
             ),
           ),

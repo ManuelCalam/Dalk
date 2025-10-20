@@ -73,33 +73,25 @@ class _AddPetWidgetState extends State<AddPetWidget> {
           _model.dogSizeMenuValue != null;
   }
 
-Future<String?> _uploadOwnerImage(String userId,File imageFile, {int? petId, }) async {
-    //  si se pasa este parámetro, se guarda la imagen del perro
+  Future<String?> _uploadOwnerImage(String userId, File imageFile, {int? petId}) async {
     try {
       final storage = Supabase.instance.client.storage;
       final supabase = Supabase.instance.client;
 
-      // Ruta dentro del bucket
       final filePath = petId != null
-          ? 'owners/$userId/pets/$petId/profile.jpg' // 👈 para perros
-          : 'owners/$userId/profile.jpg'; // 👈 para dueño/paseador
+          ? 'owners/$userId/pets/$petId/profile.jpg'
+          : 'owners/$userId/profile.jpg';
 
-      // Subir la imagen al bucket con reemplazo habilitado
       await storage.from('profile_pics').upload(
             filePath,
             imageFile,
             fileOptions: const FileOptions(upsert: true),
           );
 
-      // Obtener URL pública
       final imageUrl = storage.from('profile_pics').getPublicUrl(filePath);
 
-      // Si es imagen de perro, actualizar su registro en la tabla pets
       if (petId != null) {
-        await supabase
-            .from('pets')
-            .update({'photo_url': imageUrl})
-            .eq('id', petId);
+        await supabase.from('pets').update({'photo_url': imageUrl}).eq('id', petId);
       }
 
       return imageUrl;
@@ -1290,53 +1282,63 @@ Future<String?> _uploadOwnerImage(String userId,File imageFile, {int? petId, }) 
                                             0, 18, 0, 0),
                                         child: FFButtonWidget(
                                           onPressed: () async {
+  if (!validarCamposObligatorios()) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Completa todos los campos')),
+    );
+    return;
+  }
 
-                                            if (!validarCamposObligatorios()) {
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                const SnackBar(content: Text('Completa todos los campos ')),
-                                              );
-                                              return;
-                                            }
+  try {
+    final supabase = Supabase.instance.client;
+    final userId = Supabase.instance.client.auth.currentUser?.id;
 
+    // 1️⃣ Insertar la mascota (sin imagen todavía)
+    final response = await supabase
+        .from('pets')
+        .insert({
+          'uuid': userId,
+          'name': _model.nameInputTextController.text,
+          'age': _model.ageInputTextController.text,
+          'gender': _model.genderDogOwnerMenuValue,
+          'bree': _model.breeInputTextController.text,
+          'size': _model.dogSizeMenuValue,
+          'behaviour': _model.behaviourChipsValueController?.value ?? [],
+          'aboutme': _model.dogInfoInputTextController.text,
+        })
+        .select(); // 👈 muy importante para obtener el ID insertado
 
-                                            try{
-                                              final response = await Supabase.instance.client
-                                              .from('pets')
-                                              .insert({
-                                                  'uuid': currentUserUid,
-                                                  'name': _model.nameInputTextController.text,
-                                                  'age': _model.ageInputTextController.text,
-                                                  'gender': _model.genderDogOwnerMenuValue,
-                                                  'bree': _model.breeInputTextController.text,
-                                                  'size': _model.dogSizeMenuValue,
-                                                  'behaviour': _model.behaviourChipsValueController?.value ?? [],
-                                                  'aboutme': _model.dogInfoInputTextController.text,
-                                                  // 'imageUrl': _model.uploadedFileUrl,
+    // 2️⃣ Obtener el id del nuevo perro
+    final petData = response.first;
+    final petId = petData['id'] as int;
 
-                                              });
+    // 3️⃣ Subir imagen si el usuario eligió una
+    if (_ownerImage != null && userId != null) {
+      await _uploadOwnerImage(userId, _ownerImage!, petId: petId);
+    }
 
-                                              showDialog(
-                                                context: context,
-                                                builder: (_) => PopUpConfirmDialogWidget(
-                                                  title: "Mascota registrada",
-                                                  message: "¡Mascota ya forma parte de tu familia en la app!",
-                                                  confirmText: "Agregar otra mascota",
-                                                  cancelText: "Manú principal",
-                                                  confirmColor: FlutterFlowTheme.of(context).accent1,
-                                                  cancelColor: FlutterFlowTheme.of(context).primary,
-                                                  icon: Icons.check_circle,
-                                                  iconColor: FlutterFlowTheme.of(context).success,
-                                                  onConfirm: () => context.goNamed(AddPetWidget.routeName),
-                                                  onCancel: () => context.go('/'),
-                                                ), 
-                                              );
-
-                                            } catch (e) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                        SnackBar(content: Text('Error al registrar la dirección: $e')),
-                                                );
-                                            }
-                                          },
+    // 4️⃣ Mostrar confirmación
+    showDialog(
+      context: context,
+      builder: (_) => PopUpConfirmDialogWidget(
+        title: "Mascota registrada",
+        message: "¡Mascota ya forma parte de tu familia en la app!",
+        confirmText: "Agregar otra mascota",
+        cancelText: "Menú principal",
+        confirmColor: FlutterFlowTheme.of(context).accent1,
+        cancelColor: FlutterFlowTheme.of(context).primary,
+        icon: Icons.check_circle,
+        iconColor: FlutterFlowTheme.of(context).success,
+        onConfirm: () => context.goNamed(AddPetWidget.routeName),
+        onCancel: () => context.go('/'),
+      ),
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error al registrar la mascota: $e')),
+    );
+  }
+},
                                           text: 'Agregar Mascota',
                                           options: FFButtonOptions(
                                             width: MediaQuery.sizeOf(context)

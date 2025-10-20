@@ -311,7 +311,7 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                                         nombre: paseador['name'] ?? 'Sin nombre',
                                         precio: paseador['fee']?.toString() ?? '0',
                                         calificacion: paseador['average_rating']?.toString() ?? '0',
-                                        fotoUrl: paseador['photo_url'] ?? '',
+                                        fotoUrl: paseador['photo_url'] ?? 'https://img.freepik.com/vector-gratis/hombre-expresion-facial-seria-chaqueta-marron_1268-15451.jpg?semt=ais_hybrid&w=740&q=80',
                                         date: widget.date,
                                         time: widget.time,
                                         addressId: widget.addressId,
