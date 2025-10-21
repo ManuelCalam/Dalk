@@ -162,7 +162,7 @@ class _SuccesfullTrackerPurchaseWidgetState
                                   padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 10, 0, 1),
                                   child: AutoSizeText(
-                                    'Tu Rastreador GPS estÃ¡ siendo preparado para el envÃ­o.',
+                                    'Tu Rastreador GPS está siendo preparado para el envío.',
                                     textAlign: TextAlign.justify,
                                     maxLines: 2,
                                     minFontSize: 10,

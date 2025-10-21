@@ -1063,87 +1063,106 @@ class _BuyTrackerWidgetState extends State<BuyTrackerWidget> {
                                       0, 15, 0, 0),
                                   child: FFButtonWidget(
 
-                                    onPressed: () async {
-                                      String? customerStripeId;
-                                      final db = Supabase.instance.client;
-                                      final itemCount = _model.countControllerValue as int;
-                                      final trackerAlias = _model.trackerAliasInputTextController.text;
-                                      final productsTotal = itemCount * trackerPrice;
-                                      final totalAmount = productsTotal + shippingPrice;
-                                      final trackerId = const Uuid().v4();
+                                  onPressed: () async {
+                                  if (selectedAddressId == null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Por favor, selecciona una dirección de envío'),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  if (_model.trackerAliasInputTextController.text.isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Por favor, ingresa un alias para tu rastreador'),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  // Si pasa las validaciones, continuar con el flujo
+                                  String? customerStripeId;
+                                  final db = Supabase.instance.client;
+                                  final itemCount = _model.countControllerValue as int;
+                                  final trackerAlias = _model.trackerAliasInputTextController.text;
+                                  final productsTotal = itemCount * trackerPrice;
+                                  final totalAmount = productsTotal + shippingPrice;
+                                  final trackerId = const Uuid().v4();
+                                  
+                                  try {
+                                    // 1. Obtener el Stripe Customer ID
+                                    final response = await db
+                                      .from('users')
+                                      .select('customer_stripe_id')
+                                      .eq('uuid', currentUserUid)
+                                      .maybeSingle();
+
+                                    if (response != null && response['customer_stripe_id'] != null) {
+                                      customerStripeId = response['customer_stripe_id'] as String;
+                                    }
+                                    
+
+                                    
+                                    final existingOrderResponse = await db
+                                      .from('orders')
+                                      .select('tracker_id')
+                                      .eq('user_id', currentUserUid)
+                                      .filter('status', 'in', ['Pendiente', 'Fallida', 'Cancelada'])
+                                      .maybeSingle();
+
+
+                                    if (existingOrderResponse != null) {
+                                      final existingInternalOrderId = existingOrderResponse['tracker_id'] as String;
                                       
-                                      try {
-                                        // 1. Obtener el Stripe Customer ID
-                                        final response = await db
-                                          .from('users')
-                                          .select('customer_stripe_id')
-                                          .eq('uuid', currentUserUid)
-                                          .maybeSingle();
+                                      await db.from('orders')
+                                        .update({
+                                          'status': 'Pendiente', 
+                                          'total_amount': totalAmount,
+                                          'item_count': itemCount,
+                                          'shipping_amount': shippingPrice,
+                                          'address_id': selectedAddressId,
+                                          'tracker_id': trackerId,
+                                          'tracker_alias': trackerAlias,
+                                        })
+                                        .eq('tracker_id', existingInternalOrderId);
+                                      
+                                      final orderIdToUse = existingInternalOrderId;
+                                      
+                                      print('Orden encontrada y actualizada: $orderIdToUse');
+                                      
+                                    } else {
+                                      await db.from('orders').insert({
+                                        'user_id': currentUserUid,
+                                        'tracker_id': trackerId, 
+                                        'status': 'Pendiente', 
+                                        'total_amount': totalAmount,
+                                        'item_count': itemCount,
+                                        'shipping_amount': shippingPrice,
+                                        'address_id': selectedAddressId, 
+                                        'tracker_alias': trackerAlias,
+                                      });
+                                      
+                                      
+                                      print('Nueva orden creada: $trackerId');
+                                    }
 
-                                        if (response != null && response['customer_stripe_id'] != null) {
-                                          customerStripeId = response['customer_stripe_id'] as String;
-                                        }
-                                        
+                                    await handlePaymentFlow(
+                                      context, 
+                                      itemCount, 
+                                      shippingPrice, 
+                                      customerStripeId!,
+                                      trackerId, 
+                                    );
 
-                                        
-                                        final existingOrderResponse = await db
-                                          .from('orders')
-                                          .select('tracker_id')
-                                          .eq('user_id', currentUserUid)
-                                          .filter('status', 'in', ['Pendiente', 'Fallida', 'Cancelada'])
-                                          .maybeSingle();
-
-
-                                        if (existingOrderResponse != null) {
-                                          final existingInternalOrderId = existingOrderResponse['tracker_id'] as String;
-                                          
-                                          await db.from('orders')
-                                            .update({
-                                              'status': 'Pendiente', 
-                                              'total_amount': totalAmount,
-                                              'item_count': itemCount,
-                                              'shipping_amount': shippingPrice,
-                                              'address_id': selectedAddressId,
-                                              'tracker_id': trackerId,
-                                              'tracker_alias': trackerAlias,
-                                            })
-                                            .eq('tracker_id', existingInternalOrderId);
-                                          
-                                          final orderIdToUse = existingInternalOrderId;
-                                          
-                                          print('Orden encontrada y actualizada: $orderIdToUse');
-                                          
-                                        } else {
-                                          await db.from('orders').insert({
-                                            'user_id': currentUserUid,
-                                            'tracker_id': trackerId, 
-                                            'status': 'Pendiente', 
-                                            'total_amount': totalAmount,
-                                            'item_count': itemCount,
-                                            'shipping_amount': shippingPrice,
-                                            'address_id': selectedAddressId, 
-                                            'tracker_alias': trackerAlias,
-                                          });
-                                          
-                                          
-                                          print('Nueva orden creada: $trackerId');
-                                        }
-
-                                        await handlePaymentFlow(
-                                          context, 
-                                          itemCount, 
-                                          shippingPrice, 
-                                          customerStripeId!,
-                                          trackerId, 
-                                        );
-
-                                      } catch (e) {
-                                        print('Error en el flujo de compra: $e');
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('Error al procesar la compra. Intenta de nuevo.')),
-                                        );
-                                      }
-                                    },
+                                  } catch (e) {
+                                    print('Error en el flujo de compra: $e');
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Error al procesar la compra. Intenta de nuevo.')),
+                                    );
+                                  }
+                                },
 
 
                                     text: 'Comprar',

@@ -46,6 +46,12 @@ class WalkMonitor {
           print('REALTIME: Paseo $walkId cambió a Finalizado');
           _finishedController.add(walkId.toString());
         }
+
+        // // Detectar finalización
+        // if (newStatus == 'Finalizado' && oldStatus != 'Finalizado') {
+        //   print('REALTIME: Paseo $walkId cambió a Finalizado');
+        //   _finishedController.add(walkId.toString());
+        // }
       },
     );
 

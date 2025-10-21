@@ -427,7 +427,7 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
                         borderRadius: 0,
                         buttonSize: MediaQuery.sizeOf(context).width * 0.18,
                         icon: Icon(
-                          Icons.sms,
+                          Icons.chat,
                           color: FlutterFlowTheme.of(context).primary,
                           size: 35,
                         ),
@@ -473,7 +473,7 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
                       print("Error al actualizar current_walk_id en Supabase: $e");
                     }
 
-                    context.pushNamed(
+                    context.goNamed(
                       '_initialize',
                       queryParameters: {'initialPage': 'CurrentWalk'},
                     );

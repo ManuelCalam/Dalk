@@ -64,7 +64,7 @@ class _NavBarPageState extends State<NavBarOwnerPage> {
           builder: (context) {
             return Padding(
               padding: MediaQuery.viewInsetsOf(context),
-              child: const PopUpCurrentWalkOptionsWidget(),
+              child: PopUpCurrentWalkOptionsWidget(walkId: int.tryParse(walkId) ?? 0,),
             );
           },
         );
@@ -98,7 +98,12 @@ class _NavBarPageState extends State<NavBarOwnerPage> {
               .update({'current_walk_id': null})
               .eq('uuid', currentUserId)
               .maybeSingle();
-          print('current_walk_id actualizado a null');
+
+          await SupaFlow.client
+              .from('users')
+              .update({'pet_trackers': null})
+              .eq('uuid', currentUserId)
+              .maybeSingle();
         } catch (e) {
           print("Error al actualizar current_walk_id en Supabase: $e");
         }

@@ -429,7 +429,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                         borderRadius: 0,
                         buttonSize: MediaQuery.sizeOf(context).width * 0.18,
                         icon: Icon(
-                          Icons.sms,
+                          Icons.chat,
                           color: FlutterFlowTheme.of(context).primary,
                           size: 35,
                         ),

@@ -14,8 +14,12 @@ import 'pop_up_current_walk_options_model.dart';
 export 'pop_up_current_walk_options_model.dart';
 
 class PopUpCurrentWalkOptionsWidget extends StatefulWidget {
-  const PopUpCurrentWalkOptionsWidget({super.key});
+  const PopUpCurrentWalkOptionsWidget({
+        required this.walkId,
+        super.key,
+    });
 
+  final int walkId;
   @override
   State<PopUpCurrentWalkOptionsWidget> createState() =>
       _PopUpCurrentWalkOptionsWidgetState();
@@ -166,7 +170,7 @@ class _PopUpCurrentWalkOptionsWidgetState
                       Padding(
                         padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0), // ← Reducí espacio
                         child: Text(
-                          'Selecciona los rastreadores para el paseo',
+                          'Agrega rastreadores a tu paseo (opcional)',
                           textAlign: TextAlign.center,
                           style: FlutterFlowTheme.of(context)
                               .bodyMedium
@@ -200,6 +204,18 @@ class _PopUpCurrentWalkOptionsWidgetState
                           padding: const EdgeInsets.only(top: 20), 
                           child: FFButtonWidget(
                             onPressed: () async {
+                            final currentUserId = SupaFlow.client.auth.currentUser?.id;
+                            try {
+
+                              await SupaFlow.client
+                                .from('users') 
+                                .update({'current_walk_id': widget.walkId}) 
+                                .eq('uuid', currentUserId!) 
+                                .maybeSingle();
+                            } catch (e) {
+                              print("Error al actualizar current_walk_id en Supabase: $e");
+                            }
+
                               // Guardar los rastreadores seleccionados
                               await _saveSelectedTrackers();
                               Navigator.pop(context);

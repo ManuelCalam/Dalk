@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:dalk/backend/supabase/supabase.dart' show SupaFlow;
 import 'package:dalk/common/chat/chat_widget.dart';
-import 'package:dalk/common/walk_payment_window/walk_payment_window_widget.dart';
 import 'package:dalk/components/pop_up_walk_options/pop_up_walk_options_widget.dart';
 import 'package:dalk/dog_walker/background_service/background_service.dart';
 import 'package:dalk/dog_walker/background_service/on_ios_background';
@@ -12,8 +11,7 @@ import 'package:flutter_background_service/flutter_background_service.dart'
     show
         AndroidConfiguration,
         FlutterBackgroundService,
-        IosConfiguration,
-        ServiceInstance;
+        IosConfiguration;
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
@@ -50,6 +48,8 @@ class ScheduledWalkContainerWidgetState
   Timer? _locationTimer;
   StreamSubscription<DatabaseEvent>? _locationSubscription;
 
+  List<StreamSubscription<DatabaseEvent>> _trackerSubscriptions = []; 
+
   final StopWatchTimer _stopWatchTimer = StopWatchTimer(
     mode: StopWatchMode.countUp,
   );
@@ -76,6 +76,7 @@ class ScheduledWalkContainerWidgetState
       _startSendingLocation(); 
     } else if (widget.userType == 'Dueño') {
       _listenToWalkerLocation();
+      _listenToTrackerLocation(); 
     }
 
     _model.textController ??= TextEditingController(text: '[username]');
@@ -246,6 +247,104 @@ Future<bool> _handleLocationPermission() async {
 }
 
 
+  // --- NUEVA LÓGICA DE RASTREO POR UUID DEL DISPOSITIVO ---
+
+  // 1. Obtener TODOS los UUIDs de rastreador del Dueño
+  Future<List<String>> _fetchAllTrackerIds() async {
+    final currentUserId = SupaFlow.client.auth.currentUser?.id;
+    if (currentUserId == null) return [];
+
+    try {
+      final response = await SupaFlow.client
+          .from('users')
+          .select('pet_trackers')
+          .eq('uuid', currentUserId)
+          .limit(1)
+          .maybeSingle(); 
+
+      if (response == null || !response.containsKey('pet_trackers')) return [];
+
+      final trackers = response['pet_trackers'];
+
+      // pet_trackers es un array de UUIDs. Filtramos y convertimos a List<String>.
+      if (trackers is List) {
+        return trackers.map((e) => e.toString()).where((id) => id.isNotEmpty).toList();
+      }
+      return [];
+
+    } catch (e) {
+      print('Error fetching pet_trackers: $e');
+      return [];
+    }
+  }
+
+  // 2. Escuchar la ubicación de CADA rastreador (Tracker UUID) en Firebase RTDB
+  void _listenToTrackerLocation() async {
+    // 1. Obtener TODOS los UUIDs
+    final trackerIds = await _fetchAllTrackerIds();
+
+    if (trackerIds.isEmpty) {
+      print('ADVERTENCIA: Dueño no tiene rastreadores asignados o no está autenticado.');
+      return;
+    }
+
+    // Limpiar suscripciones anteriores
+    _trackerSubscriptions.forEach((sub) => sub.cancel());
+    _trackerSubscriptions.clear();
+
+    // Crear una suscripción para CADA rastreador
+    for (final trackerId in trackerIds) {
+      // Ruta de Firebase: dog_locations/UUID_DEL_RASTREADOR
+      final ref = FirebaseDatabase.instance.ref('dog_locations/$trackerId');
+
+      final subscription = ref.onValue.listen((event) async {
+        if (!mounted) return;
+
+        final data = event.snapshot.value as Map?;
+        // La estructura de datos esperada es {lat: ..., lng: ...}
+        if (data != null && data.containsKey('lat') && data.containsKey('lng')) {
+          final lat = (data['lat'] as num).toDouble();
+          final lng = (data['lng'] as num).toDouble();
+          final position = LatLng(lat, lng);
+
+          // Usamos el UUID como ID del marcador para poder actualizarlo
+          final markerId = "tracker_$trackerId"; 
+
+          // Marcador del Rastreador (Azul para diferenciarlo del Paseador)
+          final newTrackerMarker = Marker(
+            markerId: MarkerId(markerId),
+            position: position,
+            infoWindow: InfoWindow(title: 'Rastreador: ${trackerId.substring(0, 8)}...'), // Mostrar parte del UUID
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure), 
+          );
+
+          // Actualizar el set de marcadores
+          // 1. Clonar el set actual
+          final newMarkers = Set<Marker>.from(_markersNotifier.value);
+
+          // 2. Remover el marcador antiguo de este rastreador específico
+          newMarkers.removeWhere((m) => m.markerId.value == markerId);
+
+          // 3. Agregar el nuevo marcador
+          newMarkers.add(newTrackerMarker);
+
+          // 4. Notificar a la UI
+          _markersNotifier.value = newMarkers;
+
+          // Opcional: Animar la cámara al último rastreador que se actualizó. 
+          final controller = await _model.googleMapsController.future;
+          controller.animateCamera(CameraUpdate.newLatLng(position));
+        }
+      }, onError: (Object error) {
+        print('Firebase RTDB error for tracker $trackerId: $error');
+      });
+      
+      _trackerSubscriptions.add(subscription);
+    }
+  }
+
+  // --- FIN NUEVA LÓGICA DE RASTREO ---
+
 
   // Método aplicado para el dueño para obtener la ubicación del paseador
   void _listenToWalkerLocation() {
@@ -325,7 +424,7 @@ Future<bool> _handleLocationPermission() async {
         .eq('uuid', currentUserId)
         .maybeSingle();
         
-      print("✅ current_walk_id reasignado a $nextForegroundWalkId.");
+      print("current_walk_id reasignado a $nextForegroundWalkId.");
 
       await _setTrackingIds(includeCurrentWalk: true);
 
@@ -344,14 +443,11 @@ Future<bool> _handleLocationPermission() async {
     }
 
     // 5. Navegar a CurrentWalkEmptyWindow
-    context.pushNamed(
+    context.pushReplacementNamed(
       '_initialize',
       queryParameters: {'initialPage': 'CurrentWalk'},
     );
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(builder: (context) =>  WalkPaymentWindowWidget(walkId: int.parse(widget.walkId), userType: widget.userType )),
-    // );
+
   }
 
 
@@ -360,6 +456,7 @@ Future<bool> _handleLocationPermission() async {
     WidgetsBinding.instance.removeObserver(this);
     _locationTimer?.cancel(); 
     _locationSubscription?.cancel(); 
+    _trackerSubscriptions.forEach((sub) => sub.cancel()); 
 
     if (widget.userType == 'Paseador') {
       _setTrackingIds(includeCurrentWalk: true); 

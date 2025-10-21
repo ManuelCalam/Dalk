@@ -1,5 +1,6 @@
 import 'package:dalk/auth/supabase_auth/auth_util.dart';
 import 'package:dalk/backend/supabase/database/database.dart';
+import 'package:dalk/common/chat/chat_widget.dart';
 import 'package:dalk/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
 import 'package:dalk/dog_owner/set_walk_schedule/set_walk_schedule_widget.dart';
 import 'package:dalk/dog_owner/walks_dog_owner/walks_dog_owner_widget.dart';
@@ -245,164 +246,18 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                         color: FlutterFlowTheme.of(context).primary,
                         size: 35,
                       ),
-                        onPressed: () async {
-                        // Unir fecha y hora para el registro de startTime como timestamp
-                          final DateTime? startDateTime = (date != null && time != null)
-                          ? DateTime(
-                              date!.year,
-                              date!.month,
-                              date!.day,
-                              time!.hour,
-                              time!.minute,
-                              time!.second,
-                            )
-                          : null;
-
-                          DateTime? endDateTime;
-                          if (startDateTime != null) {
-                            endDateTime = startDateTime.add(Duration(minutes: walkDuration));
-                          }
-
-                            try {
-                              if (petId == null || addressId == null || currentUserUid.isEmpty) {
-                                throw Exception('Datos insuficientes para crear el paseo');
-                              } else {
-                                try {
-                                  final response = await Supabase.instance.client
-                                      .from('walks')
-                                      .insert({
-                                        'dog_id': petId,
-                                        'walker_id': uuidPaseador,
-                                        'owner_id': currentUserUid,
-                                        'address_id': addressId,
-                                        'status': 'Por confirmar',
-                                        'startTime': startDateTime?.toIso8601String(),
-                                        'endTime': endDateTime != null
-                                          ? '${endDateTime.hour.toString().padLeft(2, '0')}:${endDateTime.minute.toString().padLeft(2, '0')}:00'
-                                          : null,
-                                          
-                                        'walk_duration_minutes': walkDuration,
-                                        'walker_instructions': instructions.trim().isEmpty ? null : instructions.trim(),
-                                        'payment_status': 'Pendiente'
-                                      })
-                                      .select('id')
-                                      .single();
-
-                                  //Alias para no romper el código de notificaciones
-                                  final insertResponse = response;
-
-                                  // Convertir el ID a int de manera segura
-                                  final walkIdRaw = insertResponse['id'];
-                                  final walkId = walkIdRaw is int
-                                      ? walkIdRaw
-                                      : int.parse(walkIdRaw.toString());
-
-                                  // Obtener datos adicionales para la notificación
-                                  final userResponse = await Supabase.instance.client
-                                      .from('users')
-                                      .select('name')
-                                      .eq('uuid', currentUserUid)
-                                      .single();
-
-                                  final petResponse = await Supabase.instance.client
-                                      .from('pets')
-                                      .select('name')
-                                      .eq('id', petId!)
-                                      .single();
-
-                                  if (userResponse['name'] == null || petResponse['name'] == null) {
-                                    throw Exception(
-                                      'Error: No se pudieron obtener los datos del usuario o mascota',
-                                    );
-                                  }
-
-                                  final ownerName = userResponse['name'].toString();
-                                  final petName = petResponse['name'].toString();
-                                  final dateString = date != null
-                                      ? '${date!.day}/${date!.month}/${date!.year}'
-                                      : 'fecha por confirmar';
-
-                                  print(
-                                    '📊 Datos para notificación: Owner: $ownerName, Pet: $petName, Date: $dateString',
-                                  );
-
-                                  // 3. Llamar a la Edge Function para enviar notificación
-                                  final notificationPayload = {
-                                    'walk_id': walkId,
-                                    'new_status': 'Solicitado',
-                                    'actor_name': currentUserUid,
-                                    'pet_name': petName,
-                                    'date': dateString,
-                                  };
-
-
-                                  final notificationResponse = await Supabase.instance.client.functions
-                                      .invoke('send-walk-notification', body: notificationPayload);
-
-
-                                  // // Verificar el tipo de dato antes de acceder
-                                  // dynamic responseData = notificationResponse.data;
-                                  // if (responseData != null) {
-                                  //   if (responseData is Map<String, dynamic>) {
-                                  //     if (responseData['success'] == true) {
-                                  //       print('✅ Notificación enviada exitosamente');
-                                  //     } else {
-                                  //       print('⚠️ Respuesta de notificación: $responseData');
-                                  //     }
-                                  //   } else {
-                                  //     print('⚠️ Tipo de respuesta inesperado: ${responseData.runtimeType}');
-                                  //     print('⚠️ Contenido: $responseData');
-                                  //   }
-                                  // } else {
-                                  //   print('⚠️ Respuesta nula');
-                                  // }
-
-                                  // ScaffoldMessenger.of(context).showSnackBar(
-                                  //   SnackBar(content: Text('¡Paseo solicitado!')),
-                                  // );
-
-                                  // ------------------------------------
-                                  // Confirmación de Paseo Registrado
-                                  // ------------------------------------
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return Dialog(
-                                        backgroundColor: Colors.transparent,
-                                        child: PopUpConfirmDialogWidget(
-                                          title: "Paseo registrado" ,
-                                          message: "¡Se ha registrado el paseo exitosamente!",
-                                          confirmText: "Volver a agendar",
-                                          cancelText: "Ver agenda",
-                                          confirmColor: FlutterFlowTheme.of(context).accent1,
-                                          cancelColor: FlutterFlowTheme.of(context).primary,
-                                          icon: Icons.check_circle,
-                                          iconColor: FlutterFlowTheme.of(context).success,
-                                          onConfirm: () {
-                                            context.pushNamed(SetWalkScheduleWidget.routeName);
-                                          },
-                                          onCancel: () {
-                                            context.pushNamed(WalksDogOwnerWidget.routeName);
-                                          },
-                                        ),
-                                      );
-                                    },
-                                  );
-
-
-
-                                } catch (e) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Error al registrar solicitud: $e')),
-                                  );
-                                }
-                              }
-                            } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Error al registrar solicitud: $e')),
-                              );
-                            }
-                      },
+                         onPressed: () {
+                          final currentUserId = SupaFlow.client.auth.currentUser?.id;
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChatWidget(
+                                  walkerId: currentUserId?? '',
+                                  ownerId: uuidPaseador,
+                                ),
+                              ),
+                            );
+                          },
                     ),
                   ),
                 ),

@@ -189,7 +189,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: ChooseUserTypeWidget.routeName,
           path: ChooseUserTypeWidget.routePath,
           builder: (context, params) => ChooseUserTypeWidget(),
-          requireAuth: false
+          requireAuth: true
         ),
         FFRoute(
           name: DogOwnerProfileWidget.routeName,

@@ -2558,10 +2558,11 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                     setState(() => isRegistering = false);
                                                     return;
                                                   }
-String? ownerImageUrl;
-if (_ownerImage != null) {
-  ownerImageUrl = await _uploadOwnerImage(currentUserUid, _ownerImage!);
-}
+                                                  
+                                                  String? ownerImageUrl;
+                                                  if (_ownerImage != null) {
+                                                    ownerImageUrl = await _uploadOwnerImage(currentUserUid, _ownerImage!);
+                                                  }
 
                                                   try {
                                                     final user = await authManager.createAccountWithEmail(

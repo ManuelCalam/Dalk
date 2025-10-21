@@ -167,7 +167,8 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
     // LÓGICA DEL USUARIO DUEÑO ("Dueño")
     // ------------------------------------
     if (userType == 'Dueño') {
-      if (walkStatus == 'Por confirmar' || walkStatus == 'Aceptado' || walkStatus == 'En curso') {
+      // if (walkStatus == 'Por confirmar' || walkStatus == 'Aceptado' || walkStatus == 'En curso') {
+      if (walkStatus == 'Por confirmar' || walkStatus == 'Aceptado') {
         // Estatus "Por confirmar" o "Aceptado" o "En curso": Botón "Cancelar"
         buttons.add(_buildActionButton(
           context: context,
@@ -524,48 +525,48 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
         ));
 
 
-        // Botón 2: Cancelar (Color rojo)
-        buttons.add(_buildActionButton(
-          context: context,
-          text: 'Cancelar paseo',
-          color: FlutterFlowTheme.of(context).error,
-          onPressed: () {
-             showDialog(
-              context: context,
-              builder: (_) => PopUpConfirmDialogWidget(
-                title: "Cancelar paseo",
-                message: "¿Estás seguro de que deseas cancelar este paseo?",
-                confirmText: "Cancelar paseo",
-                cancelText: "Cerrar",
-                confirmColor: FlutterFlowTheme.of(context).error,
-                cancelColor: FlutterFlowTheme.of(context).accent1,
-                icon: Icons.cancel_rounded,
-                iconColor: FlutterFlowTheme.of(context).error,
-                onConfirm: () async => {
-                  await SupaFlow.client
-                    .from('walks')
-                    .update({'status': 'Cancelado'})
-                    .eq('id', widget.walkId),
+        // // Botón 2: Cancelar (Color rojo)
+        // buttons.add(_buildActionButton(
+        //   context: context,
+        //   text: 'Cancelar paseo',
+        //   color: FlutterFlowTheme.of(context).error,
+        //   onPressed: () {
+        //      showDialog(
+        //       context: context,
+        //       builder: (_) => PopUpConfirmDialogWidget(
+        //         title: "Cancelar paseo",
+        //         message: "¿Estás seguro de que deseas cancelar este paseo?",
+        //         confirmText: "Cancelar paseo",
+        //         cancelText: "Cerrar",
+        //         confirmColor: FlutterFlowTheme.of(context).error,
+        //         cancelColor: FlutterFlowTheme.of(context).accent1,
+        //         icon: Icons.cancel_rounded,
+        //         iconColor: FlutterFlowTheme.of(context).error,
+        //         onConfirm: () async => {
+        //           await SupaFlow.client
+        //             .from('walks')
+        //             .update({'status': 'Cancelado'})
+        //             .eq('id', widget.walkId),
 
-                  //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
-                  Navigator.pop(context),
-                  Navigator.pop(context),
+        //           //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
+        //           Navigator.pop(context),
+        //           Navigator.pop(context),
                   
-                  //Envío de notificacion después de cerrar los menús
-                  await Supabase.instance.client.functions.invoke(
-                    'send-walk-notification',
-                    body: {
-                      'walk_id': widget.walkId,
-                      'new_status': 'Cancelado',
-                    },
-                  )
-                },
-                onCancel: () => Navigator.pop(context),
-              ), 
-            );
-          },
-          icon: Icons.cancel_rounded,
-        ));
+        //           //Envío de notificacion después de cerrar los menús
+        //           await Supabase.instance.client.functions.invoke(
+        //             'send-walk-notification',
+        //             body: {
+        //               'walk_id': widget.walkId,
+        //               'new_status': 'Cancelado',
+        //             },
+        //           )
+        //         },
+        //         onCancel: () => Navigator.pop(context),
+        //       ), 
+        //     );
+        //   },
+        //   icon: Icons.cancel_rounded,
+        // ));
       }
     }
 

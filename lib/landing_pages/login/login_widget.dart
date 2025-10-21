@@ -585,49 +585,58 @@ class _LoginWidgetState extends State<LoginWidget> {
                                           size: 35,
                                         ),
                                         onPressed: () async {
-                                          try {
-                                            GoRouter.of(context).prepareAuthEvent();
-                                            
-                                            var user = Supabase.instance.client.auth.currentUser;
+  // try {
+  //   GoRouter.of(context).prepareAuthEvent();
 
-                                            if (user == null) {
-                                              await authManager.signInWithGoogle(context); 
-                                              user = Supabase.instance.client.auth.currentUser;
-                                            }
+  //   var user = Supabase.instance.client.auth.currentUser;
 
-                                            if (user == null) {
-                                              return;
-                                            }
+  //   // Si no hay usuario actual, inicia sesión con Google
+  //   if (user == null) {
+  //     await authManager.signInWithGoogle(context);
+  //     user = Supabase.instance.client.auth.currentUser;
+  //   }
 
-                                            // Usamos el ID del usuario recién autenticado/activo.
-                                            final userProfile = await SupaFlow.client
-                                              .from('users')
-                                              .select('usertype')
-                                              .eq('uuid', user.id)
-                                              .maybeSingle();
+  //   // Si sigue siendo nulo, salimos
+  //   if (user == null) return;
 
-                                            final userType = userProfile?['usertype'];
-                                            
-                                            if (context.mounted) {
-                                              if (userType != null) {
-                                                context.go('/'); 
-                                              } else {
-                                                context.pushNamedAuth(
-                                                  ChooseUserTypeWidget.routeName,
-                                                  context.mounted,
+  //   // Buscar si el usuario ya existe en la tabla 'users'
+  //   final userProfile = await SupaFlow.client
+  //       .from('users')
+  //       .select('usertype')
+  //       .eq('uuid', user.id)
+  //       .maybeSingle();
+
+  //   // Extraer el tipo de usuario (si existe)
+  //   final userType = userProfile != null ? userProfile['usertype'] : null;
+
+  //   if (!context.mounted) return;
+
+  //   // Lógica de flujo
+  //   if (userProfile == null || userType == null) {
+  //     // 🆕 Usuario sin tipo definido → redirigir a ChooseUserType
+  //     context.pushNamedAuth(
+  //       ChooseUserTypeWidget.routeName,
+  //       context.mounted,
+  //     );
+  //   } else {
+  //     // ✅ Usuario ya registrado con tipo → redirigir al home
+  //     context.go('/');
+  //   }
+  // } catch (e) {
+  //   print('Error en autenticación: $e');
+  //   if (context.mounted) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text('Error al iniciar sesión: $e')),
+  //     );
+  //   }
+  // }
+
+  ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(content: Text('Está en fix')),
                                                 );
-                                              }
-                                            }
-                                            
-                                          } catch (e) {
-                                            print('Error en autenticación: $e');
-                                            if (context.mounted) {
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(content: Text('Error al iniciar sesión: $e')),
-                                              );
-                                            }
-                                          }
-                                        },
+}
+
+
                                       ),
                                     ),
                                   ),

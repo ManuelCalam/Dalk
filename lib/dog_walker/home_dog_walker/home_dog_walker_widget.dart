@@ -1,4 +1,8 @@
 
+import 'package:dalk/backend/supabase/database/database.dart';
+import 'package:dalk/cards/article_card/article_card_widget.dart';
+import 'package:dalk/common/article_web_view/article_web_view.dart';
+
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -41,6 +45,21 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
     _model.dispose();
 
     super.dispose();
+  }
+
+  // Método para obtener los artículos
+  Future<List<Map<String, dynamic>>> _fetchArticles() async {
+    try {
+      final response = await Supabase.instance.client 
+          .from('content_links')
+          .select()
+          .eq('isActive', true);
+
+      return (response as List<dynamic>).cast<Map<String, dynamic>>();
+    } catch (e) {
+      print('Error fetching articles: $e');
+      return [];
+    }
   }
 
   @override
@@ -644,26 +663,89 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                       ),
                                 ),
                               ),
+                              // Padding(
+                              //   padding:
+                              //       EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                              //   child: Container(
+                              //     width: MediaQuery.sizeOf(context).width,
+                              //     height:
+                              //         MediaQuery.sizeOf(context).height * 0.3,
+                              //     decoration: BoxDecoration(
+                              //       borderRadius: BorderRadius.circular(0),
+                              //     ),
+                              //     // child: ListView(
+                              //     //   padding: EdgeInsets.zero,
+                              //     //   primary: false,
+                              //     //   shrinkWrap: true,
+                              //     //   scrollDirection: Axis.horizontal,
+                              //     //   children:  [
+
+                              //     //     // AQUI ES DONDE PONDRAS EL FUTURE BUILDER Y UTILIZARÁS EL article_widget_card
+
+                              //     //   ],
+                              //     // ),
+                              //     // child: Padding(
+                              //     //   padding: EdgeInsets.symmetric(horizontal: 12.0),
+                              //     //   child: ArticleWebView(),
+                              //     // ),
+                              //   ),
+                              // ),
+
                               Padding(
-                                padding:
-                                    EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                                padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                                 child: Container(
                                   width: MediaQuery.sizeOf(context).width,
-                                  height:
-                                      MediaQuery.sizeOf(context).height * 0.3,
+                                  height: MediaQuery.sizeOf(context).height * 0.3,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(0),
                                   ),
-                                  child: ListView(
-                                    padding: EdgeInsets.zero,
-                                    primary: false,
-                                    shrinkWrap: true,
-                                    scrollDirection: Axis.horizontal,
-                                    children:  [
+                                  child: FutureBuilder<List<Map<String, dynamic>>>(
+                                    future: _fetchArticles(),
+                                    builder: (context, snapshot) {
+                                      // Mientras carga
+                                      if (snapshot.connectionState == ConnectionState.waiting) {
+                                        return const Center(
+                                          child: CircularProgressIndicator(),
+                                        );
+                                      }
 
-                                      // AQUI ES DONDE PONDRAS EL FUTURE BUILDER Y UTILIZARÁS EL article_widget_card
+                                      // Si hay error
+                                      if (snapshot.hasError) {
+                                        return Center(
+                                          child: Text('Error: ${snapshot.error}'),
+                                        );
+                                      }
 
-                                    ],
+                                      final articles = snapshot.data ?? [];
+
+                                      // Si no hay artículos
+                                      if (articles.isEmpty) {
+                                        return Center(
+                                          child: Text(
+                                            'No hay artículos disponibles',
+                                            style: FlutterFlowTheme.of(context).bodyMedium,
+                                          ),
+                                        );
+                                      }
+
+                                      return ListView.builder(
+                                        padding: EdgeInsets.zero,
+                                        primary: false,
+                                        shrinkWrap: true,
+                                        scrollDirection: Axis.horizontal,
+                                        itemCount: articles.length,
+                                        itemBuilder: (context, index) {
+                                          final article = articles[index];
+                                          return ArticleCardWidget(
+                                            title: article['title']?.toString() ?? 'Sin título',
+                                            subtitle: article['subtitle']?.toString() ?? 'Sin descripción',
+                                            imageUrl: article['image_url']?.toString() ?? 'https://picsum.photos/seed/572/600',
+                                            actionUrl: article['action_url']?.toString() ?? '',
+                                            isActive: article['is_active'] as bool? ?? true,
+                                          );
+                                        },
+                                      );
+                                    },
                                   ),
                                 ),
                               ),

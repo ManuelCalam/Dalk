@@ -408,16 +408,6 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                         queryParameters: {'initialPage': 'walkerService'},
                                       );  
 
-
-
-                                    // // ESTO ES TEMPORAL
-                                    // Navigator.push(
-                                    //   context,
-                                    //   MaterialPageRoute(builder: (context) => const WalkPaymentWindowWidget(walkId: 256, userType: 'Paseador',)),
-                                    // );
-
-
-
                                     },
                                     child: Container(
                                       width: MediaQuery.sizeOf(context).width,
