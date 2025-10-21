@@ -207,8 +207,10 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: SingInDogWalkerWidget.routeName,
           path: SingInDogWalkerWidget.routePath,
-          builder: (context, params) => SingInDogWalkerWidget(),
-          requireAuth: false
+          builder: (context, params) => SingInDogWalkerWidget(
+            windowOrigin: params.getParam('windowOrigin', ParamType.String) ?? '',
+          ),
+          requireAuth: false,
         ),
         FFRoute(
           name: DogWalkerServiceWidget.routeName,

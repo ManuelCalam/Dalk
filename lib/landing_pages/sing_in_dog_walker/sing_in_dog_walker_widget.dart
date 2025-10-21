@@ -20,10 +20,13 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class SingInDogWalkerWidget extends StatefulWidget {
-  const SingInDogWalkerWidget({super.key});
+  final String windowOrigin;
+
+  const SingInDogWalkerWidget({super.key, required this.windowOrigin});
 
   static String routeName = 'singInDogWalker';
   static String routePath = '/singInDogWalker';
+
 
   @override
   State<SingInDogWalkerWidget> createState() => _SingInDogWalkerWidgetState();
@@ -49,11 +52,15 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
   bool isRegistering = false;
+  late bool isGoogleFlow;
+
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => SingInDogWalkerModel());
+    isGoogleFlow = widget.windowOrigin.contains('choose user type');
+
 
     _model.nameDogWalkerInputTextController ??= TextEditingController();
     _model.nameDogWalkerInputFocusNode ??= FocusNode();
@@ -509,6 +516,8 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                 ),
                                               ),
                                             ),
+                                            //encerrar este correo
+                                            if (!isGoogleFlow) ...[
                                             Padding(
                                               padding: const EdgeInsetsDirectional
                                                   .fromSTEB(
@@ -701,6 +710,7 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                 ),
                                               ),
                                             ),
+                                            ],
                                             Padding(
                                               padding: const EdgeInsetsDirectional
                                                   .fromSTEB(
@@ -2136,6 +2146,8 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                 validator: (value) => Validators.requiredField(value, fieldName: 'Ciudad'),
                                               ),
                                             ),
+                                            //encerrar este correo
+                                            if (!isGoogleFlow) ...[
                                             Padding(
                                               padding: const EdgeInsetsDirectional
                                                   .fromSTEB(
@@ -2341,6 +2353,9 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                 maxLength: 30,
                                               ),
                                             ),
+                                            ],
+                                            //encerrar este correo
+                                            if (!isGoogleFlow) ...[
                                             Padding(
                                               padding: const EdgeInsetsDirectional
                                                   .fromSTEB(
@@ -2547,6 +2562,7 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                 maxLength: 30,
                                               ),
                                             ),
+                                            ],
                                             Padding(
                                               padding: const EdgeInsetsDirectional
                                                   .fromSTEB(
@@ -2574,33 +2590,45 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                     return;
                                                   }
 
-                                                  if (_model.passDogWalkerInputTextController.text !=
-                                                      _model.confirmPassDogWalkerInputTextController.text) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      const SnackBar(content: Text('Las contraseñas no coinciden')),
-                                                    );
-                                                    setState(() => isRegistering = false);
-                                                    return;
-                                                  }
                                                   String? ownerImageUrl;
-if (_ownerImage != null) {
-  ownerImageUrl = await _uploadOwnerImage(currentUserUid, _ownerImage!);
-}
-
+                                                  if (_ownerImage != null) {
+                                                    ownerImageUrl = await _uploadOwnerImage(currentUserUid, _ownerImage!);
+                                                  }
 
                                                   try {
-                                                    final user = await authManager.createAccountWithEmail(
-                                                      context,
-                                                      _model.emailDogWalkerInputTextController.text,
-                                                      _model.passDogWalkerInputTextController.text,
-                                                    );
-                                                    if (user == null) throw 'No se pudo crear el usuario.';
+                                                    String email;
+                                                    String uuid;
 
-                                                    await Supabase.instance.client.from('users')
-                                                    .insert({
-                                                      'uuid': currentUserUid,
+                                                    if (isGoogleFlow) {
+                                                      // Autenticación con Google
+                                                      final user = await authManager.signInWithGoogle(context);
+                                                      if (user == null) throw 'No se pudo autenticar con Google.';
+                                                      email = user.email ?? '';
+                                                      uuid = user.uid ?? '';
+                                                    } else {
+                                                      // Autenticación con correo y contraseña
+                                                      if (_model.passDogWalkerInputTextController.text !=
+                                                          _model.confirmPassDogWalkerInputTextController.text) {
+                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                          const SnackBar(content: Text('Las contraseñas no coinciden')),
+                                                        );
+                                                        setState(() => isRegistering = false);
+                                                        return;
+                                                      }
+                                                      final user = await authManager.createAccountWithEmail(
+                                                        context,
+                                                        _model.emailDogWalkerInputTextController.text,
+                                                        _model.passDogWalkerInputTextController.text,
+                                                      );
+                                                      if (user == null) throw 'No se pudo crear el usuario.';
+                                                      email = _model.emailDogWalkerInputTextController.text;
+                                                      uuid = currentUserUid;
+                                                    }
+
+                                                    await Supabase.instance.client.from('users').insert({
+                                                      'uuid': uuid,
                                                       'name': _model.nameDogWalkerInputTextController.text,
-                                                      'email': currentUserEmail,
+                                                      'email': email,
                                                       'phone': _model.phoneDogWalkerInputTextController.text,
                                                       'birthdate': supaSerialize<DateTime>(_model.datePicked),
                                                       'gender': _model.genderDogWalkerMenuValue,
@@ -2612,16 +2640,16 @@ if (_ownerImage != null) {
                                                       'photo_url': ownerImageUrl,
                                                       'usertype': 'Paseador'
                                                     });
-                                                    await Supabase.instance.client.from('addresses')
-                                                    .insert({
-                                                      'uuid': currentUserUid,
+
+                                                    await Supabase.instance.client.from('addresses').insert({
+                                                      'uuid': uuid,
                                                       'alias': 'Mi Dirección',
                                                       'address': _model.streetDogWalkerInputTextController.text,
                                                       'houseNumber': _model.apartamentNumDogWalkerInputTextController.text,
                                                       'zipCode': _model.zipCodeDogWalkerInputTextController.text,
                                                       'neighborhood': _model.neighborhoodDogWalkerInputTextController.text,
                                                       'city': _model.cityDogWalkerInputTextController.text,
-                                                  });
+                                                    });
 
                                                     ScaffoldMessenger.of(context).showSnackBar(
                                                       const SnackBar(content: Text('¡Registro exitoso!')),
@@ -2635,6 +2663,7 @@ if (_ownerImage != null) {
                                                     setState(() => isRegistering = false);
                                                   }
                                                 },
+                                                // ...existing code...
                                                 text: 'Continuar',
                                                 options: FFButtonOptions(
                                                   width:
