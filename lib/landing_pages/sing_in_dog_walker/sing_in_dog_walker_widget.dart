@@ -93,27 +93,27 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
 
     super.dispose();
   }
-  Future<String?> _uploadOwnerImage(String userId, File imageFile) async {
-    try {
-      final filePath = 'walkers/$userId/profile.jpg'; // ruta dentro del bucket
-      final storage = Supabase.instance.client.storage;
+  // Future<String?> _uploadOwnerImage(String userId, File imageFile) async {
+  //   try {
+  //     final filePath = 'walkers/$userId/profile.jpg'; // ruta dentro del bucket
+  //     final storage = Supabase.instance.client.storage;
 
-      // Subir la imagen, si existe reemplazar
-      await storage.from('profile_pics').upload(
-        filePath,
-        imageFile,
-        fileOptions: const FileOptions(upsert: true),
-      );
+  //     // Subir la imagen, si existe reemplazar
+  //     await storage.from('profile_pics').upload(
+  //       filePath,
+  //       imageFile,
+  //       fileOptions: const FileOptions(upsert: true),
+  //     );
 
-      // Obtener URL pública
-      final imageUrl = storage.from('profile_pics').getPublicUrl(filePath);
+  //     // Obtener URL pública
+  //     final imageUrl = storage.from('profile_pics').getPublicUrl(filePath);
 
-      return imageUrl; // ahora es un String
-    } catch (e) {
-      print('Error al subir imagen: $e');
-      return null;
-    }
-  }
+  //     return imageUrl; // ahora es un String
+  //   } catch (e) {
+  //     print('Error al subir imagen: $e');
+  //     return null;
+  //   }
+  // }
 
   //funcion para seleccionar imagen
   Future<void> _pickImage(bool isOwner, ImageSource source) async {
@@ -2582,10 +2582,10 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                     setState(() => isRegistering = false);
                                                     return;
                                                   }
-                                                  String? ownerImageUrl;
-if (_ownerImage != null) {
-  ownerImageUrl = await _uploadOwnerImage(currentUserUid, _ownerImage!);
-}
+                                                  // String? ownerImageUrl;
+// if (_ownerImage != null) {
+//   ownerImageUrl = await _uploadOwnerImage(currentUserUid, _ownerImage!);
+// }
 
 
                                                   try {
@@ -2609,7 +2609,7 @@ if (_ownerImage != null) {
                                                       'zipCode': _model.zipCodeDogWalkerInputTextController.text,
                                                       'neighborhood': _model.neighborhoodDogWalkerInputTextController.text,
                                                       'city': _model.cityDogWalkerInputTextController.text,
-                                                      'photo_url': ownerImageUrl,
+                                                      // 'photo_url': ownerImageUrl,
                                                       'usertype': 'Paseador'
                                                     });
                                                     await Supabase.instance.client.from('addresses')
