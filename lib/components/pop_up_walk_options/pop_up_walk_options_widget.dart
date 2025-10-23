@@ -508,6 +508,15 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
               // ✅ CAMBIO CLAVE 3: Llamamos a la función usando ?.call()
               // Esto solo ejecuta la función si widget.onWalkCompletion NO es null.
               await widget.onWalkCompletion?.call(); 
+
+              // Envío de notificacion paseo terminado
+              await Supabase.instance.client.functions.invoke(
+                'send-walk-notification',
+                body: {
+                  'walk_id': widget.walkId,
+                  'new_status': 'Terminado',
+                },
+              );
               
               // Cerramos el PopUp, usando el contexto del diálogo
               if (Navigator.canPop(context)) {
