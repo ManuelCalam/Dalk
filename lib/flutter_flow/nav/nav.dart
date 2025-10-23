@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:dalk/RootNavWidget.dart';
+import 'package:dalk/common/walk_payment_window/walk_payment_window_widget.dart';
 import 'package:dalk/dog_walker/walks_dog_walker/walks_dog_walker_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -267,6 +268,15 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             userName: params.getParam('userName', ParamType.String),
             status: params.getParam('status', ParamType.String),
           ),
+        ),
+        FFRoute(
+          name: 'WalkPaymentWindow',
+          path: '/walkPaymentWindow',
+          builder: (context, params) => WalkPaymentWindowWidget(
+            walkId: params.getParam('walkId', ParamType.int) ?? 0,
+            userType: params.getParam('userType', ParamType.String) ?? '',
+          ),
+          requireAuth: true
         ),
           
       ].map((r) => r.toRoute(appStateNotifier)).toList(),

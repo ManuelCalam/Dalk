@@ -146,11 +146,21 @@ class NotificationService {
     });
   }
 
-  // ✅ REMOVIDA: _saveNotificationToDatabase (ya se guarda desde servidor)
-
   void handleFirebaseNotificationTap(RemoteMessage message) {
     final String targetUserType = message.data['target_user_type'] ?? '';
     final String eventType = message.data['event_type'] ?? '';
+    
+    // Redirigir a WalkPaymentWindow si es "Terminado"
+    if (eventType == 'Terminado') {
+      final String walkIdStr = message.data['walk_id'] ?? '';
+      if (walkIdStr.isNotEmpty) {
+        final int? walkId = int.tryParse(walkIdStr);
+        if (walkId != null) {
+          navigateToPaymentWindow(walkId, targetUserType);
+          return;
+        }
+      }
+    }
     
     if (eventType == 'chat_message') {
       // Navegación específica para chat con parámetros
@@ -177,6 +187,18 @@ class NotificationService {
       final String targetUserType = data['target_user_type'] ?? '';
       final String eventType = data['event_type'] ?? '';
       
+      // Redirigir a WalkPaymentWindow si es "Terminado"
+      if (eventType == 'Terminado') {
+        final String walkIdStr = data['walk_id'] ?? '';
+        if (walkIdStr.isNotEmpty) {
+          final int? walkId = int.tryParse(walkIdStr);
+          if (walkId != null) {
+            navigateToPaymentWindow(walkId, targetUserType);
+            return;
+          }
+        }
+      }
+      
       if (eventType == 'chat_message') {
         // Navegación específica para chat con parámetros
         final String ownerId = data['owner_id'] ?? '';
@@ -194,6 +216,18 @@ class NotificationService {
       }
     } catch (e) {
       // Error silencioso
+    }
+  }
+
+  // Navegar a WalkPaymentWindow usando GoRouter
+  void navigateToPaymentWindow(int walkId, String userType) {
+    final context = appNavigatorKey.currentContext;
+    if (context != null && context.mounted) {
+      try {
+        context.go('/walkPaymentWindow?walkId=$walkId&userType=$userType');
+      } catch (e) {
+        print('Error navegando a Payment: $e');
+      }
     }
   }
 

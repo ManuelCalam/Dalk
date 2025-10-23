@@ -15,14 +15,14 @@ try {
   if (!rawFirebase) throw new Error("FIREBASE_SERVICE_ACCOUNT no definida");
   firebaseConfig = JSON.parse(rawFirebase);
 } catch (err) {
-  console.error("Error Firebase config:", err);
+  console.error("❌ Error Firebase config:", err);
   throw new Error("Error de configuración Firebase");
 }
 
 try {
   admin.initializeApp({ credential: admin.credential.cert(firebaseConfig) });
 } catch (err) {
-  console.error("Error inicializando Firebase:", err);
+  console.error("❌ Error inicializando Firebase:", err);
   throw new Error("Falló la inicialización de Firebase");
 }
 
@@ -134,7 +134,7 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Walk no encontrado" }), { status: 404 });
     }
 
-    // CASO ESPECIAL: Estado "Cancelado" - Enviar a AMBOS usuarios
+    // ✅ CASO ESPECIAL: Estado "Cancelado" - Enviar a AMBOS usuarios
     if (new_status === "Cancelado") {
       // Notificación para el PASEADOR
       await sendNotificationToUser(
@@ -163,7 +163,7 @@ Deno.serve(async (req) => {
       }), { status: 200 });
     }
 
-    // RESTO DE CASOS (un solo destinatario)
+    // ✅ RESTO DE CASOS (un solo destinatario)
     let targetUserId: string;
     let targetUserType: string;
     let notificationTitle: string;
@@ -199,7 +199,7 @@ Deno.serve(async (req) => {
         break;
 
       case "Terminado":
-        // Notificación solo al dueño cuando el paseador termina el paseo
+        // ✅ NUEVA NOTIFICACIÓN: Solo al DUEÑO cuando el paseador termina el paseo
         targetUserId = walkData.owner_id;
         targetUserType = "owner";
         notificationTitle = "¡Paseo completado!";
@@ -226,7 +226,7 @@ Deno.serve(async (req) => {
     }), { status: 200 });
 
   } catch (err) {
-    console.error("Error general:", err);
+    console.error("❌ Error general:", err);
     return new Response(JSON.stringify({ 
       error: "Error interno"
     }), { status: 500 });
