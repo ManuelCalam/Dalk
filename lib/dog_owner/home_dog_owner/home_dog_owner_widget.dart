@@ -1,7 +1,6 @@
 import 'package:dalk/SubscriptionProvider.dart';
 import 'package:dalk/backend/supabase/database/database.dart';
 import 'package:dalk/cards/article_card/article_card_widget.dart';
-import 'package:dalk/common/article_web_view/article_web_view.dart';
 import 'package:provider/provider.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -49,19 +48,19 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
   }
 
   // Método para obtener los artículos
-Future<List<Map<String, dynamic>>> _fetchArticles() async {
-  try {
-    final response = await Supabase.instance.client 
-        .from('content_links')
-        .select()
-        .eq('isActive', true);
+  Future<List<Map<String, dynamic>>> _fetchArticles() async {
+    try {
+      final response = await Supabase.instance.client 
+          .from('content_links')
+          .select()
+          .eq('isActive', true);
 
-    return (response as List<dynamic>).cast<Map<String, dynamic>>();
-  } catch (e) {
-    print('Error fetching articles: $e');
-    return [];
+      return (response as List<dynamic>).cast<Map<String, dynamic>>();
+    } catch (e) {
+      print('Error fetching articles: $e');
+      return [];
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {

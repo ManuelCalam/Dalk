@@ -633,15 +633,12 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                                 hoverColor: Colors.transparent,
                                                 highlightColor:
                                                     Colors.transparent,
-                                    onTap: () async {
-                                      context.goNamed(
-                                        '_initialize', 
-                                        queryParameters: {'initialPage': 'petList'},
-                                      );  
-                                      // final navState = navBarOwnerKey.currentState;
-
-                                      // navState?.changePage('petList');
-                                    },
+                                                onTap: () async {
+                                                  context.goNamed(
+                                                    '_initialize', 
+                                                    queryParameters: {'initialPage': 'petList'},
+                                                  );  
+                                                },
                                                 child: Icon(
                                                   Icons.arrow_forward_ios,
                                                   color: FlutterFlowTheme.of(

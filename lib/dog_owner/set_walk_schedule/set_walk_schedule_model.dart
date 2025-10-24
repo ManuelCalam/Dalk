@@ -11,7 +11,6 @@ class SetWalkScheduleModel extends FlutterFlowModel<SetWalkScheduleWidget> {
 
   DateTime? datePicked1;
   DateTime? datePicked2;
-  Stream<List<AddressesRow>>? addressesListViewSupabaseStream;
   String selectedWalkDuration = '30 min';
   int customWalkDuration = 30;
   final TextEditingController customDurationTextController = TextEditingController();

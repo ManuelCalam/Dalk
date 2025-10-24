@@ -209,10 +209,7 @@ class _BuyTrackerWidgetState extends State<BuyTrackerWidget> {
                                       .override(
                                         font: GoogleFonts.lexend(
                                           fontWeight: FontWeight.bold,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontStyle,
+                                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                         ),
                                         color: FlutterFlowTheme.of(context)
                                             .primary,
@@ -1067,16 +1064,16 @@ class _BuyTrackerWidgetState extends State<BuyTrackerWidget> {
                                   if (selectedAddressId == null) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
-                                        content: Text('Por favor, selecciona una dirección de envío'),
+                                        content: Text('Por favor, selecciona una dirección de envío.'),
                                       ),
                                     );
                                     return;
                                   }
 
-                                  if (_model.trackerAliasInputTextController.text.isEmpty) {
+                                  if (_model.trackerAliasInputTextController.text.trim().isEmpty || _model.trackerAliasInputTextController.text.length < 3) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
-                                        content: Text('Por favor, ingresa un alias para tu rastreador'),
+                                        content: Text('Por favor, ingresa un alias, mínimo 3 caracteres.'),
                                       ),
                                     );
                                     return;
@@ -1092,7 +1089,7 @@ class _BuyTrackerWidgetState extends State<BuyTrackerWidget> {
                                   final trackerId = const Uuid().v4();
                                   
                                   try {
-                                    // 1. Obtener el Stripe Customer ID
+                                    // Obtener el Stripe Customer ID
                                     final response = await db
                                       .from('users')
                                       .select('customer_stripe_id')
@@ -1149,19 +1146,26 @@ class _BuyTrackerWidgetState extends State<BuyTrackerWidget> {
                                     }
 
                                     await handlePaymentFlow(
-                                      context, 
-                                      itemCount, 
-                                      shippingPrice, 
-                                      customerStripeId!,
-                                      trackerId, 
-                                    );
+                                  context, 
+                                  itemCount, 
+                                  shippingPrice, 
+                                  customerStripeId!,
+                                  trackerId, 
+                                );
 
-                                  } catch (e) {
-                                    print('Error en el flujo de compra: $e');
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Error al procesar la compra. Intenta de nuevo.')),
-                                    );
-                                  }
+
+                                if (!mounted) return;
+
+
+                              } catch (e) {
+                                print('Error en el flujo de compra: $e');
+
+                                if (!mounted) return; 
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Error al procesar la compra. Intenta de nuevo.')),
+                                );
+                              }
                                 },
 
 

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import '/user_provider.dart';
 import '/user_prefs.dart';
 import '/backend/supabase/supabase.dart';
 import '/auth/supabase_auth/auth_util.dart';
-import 'package:provider/provider.dart';
 
 class UserModel {
   final String? uuid;
@@ -12,7 +10,8 @@ class UserModel {
   final String? birthdate;
   final String? gender;
   final String? address;
-  final String? houseNumber;
+  // final String? interior;
+  // final String? exterior;
   final String? zipCode;
   final String? neighborhood;
   final String? city;
@@ -28,7 +27,8 @@ class UserModel {
     this.birthdate,
     this.gender,
     this.address,
-    this.houseNumber,
+    // this.interior,
+    // this.exterior,
     this.zipCode,
     this.neighborhood,
     this.city,
@@ -45,7 +45,8 @@ class UserModel {
         "birthdate": birthdate,
         "gender": gender,
         "address": address,
-        "houseNumber": houseNumber,
+        // "int": interior,
+        // "ext": exterior,
         "zipCode": zipCode,
         "neighborhood": neighborhood,
         "city": city,
@@ -63,7 +64,8 @@ class UserModel {
       birthdate: json["birthdate"] ?? "",
       gender: json["gender"] ?? "",
       address: json["address"] ?? "",
-      houseNumber: json["houseNumber"] ?? "",
+      // interior: json["int"] ?? "",
+      // exterior: json["ext"] ?? "",
       zipCode: json["zipCode"] ?? "",
       neighborhood: json["neighborhood"] ?? "",
       city: json["city"] ?? "",
@@ -81,7 +83,8 @@ class UserModel {
     String? birthdate,
     String? gender,
     String? address,
-    String? houseNumber,
+    // String? interior,
+    // String? exterior,
     String? zipCode,
     String? neighborhood,
     String? city,
@@ -97,7 +100,8 @@ class UserModel {
       birthdate: birthdate ?? this.birthdate,
       gender: gender ?? this.gender,
       address: address ?? this.address,
-      houseNumber: houseNumber ?? this.houseNumber,
+      // interior: interior ?? this.interior,
+      // exterior: exterior ?? this.exterior,
       zipCode: zipCode ?? this.zipCode,
       neighborhood: neighborhood ?? this.neighborhood,
       city: city ?? this.city,
@@ -121,14 +125,15 @@ class UserProvider with ChangeNotifier {
       _user = cachedUser;
       notifyListeners();
       debugPrint("Usuario cargado desde cache: ${cachedUser.name}");
-      return; // ⚡ Salimos aquí si no queremos refrescar
+      return;
     }
 
     // 2. Traer de Supabase solo si forceRefresh es true o no hay cache
     try {
       final response = await Supabase.instance.client
           .from('users')
-          .select('uuid, name, email, birthdate, gender, address, houseNumber, zipCode, neighborhood, city, usertype, photo_url, createdAt, phone')
+          .select('uuid, name, email, birthdate, gender, address, zipCode, neighborhood, city, usertype, photo_url, createdAt, phone')
+          // .select('uuid, name, email, birthdate, gender, address, ext, int, zipCode, neighborhood, city, usertype, photo_url, createdAt, phone')
           .eq('uuid', currentUserUid)
           .maybeSingle();
 
@@ -140,7 +145,8 @@ class UserProvider with ChangeNotifier {
           birthdate: response['birthdate'] ?? '',
           gender: response['gender'] ?? '',
           address: response['address'] ?? '',
-          houseNumber: response['houseNumber'] ?? '',
+          // interior: response['int'] ?? '',
+          // exterior: response['ext'] ?? '',
           zipCode: response['zipCode'] ?? '',
           neighborhood: response['neighborhood'] ?? '',
           city: response['city'] ?? '',

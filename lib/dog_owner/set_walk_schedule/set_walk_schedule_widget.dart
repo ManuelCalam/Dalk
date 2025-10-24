@@ -772,21 +772,16 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
         
                                   // ListView Dinamico de las Direcciones
                                   Padding(
-                                    padding: const EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 10.0, 0.0, 0.0),
+                                    padding: const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
                                     child: Container(
-                                      width: MediaQuery.sizeOf(context).width *
-                                          1.0,
+                                      width: MediaQuery.sizeOf(context).width * 1.0,
                                       height: 110.0,
                                       decoration: const BoxDecoration(),
-                                      
-                                      child: StreamBuilder<List<AddressesRow>>(
-                                        stream: _model.addressesListViewSupabaseStream ??=
-                                            SupaFlow.client
-                                                .from("addresses")
-                                                .stream(primaryKey: ['id'])
-                                                .eqOrNull('uuid', currentUserUid)
-                                                .map((list) => list.map((item) => AddressesRow(item)).toList()),
+                                      child: StreamBuilder<List<Map<String, dynamic>>>(
+                                        stream: SupaFlow.client
+                                            .from("addresses")
+                                            .stream(primaryKey: ['id'])
+                                            .eq('uuid', currentUserUid),
                                         builder: (context, snapshot) {
                                           if (!snapshot.hasData) {
                                             return Center(
@@ -801,37 +796,38 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                               ),
                                             );
                                           }
-                                          List<AddressesRow> addressesList = snapshot.data!;
-
+                                          final addressList = snapshot.data!;
                                           return ListView.separated(
                                             padding: EdgeInsets.zero,
                                             primary: false,
                                             shrinkWrap: true,
                                             scrollDirection: Axis.horizontal,
-                                            itemCount: addressesList.length + 1, // +1 para el botón extra
+                                            itemCount: addressList.length + 1, 
                                             separatorBuilder: (_, __) => const SizedBox(width: 10.0),
                                             itemBuilder: (context, index) {
-                                              if (index < addressesList.length) {
-                                                final address = addressesList[index];
+                                              if (index < addressList.length) {
+                                                final address = addressList[index];
                                                 return GestureDetector(
                                                   onTap: () {
                                                     setState(() {
-                                                      if (selectedAddressId == address.id) {
+                                                      if (selectedAddressId == address['id']) {
                                                         selectedAddressId = null; 
                                                       } else {
-                                                        selectedAddressId = address.id; 
+                                                        selectedAddressId = address['id']; 
                                                       }
                                                     });
                                                   },
+                                             
+
                                                   child: AddressCardWidget(
-                                                    key: Key('Keyil1_${address.id}'),
-                                                    alias: address.alias,
-                                                    id: address.id,
-                                                    selected: selectedAddressId == address.id,
+                                                    key: Key('AddressCard_${address['id']}'),
+                                                    alias: address['alias'],
+                                                    id: address['id'],
+                                                    selected: selectedAddressId == address['id'],
                                                   ),
                                                 );
                                               } else {
-                                                // Último elemento: botón para agregar dirección
+                                                // Último elemento
                                                 return InkWell(
                                                   splashColor: Colors.transparent,
                                                   focusColor: Colors.transparent,
@@ -841,10 +837,10 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                     context.pushNamed(
                                                         AddAddressWidget.routeName,
                                                         queryParameters: {
-                                                          'originWindow': 'addWalk',
+                                                          'originWindow': 'addWalk', 
                                                         },
-                                                      );                  
-                                                    },
+                                                      );                                                  
+                                                  },
                                                   child: Container(
                                                     width: 100.0,
                                                     height: 110.0,
@@ -860,7 +856,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                           height: 70.0,
                                                           decoration: const BoxDecoration(),
                                                           child: Icon(
-                                                            Icons.add_home_work_rounded,
+                                                            Icons.add_box,
                                                             color: FlutterFlowTheme.of(context).primary,
                                                             size: 45.0,
                                                           ),
@@ -905,9 +901,11 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                             },
                                           );
                                         },
-                                      )
+                                      ),
                                     ),
                                   ),
+
+
                                   Align(
                                     alignment: const AlignmentDirectional(-1.0, 0.0),
                                     child: Padding(
@@ -1071,122 +1069,122 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
 
 
 
-if(isPremium)
-Align(
-  alignment: const AlignmentDirectional(-1.0, 0.0),
-  child: Padding(
-    padding: const EdgeInsetsDirectional.fromSTEB(0.0, 25.0, 0.0, 0.0),
-    child: AutoSizeText(
-      'Instrucciones especiales para el paseador',
-      textAlign: TextAlign.start,
-      maxLines: 2,
-      minFontSize: 10.0,
-      style: FlutterFlowTheme.of(context)
-          .bodyMedium
-          .override(
-            font: GoogleFonts.lexend(
-              fontWeight: FontWeight.normal,
-              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-            ),
-            color: FlutterFlowTheme.of(context).accent1,
-            letterSpacing: 0.0,
-            fontWeight: FontWeight.normal,
-            fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-          ),
-    ),
-  ),
-),
+                                  if(isPremium)
+                                  Align(
+                                    alignment: const AlignmentDirectional(-1.0, 0.0),
+                                    child: Padding(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 25.0, 0.0, 0.0),
+                                      child: AutoSizeText(
+                                        'Instrucciones especiales para el paseador',
+                                        textAlign: TextAlign.start,
+                                        maxLines: 2,
+                                        minFontSize: 10.0,
+                                        style: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .override(
+                                              font: GoogleFonts.lexend(
+                                                fontWeight: FontWeight.normal,
+                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                              ),
+                                              color: FlutterFlowTheme.of(context).accent1,
+                                              letterSpacing: 0.0,
+                                              fontWeight: FontWeight.normal,
+                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                            ),
+                                      ),
+                                    ),
+                                  ),
 
-if(isPremium)
-Align(
-  alignment: const AlignmentDirectional(-1.0, 0.0),
-  child: Padding(
-    padding: const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
-    child: TextFormField(
-      controller: _model.instructionsTextController,
-      focusNode: _model.instructionsFocusNode,
-      autofocus: false,
-      textInputAction: TextInputAction.done,
-      obscureText: false,
-      decoration: InputDecoration(
-        isDense: true,
-        filled: true,
-        fillColor: FlutterFlowTheme.of(context).alternate,
-        labelText: 'Instrucciones para el paseador',
-        labelStyle: FlutterFlowTheme.of(context).bodyLarge.override(
-          font: GoogleFonts.lexend(
-            fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
-            fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
-          ),
-          letterSpacing: 0.0,
-          fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
-          fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
-          color: FlutterFlowTheme.of(context).primary
-        ),
-        alignLabelWithHint: false,
-        hintText: 'Ej. Ruta preferida, cuidados especiales, etc.',
-        hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
-          font: GoogleFonts.lexend(
-            fontWeight: FontWeight.w500,
-            fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
-          ),
-          color: FlutterFlowTheme.of(context).primary,
-          fontSize: 16,
-          letterSpacing: 0.0,
-          fontWeight: FontWeight.w500,
-          fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
-        ),
-        prefixIcon: Icon(
-          Icons.note_alt_outlined,
-          color: FlutterFlowTheme.of(context).primary,
-          size: 25,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(
-            color: Color(0x00000000),
-            width: 1,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(
-            color: Color(0x00000000),
-            width: 1,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: FlutterFlowTheme.of(context).error,
-            width: 1,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: FlutterFlowTheme.of(context).error,
-            width: 1,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-      ),
-      style: FlutterFlowTheme.of(context).bodyMedium.override(
-        font: GoogleFonts.lexend(
-          fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-        ),
-        color: FlutterFlowTheme.of(context).secondaryBackground,
-        fontSize: 16,
-        letterSpacing: 0.0,
-        fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-      ),
-      cursorColor: FlutterFlowTheme.of(context).primaryText,
-      maxLines: 4,
-      textAlign: TextAlign.start,
-    ),
-  ),
-),
+                                  if(isPremium)
+                                  Align(
+                                    alignment: const AlignmentDirectional(-1.0, 0.0),
+                                    child: Padding(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+                                      child: TextFormField(
+                                        controller: _model.instructionsTextController,
+                                        focusNode: _model.instructionsFocusNode,
+                                        autofocus: false,
+                                        textInputAction: TextInputAction.done,
+                                        obscureText: false,
+                                        decoration: InputDecoration(
+                                          isDense: true,
+                                          filled: true,
+                                          fillColor: FlutterFlowTheme.of(context).alternate,
+                                          labelText: 'Instrucciones para el paseador',
+                                          labelStyle: FlutterFlowTheme.of(context).bodyLarge.override(
+                                            font: GoogleFonts.lexend(
+                                              fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+                                              fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                                            ),
+                                            letterSpacing: 0.0,
+                                            fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+                                            fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                                            color: FlutterFlowTheme.of(context).primary
+                                          ),
+                                          alignLabelWithHint: false,
+                                          hintText: 'Ej. Ruta preferida, cuidados especiales, etc.',
+                                          hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                                            font: GoogleFonts.lexend(
+                                              fontWeight: FontWeight.w500,
+                                              fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
+                                            ),
+                                            color: FlutterFlowTheme.of(context).primary,
+                                            fontSize: 16,
+                                            letterSpacing: 0.0,
+                                            fontWeight: FontWeight.w500,
+                                            fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
+                                          ),
+                                          prefixIcon: Icon(
+                                            Icons.note_alt_outlined,
+                                            color: FlutterFlowTheme.of(context).primary,
+                                            size: 25,
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                              color: Color(0x00000000),
+                                              width: 1,
+                                            ),
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                              color: Color(0x00000000),
+                                              width: 1,
+                                            ),
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          errorBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                              color: FlutterFlowTheme.of(context).error,
+                                              width: 1,
+                                            ),
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          focusedErrorBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                              color: FlutterFlowTheme.of(context).error,
+                                              width: 1,
+                                            ),
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                        ),
+                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                          font: GoogleFonts.lexend(
+                                            fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                            fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                          ),
+                                          color: FlutterFlowTheme.of(context).secondaryBackground,
+                                          fontSize: 16,
+                                          letterSpacing: 0.0,
+                                          fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                        ),
+                                        cursorColor: FlutterFlowTheme.of(context).primaryText,
+                                        maxLines: 4,
+                                        textAlign: TextAlign.start,
+                                      ),
+                                    ),
+                                  ),
 
 
 
@@ -1204,6 +1202,16 @@ Align(
                                             finalWalkDurationInMinutes = 60;
                                         } else {
                                             finalWalkDurationInMinutes = 30;
+                                        }
+
+                                        if(_model.datePicked1?.toIso8601String() == '' || _model.datePicked2?.toIso8601String() == ''
+                                          || selectedPetId == null || selectedAddressId == null){
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(
+                                                content: Text('Por favor, ingresa los datos faltantes'),
+                                            ));
+
+                                            return;
                                         }
 
                                         context.pushNamed(

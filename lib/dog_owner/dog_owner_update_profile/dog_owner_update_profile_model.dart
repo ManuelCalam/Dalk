@@ -67,12 +67,12 @@ class DogOwnerUpdateProfileModel
     return null;
   }
 
-  // State field(s) for ApartamentNumDogOwner_Input widget.
-  FocusNode? apartamentNumDogOwnerInputFocusNode;
-  TextEditingController? apartamentNumDogOwnerInputTextController;
+  // State field(s) for interiorNumberDogOwner_Input widget.
+  FocusNode? interiorNumberDogOwnerInputFocusNode;
+  TextEditingController? interiorNumberDogOwnerInputTextController;
   String? Function(BuildContext, String?)?
-      apartamentNumDogOwnerInputTextControllerValidator;
-  String? _apartamentNumDogOwnerInputTextControllerValidator(
+      interiorNumberDogOwnerInputTextControllerValidator;
+  String? _interiorNumberDogOwnerInputTextControllerValidator(
       BuildContext context, String? val) {
     if (val == null || val.isEmpty) {
       return 'Int is required';
@@ -132,8 +132,8 @@ class DogOwnerUpdateProfileModel
         _phoneDogOwnerInputTextControllerValidator;
     streetDogOwnerInputTextControllerValidator =
         _streetDogOwnerInputTextControllerValidator;
-    apartamentNumDogOwnerInputTextControllerValidator =
-        _apartamentNumDogOwnerInputTextControllerValidator;
+    interiorNumberDogOwnerInputTextControllerValidator =
+        _interiorNumberDogOwnerInputTextControllerValidator;
     zipCodeDogOwnerInputTextControllerValidator =
         _zipCodeDogOwnerInputTextControllerValidator;
     neighborhoodDogOwnerInputTextControllerValidator =
@@ -154,8 +154,8 @@ class DogOwnerUpdateProfileModel
     streetDogOwnerInputFocusNode?.dispose();
     streetDogOwnerInputTextController?.dispose();
 
-    apartamentNumDogOwnerInputFocusNode?.dispose();
-    apartamentNumDogOwnerInputTextController?.dispose();
+    interiorNumberDogOwnerInputFocusNode?.dispose();
+    interiorNumberDogOwnerInputTextController?.dispose();
 
     zipCodeDogOwnerInputFocusNode?.dispose();
     zipCodeDogOwnerInputTextController?.dispose();

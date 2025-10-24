@@ -25,11 +25,11 @@ class AddAddressModel extends FlutterFlowModel<AddAddressWidget> {
   FocusNode? addressInputFocusNode;
   TextEditingController? addressInputTextController;
   String? Function(BuildContext, String?)? addressInputTextControllerValidator;
-  // State field(s) for houseNumber_Input widget.
-  FocusNode? houseNumberInputFocusNode;
-  TextEditingController? houseNumberInputTextController;
+  // State field(s) for int_Input widget.
+  FocusNode? intInputFocusNode;
+  TextEditingController? intInputTextController;
   String? Function(BuildContext, String?)?
-      houseNumberInputTextControllerValidator;
+      intInputTextControllerValidator;
   // State field(s) for zipCode_Input widget.
   FocusNode? zipCodeInputFocusNode;
   TextEditingController? zipCodeInputTextController;
@@ -61,8 +61,8 @@ class AddAddressModel extends FlutterFlowModel<AddAddressWidget> {
     addressInputFocusNode?.dispose();
     addressInputTextController?.dispose();
 
-    houseNumberInputFocusNode?.dispose();
-    houseNumberInputTextController?.dispose();
+    intInputFocusNode?.dispose();
+    intInputTextController?.dispose();
 
     zipCodeInputFocusNode?.dispose();
     zipCodeInputTextController?.dispose();

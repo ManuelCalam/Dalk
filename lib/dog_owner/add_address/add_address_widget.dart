@@ -1,6 +1,8 @@
 import 'package:dalk/backend/supabase/supabase.dart';
 import 'package:dalk/dog_owner/buy_tracker/buy_tracker_widget.dart';
 import 'package:dalk/dog_owner/set_walk_schedule/set_walk_schedule_widget.dart';
+import 'package:dalk/utils/validation.dart';
+import 'package:flutter/services.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
@@ -45,8 +47,8 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
     _model.addressInputTextController ??= TextEditingController();
     _model.addressInputFocusNode ??= FocusNode();
 
-    _model.houseNumberInputTextController ??= TextEditingController();
-    _model.houseNumberInputFocusNode ??= FocusNode();
+    _model.intInputTextController ??= TextEditingController();
+    _model.intInputFocusNode ??= FocusNode();
 
     _model.zipCodeInputTextController ??= TextEditingController();
     _model.zipCodeInputFocusNode ??= FocusNode();
@@ -352,9 +354,11 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                             cursorColor:
                                                 FlutterFlowTheme.of(context)
                                                     .primaryText,
-                                            validator: _model
-                                                .aliasInputTextControllerValidator
-                                                .asValidator(context),
+                                            // validator: _model
+                                            //     .aliasInputTextControllerValidator
+                                            //     .asValidator(context),
+
+                                              validator: (value) => Validators.requiredField(value, fieldName: 'Alias'),
                                           ),
                                         ),
                                       ),
@@ -524,9 +528,10 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                             cursorColor:
                                                 FlutterFlowTheme.of(context)
                                                     .primaryText,
-                                            validator: _model
-                                                .addressInputTextControllerValidator
-                                                .asValidator(context),
+                                            // validator: _model
+                                            //     .addressInputTextControllerValidator
+                                            //     .asValidator(context),
+                                            validator: (value) => Validators.requiredField(value, fieldName: 'Calle'),
                                           ),
                                         ),
                                       ),
@@ -553,9 +558,9 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                                   width: 350,
                                                   child: TextFormField(
                                                     controller: _model
-                                                        .houseNumberInputTextController,
+                                                        .intInputTextController,
                                                     focusNode: _model
-                                                        .houseNumberInputFocusNode,
+                                                        .intInputFocusNode,
                                                     autofocus: false,
                                                     textInputAction:
                                                         TextInputAction.next,
@@ -726,9 +731,11 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                                         FlutterFlowTheme.of(
                                                                 context)
                                                             .primaryText,
-                                                    validator: _model
-                                                        .houseNumberInputTextControllerValidator
-                                                        .asValidator(context),
+                                                    // validator: _model
+                                                    //     .intInputTextControllerValidator
+                                                    //     .asValidator(context),
+                                                    validator: (value) => Validators.requiredField(value, fieldName: 'Interior'),
+                                                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9]'))],
                                                   ),
                                                 ),
                                               ),
@@ -914,9 +921,11 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                                         FlutterFlowTheme.of(
                                                                 context)
                                                             .primaryText,
-                                                    validator: _model
-                                                        .zipCodeInputTextControllerValidator
-                                                        .asValidator(context),
+                                                    // validator: _model
+                                                    //     .zipCodeInputTextControllerValidator
+                                                    //     .asValidator(context),
+                                                    validator: (value) => Validators.postalCode(value),
+                                                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9]'))],
                                                   ),
                                                 ),
                                               ),
@@ -1088,9 +1097,10 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                             cursorColor:
                                                 FlutterFlowTheme.of(context)
                                                     .primaryText,
-                                            validator: _model
-                                                .neighborhoodInputTextControllerValidator
-                                                .asValidator(context),
+                                            // validator: _model
+                                            //     .neighborhoodInputTextControllerValidator
+                                            //     .asValidator(context),
+                                            validator: (value) => Validators.requiredField(value, fieldName: 'Colonia'),
                                           ),
                                         ),
                                       ),
@@ -1263,9 +1273,10 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                             cursorColor:
                                                 FlutterFlowTheme.of(context)
                                                     .primaryText,
-                                            validator: _model
-                                                .cityInputTextControllerValidator
-                                                .asValidator(context),
+                                            // validator: _model
+                                            //     .cityInputTextControllerValidator
+                                            //     .asValidator(context),
+                                            validator: (value) => Validators.requiredField(value, fieldName: 'Ciudad'),
                                           ),
                                         ),
                                       ),
@@ -1276,6 +1287,22 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                         0, 15, 0, 0),
                                     child: FFButtonWidget(
                                       onPressed: () async {
+                                        if(_model.aliasInputTextController.text.isEmpty){
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('Ingresa un alias para identificar la dirección'),
+                                            ));
+                                          return;
+                                        }
+
+                                        if(_model.addressInputTextController.text.isEmpty){
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('Ingresa una dirección'),
+                                            ));
+                                          return;
+                                        }
+
                                         try{
                                           final response = await Supabase.instance.client
                                           .from('addresses')
@@ -1283,7 +1310,7 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
                                               'uuid': currentUserUid,
                                               'alias': _model.aliasInputTextController.text,
                                               'address': _model.addressInputTextController.text,
-                                              'houseNumber': _model.houseNumberInputTextController.text,
+                                              'houseNumber': _model.intInputTextController.text, //Cambiar houseNumber a 'int'
                                               'zipCode': _model.zipCodeInputTextController.text,
                                               'neighborhood': _model.neighborhoodInputTextController.text,
                                               'city': _model.cityInputTextController.text,

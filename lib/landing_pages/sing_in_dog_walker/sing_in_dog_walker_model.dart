@@ -70,12 +70,12 @@ class SingInDogWalkerModel extends FlutterFlowModel<SingInDogWalkerWidget> {
     return null;
   }
 
-  // State field(s) for ApartamentNumDogWalker_Input widget.
-  FocusNode? apartamentNumDogWalkerInputFocusNode;
-  TextEditingController? apartamentNumDogWalkerInputTextController;
+  // State field(s) for interiorNumberDogWalker_Input widget.
+  FocusNode? interiorNumberDogWalkerInputFocusNode;
+  TextEditingController? interiorNumberDogWalkerInputTextController;
   String? Function(BuildContext, String?)?
-      apartamentNumDogWalkerInputTextControllerValidator;
-  String? _apartamentNumDogWalkerInputTextControllerValidator(
+      interiorNumberDogWalkerInputTextControllerValidator;
+  String? _interiorNumberDogWalkerInputTextControllerValidator(
       BuildContext context, String? val) {
     if (val == null || val.isEmpty) {
       return 'Int is required';
@@ -148,8 +148,8 @@ class SingInDogWalkerModel extends FlutterFlowModel<SingInDogWalkerWidget> {
         _phoneDogWalkerInputTextControllerValidator;
     streetDogWalkerInputTextControllerValidator =
         _streetDogWalkerInputTextControllerValidator;
-    apartamentNumDogWalkerInputTextControllerValidator =
-        _apartamentNumDogWalkerInputTextControllerValidator;
+    interiorNumberDogWalkerInputTextControllerValidator =
+        _interiorNumberDogWalkerInputTextControllerValidator;
     zipCodeDogWalkerInputTextControllerValidator =
         _zipCodeDogWalkerInputTextControllerValidator;
     neighborhoodDogWalkerInputTextControllerValidator =
@@ -175,8 +175,8 @@ class SingInDogWalkerModel extends FlutterFlowModel<SingInDogWalkerWidget> {
     streetDogWalkerInputFocusNode?.dispose();
     streetDogWalkerInputTextController?.dispose();
 
-    apartamentNumDogWalkerInputFocusNode?.dispose();
-    apartamentNumDogWalkerInputTextController?.dispose();
+    interiorNumberDogWalkerInputFocusNode?.dispose();
+    interiorNumberDogWalkerInputTextController?.dispose();
 
     zipCodeDogWalkerInputFocusNode?.dispose();
     zipCodeDogWalkerInputTextController?.dispose();

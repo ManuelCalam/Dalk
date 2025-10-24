@@ -59,7 +59,7 @@ class _DogOwnerUpdateProfileWidgetState
       _model.nameDogOwnerInputTextController.text = response['name'] ?? '';
       _model.phoneDogOwnerInputTextController.text = response['phone'] ?? '';
       _model.streetDogOwnerInputTextController.text = response['address'] ?? '';
-      _model.apartamentNumDogOwnerInputTextController.text = response['houseNumber'] ?? '';
+      _model.interiorNumberDogOwnerInputTextController.text = response['houseNumber'] ?? '';
       _model.zipCodeDogOwnerInputTextController.text = response['zipCode'] ?? '';
       _model.neighborhoodDogOwnerInputTextController.text = response['neighborhood'] ?? '';
       _model.cityDogOwnerInputTextController.text = response['city'] ?? '';
@@ -89,8 +89,8 @@ class _DogOwnerUpdateProfileWidgetState
     _model.streetDogOwnerInputTextController ??= TextEditingController();
     _model.streetDogOwnerInputFocusNode ??= FocusNode();
 
-    _model.apartamentNumDogOwnerInputTextController ??= TextEditingController();
-    _model.apartamentNumDogOwnerInputFocusNode ??= FocusNode();
+    _model.interiorNumberDogOwnerInputTextController ??= TextEditingController();
+    _model.interiorNumberDogOwnerInputFocusNode ??= FocusNode();
 
     _model.zipCodeDogOwnerInputTextController ??= TextEditingController();
     _model.zipCodeDogOwnerInputFocusNode ??= FocusNode();
@@ -1206,9 +1206,9 @@ class _DogOwnerUpdateProfileWidgetState
                                                             child:
                                                                 TextFormField(
                                                               controller: _model
-                                                                  .apartamentNumDogOwnerInputTextController,
+                                                                  .interiorNumberDogOwnerInputTextController,
                                                               focusNode: _model
-                                                                  .apartamentNumDogOwnerInputFocusNode,
+                                                                  .interiorNumberDogOwnerInputFocusNode,
                                                               autofocus: false,
                                                               obscureText:
                                                                   false,
@@ -1382,7 +1382,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                                           context)
                                                                       .primaryText,
                                                               validator: _model
-                                                                  .apartamentNumDogOwnerInputTextControllerValidator
+                                                                  .interiorNumberDogOwnerInputTextControllerValidator
                                                                   .asValidator(
                                                                       context),
                                                               inputFormatters: [
@@ -1976,7 +1976,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                             'birthdate': supaSerialize<DateTime>(_model.datePicked),
                                                             'gender': _model.genderDogOwnerMenuValue,
                                                             'address': _model.streetDogOwnerInputTextController.text,
-                                                            'houseNumber': _model.apartamentNumDogOwnerInputTextController.text,
+                                                            'houseNumber': _model.interiorNumberDogOwnerInputTextController.text, //Cambiar houseNumber a 'int'
                                                             'zipCode': _model.zipCodeDogOwnerInputTextController.text,
                                                             'neighborhood': _model.neighborhoodDogOwnerInputTextController.text,
                                                             'city': _model.cityDogOwnerInputTextController.text,

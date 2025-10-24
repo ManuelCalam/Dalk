@@ -1,5 +1,6 @@
 import 'package:dalk/common/chat/chat_widget.dart';
 import 'package:dalk/components/pop_up_dog_profile/pop_up_dog_profile_widget.dart';
+import 'package:dalk/components/pop_up_dog_walker_profile/pop_up_dog_walker_profile_widget.dart';
 import 'package:dalk/components/pop_up_walk_options/pop_up_walk_options_widget.dart';
 
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -265,31 +266,64 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      5, 2, 0, 0),
-                                  child: AutoSizeText(
-                                    widget.userName,
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          font: GoogleFonts.lexend(
-                                            fontWeight: FontWeight.w500,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
-                                          ),
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryBackground,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.w500,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontStyle,
-                                        ),
-                                  ),
-                                ),
+  padding: const EdgeInsetsDirectional.fromSTEB(5, 2, 0, 0),
+  child: InkWell(
+    splashColor: Colors.transparent,
+    focusColor: Colors.transparent,
+    hoverColor: Colors.transparent,
+    highlightColor: Colors.transparent,
+    onTap: () async {
+      if (widget.usertype == 'Dueño') {
+        await showModalBottomSheet(
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          enableDrag: false,
+          context: context,
+          builder: (context) {
+            return Padding(
+              padding: MediaQuery.viewInsetsOf(context),
+              child: PopUpDogWalkerProfileWidget(walkerId: widget.walkerId),
+            );
+          },
+        );
+      } else {
+        await showModalBottomSheet(
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          enableDrag: false,
+          context: context,
+          builder: (context) {
+            return Padding(
+              padding: MediaQuery.viewInsetsOf(context),
+              child: PopUpDogProfileWidget(dogId: widget.dogId),
+            );
+          },
+        ).then((value) => safeSetState(() {}));
+      }
+    },
+    child: AutoSizeText(
+      widget.userName,
+      style: FlutterFlowTheme.of(context)
+          .bodyMedium
+          .override(
+            font: GoogleFonts.lexend(
+              fontWeight: FontWeight.w500,
+              fontStyle: FlutterFlowTheme.of(context)
+                  .bodyMedium
+                  .fontStyle,
+            ),
+            color: FlutterFlowTheme.of(context)
+                .accent1,
+            letterSpacing: 0.0,
+            fontWeight: FontWeight.w500,
+            fontStyle: FlutterFlowTheme.of(context)
+                .bodyMedium
+                .fontStyle,
+            decoration: TextDecoration.underline,
+          ),
+    ),
+  ),
+),
                               ],
                             ),
                             Row(

@@ -1,17 +1,9 @@
 import '/components/go_back_container/go_back_container_widget.dart';
-import '/flutter_flow/flutter_flow_drop_down.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
-import 'dart:ui';
 import 'sing_in_dog_owner_widget.dart' show SingInDogOwnerWidget;
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
+
 
 class SingInDogOwnerModel extends FlutterFlowModel<SingInDogOwnerWidget> {
   ///  State fields for stateful widgets in this page.
@@ -43,16 +35,19 @@ class SingInDogOwnerModel extends FlutterFlowModel<SingInDogOwnerWidget> {
   TextEditingController? streetDogOwnerInputTextController;
   String? Function(BuildContext, String?)?
       streetDogOwnerInputTextControllerValidator;
-  // State field(s) for ApartamentNumDogOwner_Input widget.
-  FocusNode? apartamentNumDogOwnerInputFocusNode;
-  TextEditingController? apartamentNumDogOwnerInputTextController;
+  // State field(s) for interiorNumberDogOwner_Input widget.
+  FocusNode? interiorNumberDogOwnerInputFocusNode;
+  TextEditingController? interiorNumberDogOwnerInputTextController;
   String? Function(BuildContext, String?)?
-      apartamentNumDogOwnerInputTextControllerValidator;
+      interiorNumberDogOwnerInputTextControllerValidator;
   // State field(s) for ZipCodeDogOwner_Input widget.
   FocusNode? zipCodeDogOwnerInputFocusNode;
   TextEditingController? zipCodeDogOwnerInputTextController;
-  String? Function(BuildContext, String?)?
-      zipCodeDogOwnerInputTextControllerValidator;
+  String? Function(BuildContext, String?)? zipCodeDogOwnerInputTextControllerValidator;
+  // State field(s) for ZipCodeDogOwner_Input widget.
+  FocusNode? exteriorNumberDogOwnerFocusNode;
+  TextEditingController? exteriorNumberDogOwnerTextController;
+  String? Function(BuildContext, String?)? exteriorNumberDogOwnerTextControllerValidator;
   // State field(s) for NeighborhoodDogOwner_Input widget.
   FocusNode? neighborhoodDogOwnerInputFocusNode;
   TextEditingController? neighborhoodDogOwnerInputTextController;
@@ -98,8 +93,8 @@ class SingInDogOwnerModel extends FlutterFlowModel<SingInDogOwnerWidget> {
     streetDogOwnerInputFocusNode?.dispose();
     streetDogOwnerInputTextController?.dispose();
 
-    apartamentNumDogOwnerInputFocusNode?.dispose();
-    apartamentNumDogOwnerInputTextController?.dispose();
+    interiorNumberDogOwnerInputFocusNode?.dispose();
+    interiorNumberDogOwnerInputTextController?.dispose();
 
     zipCodeDogOwnerInputFocusNode?.dispose();
     zipCodeDogOwnerInputTextController?.dispose();

@@ -1,5 +1,3 @@
-import 'package:dalk/dog_walker/home_dog_walker/home_dog_walker_widget.dart';
-
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
@@ -41,7 +39,7 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
           _model.phoneDogWalkerInputTextController.text.trim().isNotEmpty &&
           _model.genderDogWalkerMenuValue != null &&
           _model.streetDogWalkerInputTextController.text.trim().isNotEmpty &&
-          _model.apartamentNumDogWalkerInputTextController.text.trim().isNotEmpty &&
+          _model.interiorNumberDogWalkerInputTextController.text.trim().isNotEmpty &&
           _model.zipCodeDogWalkerInputTextController.text.trim().isNotEmpty &&
           _model.neighborhoodDogWalkerInputTextController.text.trim().isNotEmpty &&
           _model.cityDogWalkerInputTextController.text.trim().isNotEmpty;
@@ -67,9 +65,9 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
     _model.streetDogWalkerInputTextController ??= TextEditingController();
     _model.streetDogWalkerInputFocusNode ??= FocusNode();
 
-    _model.apartamentNumDogWalkerInputTextController ??=
+    _model.interiorNumberDogWalkerInputTextController ??=
         TextEditingController();
-    _model.apartamentNumDogWalkerInputFocusNode ??= FocusNode();
+    _model.interiorNumberDogWalkerInputFocusNode ??= FocusNode();
 
     _model.zipCodeDogWalkerInputTextController ??= TextEditingController();
     _model.zipCodeDogWalkerInputFocusNode ??= FocusNode();
@@ -1399,9 +1397,9 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                           width: 350.0,
                                                           child: TextFormField(
                                                             controller: _model
-                                                                .apartamentNumDogWalkerInputTextController,
+                                                                .interiorNumberDogWalkerInputTextController,
                                                             focusNode: _model
-                                                                .apartamentNumDogWalkerInputFocusNode,
+                                                                .interiorNumberDogWalkerInputFocusNode,
                                                             autofocus: false,
                                                             obscureText: false,
                                                             decoration:
@@ -2605,7 +2603,7 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                       'birthdate': supaSerialize<DateTime>(_model.datePicked),
                                                       'gender': _model.genderDogWalkerMenuValue,
                                                       'address': _model.streetDogWalkerInputTextController.text,
-                                                      'houseNumber': _model.apartamentNumDogWalkerInputTextController.text,
+                                                      'houseNumber': _model.interiorNumberDogWalkerInputTextController.text, //Cambiar houseNumber por 'int'
                                                       'zipCode': _model.zipCodeDogWalkerInputTextController.text,
                                                       'neighborhood': _model.neighborhoodDogWalkerInputTextController.text,
                                                       'city': _model.cityDogWalkerInputTextController.text,
@@ -2617,8 +2615,8 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                       'uuid': currentUserUid,
                                                       'alias': 'Mi Dirección',
                                                       'address': _model.streetDogWalkerInputTextController.text,
-                                                      'houseNumber': _model.apartamentNumDogWalkerInputTextController.text,
-                                                      'zipCode': _model.zipCodeDogWalkerInputTextController.text,
+                                                      'houseNumber': _model.interiorNumberDogWalkerInputTextController.text, //Cambiar houseNumber por 'int'
+                                                      'zipCode': _model.zipCodeDogWalkerInputTextController.text, 
                                                       'neighborhood': _model.neighborhoodDogWalkerInputTextController.text,
                                                       'city': _model.cityDogWalkerInputTextController.text,
                                                   });

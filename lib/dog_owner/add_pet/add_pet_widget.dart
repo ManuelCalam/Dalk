@@ -1,5 +1,4 @@
 import 'package:dalk/backend/supabase/supabase.dart';
-import '/auth/supabase_auth/auth_util.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
 import '/flutter_flow/flutter_flow_choice_chips.dart';
@@ -11,7 +10,6 @@ import '/flutter_flow/form_field_controller.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
 import '/utils/validation.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
@@ -73,83 +71,96 @@ class _AddPetWidgetState extends State<AddPetWidget> {
           _model.dogSizeMenuValue != null;
   }
 
-  Future<String?> _uploadOwnerImage(String userId, File imageFile, {int? petId}) async {
-    try {
-      final storage = Supabase.instance.client.storage;
-      final supabase = Supabase.instance.client;
+// Subir imagen de la mascota a Supabase Storage
+Future<String?> _uploadPetImage(
+  BuildContext context,
+  String userId,
+  File imageFile, {
+  int? petId,
+}) async {
+  try {
+    final fileSize = await imageFile.length();
+    const maxSize = 5 * 1024 * 1024; // 5 MB
 
-      final filePath = petId != null
-          ? 'owners/$userId/pets/$petId/profile.jpg'
-          : 'owners/$userId/profile.jpg';
-
-      await storage.from('profile_pics').upload(
-            filePath,
-            imageFile,
-            fileOptions: const FileOptions(upsert: true),
-          );
-
-      final imageUrl = storage.from('profile_pics').getPublicUrl(filePath);
-
-      if (petId != null) {
-        await supabase.from('pets').update({'photo_url': imageUrl}).eq('id', petId);
-      }
-
-      return imageUrl;
-    } catch (e) {
-      print('Error al subir imagen: $e');
+    if (fileSize > maxSize) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('La imagen supera el tamaño máximo permitido (5 MB).'),
+        ),
+      );
       return null;
     }
+
+    final storage = Supabase.instance.client.storage;
+    final supabase = Supabase.instance.client;
+    final filePath = 'owners/$userId/pets/$petId/profile.jpg';
+
+    await storage.from('profile_pics').upload(
+          filePath,
+          imageFile,
+          fileOptions: const FileOptions(upsert: true),
+        );
+
+    final imageUrl = storage.from('profile_pics').getPublicUrl(filePath);
+
+    if (petId != null) {
+      await supabase.from('pets').update({'photo_url': imageUrl}).eq('id', petId);
+    }
+
+    return imageUrl;
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Error al subir imagen. Vuelve a intentarlo.')),
+    );
+    return null;
   }
+}
 
-  //funcion para seleccionar imagen
-    Future<void> _pickImage(bool isOwner, ImageSource source, {int? petId}) async {
-    final pickedFile = await _picker.pickImage(source: source);
-    if (pickedFile != null) {
-      setState(() {
-        if (isOwner) {
-          _ownerImage = File(pickedFile.path);
-        } else {
-          _walkerImage = File(pickedFile.path);
-        }
-      });
+// Seleccionar imagen
+Future<void> _pickImage(BuildContext context, ImageSource source, {int? petId}) async {
+  final pickedFile = await _picker.pickImage(source: source);
 
-      // Subir imagen si es de perro
-      if (petId != null) {
-        final userId = Supabase.instance.client.auth.currentUser?.id;
-        if (userId != null) {
-          await _uploadOwnerImage(userId, File(pickedFile.path), petId: petId);
-        }
-      }
+  if (pickedFile != null) {
+    setState(() {
+      _ownerImage = File(pickedFile.path);
+    });
+
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId != null && petId != null) {
+      await _uploadPetImage(context, userId, File(pickedFile.path), petId: petId);
     }
   }
+}
 
-  void _showImagePickerOptions(BuildContext context, bool isOwner, int? petId) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Tomar foto'),
-              onTap: () {
-                Navigator.of(context).pop();
-                _pickImage(isOwner, ImageSource.camera, petId: petId);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Elegir de la galería'),
-              onTap: () {
-                Navigator.of(context).pop();
-                _pickImage(isOwner, ImageSource.gallery, petId: petId);
-              },
-            ),
-          ],
-        ),
+// Mostrar opciones de imagen
+void _showImagePickerOptions(BuildContext context, {int? petId}) {
+  showModalBottomSheet(
+    context: context,
+    builder: (context) => SafeArea(
+      child: Wrap(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.camera_alt),
+            title: const Text('Tomar foto'),
+            onTap: () {
+              Navigator.of(context).pop();
+              _pickImage(context, ImageSource.camera, petId: petId);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.photo_library),
+            title: const Text('Elegir de la galería'),
+            onTap: () {
+              Navigator.of(context).pop();
+              _pickImage(context, ImageSource.gallery, petId: petId);
+            },
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -259,24 +270,22 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                   children: [
                                     Flexible(
                                       child: Align(
-  alignment: const AlignmentDirectional(0, 0),
-  child: Padding(
-    padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
-    child: GestureDetector(
-      onTap: () => _showImagePickerOptions(context, true, 2), 
-      child: CircleAvatar(
-        radius: 60,
-        backgroundImage: _ownerImage != null
-            ? FileImage(_ownerImage!)
-            : const NetworkImage(
-                'https://static.vecteezy.com/system/resources/previews/007/407/996/non_2x/user-icon-person-icon-client-symbol-login-head-sign-icon-design-vector.jpg',
-              ) as ImageProvider,
-      ),
-    ),
-  ),
-),
-
-                                    ),
+                                      alignment: const AlignmentDirectional(0, 0),
+                                      child: Padding(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                        child: GestureDetector(
+                                          onTap: () => _showImagePickerOptions(context),
+                                          child: CircleAvatar(
+                                            radius: 60,
+                                            backgroundImage: _ownerImage != null
+                                                ? FileImage(_ownerImage!)
+                                                : const NetworkImage(
+                                                    'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/public/profile_pics/dog.png',
+                                                  ) as ImageProvider,
+                                          ),
+                                        ),
+                                      ),
+                                    )),
                                     Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMedium.override()),
                                     Align(
                                       alignment: const AlignmentDirectional(-1, -1),
@@ -1281,65 +1290,55 @@ class _AddPetWidgetState extends State<AddPetWidget> {
                                         padding: const EdgeInsetsDirectional.fromSTEB(
                                             0, 18, 0, 0),
                                         child: FFButtonWidget(
-                                          onPressed: () async {
-  if (!validarCamposObligatorios()) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Completa todos los campos')),
-    );
-    return;
-  }
+                                        onPressed: () async {
+                                          if (!validarCamposObligatorios()) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(content: Text('Completa todos los campos')),
+                                            );
+                                            return;
+                                          }
 
-  try {
-    final supabase = Supabase.instance.client;
-    final userId = Supabase.instance.client.auth.currentUser?.id;
+                                          try {
+                                            final supabase = Supabase.instance.client;
+                                            final userId = Supabase.instance.client.auth.currentUser?.id;
 
-    // 1️⃣ Insertar la mascota (sin imagen todavía)
-    final response = await supabase
-        .from('pets')
-        .insert({
-          'uuid': userId,
-          'name': _model.nameInputTextController.text,
-          'age': _model.ageInputTextController.text,
-          'gender': _model.genderDogOwnerMenuValue,
-          'bree': _model.breeInputTextController.text,
-          'size': _model.dogSizeMenuValue,
-          'behaviour': _model.behaviourChipsValueController?.value ?? [],
-          'aboutme': _model.dogInfoInputTextController.text,
-        })
-        .select(); 
+                                            final response = await supabase
+                                                .from('pets')
+                                                .insert({
+                                                  'uuid': userId,
+                                                  'name': _model.nameInputTextController.text,
+                                                  'age': _model.ageInputTextController.text,
+                                                  'gender': _model.genderDogOwnerMenuValue,
+                                                  'bree': _model.breeInputTextController.text,
+                                                  'size': _model.dogSizeMenuValue,
+                                                  'behaviour': _model.behaviourChipsValueController?.value ?? [],
+                                                  'aboutme': _model.dogInfoInputTextController.text,
+                                                })
+                                                .select();
 
-    final petData = response.first;
-    final petId = petData['id'] as int;
+                                            final petData = response.first;
+                                            final petId = petData['id'] as int;
 
-    // 3Subir imagen si el usuario eligió una
-    if (_ownerImage != null && userId != null) {
-      await _uploadOwnerImage(userId, _ownerImage!, petId: petId);
-    }
+                                            String imageUrl =
+                                                'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/public/profile_pics/dog.png';
 
-    // 4️Mostrar confirmación
-    // showDialog(
-    //   context: context,
-    //   builder: (_) => PopUpConfirmDialogWidget(
-    //     title: "Mascota registrada",
-    //     message: "¡Mascota ya forma parte de tu familia en la app!",
-    //     confirmText: "Agregar otra mascota",
-    //     cancelText: "Menú principal",
-    //     confirmColor: FlutterFlowTheme.of(context).accent1,
-    //     cancelColor: FlutterFlowTheme.of(context).primary,
-    //     icon: Icons.check_circle,
-    //     iconColor: FlutterFlowTheme.of(context).success,
-    //     onConfirm: () => context.goNamed(AddPetWidget.routeName),
-    //     onCancel: () => context.go('/'),
-    //   ),
-    // );
+                                            // Si el usuario seleccionó una imagen, se sube a Supabase
+                                            if (_ownerImage != null && userId != null) {
+                                              final uploadedUrl = await _uploadPetImage(context, userId, _ownerImage!, petId: petId);
+                                              if (uploadedUrl != null) imageUrl = uploadedUrl;
+                                            }
 
-    Navigator.pop(context);
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error al registrar la mascota: $e')),
-    );
-  }
-},
+                                            // Actualizar la URL (ya sea subida o la predeterminada)
+                                            await supabase.from('pets').update({'photo_url': imageUrl}).eq('id', petId);
+
+                                            Navigator.pop(context);
+                                          } catch (e) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(content: Text('Error al registrar la mascota. Intenta de nuevo.')),
+                                            );
+                                          }
+                                        },
+
                                           text: 'Agregar Mascota',
                                           options: FFButtonOptions(
                                             width: MediaQuery.sizeOf(context)

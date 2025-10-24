@@ -25,8 +25,8 @@ void onStart(ServiceInstance service) async {
   // ⭐ PASO CRÍTICO: Configuración de la Notificación Mínima.
   if (service is AndroidServiceInstance) {
       service.setForegroundNotificationInfo(
-          title: "Dalk Tracking Service",
-          content: "Servicio de rastreo activo.",
+          title: "Dalk",
+          content: "Servicio de rastreo en segundo plano activo.",
       );
   }
 
