@@ -121,31 +121,56 @@ class _MyAppState extends State<MyApp> {
 
   /// ✅ INICIALIZAR DEEP LINKS (MÉTODO DE LA CLASE)
   Future<void> _initDeepLinks() async {
-    // ✅ MANEJAR LINK INICIAL (app cerrada)
-    try {
-      final initialUri = await _appLinks.getInitialLink();
-      if (initialUri != null) {
-        debugPrint('🔗 Initial link: $initialUri');
-        _handleDeepLink(initialUri);
+  // ✅ ESPERAR A QUE LA APP ESTÉ COMPLETAMENTE INICIALIZADA
+  await Future.delayed(const Duration(milliseconds: 500));
+  
+  // ✅ MANEJAR LINK INICIAL (app cerrada)
+  try {
+    final initialUri = await _appLinks.getInitialLink();
+    if (initialUri != null) {
+      debugPrint('🔗 Initial link detectado: $initialUri');
+      
+      // 🔑 VALIDAR QUE SEA UN DEEP LINK VÁLIDO
+      if (initialUri.scheme == 'dalkpaseos' && 
+          initialUri.host == 'redirect_verificamex') {
+        
+        // Solo procesar si tiene los parámetros necesarios
+        final hasRequiredParams = 
+            initialUri.queryParameters['session_id']?.isNotEmpty == true &&
+            initialUri.queryParameters['user_id']?.isNotEmpty == true;
+        
+        if (hasRequiredParams) {
+          debugPrint('✅ Deep link válido - procesando...');
+          _handleDeepLink(initialUri);
+        } else {
+          debugPrint('⚠️ Deep link incompleto - ignorando');
+        }
+      } else {
+        debugPrint('⚠️ Deep link no reconocido - ignorando');
       }
-    } catch (e) {
-      debugPrint('❌ Error obteniendo initial link: $e');
+    } else {
+      debugPrint('ℹ️ No hay initial link');
     }
-
-    // ✅ ESCUCHAR LINKS ENTRANTES (app abierta/background)
-    _linkSubscription = _appLinks.uriLinkStream.listen(
-      (uri) {
-        debugPrint('🔗 Deep link recibido: $uri');
-        _handleDeepLink(uri);
-      },
-      onError: (err) {
-        debugPrint('❌ Error en deep link: $err');
-      },
-    );
+  } catch (e) {
+    debugPrint('❌ Error obteniendo initial link: $e');
   }
 
+  // ✅ ESCUCHAR LINKS ENTRANTES (app abierta/background)
+  _linkSubscription = _appLinks.uriLinkStream.listen(
+    (uri) {
+      debugPrint('🔗 Deep link entrante: $uri');
+      _handleDeepLink(uri);
+    },
+    onError: (err) {
+      debugPrint('❌ Error en deep link stream: $err');
+    },
+  );
+}
 
-void _handleDeepLink(Uri uri) {
+
+// ✅ VERSIÓN CORREGIDA DE _handleDeepLink
+
+Future<void> _handleDeepLink(Uri uri) async {
   debugPrint('🔍 ========================================');
   debugPrint('🔍 PROCESANDO DEEP LINK');
   debugPrint('🔍 URI completo: $uri');
@@ -155,41 +180,108 @@ void _handleDeepLink(Uri uri) {
   debugPrint('🔍 Query: ${uri.queryParameters}');
   debugPrint('🔍 ========================================');
 
-  // ✅ CASO 1: dalkpaseos://redirect_verificamex?session_id=xxx&user_id=yyy
+  // ✅ CASO 1: dalkpaseos://redirect_verificamex
   if (uri.scheme == 'dalkpaseos' && uri.host == 'redirect_verificamex') {
     
     final sessionId = uri.queryParameters['session_id'] ?? '';
     final userId = uri.queryParameters['user_id'] ?? '';
+    final accessToken = uri.queryParameters['access_token'] ?? '';
 
     debugPrint('✅ Deep link de verificación detectado');
     debugPrint('  Session ID: $sessionId');
     debugPrint('  User ID: $userId');
+    debugPrint('  Access Token presente: ${accessToken.isNotEmpty}');
 
-    if (sessionId.isNotEmpty && userId.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        debugPrint('📱 Navegando a redirect_verificamex...');
-        
-        _router.go(
-          '/redirect_verificamex?session_id=$sessionId&user_id=$userId'
-        );
-      });
-    } else {
-      debugPrint('❌ Faltan parámetros obligatorios');
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        scaffoldMessengerKey.currentState?.showSnackBar(
-          const SnackBar(
-            content: Text('Error: Faltan datos de verificación'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      });
+    // 🔑 VALIDACIÓN 1: Verificar que vengan los parámetros obligatorios
+    if (sessionId.isEmpty || userId.isEmpty) {
+      debugPrint('❌ Faltan parámetros obligatorios - IGNORANDO deep link');
+      return;
     }
+
+    // 🔑 VALIDACIÓN 2: Verificar que haya un access_token
+    if (accessToken.isEmpty) {
+      debugPrint('⚠️ WARNING: Deep link sin access_token');
+      debugPrint('⚠️ Intentando usar currentJwtToken...');
+      
+      final fallbackToken = currentJwtToken;
+      
+      if (fallbackToken.isEmpty) {
+        debugPrint('❌ No hay token disponible - CANCELANDO navegación');
+        
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          scaffoldMessengerKey.currentState?.showSnackBar(
+            const SnackBar(
+              content: Text('Error: No se pudo restaurar la sesión de autenticación'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 5),
+            ),
+          );
+        });
+        return;
+      }
+      
+      debugPrint('✅ Usando fallback token');
+    }
+
+    // 🔑 VALIDACIÓN 3: Verificar que no estemos ya en la pantalla de verificación
+    final currentRoute = getRoute();
+    if (currentRoute.contains('redirect_verificamex')) {
+      debugPrint('⚠️ Ya estamos en redirect_verificamex - IGNORANDO deep link duplicado');
+      return;
+    }
+
+    // 🔑 VALIDACIÓN 4: Verificar que el usuario no esté ya verificado
+    try {
+      final userStatus = await SupaFlow.client
+          .from('users')
+          .select('verification_status')
+          .eq('uuid', userId)
+          .maybeSingle();
+
+      if (userStatus != null) {
+        final status = userStatus['verification_status'];
+        
+        if (status == 'verified') {
+          debugPrint('✅ Usuario ya verificado - redirigiendo a home');
+          
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _router.go('/homeDogWalker');
+          });
+          return;
+        }
+        
+        if (status == 'rejected' || status == 'failed') {
+          debugPrint('❌ Usuario con verificación fallida - redirigiendo a login');
+          
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _router.go('/signIn');
+          });
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint('⚠️ No se pudo verificar el status del usuario: $e');
+      // Continuar con la navegación de todas formas
+    }
+
+    // ✅ TODO OK - NAVEGAR A PANTALLA DE VERIFICACIÓN
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      debugPrint('📱 ========================================');
+      debugPrint('📱 NAVEGANDO A redirect_verificamex');
+      debugPrint('📱 ========================================');
+      
+      _router.go(
+        '/redirect_verificamex?session_id=$sessionId&user_id=$userId&access_token=$accessToken'
+      );
+    });
+    
     return;
   }
 
   // ✅ CASO 2: Otros deep links (auth, changePassword)
   if (uri.host == 'auth' || uri.host == 'changePassword') {
     debugPrint('🔐 Deep link de autenticación detectado');
+    // Aquí puedes manejar otros deep links
   }
 
   debugPrint('⚠️ Deep link no manejado: $uri');

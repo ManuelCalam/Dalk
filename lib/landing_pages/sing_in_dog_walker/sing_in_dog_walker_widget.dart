@@ -2829,6 +2829,8 @@ bool _validateRequiredFields() {
 String? _lastTestSessionId;
 
 
+// 🔑 CORRECCIÓN 1: Guardar el access_token antes de abrir WebView
+
 Future<void> _startRealVerification() async {
   debugPrint('🚀 INICIANDO VERIFICACIÓN CON VERIFICAMEX');
   
@@ -2836,11 +2838,8 @@ Future<void> _startRealVerification() async {
   setState(() => isRegistering = true);
 
   try {
-    // ✅ VALIDAR FORMULARIO
     if (!_validateRequiredFields()) {
-      if (mounted) {
-        setState(() => isRegistering = false);
-      }
+      if (mounted) setState(() => isRegistering = false);
       return;
     }
 
@@ -2861,9 +2860,18 @@ Future<void> _startRealVerification() async {
     final userUuid = currentUserUid!;
     final userEmail = currentUserEmail!;
     
+    // 🔑 OBTENER ACCESS TOKEN INMEDIATAMENTE DESPUÉS DE CREAR USUARIO
+    final session = Supabase.instance.client.auth.currentSession;
+    if (session == null) {
+      throw Exception('No se pudo obtener la sesión después de crear usuario');
+    }
+    
+    final accessToken = session.accessToken;
+    
     debugPrint('✅ Usuario Auth creado:');
     debugPrint('  UUID: $userUuid');
     debugPrint('  Email: $userEmail');
+    debugPrint('  Access Token length: ${accessToken.length}');
 
     // ✅ CREAR REGISTRO EN TABLA USERS
     await Supabase.instance.client.from('users').insert({
@@ -2897,15 +2905,18 @@ Future<void> _startRealVerification() async {
 
     debugPrint('✅ Dirección guardada');
     
-    // ✅ LLAMAR A EDGE FUNCTION CON USER_UUID
-    debugPrint('📡 Llamando a Edge Function con user_id: $userUuid');
+    // ✅ LLAMAR A EDGE FUNCTION CON ACCESS_TOKEN
+    debugPrint('📡 Llamando a Edge Function...');
+    debugPrint('  user_id: $userUuid');
+    debugPrint('  access_token length: ${accessToken.length}');
+    
     final response = await Supabase.instance.client.functions.invoke(
       'ine-validation',
       body: {
         'action': 'create_session',
         'user_id': userUuid,
         'email': userEmail,
-        'access_token': currentJwtToken,
+        'access_token': accessToken, // 🔑 ENVIAR TOKEN AQUÍ
       },
     );
 
@@ -2918,42 +2929,34 @@ Future<void> _startRealVerification() async {
 
     final formUrl = response.data['form_url'];
     final sessionId = response.data['session_id'];
-    final returnedUserId = response.data['user_id'];
     
-    // 🔑 CORRECCIÓN: Leer 'refresh_token' en lugar de 'access_token'
-    final accessToken = (response.data['access_token'] ?? response.data['refresh_token']) as String?;
+    // 🔑 EL TOKEN DEBERÍA VENIR EN LA RESPUESTA DEL EDGE FUNCTION
+    final returnedToken = response.data['access_token'] as String?;
 
     if (formUrl == null || sessionId == null) {
       throw Exception('No se obtuvo form_url o session_id');
     }
 
-    // ✅ VALIDAR accessToken
-    if (accessToken == null || accessToken.isEmpty) {
-      debugPrint('⚠️ WARNING: No se recibió access_token');
-    } else {
-      debugPrint('✅ Access token recibido correctamente');
+    // 🔑 USAR EL TOKEN ORIGINAL SI NO SE RETORNÓ UNO NUEVO
+    final tokenToPass = returnedToken ?? accessToken;
+    
+    if (tokenToPass.isEmpty) {
+      throw Exception('No se pudo obtener access_token para el WebView');
     }
 
-    // ✅ VALIDAR QUE EL USER_ID COINCIDA
-    if (returnedUserId != userUuid) {
-      debugPrint('⚠️ WARNING: user_id no coincide');
-      debugPrint('  Esperado: $userUuid');
-      debugPrint('  Recibido: $returnedUserId');
-    }
-
-    debugPrint('✅ Sesión creada exitosamente:');
+    debugPrint('✅ Sesión creada exitosamente');
     debugPrint('  Form URL: $formUrl');
     debugPrint('  Session ID: $sessionId');
-    debugPrint('  User ID: $returnedUserId');
+    debugPrint('  Token a pasar al WebView length: ${tokenToPass.length}');
 
-    // ✅ ABRIR WEBVIEW
+    // ✅ ABRIR WEBVIEW CON TOKEN
     if (mounted) {
       await Navigator.of(context).push<bool>(
         MaterialPageRoute(
           builder: (context) => IneValidationWebviewWidget(
             formUrl: formUrl,
             sessionId: sessionId,
-            accessToken: accessToken ?? '', // Usar string vacío si es null
+            accessToken: tokenToPass, // 🔑 PASAR TOKEN AQUÍ
           ),
         ),
       );

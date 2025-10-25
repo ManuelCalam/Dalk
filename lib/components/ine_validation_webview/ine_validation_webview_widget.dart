@@ -257,6 +257,7 @@ void initState() {
   final url = navigationAction.request.url?.toString() ?? '';
   debugPrint('🔄 Navegación interceptada: $url');
   
+  // 🔑 DETECTAR DEEP LINK
   if (url.startsWith('dalkpaseos://redirect_verificamex')) {
     debugPrint('🎉 ========================================');
     debugPrint('🎉 DEEP LINK DETECTADO');
@@ -264,19 +265,15 @@ void initState() {
     
     _timeoutTimer?.cancel();
     
-    // 🔑 VALIDAR QUE EL TOKEN ESTÉ PRESENTE
+    // 🔑 VALIDAR TOKEN
     if (widget.accessToken.isEmpty) {
-      debugPrint('❌ ========================================');
-      debugPrint('❌ ERROR CRÍTICO: widget.accessToken VACÍO');
-      debugPrint('❌ ========================================');
-      debugPrint('❌ No se puede construir el Deep Link sin token');
-      debugPrint('❌ Intentando usar currentJwtToken como fallback...');
+      debugPrint('❌ ERROR: widget.accessToken está VACÍO');
       
+      // Intentar con currentJwtToken como fallback
       final fallbackToken = currentJwtToken;
       
       if (fallbackToken.isEmpty) {
-        debugPrint('❌ ERROR FATAL: No hay token disponible en ninguna fuente');
-        debugPrint('❌ currentJwtToken también está vacío');
+        debugPrint('❌ FATAL: No hay token disponible');
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -291,47 +288,32 @@ void initState() {
         return NavigationActionPolicy.CANCEL;
       }
       
-      debugPrint('⚠️ Usando token de fallback (currentJwtToken)');
-      debugPrint('⚠️ Token fallback length: ${fallbackToken.length}');
+      debugPrint('⚠️ Usando fallback token');
       
-      // Construir Deep Link con token de fallback
+      // 🔑 AGREGAR TOKEN AL DEEP LINK
       final deepLinkUrl = url + '&access_token=${Uri.encodeComponent(fallbackToken)}';
       
-      debugPrint('🔗 Deep Link construido con FALLBACK TOKEN:');
-      debugPrint('   URL completa: $deepLinkUrl');
-      
+      debugPrint('🔗 Deep Link con fallback token construido');
       await launchUrl(Uri.parse(deepLinkUrl), mode: LaunchMode.externalApplication);
       
-      if (mounted) {
-        Navigator.of(context).pop(null);
-      }
-      
+      if (mounted) Navigator.of(context).pop(null);
       return NavigationActionPolicy.CANCEL;
     }
     
-    // 🔑 TOKEN PRESENTE - CONSTRUIR DEEP LINK NORMALMENTE
+    // 🔑 TOKEN PRESENTE - AGREGAR AL DEEP LINK
     final deepLinkUrl = url + '&access_token=${Uri.encodeComponent(widget.accessToken)}';
     
     debugPrint('🔗 ========================================');
-    debugPrint('🔗 DEEP LINK CONSTRUIDO EXITOSAMENTE');
+    debugPrint('🔗 DEEP LINK CONSTRUIDO CON TOKEN');
     debugPrint('🔗 ========================================');
     debugPrint('🔗 URL original: $url');
-    debugPrint('🔗 Token usado: widget.accessToken');
     debugPrint('🔗 Token length: ${widget.accessToken.length}');
-    debugPrint('🔗 Token preview: ${widget.accessToken.substring(0, min(30, widget.accessToken.length))}...');
-    debugPrint('🔗 URL completa generada (con token): ${deepLinkUrl.substring(0, min(100, deepLinkUrl.length))}...');
-    debugPrint('🔗 ========================================');
+    debugPrint('🔗 URL completa: ${deepLinkUrl.substring(0, min(100, deepLinkUrl.length))}...');
     
     // ✅ LANZAR DEEP LINK
-    debugPrint('🚀 Lanzando Deep Link...');
     await launchUrl(Uri.parse(deepLinkUrl), mode: LaunchMode.externalApplication);
     
-    debugPrint('✅ Deep Link lanzado - cerrando WebView');
-    
-    if (mounted) {
-      Navigator.of(context).pop(null);
-    }
-    
+    if (mounted) Navigator.of(context).pop(null);
     return NavigationActionPolicy.CANCEL;
   }
   
