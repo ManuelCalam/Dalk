@@ -1155,7 +1155,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                 hidesUnderline: true,
                                                 isOverButton: false,
                                                 isSearchable: false,
-                                                isMultiSelect: false,
+                                                isMultiSelect: false, validator: (String? value) {  },
                                               ),
                                             ),
                                             Padding(

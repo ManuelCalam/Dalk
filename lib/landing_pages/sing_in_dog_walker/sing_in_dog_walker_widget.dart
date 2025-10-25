@@ -1181,7 +1181,7 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                 hidesUnderline: true,
                                                 isOverButton: false,
                                                 isSearchable: false,
-                                                isMultiSelect: false,
+                                                isMultiSelect: false, validator: (String? value) {  },
                                                 
                                               ),
                                             ),

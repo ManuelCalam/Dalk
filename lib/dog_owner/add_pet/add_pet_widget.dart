@@ -672,7 +672,7 @@ void _showImagePickerOptions(BuildContext context, {int? petId}) {
                                                   hidesUnderline: true,
                                                   isOverButton: false,
                                                   isSearchable: false,
-                                                  isMultiSelect: false,
+                                                  isMultiSelect: false, validator: (String? value) {  },
                                                 ),
                                               ),
                                               if (_showGenderError && _formSubmitted)
@@ -844,7 +844,7 @@ void _showImagePickerOptions(BuildContext context, {int? petId}) {
                                                 hidesUnderline: true,
                                                 isOverButton: false,
                                                 isSearchable: false,
-                                                isMultiSelect: false,
+                                                isMultiSelect: false, validator: (String? value) {  },
                                               ),
                                             ),
                                             if (_showSizeError && _formSubmitted)
