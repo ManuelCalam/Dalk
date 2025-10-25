@@ -37,7 +37,7 @@ class FlutterFlowDropDown<T> extends StatefulWidget {
     this.isMultiSelect = false,
     this.labelText,
     this.labelTextStyle,
-    this.optionsHasValueKeys = false,
+    this.optionsHasValueKeys = false, required Null Function(String? value) validator,
   }) : assert(
           isMultiSelect
               ? (controller == null &&

@@ -995,7 +995,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                   hidesUnderline: true,
                                                   isOverButton: false,
                                                   isSearchable: false,
-                                                  isMultiSelect: false,
+                                                  isMultiSelect: false, validator: (String? value) {  },
                                                 ),
                                               ),
                                               Padding(
