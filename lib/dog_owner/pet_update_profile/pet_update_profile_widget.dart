@@ -906,7 +906,6 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                                             hidesUnderline: true,
                                             isOverButton: false,
                                             isSearchable: false,
-                                            isMultiSelect: false,
                                           ),
                                         ),
                                       ),
