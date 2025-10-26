@@ -178,18 +178,7 @@ class _PopUpDogWalkerProfileWidgetState
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 children: [
-                  FlutterFlowIconButton(
-                    borderRadius: 8,
-                    buttonSize: 40,
-                    icon: Icon(
-                      Icons.chat,
-                      color: FlutterFlowTheme.of(context).primary,
-                      size: 28,
-                    ),
-                    onPressed: () {
-                      print('IconButton pressed ...');
-                    },
-                  ),
+                  
                   Expanded(
                     child: Align(
                       alignment: const AlignmentDirectional(1, 0),

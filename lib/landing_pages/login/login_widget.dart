@@ -324,8 +324,8 @@ class _LoginWidgetState extends State<LoginWidget> {
                                   focusNode: FocusNode(skipTraversal: true),
                                   child: Icon(
                                     _model.passwordInputVisibility
-                                        ? Icons.visibility_outlined
-                                        : Icons.visibility_off_outlined,
+                                        ? Icons.visibility_off_outlined
+                                        : Icons.visibility_outlined,
                                     color: FlutterFlowTheme.of(context).primary,
                                     size: 23.0,
                                   ),
@@ -460,11 +460,23 @@ class _LoginWidgetState extends State<LoginWidget> {
                                 // Redirige según el tipo de usuario
                                 context.go('/');
                                 
+                              } on AuthException catch (e) {
+                                // Manejo específico de credenciales inválidas
+                                if (e.message == 'Invalid login credentials') {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Email o contraseña incorrectos. Intenta nuevamente.'),
+                                    ),
+                                  );
+                                } else {
+                                  // Otros errores de autenticación
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Error de autenticación: ${e.message}')),
+                                  );
+                                }
                               } catch (e) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Error al iniciar sesión: $e'),
-                                  ),
+                                  SnackBar(content: Text('Error inesperado: $e')),
                                 );
                               }
                             },

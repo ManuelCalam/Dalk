@@ -17,6 +17,7 @@
     tools:node="remove" />
 
 
+
     <application
         android:label="Dalk"
         tools:replace="android:label"

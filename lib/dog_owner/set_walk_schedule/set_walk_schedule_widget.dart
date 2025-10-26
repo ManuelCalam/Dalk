@@ -90,8 +90,8 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                         height: MediaQuery.sizeOf(context).height * 0.1,
                         decoration: BoxDecoration(
                           color: FlutterFlowTheme.of(context).secondary,
-                          boxShadow: [
-                            const BoxShadow(
+                          boxShadow: const [
+                            BoxShadow(
                               blurRadius: 4.0,
                               color: Color(0xFF162C43),
                               offset: Offset(
@@ -1204,8 +1204,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                             finalWalkDurationInMinutes = 30;
                                         }
 
-                                        if(_model.datePicked1?.toIso8601String() == '' || _model.datePicked2?.toIso8601String() == ''
-                                          || selectedPetId == null || selectedAddressId == null){
+                                        if(_model.datePicked1 == null || _model.datePicked2 == null || selectedPetId == null || selectedAddressId == null){
                                             ScaffoldMessenger.of(context).showSnackBar(
                                               const SnackBar(
                                                 content: Text('Por favor, ingresa los datos faltantes'),

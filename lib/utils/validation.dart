@@ -1,6 +1,20 @@
 // lib/utils/validators.dart
 
 class Validators {
+  static String? maxLength(String? value, int max, {String? fieldName}) {
+    if (value != null && value.length > max) {
+      return '$fieldName no puede tener más de $max caracteres';
+    }
+    return null;
+  }
+
+  static String? minLength(String? value, int min, {String? fieldName}) {
+    if (value != null && value.length < min) {
+      return '$fieldName debe tener al menos $min caracteres';
+    }
+    return null;
+  }
+
   static String? requiredField(String? value, {String fieldName = 'Campo'}) {
     if (value == null || value.trim().isEmpty) {
       return '$fieldName es obligatorio';
@@ -24,9 +38,9 @@ class Validators {
   }
 
   static String? postalCode(String? value) {
-    if (value == null || value.isEmpty) return 'obligatorio';
+    if (value == null || value.isEmpty) return 'Código postal obligatorio';
     final regex = RegExp(r'^\d{5}$');
-    if (!regex.hasMatch(value)) return 'inválido';
+    if (!regex.hasMatch(value)) return 'Código postal a 5 digitos';
     return null;
   }
 
@@ -38,7 +52,7 @@ class Validators {
   static String? phone(String? value) {
     if (value == null || value.isEmpty) return 'Teléfono obligatorio';
     final regex = RegExp(r'^\d{10}$');
-    if (!regex.hasMatch(value)) return 'Teléfono inválido';
+    if (!regex.hasMatch(value)) return 'Teléfono a 10 dígitos';
     return null;
   }
 }

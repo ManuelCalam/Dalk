@@ -1,18 +1,9 @@
 import '/components/go_back_container/go_back_container_widget.dart';
-import '/flutter_flow/flutter_flow_drop_down.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'dog_owner_update_profile_widget.dart' show DogOwnerUpdateProfileWidget;
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 class DogOwnerUpdateProfileModel
     extends FlutterFlowModel<DogOwnerUpdateProfileWidget> {
@@ -68,6 +59,10 @@ class DogOwnerUpdateProfileModel
   }
 
   // State field(s) for interiorNumberDogOwner_Input widget.
+  FocusNode? exteriorNumberDogOwnerInputFocusNode;
+  TextEditingController? exteriorNumberDogOwnerInputTextController;
+  String? Function(BuildContext, String?)? exteriorNumberDogOwnerInputTextControllerValidator;
+
   FocusNode? interiorNumberDogOwnerInputFocusNode;
   TextEditingController? interiorNumberDogOwnerInputTextController;
   String? Function(BuildContext, String?)?
@@ -132,8 +127,7 @@ class DogOwnerUpdateProfileModel
         _phoneDogOwnerInputTextControllerValidator;
     streetDogOwnerInputTextControllerValidator =
         _streetDogOwnerInputTextControllerValidator;
-    interiorNumberDogOwnerInputTextControllerValidator =
-        _interiorNumberDogOwnerInputTextControllerValidator;
+    interiorNumberDogOwnerInputTextControllerValidator = _interiorNumberDogOwnerInputTextControllerValidator;
     zipCodeDogOwnerInputTextControllerValidator =
         _zipCodeDogOwnerInputTextControllerValidator;
     neighborhoodDogOwnerInputTextControllerValidator =
@@ -156,6 +150,9 @@ class DogOwnerUpdateProfileModel
 
     interiorNumberDogOwnerInputFocusNode?.dispose();
     interiorNumberDogOwnerInputTextController?.dispose();
+
+    exteriorNumberDogOwnerInputFocusNode?.dispose();
+    exteriorNumberDogOwnerInputTextController?.dispose();
 
     zipCodeDogOwnerInputFocusNode?.dispose();
     zipCodeDogOwnerInputTextController?.dispose();

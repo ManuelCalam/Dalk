@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dalk/auth/supabase_auth/auth_util.dart';
 import 'package:dalk/common/payment_methods/payment_methods_widget.dart';
-import 'package:dalk/common/walk_payment_window/walk_payment_window_widget.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -34,11 +33,13 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
   @override
   void initState() {
     super.initState();
+    context.read<UserProvider>().loadUser(forceRefresh: true);
     _model = createModel(context, () => DogWalkerProfileModel());
   }
 
   @override
   void dispose() {
+    
     _model.dispose();
 
     super.dispose();
@@ -89,14 +90,9 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      wrapWithModel(
-                        model: _model.goBackContainerModel,
-                        updateCallback: () => safeSetState(() {}),
-                        child: const GoBackContainerWidget(),
-                      ),
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 35, 0, 15),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 0.9,
                             decoration: const BoxDecoration(),

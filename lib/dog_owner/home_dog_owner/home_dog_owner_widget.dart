@@ -351,15 +351,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                         hoverColor: Colors.transparent,
                                         highlightColor: Colors.transparent,
                                         onTap: () async {
-                                          context.pushNamed(
-                                            SetWalkScheduleWidget.routeName,
-                                            queryParameters: {
-                                              'selectedAddress': serializeParam(
-                                                0,
-                                                ParamType.int,
-                                              ),
-                                            }.withoutNulls,
-                                          );
+                                          context.pushNamed(SetWalkScheduleWidget.routeName);
                                         },
                                         child: Container(
                                           width:

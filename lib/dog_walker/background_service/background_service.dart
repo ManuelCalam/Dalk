@@ -15,14 +15,14 @@ void onStart(ServiceInstance service) async {
       return;
   }
 
-  // ⭐ CAMBIO CLAVE: Usamos un Set para almacenar múltiples IDs de paseos a rastrear.
+  // Set para almacenar múltiples IDs de paseos a rastrear.
   Set<String> activeWalkIds = {}; 
   Timer? locationTimer;
   
   // Flag para saber si el timer ya está corriendo
   bool isTimerRunning = false;
 
-  // ⭐ PASO CRÍTICO: Configuración de la Notificación Mínima.
+  // Configuración de la Notificación de Aviso.
   if (service is AndroidServiceInstance) {
       service.setForegroundNotificationInfo(
           title: "Dalk",
@@ -30,12 +30,11 @@ void onStart(ServiceInstance service) async {
       );
   }
 
-  // 1. ESCUCHAR DATOS (Lista de walkIds)
+  // ESCUCHAR DATOS (Lista de walkIds)
   // El evento 'setTrackingIds' ahora recibe la lista completa de paseos a rastrear.
   service.on('setTrackingIds').listen((event) {
     final newWalkIds = event?['walkIds'] as List<dynamic>?;
     
-    // Convertir a Set<String> para manejo eficiente
     activeWalkIds = (newWalkIds?.cast<String>() ?? []).toSet(); 
     print('Background Service: IDs de rastreo actualizados: $activeWalkIds');
 
@@ -47,14 +46,13 @@ void onStart(ServiceInstance service) async {
       locationTimer = Timer.periodic(const Duration(seconds: 6), (timer) async {
           
           if (activeWalkIds.isEmpty) {
-              // Si la lista se vacía, cancelamos el timer y detenemos el servicio
               timer.cancel();
               isTimerRunning = false;
               service.invoke('stopService'); 
               return;
           }
 
-          // 3. Obtener Ubicación y Permisos (Solo checkear, no solicitar)
+          // Obtener Ubicación y Permisos
           if (!(await Geolocator.isLocationServiceEnabled())) {
            print('Background Service: Servicio de ubicación desactivado.');
            return;
@@ -71,7 +69,7 @@ void onStart(ServiceInstance service) async {
             desiredAccuracy: LocationAccuracy.high,
            );
 
-           // ⭐ CAMBIO CLAVE: Iterar sobre TODOS los walkIds activos
+           // Iterar sobre TODOS los walkIds activos
            for (final walkId in activeWalkIds) {
                 // 4. Actualizar Firebase para CADA paseo
                final ref = FirebaseDatabase.instance.ref('walk_locations/$walkId');

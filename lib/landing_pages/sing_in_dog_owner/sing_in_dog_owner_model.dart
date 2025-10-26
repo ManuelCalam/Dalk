@@ -38,8 +38,7 @@ class SingInDogOwnerModel extends FlutterFlowModel<SingInDogOwnerWidget> {
   // State field(s) for interiorNumberDogOwner_Input widget.
   FocusNode? interiorNumberDogOwnerInputFocusNode;
   TextEditingController? interiorNumberDogOwnerInputTextController;
-  String? Function(BuildContext, String?)?
-      interiorNumberDogOwnerInputTextControllerValidator;
+  String? Function(BuildContext, String?)?interiorNumberDogOwnerInputTextControllerValidator;
   // State field(s) for ZipCodeDogOwner_Input widget.
   FocusNode? zipCodeDogOwnerInputFocusNode;
   TextEditingController? zipCodeDogOwnerInputTextController;
@@ -95,6 +94,9 @@ class SingInDogOwnerModel extends FlutterFlowModel<SingInDogOwnerWidget> {
 
     interiorNumberDogOwnerInputFocusNode?.dispose();
     interiorNumberDogOwnerInputTextController?.dispose();
+
+    exteriorNumberDogOwnerFocusNode?.dispose();
+    exteriorNumberDogOwnerTextController?.dispose();
 
     zipCodeDogOwnerInputFocusNode?.dispose();
     zipCodeDogOwnerInputTextController?.dispose();

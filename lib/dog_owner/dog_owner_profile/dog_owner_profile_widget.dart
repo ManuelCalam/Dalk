@@ -45,6 +45,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
   @override
   void initState() {
     super.initState();
+    context.read<UserProvider>().loadUser(forceRefresh: true);
     _model = createModel(context, () => DogOwnerProfileModel());
   }
 
@@ -103,14 +104,10 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      wrapWithModel(
-                        model: _model.goBackContainerModel,
-                        updateCallback: () => safeSetState(() {}),
-                        child: const GoBackContainerWidget(),
-                      ),
+
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 35, 0, 15),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 0.9,
                             decoration: const BoxDecoration(),

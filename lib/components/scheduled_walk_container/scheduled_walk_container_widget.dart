@@ -82,11 +82,9 @@ class ScheduledWalkContainerWidgetState
     _model.textController ??= TextEditingController(text: '[username]');
     _model.textFieldFocusNode ??= FocusNode();
 
-    // Timer
   }
 
   // --- LÓGICA DEL CICLO DE VIDA (RESUMED/PAUSED) ---
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (widget.userType != 'Paseador') return;
@@ -247,7 +245,7 @@ class ScheduledWalkContainerWidgetState
 // }
 
 
-  // --- NUEVA LÓGICA DE RASTREO POR UUID DEL DISPOSITIVO ---
+  // --- LÓGICA DE RASTREO POR UUID DEL DISPOSITIVO ---
 
   // 1. Obtener TODOS los UUIDs de rastreador del Dueño
   Future<List<String>> _fetchAllTrackerIds() async {
@@ -278,9 +276,8 @@ class ScheduledWalkContainerWidgetState
     }
   }
 
-  // 2. Escuchar la ubicación de CADA rastreador (Tracker UUID) en Firebase RTDB
+  // Escuchar la ubicación de CADA rastreador (Tracker UUID) en Firebase RTDB
   void _listenToTrackerLocation() async {
-    // 1. Obtener TODOS los UUIDs
     final trackerIds = await _fetchAllTrackerIds();
 
     if (trackerIds.isEmpty) {
@@ -343,7 +340,7 @@ class ScheduledWalkContainerWidgetState
     }
   }
 
-  // --- FIN NUEVA LÓGICA DE RASTREO ---
+  // --- FIN LÓGICA DE RASTREO ---
 
 
   // Método aplicado para el dueño para obtener la ubicación del paseador

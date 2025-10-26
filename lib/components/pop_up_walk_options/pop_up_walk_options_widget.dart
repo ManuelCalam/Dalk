@@ -505,8 +505,6 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                 iconColor: FlutterFlowTheme.of(context).primary,
 
             onConfirm: () async {
-              // ✅ CAMBIO CLAVE 3: Llamamos a la función usando ?.call()
-              // Esto solo ejecuta la función si widget.onWalkCompletion NO es null.
               await widget.onWalkCompletion?.call(); 
               
               // Cerramos el PopUp, usando el contexto del diálogo
@@ -636,8 +634,11 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
         final String photoUrl = walkInfo['dog_photo_url'] as String? ?? 'N/A';
         final String time = startTime != null  ? DateFormat('HH:mm').format(startTime)  : 'N/A';        
         final String date = startTime != null ? DateFormat('dd/MM/yyyy').format(startTime) : 'N/A';        
-        final String address = walkInfo['owner_address'] as String? ?? 'N/A';
-        final String duration = (walkInfo['walk_duration_minutes'] as int?)?.toString() ?? 'N/A';
+        final String address = 
+            '${walkInfo['owner_address'] ?? ''} Ext. ${walkInfo['owner_ext'] ?? ''}' +
+            (walkInfo['owner_int'] != null && (walkInfo['owner_int'] as String).isNotEmpty ? ' Int. ${walkInfo['owner_int']}' : '') +
+            ', Col. ${walkInfo['owner_neighborhood'] ?? ''}. ${walkInfo['owner_city'] ?? ''}';        
+    final String duration = (walkInfo['walk_duration_minutes'] as int?)?.toString() ?? 'N/A';
         final String instructions = walkInfo['walker_instructions'] as String? ?? 'N/A';
         final String fee = (walkInfo['fee'] as int?)?.toString() ?? 'N/A';
         final String walkStatus = walkInfo['status'] as String? ?? 'N/A';
@@ -668,18 +669,6 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      FlutterFlowIconButton(
-                        borderRadius: 8,
-                        buttonSize: 40,
-                        icon: Icon(
-                          Icons.chat,
-                          color: FlutterFlowTheme.of(context).primary,
-                          size: 28,
-                        ),
-                        onPressed: () {
-                          print('IconButton pressed ...');
-                        },
-                      ),
                       Expanded(
                         child: Align(
                           alignment: const AlignmentDirectional(1, 0),

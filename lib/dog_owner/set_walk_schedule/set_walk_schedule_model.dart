@@ -1,4 +1,3 @@
-import '/backend/supabase/supabase.dart';
 import '/cards/address_card/address_card_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';

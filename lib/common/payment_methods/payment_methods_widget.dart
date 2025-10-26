@@ -32,17 +32,21 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
 
   // Trigger para refrecar la lista de tarjetas
   int refreshTrigger = 0;
+  bool _isProcessingPayment = false;
+  late Future<String> _customerFuture;
+
 
   @override
   void initState() {
     super.initState();
+    
     _model = createModel(context, () => PaymentMethodsModel());
+    _customerFuture = createCustomerIfNeeded().then((customerId) => customerId);
   }
 
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
   }
 
@@ -274,7 +278,7 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
 
                                 // FutureBuilder para tarjetas
                                 FutureBuilder<String>(
-                                  future: createCustomerIfNeeded().then((customerId) => customerId),
+                                  future: _customerFuture,
                                   key: ValueKey(refreshTrigger),
                                   builder: (context, customerSnap) {
                                     if (customerSnap.connectionState == ConnectionState.waiting) {
@@ -369,52 +373,81 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
                                 ),
 
 
-                                GestureDetector(
-                                  onTap: () async {
-                                    await openSetupPaymentSheet(context);
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                                    child: Container(
-                                      width: 100,
-                                      decoration: BoxDecoration(
-                                        color: FlutterFlowTheme.of(context).alternate,
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
+                                // En el lugar del botón, usa esto:
+                                FutureBuilder<void>(
+                                  future: null, // No necesita future real
+                                  builder: (context, snapshot) {
+                                    return GestureDetector(
+                                      onTap: _isProcessingPayment 
+                                          ? null 
+                                          : () async {
+                                              setState(() {
+                                                _isProcessingPayment = true;
+                                              });
+                                              
+                                              try {
+                                                await openSetupPaymentSheet(context);
+                                              } finally {
+                                                if (mounted) {
+                                                  setState(() {
+                                                    _isProcessingPayment = false;
+                                                  });
+                                                }
+                                              }
+                                            },
                                       child: Padding(
-                                        padding: const EdgeInsets.all(17),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.max,
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Align(
-                                              alignment: const AlignmentDirectional(0, 0),
-                                              child: Icon(
-                                                Icons.add_card_rounded,
-                                                color: FlutterFlowTheme.of(context).primary,
-                                                size: 35,
-                                              ),
+                                        padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                                        child: AnimatedContainer(
+                                          duration: const Duration(milliseconds: 200),
+                                          width: 100,
+                                          decoration: BoxDecoration(
+                                            color: _isProcessingPayment 
+                                                ? FlutterFlowTheme.of(context).alternate.withValues()
+                                                : FlutterFlowTheme.of(context).alternate,
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(17),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.max,
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: _isProcessingPayment
+                                                  ? [
+                                                      const CircularProgressIndicator(
+                                                        strokeWidth: 4,
+                                                        
+                                                      ),
+                                                    ]
+                                                  : [
+                                                      Align(
+                                                        alignment: const AlignmentDirectional(0, 0),
+                                                        child: Icon(
+                                                          Icons.add_card_rounded,
+                                                          color: FlutterFlowTheme.of(context).primary,
+                                                          size: 35,
+                                                        ),
+                                                      ),
+                                                      AutoSizeText(
+                                                        'Agregar tarjeta',
+                                                        textAlign: TextAlign.center,
+                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                          font: GoogleFonts.lexend(
+                                                            fontWeight: FontWeight.w600,
+                                                            fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                          ),
+                                                          color: FlutterFlowTheme.of(context).primary,
+                                                          fontSize: 19,
+                                                          letterSpacing: 0.0,
+                                                        ),
+                                                      ),
+                                                    ],
                                             ),
-                                            AutoSizeText(
-                                              'Agregar tarjeta',
-                                              textAlign: TextAlign.center,
-                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                font: GoogleFonts.lexend(
-                                                  fontWeight: FontWeight.w600,
-                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                ),
-                                                color: FlutterFlowTheme.of(context).primary,
-                                                fontSize: 19,
-                                                letterSpacing: 0.0,
-                                              ),
-                                            ),
-                                          ],
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ),
+                                    );
+                                  },
                                 ),
-
                               ],
                             ),
                           ),

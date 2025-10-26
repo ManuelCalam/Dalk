@@ -1,17 +1,12 @@
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'add_address_widget.dart' show AddAddressWidget;
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 class AddAddressModel extends FlutterFlowModel<AddAddressWidget> {
   ///  State fields for stateful widgets in this page.
+  final formKey = GlobalKey<FormState>();
 
   // Model for notificationContainer component.
   late NotificationContainerModel notificationContainerModel;
@@ -26,10 +21,13 @@ class AddAddressModel extends FlutterFlowModel<AddAddressWidget> {
   TextEditingController? addressInputTextController;
   String? Function(BuildContext, String?)? addressInputTextControllerValidator;
   // State field(s) for int_Input widget.
-  FocusNode? intInputFocusNode;
-  TextEditingController? intInputTextController;
-  String? Function(BuildContext, String?)?
-      intInputTextControllerValidator;
+  FocusNode? interiorNumberInputFocusNode;
+  TextEditingController? interiorNumberInputTextController;
+  String? Function(BuildContext, String?)? interiorNumberInputTextControllerValidator;
+  // State field(s) for ext_Input widget.
+  FocusNode? exteriorNumberInputFocusNode;
+  TextEditingController? exteriorNumberInputTextController;
+  String? Function(BuildContext, String?)? exteriorNumberInputTextControllerValidator;
   // State field(s) for zipCode_Input widget.
   FocusNode? zipCodeInputFocusNode;
   TextEditingController? zipCodeInputTextController;
@@ -61,8 +59,8 @@ class AddAddressModel extends FlutterFlowModel<AddAddressWidget> {
     addressInputFocusNode?.dispose();
     addressInputTextController?.dispose();
 
-    intInputFocusNode?.dispose();
-    intInputTextController?.dispose();
+    interiorNumberInputFocusNode?.dispose();
+    interiorNumberInputTextController?.dispose();
 
     zipCodeInputFocusNode?.dispose();
     zipCodeInputTextController?.dispose();

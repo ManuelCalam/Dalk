@@ -76,9 +76,12 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
 
   @override
   Widget build(BuildContext context) {
-    print(widget.usertype);
+    final nameParts = widget.userName.split(' ');
+    final displayName = nameParts.length > 1 
+        ? '${nameParts[0]} ${nameParts[1][0]}.'
+        : '${nameParts[0]}';
     return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
+      padding: const EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
       child: Container(
         width: MediaQuery.sizeOf(context).width,
         decoration: BoxDecoration(
@@ -93,16 +96,16 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(10, 0, 5, 0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 5, 0),
                   child: Container(
                     width: MediaQuery.sizeOf(context).width * 0.15,
                     height: MediaQuery.sizeOf(context).height * 0.1,
-                    decoration: BoxDecoration(),
+                    decoration: const BoxDecoration(),
                     child: Container(
                       width: MediaQuery.sizeOf(context).width,
                       height: MediaQuery.sizeOf(context).width,
                       clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                       ),
                       child: Image.network(
@@ -114,18 +117,18 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                 ),
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(0, 15, 0, 15),
+                    padding: const EdgeInsetsDirectional.fromSTEB(0, 15, 0, 15),
                     child: Container(
-                      decoration: BoxDecoration(),
+                      decoration: const BoxDecoration(),
                       child: Align(
-                        alignment: AlignmentDirectional(0, 0),
+                        alignment: const AlignmentDirectional(0, 0),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Align(
-                              alignment: AlignmentDirectional(-1, 0),
+                              alignment: const AlignmentDirectional(-1, 0),
                               child: AutoSizeText(
                                 widget.status,
                                 maxLines: 2,
@@ -154,7 +157,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 2, 0, 0),
                                   child: AutoSizeText(
                                     'Mascota:',
@@ -181,7 +184,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       5, 2, 0, 0),
                                   child: InkWell(
                                     splashColor: Colors.transparent,
@@ -238,7 +241,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 2, 0, 0),
                                   child: AutoSizeText(
                                     widget.usertype == 'Paseador' ? 'Dueño:' : 'Paseador:',
@@ -254,8 +257,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                                                     .bodyMedium
                                                     .fontStyle,
                                           ),
-                                          color: FlutterFlowTheme.of(context)
-                                              .primary,
+                                          color: FlutterFlowTheme.of(context).primary,
                                           letterSpacing: 0.0,
                                           fontWeight: FontWeight.w600,
                                           fontStyle:
@@ -266,71 +268,59 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                                   ),
                                 ),
                                 Padding(
-  padding: const EdgeInsetsDirectional.fromSTEB(5, 2, 0, 0),
-  child: InkWell(
-    splashColor: Colors.transparent,
-    focusColor: Colors.transparent,
-    hoverColor: Colors.transparent,
-    highlightColor: Colors.transparent,
-    onTap: () async {
-      if (widget.usertype == 'Dueño') {
-        await showModalBottomSheet(
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          enableDrag: false,
-          context: context,
-          builder: (context) {
-            return Padding(
-              padding: MediaQuery.viewInsetsOf(context),
-              child: PopUpDogWalkerProfileWidget(walkerId: widget.walkerId),
-            );
-          },
-        );
-      } else {
-        await showModalBottomSheet(
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          enableDrag: false,
-          context: context,
-          builder: (context) {
-            return Padding(
-              padding: MediaQuery.viewInsetsOf(context),
-              child: PopUpDogProfileWidget(dogId: widget.dogId),
-            );
-          },
-        ).then((value) => safeSetState(() {}));
-      }
-    },
-    child: AutoSizeText(
-      widget.userName,
-      style: FlutterFlowTheme.of(context)
-          .bodyMedium
-          .override(
-            font: GoogleFonts.lexend(
-              fontWeight: FontWeight.w500,
-              fontStyle: FlutterFlowTheme.of(context)
-                  .bodyMedium
-                  .fontStyle,
-            ),
-            color: FlutterFlowTheme.of(context)
-                .accent1,
-            letterSpacing: 0.0,
-            fontWeight: FontWeight.w500,
-            fontStyle: FlutterFlowTheme.of(context)
-                .bodyMedium
-                .fontStyle,
-            decoration: TextDecoration.underline,
-          ),
-    ),
-  ),
-),
+                                  padding: const EdgeInsetsDirectional.fromSTEB(5, 2, 0, 0),
+                                  child: InkWell(
+                                    splashColor: Colors.transparent,
+                                    focusColor: Colors.transparent,
+                                    hoverColor: Colors.transparent,
+                                    highlightColor: Colors.transparent,
+                                    onTap: () async {
+                                      if (widget.usertype == 'Dueño') {
+                                        await showModalBottomSheet(
+                                          isScrollControlled: true,
+                                          backgroundColor: Colors.transparent,
+                                          enableDrag: false,
+                                          context: context,
+                                          builder: (context) {
+                                            return Padding(
+                                              padding: MediaQuery.viewInsetsOf(context),
+                                              child: PopUpDogWalkerProfileWidget(walkerId: widget.walkerId),
+                                            );
+                                          },
+                                        );
+                                      }
+                                    },
+                                    child: AutoSizeText(
+                                      displayName,
+                                      style: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .override(
+                                            font: GoogleFonts.lexend(
+                                              fontWeight: FontWeight.w500,
+                                              fontStyle: FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle,
+                                            ),
+                                            color: widget.usertype == 'Dueño' 
+                                                ? FlutterFlowTheme.of(context).accent1 
+                                                : FlutterFlowTheme.of(context).secondaryBackground,            
+                                            letterSpacing: 0.0,
+                                            fontWeight: FontWeight.w500,
+                                            fontStyle: FlutterFlowTheme.of(context)
+                                                .bodyMedium
+                                                .fontStyle,
+                                            decoration: widget.usertype == 'Dueño' ? TextDecoration.underline : TextDecoration.none,
+                                          ),
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                             Row(
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 2, 0, 0),
                                   child: AutoSizeText(
                                     'Fecha:',
@@ -356,7 +346,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       5, 2, 0, 0),
                                   child: AutoSizeText(
                                     dateTimeFormat("d/M/y", widget.date),
@@ -389,7 +379,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 2, 0, 0),
                                   child: AutoSizeText(
                                     'Hora:',
@@ -416,7 +406,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       5, 2, 0, 0),
                                   child: AutoSizeText(
                                     dateTimeFormat("Hm", widget.time),
@@ -452,13 +442,13 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0, 0, 10, 0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 10, 0),
                   child: Container(
                     height: 90,
-                    decoration: BoxDecoration(),
+                    decoration: const BoxDecoration(),
                     child: Container(
                       height: MediaQuery.sizeOf(context).height,
-                      decoration: BoxDecoration(),
+                      decoration: const BoxDecoration(),
                       child: FlutterFlowIconButton(
                         borderRadius: 0,
                         buttonSize: MediaQuery.sizeOf(context).width * 0.18,
@@ -485,11 +475,11 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
               ],
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(10, 0, 10, 15),
+              padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 10, 15),
               child: Container(
                 width: MediaQuery.sizeOf(context).width,
                 height: 35,
-                decoration: BoxDecoration(),
+                decoration: const BoxDecoration(),
                 child: FFButtonWidget(
                 onPressed: () async {
                   await showModalBottomSheet(
@@ -507,15 +497,15 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                   ).then((value) => safeSetState(() {}));
                 },
                   text: 'Ver detalles',
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.keyboard_double_arrow_up_rounded,
                     size: 30,
                   ),
                   options: FFButtonOptions(
                     height: 40,
-                    padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
                     iconAlignment: IconAlignment.end,
-                    iconPadding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                    iconPadding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
                     color: FlutterFlowTheme.of(context).primary,
                     textStyle: FlutterFlowTheme.of(context).titleSmall.override(
                           font: GoogleFonts.lexend(
