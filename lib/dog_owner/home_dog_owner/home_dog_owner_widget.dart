@@ -36,8 +36,8 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
     super.initState();
     _model = createModel(context, () => HomeDogOwnerModel());
     //recarga el cached del usuario
-    context.read<UserProvider>().loadUser();
-    // context.read<UserProvider>().loadUser(forceRefresh: true);
+    //context.read<UserProvider>().loadUser();
+    context.read<UserProvider>().loadUser(forceRefresh: true);
   }
   
 

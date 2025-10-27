@@ -2531,87 +2531,102 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                   .fromSTEB(0, 18, 0, 18),
                                               child: FFButtonWidget(
                                                 onPressed: isRegistering ? null : () async {
-                                                  setState(() => isRegistering = true);
-                                                  GoRouter.of(context).prepareAuthEvent();
+  setState(() => isRegistering = true);
+  GoRouter.of(context).prepareAuthEvent();
 
-                                                  if (!_model.formKey.currentState!.validate()) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      const SnackBar(content: Text('Corrige los campos con errores')),
-                                                    );
-                                                    setState(() => isRegistering = false);
-                                                    return;
-                                                  }
+  if (!_model.formKey.currentState!.validate()) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Corrige los campos con errores')),
+    );
+    setState(() => isRegistering = false);
+    return;
+  }
 
-                                                  if (_model.datePicked == null) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      const SnackBar(content: Text('Selecciona una fecha de nacimiento')),
-                                                    );
-                                                    setState(() => isRegistering = false);
-                                                    return;
-                                                  }
+  if (_model.datePicked == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Selecciona una fecha de nacimiento')),
+    );
+    setState(() => isRegistering = false);
+    return;
+  }
 
-                                                  if (_model.passDogOwnerInputTextController.text !=
-                                                      _model.confirmPassDogOwnerInputTextController.text) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      const SnackBar(content: Text('Las contraseñas no coinciden')),
-                                                    );
-                                                    setState(() => isRegistering = false);
-                                                    return;
-                                                  }
-                                                  
-                                                  String? ownerImageUrl;
-                                                  if (_ownerImage != null) {
-                                                    ownerImageUrl = await _uploadOwnerImage(currentUserUid, _ownerImage!);
-                                                  }
+  if (_model.passDogOwnerInputTextController.text !=
+      _model.confirmPassDogOwnerInputTextController.text) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Las contraseñas no coinciden')),
+    );
+    setState(() => isRegistering = false);
+    return;
+  }
 
-                                                  try {
-                                                    final user = await authManager.createAccountWithEmail(
-                                                      context,
-                                                      _model.emailDogOwnerInputTextController.text,
-                                                      _model.passDogOwnerInputTextController.text,
-                                                    );
-                                                    if (user == null) throw 'No se pudo crear el usuario.';
+  try {
+    // 1️⃣ Crear usuario en Auth
+    final user = await authManager.createAccountWithEmail(
+      context,
+      _model.emailDogOwnerInputTextController.text,
+      _model.passDogOwnerInputTextController.text,
+    );
+    if (user == null) throw 'No se pudo crear el usuario.';
+    final userId = user.uid;
 
-                                                    await Supabase.instance.client.from('users')
-                                                    .insert({
-                                                      'uuid': currentUserUid,
-                                                      'name': _model.nameDogOwnerInputTextController.text,
-                                                      'email': currentUserEmail,
-                                                      'phone': _model.phoneDogOwnerInputTextController.text,
-                                                      'birthdate': supaSerialize<DateTime>(_model.datePicked),
-                                                      'gender': _model.genderDogOwnerMenuValue,
-                                                      'address': _model.streetDogOwnerInputTextController.text,
-                                                      'houseNumber': _model.apartamentNumDogOwnerInputTextController.text,
-                                                      'zipCode': _model.zipCodeDogOwnerInputTextController.text,
-                                                      'neighborhood': _model.neighborhoodDogOwnerInputTextController.text,
-                                                      'city': _model.cityDogOwnerInputTextController.text,
-                                                      'photo_url': ownerImageUrl,
-                                                      'usertype': 'Dueño'
-                                                    });
-                                                    await Supabase.instance.client.from('addresses')
-                                                    .insert({
-                                                      'uuid': currentUserUid,
-                                                      'alias': 'Mi Dirección',
-                                                      'address': _model.streetDogOwnerInputTextController.text,
-                                                      'houseNumber': _model.apartamentNumDogOwnerInputTextController.text,
-                                                      'zipCode': _model.zipCodeDogOwnerInputTextController.text,
-                                                      'neighborhood': _model.neighborhoodDogOwnerInputTextController.text,
-                                                      'city': _model.cityDogOwnerInputTextController.text,
-                                                      
-                                                  });
+    final supabase = Supabase.instance.client;
 
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      const SnackBar(content: Text('¡Registro exitoso!')),
-                                                    );
-                                                    context.go('/');
-                                                  } catch (e) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(content: Text('Error: $e')),
-                                                    );
-                                                  } finally {
-                                                    setState(() => isRegistering = false);
-                                                  }
-                                                },
+    // 2️⃣ Insertar dueño en la tabla users
+    await supabase.from('users').insert({
+      'uuid': userId,
+      'name': _model.nameDogOwnerInputTextController.text,
+      'email': _model.emailDogOwnerInputTextController.text,
+      'phone': _model.phoneDogOwnerInputTextController.text,
+      'birthdate': supaSerialize<DateTime>(_model.datePicked),
+      'gender': _model.genderDogOwnerMenuValue,
+      'address': _model.streetDogOwnerInputTextController.text,
+      'houseNumber': _model.apartamentNumDogOwnerInputTextController.text,
+      'zipCode': _model.zipCodeDogOwnerInputTextController.text,
+      'neighborhood': _model.neighborhoodDogOwnerInputTextController.text,
+      'city': _model.cityDogOwnerInputTextController.text,
+      'usertype': 'Dueño',
+    });
+
+    await supabase.from('addresses').insert({
+      'uuid': userId,
+      'alias': 'Mi Dirección',
+      'address': _model.streetDogOwnerInputTextController.text,
+      'houseNumber': _model.apartamentNumDogOwnerInputTextController.text,
+      'zipCode': _model.zipCodeDogOwnerInputTextController.text,
+      'neighborhood': _model.neighborhoodDogOwnerInputTextController.text,
+      'city': _model.cityDogOwnerInputTextController.text,
+    });
+
+    // 3️⃣ Subir imagen si el usuario eligió una
+    if (_ownerImage != null) {
+      final filePath = 'owners/$userId/profile.jpg';
+      await supabase.storage.from('profile_pics').upload(
+        filePath,
+        _ownerImage!,
+        fileOptions: const FileOptions(upsert: true),
+      );
+      final imageUrl = supabase.storage.from('profile_pics').getPublicUrl(filePath);
+
+      // 4️⃣ Actualizar registro del usuario con la URL de la imagen
+      await supabase.from('users').update({'photo_url': imageUrl}).eq('uuid', userId!);
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('¡Registro exitoso!')),
+    );
+
+    if (!mounted) return;
+    context.go('/');
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  } finally {
+    if (mounted) setState(() => isRegistering = false);
+  }
+},
                                                 text: 'Registrarse',
                                                 options: FFButtonOptions(
                                                   width:

@@ -2589,12 +2589,16 @@ if (_ownerImage != null) {
 
 
                                                   try {
-                                                    final user = await authManager.createAccountWithEmail(
-                                                      context,
-                                                      _model.emailDogWalkerInputTextController.text,
-                                                      _model.passDogWalkerInputTextController.text,
-                                                    );
-                                                    if (user == null) throw 'No se pudo crear el usuario.';
+    // 1️⃣ Crear usuario en Auth
+    final user = await authManager.createAccountWithEmail(
+      context,
+      _model.emailDogWalkerInputTextController.text,
+      _model.passDogWalkerInputTextController.text,
+    );
+    if (user == null) throw 'No se pudo crear el usuario.';
+    final userId = user.uid;
+
+    final supabase = Supabase.instance.client;
 
                                                     await Supabase.instance.client.from('users')
                                                     .insert({
@@ -2609,7 +2613,6 @@ if (_ownerImage != null) {
                                                       'zipCode': _model.zipCodeDogWalkerInputTextController.text,
                                                       'neighborhood': _model.neighborhoodDogWalkerInputTextController.text,
                                                       'city': _model.cityDogWalkerInputTextController.text,
-                                                      'photo_url': ownerImageUrl,
                                                       'usertype': 'Paseador'
                                                     });
                                                     await Supabase.instance.client.from('addresses')
@@ -2623,17 +2626,35 @@ if (_ownerImage != null) {
                                                       'city': _model.cityDogWalkerInputTextController.text,
                                                   });
 
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      const SnackBar(content: Text('¡Registro exitoso!')),
-                                                    );
-                                                    context.go('/');
-                                                  } catch (e) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(content: Text('Error: $e')),
-                                                    );
-                                                  } finally {
-                                                    setState(() => isRegistering = false);
-                                                  }
+                                                    // 3️⃣ Subir imagen si el usuario eligió una
+    if (_ownerImage != null) {
+      final filePath = 'owners/$userId/profile.jpg';
+      await supabase.storage.from('profile_pics').upload(
+        filePath,
+        _ownerImage!,
+        fileOptions: const FileOptions(upsert: true),
+      );
+      final imageUrl = supabase.storage.from('profile_pics').getPublicUrl(filePath);
+
+      // 4️⃣ Actualizar registro del usuario con la URL de la imagen
+      await supabase.from('users').update({'photo_url': imageUrl}).eq('uuid', userId!);
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('¡Registro exitoso!')),
+    );
+
+    if (!mounted) return;
+    context.go('/');
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  } finally {
+    if (mounted) setState(() => isRegistering = false);
+  }
                                                 },
                                                 text: 'Continuar',
                                                 options: FFButtonOptions(

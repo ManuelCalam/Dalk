@@ -1,17 +1,31 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility that Flutter provides. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:dalk/main.dart';
+import 'package:provider/provider.dart';
+import 'mocks/mock_user_provider.dart';
+import 'mocks/mock_supabase.dart';
+import 'mocks/mock_firebase.dart';
+import 'mocks/mock_app_links.dart';
+import 'package:flutter/material.dart';
+import 'package:dalk/main.dart'; // Tu main.dart real
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(MyApp());
+  testWidgets('Carga principal de la app sin errores', (tester) async {
+    final mockUserProvider = MockUserProvider();
+    final mockSupabase = MockSupabaseClient();
+    final mockFirebase = MockFirebaseMessaging();
+    final mockAppLinks = MockAppLinks();
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<MockUserProvider>.value(value: mockUserProvider),
+          // Aquí podrías agregar más providers de mocks si los usas
+        ],
+        child: MyApp(), // tu app real
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MaterialApp), findsOneWidget);
   });
 }
