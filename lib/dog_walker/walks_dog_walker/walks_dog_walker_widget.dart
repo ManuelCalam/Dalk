@@ -368,7 +368,7 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
                                                         time: fullWalkData['startTime'] != null
                                                             ? DateTime.tryParse(fullWalkData['startTime'])
                                                             : null,
-                                                        photoUrl: fullWalkData['walker_photo_url'],
+                                                        photoUrl: fullWalkData['owner_photo_url'],
                                                         walkerId: fullWalkData['walker_id'],
                                                         ownerId: fullWalkData['owner_id'],
                                                         dogId: fullWalkData['dog_id'],
@@ -431,7 +431,7 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
                                                         time: fullWalkData['startTime'] != null
                                                             ? DateTime.tryParse(fullWalkData['startTime'])
                                                             : null,
-                                                        photoUrl: fullWalkData['walker_photo_url'],
+                                                        photoUrl: fullWalkData['owner_photo_url'],
                                                         walkerId: fullWalkData['walker_id'],
                                                         ownerId: fullWalkData['owner_id'],
                                                         dogId: fullWalkData['dog_id'],
@@ -495,7 +495,7 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
                                                         time: fullWalkData['startTime'] != null
                                                             ? DateTime.tryParse(fullWalkData['startTime'])
                                                             : null,
-                                                        photoUrl: fullWalkData['walker_photo_url'],
+                                                        photoUrl: fullWalkData['owner_photo_url'],
                                                         walkerId: fullWalkData['walker_id'],
                                                         ownerId: fullWalkData['owner_id'],
                                                         dogId: fullWalkData['dog_id'],
@@ -507,75 +507,6 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
                                             },
                                           )
                                         ),
-
-
-
-                                        // Padding( 
-                                        //     padding: EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
-                                        //     child: StreamBuilder<List<Map<String, dynamic>>>(
-                                        //       stream: SupaFlow.client
-                                        //         .from('walks_with_names')
-                                        //         .stream(primaryKey: ['id'])
-                                        //         .eq('walker_id', currentUserUid),
-                                        //       builder: (context, snapshot) {
-                                        //         if (!snapshot.hasData) {
-                                        //           return Center(child: CircularProgressIndicator());
-                                        //         }
-                                        //         final finishedWalks = snapshot.data!
-                                        //           .where((walk) => walk['status'] == 'Finalizado')
-                                        //           .toList();
-
-                                        //         if (finishedWalks.isEmpty) {
-                                        //           return Center(child: Text('No hay paseos finalizados.'));
-                                        //         }
-
-                                        //         return ListView.builder(
-                                        //           padding: EdgeInsets.zero,
-                                        //           shrinkWrap: true,
-                                        //           itemCount: finishedWalks.length,
-                                        //           itemBuilder: (context, index) {
-                                        //             final walk = finishedWalks[index];
-                                        //             return FutureBuilder<List<Map<String, dynamic>>>(
-                                        //               future: SupaFlow.client
-                                        //                 .from('reviews')
-                                        //                 .select()
-                                        //                 .eq('walk_id', walk['id']),
-                                        //               builder: (context, reviewSnapshot) {
-                                        //                 if (!reviewSnapshot.hasData) {
-                                        //                   return SizedBox();
-                                        //                 }
-                                        //                 final reviews = reviewSnapshot.data!;
-                                        //                 if (reviews.isNotEmpty) {
-                                        //                   final review = reviews.first;
-                                        //                   return ReviewedDogCardWidget(
-                                        //                     walkId: walk['walk_id'],
-                                        //                     dogName: walk['pet_name'] ?? '',
-                                        //                     dogOwner: walk['owner_name'] ?? '',
-                                        //                     time: walk['startTime'] != null
-                                        //                         ? DateTime.tryParse(walk['startTime'])
-                                        //                         : null,
-                                        //                     fee: walk['fee']?.toString() ?? '',
-                                        //                     rate: review['rating']?.toString() ?? '',
-                                        //                   );
-                                        //                 } else {
-                                        //                   return NonReviewedDogCardWidget(
-                                        //                     walkId: walk['id'],
-                                        //                     petName: walk['pet_name'] ?? '',
-                                        //                     dogOwner: walk['owner_name'] ?? '',
-                                        //                     time: walk['startTime'] != null
-                                        //                         ? DateTime.tryParse(walk['startTime'])
-                                        //                         : null,
-                                        //                     fee: walk['fee']?.toString() ?? '',
-                                        //                   );
-                                        //                 }
-                                        //               },
-                                        //             );
-                                        //           },
-                                        //         );
-                                        //       },
-                                        //     ),
-                                        //   ),
-                                        
                                       ],
                                     ),
                                   ),

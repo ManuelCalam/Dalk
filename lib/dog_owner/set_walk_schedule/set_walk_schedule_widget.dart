@@ -185,7 +185,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                   Align(
                                     alignment: const AlignmentDirectional(-1.0, 0.0),
                                     child: AutoSizeText(
-                                      'Escoge la fecha',
+                                      'Escoge la fecha y hora del paseo',
                                       maxLines: 1,
                                       minFontSize: 11.0,
                                       style: FlutterFlowTheme.of(context)
@@ -224,6 +224,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                           initialDate: getCurrentTimestamp,
                                           firstDate: getCurrentTimestamp,
                                           lastDate: DateTime(2050),
+                                          locale: const Locale('es', 'ES'),
                                           builder: (context, child) {
                                             return wrapInMaterialDatePickerTheme(
                                               context,
@@ -358,8 +359,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                     ),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 18.0, 0.0, 0.0),
+                                    padding: const EdgeInsetsDirectional.fromSTEB(0.0, 18.0, 0.0, 0.0),
                                     child: InkWell(
                                       splashColor: Colors.transparent,
                                       focusColor: Colors.transparent,
@@ -367,122 +367,118 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                       highlightColor: Colors.transparent,
                                       onTap: () async {
                                         await showModalBottomSheet<bool>(
-                                            context: context,
-                                            builder: (context) {
-                                              final _datePicked2CupertinoTheme =
-                                                  CupertinoTheme.of(context);
-                                              return Container(
-                                                height: MediaQuery.of(context)
-                                                        .size
-                                                        .height /
-                                                    3,
-                                                width: MediaQuery.of(context)
-                                                    .size
-                                                    .width,
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .alternate,
-                                                child: CupertinoTheme(
-                                                  data:
-                                                      _datePicked2CupertinoTheme
-                                                          .copyWith(
-                                                    textTheme:
-                                                        _datePicked2CupertinoTheme
-                                                            .textTheme
-                                                            .copyWith(
-                                                      dateTimePickerTextStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .headlineMedium
-                                                              .override(
-                                                                font:
-                                                                    GoogleFonts
-                                                                        .lexend(
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .headlineMedium
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .headlineMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                                color: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .primaryText,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .headlineMedium
-                                                                    .fontWeight,
-                                                                fontStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .headlineMedium
-                                                                    .fontStyle,
-                                                              ),
+                                          context: context,
+                                          builder: (context) {
+                                            final _datePicked2CupertinoTheme = CupertinoTheme.of(context);
+                                            DateTime now = DateTime.now();
+                                            DateTime today = DateTime(now.year, now.month, now.day);
+                                            
+                                            DateTime referenceDate = _model.datePicked1 ?? today;
+                                            bool isToday = referenceDate.year == now.year && 
+                                                          referenceDate.month == now.month && 
+                                                          referenceDate.day == now.day;
+                                            
+                                            DateTime selectedTime = _model.datePicked2 ?? now;
+                                            DateTime minimumDate = isToday ? now : today;
+                                            
+                                            if (selectedTime.isBefore(minimumDate)) {
+                                              selectedTime = minimumDate;
+                                            }
+
+                                            return Container(
+                                              height: MediaQuery.of(context).size.height / 3 + 60,
+                                              width: MediaQuery.of(context).size.width,
+                                              color: FlutterFlowTheme.of(context).alternate,
+                                              child: Column(
+                                                children: [
+                                                  Container(
+                                                    width: double.infinity,
+                                                    padding: const EdgeInsetsDirectional.fromSTEB(20, 10, 20, 10),
+                                                    child: ElevatedButton(
+                                                      onPressed: () {
+                                                        Navigator.pop(context);
+                                                        setState(() {
+                                                          _model.datePicked2 = selectedTime;
+                                                        });
+                                                      },
+                                                      style: ElevatedButton.styleFrom(
+                                                        backgroundColor: FlutterFlowTheme.of(context).primary,
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius: BorderRadius.circular(20),
+                                                        ),
+                                                        padding: EdgeInsets.symmetric(vertical: 12),
+                                                      ),
+                                                      child: Text(
+                                                        'Aceptar',
+                                                        style: GoogleFonts.lexend(
+                                                          color: Colors.white,
+                                                          fontSize: 18,
+                                                          fontWeight: FontWeight.w600,
+                                                        ),
+                                                      ),
                                                     ),
                                                   ),
-                                                  child: CupertinoDatePicker(
-                                                    mode:
-                                                        CupertinoDatePickerMode
-                                                            .time,
-                                                    minimumDate: DateTime(1900),
-                                                    initialDateTime:
-                                                        getCurrentTimestamp,
-                                                    maximumDate: DateTime(2050),
-                                                    backgroundColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .alternate,
-                                                    use24hFormat: false,
-                                                    onDateTimeChanged:
-                                                        (newDateTime) =>
-                                                            safeSetState(() {
-                                                      _model.datePicked2 =
-                                                          newDateTime;
-                                                    }),
+                                                  // Selector de hora
+                                                  Expanded(
+                                                    child: CupertinoTheme(
+                                                      data: _datePicked2CupertinoTheme.copyWith(
+                                                        textTheme: _datePicked2CupertinoTheme.textTheme.copyWith(
+                                                          dateTimePickerTextStyle:
+                                                              FlutterFlowTheme.of(context).headlineMedium.override(
+                                                                    font: GoogleFonts.lexend(
+                                                                      fontWeight: FlutterFlowTheme.of(context)
+                                                                          .headlineMedium
+                                                                          .fontWeight,
+                                                                      fontStyle: FlutterFlowTheme.of(context)
+                                                                          .headlineMedium
+                                                                          .fontStyle,
+                                                                    ),
+                                                                    color: FlutterFlowTheme.of(context).primaryText,
+                                                                    letterSpacing: 0.0,
+                                                                  ),
+                                                        ),
+                                                      ),
+                                                      child: CupertinoDatePicker(
+                                                        mode: CupertinoDatePickerMode.time,
+                                                        minimumDate: minimumDate,
+                                                        initialDateTime: selectedTime,
+                                                        maximumDate: DateTime(2050),
+                                                        backgroundColor: FlutterFlowTheme.of(context).alternate,
+                                                        use24hFormat: false,
+                                                        onDateTimeChanged: (newDateTime) {
+                                                          selectedTime = newDateTime;
+                                                        },
+                                                      ),
+                                                    ),
                                                   ),
-                                                ),
-                                              );
-                                            });
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        );
                                       },
                                       child: Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
-                                        height:
-                                            MediaQuery.sizeOf(context).height *
-                                                0.05,
+                                        width: MediaQuery.sizeOf(context).width * 1.0,
+                                        height: MediaQuery.sizeOf(context).height * 0.05,
                                         decoration: BoxDecoration(
-                                          color: FlutterFlowTheme.of(context)
-                                              .alternate,
-                                          borderRadius:
-                                              BorderRadius.circular(20.0),
+                                          color: FlutterFlowTheme.of(context).alternate,
+                                          borderRadius: BorderRadius.circular(20.0),
                                         ),
                                         child: Padding(
-                                          padding:
-                                              const EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 1.0, 0.0, 0.0),
+                                          padding: const EdgeInsetsDirectional.fromSTEB(0.0, 1.0, 0.0, 0.0),
                                           child: Row(
                                             mainAxisSize: MainAxisSize.max,
                                             children: [
                                               Padding(
-                                                padding: const EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        8.0, 0.0, 0.0, 0.0),
+                                                padding: const EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 0.0, 0.0),
                                                 child: Icon(
                                                   Icons.timer_sharp,
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primary,
+                                                  color: FlutterFlowTheme.of(context).primary,
                                                   size: 25.0,
                                                 ),
                                               ),
                                               Padding(
-                                                padding: const EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        7.0, 0.0, 0.0, 0.0),
+                                                padding: const EdgeInsetsDirectional.fromSTEB(7.0, 0.0, 0.0, 0.0),
                                                 child: AutoSizeText(
                                                   _model.datePicked2 != null
                                                       ? dateTimeFormat('Hm', _model.datePicked2)
@@ -490,25 +486,14 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                   textAlign: TextAlign.start,
                                                   maxLines: 1,
                                                   minFontSize: 12.0,
-                                                  style: FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .override(
+                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                         font: GoogleFonts.lexend(
                                                           fontWeight: FlutterFlowTheme.of(context)
                                                               .bodyMedium
                                                               .fontWeight,
-                                                          fontStyle: FlutterFlowTheme.of(context)
-                                                              .bodyMedium
-                                                              .fontStyle,
                                                         ),
                                                         fontSize: 16.0,
                                                         letterSpacing: 0.0,
-                                                        fontWeight: FlutterFlowTheme.of(context)
-                                                            .bodyMedium
-                                                            .fontWeight,
-                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                            .bodyMedium
-                                                            .fontStyle,
                                                       ),
                                                 ),
                                               ),
@@ -518,8 +503,6 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                       ),
                                     ),
                                   ),
-                                  
-
                                   Align(
                                     alignment: const AlignmentDirectional(-1.0, 0.0),
                                     child: Padding(

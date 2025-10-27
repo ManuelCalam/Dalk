@@ -1,15 +1,9 @@
+import 'package:dalk/utils/validation.dart';
+
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '/auth/supabase_auth/auth_util.dart';
 
 import 'review_details_card_model.dart';
 export 'review_details_card_model.dart';
@@ -59,8 +53,9 @@ class _ReviewDetailsCardWidgetState extends State<ReviewDetailsCardWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final displayName = Validators.formatDisplayName(widget.userName);
     return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+      padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
       child: Container(
         width: MediaQuery.sizeOf(context).width,
         decoration: BoxDecoration(
@@ -73,18 +68,18 @@ class _ReviewDetailsCardWidgetState extends State<ReviewDetailsCardWidget> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Align(
-              alignment: AlignmentDirectional(-1, 0),
+              alignment: const AlignmentDirectional(-1, 0),
               child: Padding(
-                padding: EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
                 child: Container(
                   width: 80,
                   height: 80,
                   clipBehavior: Clip.antiAlias,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                   ),
                   child: Image.network(
-                    widget.imageUrl ?? 'https://images.unsplash.com/photo-1604004555489-723a93d6ce74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxNXx8Z2lybHxlbnwwfHx8fDE3NTk3NzAzODV8MA&ixlib=rb-4.1.0&q=80&w=1080',
+                    widget.imageUrl,
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -92,19 +87,19 @@ class _ReviewDetailsCardWidgetState extends State<ReviewDetailsCardWidget> {
             ),
             Flexible(
               child: Align(
-                alignment: AlignmentDirectional(0, 0),
+                alignment: const AlignmentDirectional(0, 0),
                 child: Column(
                   mainAxisSize: MainAxisSize.max,
                   children: [
                     Padding(
-                      padding: EdgeInsetsDirectional.fromSTEB(0, 15, 0, 0),
+                      padding: const EdgeInsetsDirectional.fromSTEB(0, 15, 0, 0),
                       child: Row(
                         mainAxisSize: MainAxisSize.max,
                         children: [
                           Align(
-                            alignment: AlignmentDirectional(-1, -1),
+                            alignment: const AlignmentDirectional(-1, -1),
                             child: Text(
-                              widget.userName ?? '[userName]',
+                              displayName,
                               style: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .override(
@@ -124,21 +119,21 @@ class _ReviewDetailsCardWidgetState extends State<ReviewDetailsCardWidget> {
                                   ),
                             ),
                           ),
-                          Flexible(
+                          const Flexible(
                             child: Align(
                               alignment: AlignmentDirectional(1, -1),
                               child: Icon(
                                 Icons.star_rounded,
-                                color: FlutterFlowTheme.of(context).warning,
+                                color: Color(0xFFE2B433),
                                 size: 24,
                               ),
                             ),
                           ),
                           Align(
-                            alignment: AlignmentDirectional(1, -1),
+                            alignment: const AlignmentDirectional(1, -1),
                             child: Padding(
                               padding:
-                                  EdgeInsetsDirectional.fromSTEB(0, 0, 20, 0),
+                                  const EdgeInsetsDirectional.fromSTEB(0, 0, 20, 0),
                               child: Text(
                                 (widget.rating != null ? '${widget.rating} ' : '[rate]'),
                                 style: FlutterFlowTheme.of(context)
@@ -169,34 +164,31 @@ class _ReviewDetailsCardWidgetState extends State<ReviewDetailsCardWidget> {
                         ],
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsetsDirectional.fromSTEB(0, 5, 20, 20),
-                      child: Text(
-                            widget.comment?? '[reviewInfo]',
-                            textAlign: TextAlign.justify,
-                            style: FlutterFlowTheme.of(context)
-                                .bodyMedium
-                                .override(
-                                  font: GoogleFonts.lexend(
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryBackground,
-                                  letterSpacing: 0.0,
+                    Align(
+                      alignment: AlignmentDirectional(-1, 0),
+                      child: Padding(
+                        padding: EdgeInsetsDirectional.fromSTEB(0, 5, 20, 20),
+                        child: Text(
+                          widget.comment,
+                          textAlign: TextAlign.justify,
+                          style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                font: GoogleFonts.lexend(
                                   fontWeight: FlutterFlowTheme.of(context)
                                       .bodyMedium
                                       .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .fontStyle,
+                                  fontStyle:
+                                      FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                 ),
-                          ),
+                                color: FlutterFlowTheme.of(context).secondaryBackground,
+                                letterSpacing: 0.0,
+                                fontWeight:
+                                    FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                fontStyle:
+                                    FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                              ),
                         ),
+                      ),
+                    ),
                   ],
                 ),
               ),

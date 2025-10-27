@@ -395,7 +395,7 @@ class _ReviewedDogCardWidgetState extends State<ReviewedDogCardWidget> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         const Icon(
-                          Icons.star,
+                          Icons.star_rounded,
                           color: Color(0xFFFFB753),
                           size: 24,
                         ),

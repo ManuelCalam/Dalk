@@ -202,7 +202,7 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       const Icon(
-                        Icons.star,
+                        Icons.star_rounded,
                         color: Color(0xFFE2B433),
                         size: 24,
                       ),
@@ -371,29 +371,28 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                                     'date': dateString,
                                   };
 
-                                  // print('📤 Enviando notificación con payload: $notificationPayload');
 
                                   final notificationResponse = await Supabase.instance.client.functions
                                       .invoke('send-walk-notification', body: notificationPayload);
 
-                                  // print('📱 Respuesta de notificación: ${notificationResponse.data}');
-                                  // print('📱 Tipo de respuesta: ${notificationResponse.data.runtimeType}');
+                                  // print('Respuesta de notificación: ${notificationResponse.data}');
+                                  // print('Tipo de respuesta: ${notificationResponse.data.runtimeType}');
 
                                   // Verificar el tipo de dato antes de acceder
                                   // dynamic responseData = notificationResponse.data;
                                   // if (responseData != null) {
                                   //   if (responseData is Map<String, dynamic>) {
                                   //     if (responseData['success'] == true) {
-                                  //       print('✅ Notificación enviada exitosamente');
+                                  //       print('Notificación enviada exitosamente');
                                   //     } else {
-                                  //       print('⚠️ Respuesta de notificación: $responseData');
+                                  //       print('Respuesta de notificación: $responseData');
                                   //     }
                                   //   } else {
-                                  //     print('⚠️ Tipo de respuesta inesperado: ${responseData.runtimeType}');
-                                  //     print('⚠️ Contenido: $responseData');
+                                  //     print(' Tipo de respuesta inesperado: ${responseData.runtimeType}');
+                                  //     print(' Contenido: $responseData');
                                   //   }
                                   // } else {
-                                  //   print('⚠️ Respuesta nula');
+                                  //   print(' Respuesta nula');
                                   // }
 
                                   // ScaffoldMessenger.of(context).showSnackBar(

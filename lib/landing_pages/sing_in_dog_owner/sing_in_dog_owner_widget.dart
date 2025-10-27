@@ -296,7 +296,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                               child: Padding(
                                 padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
                                 child: GestureDetector(
-                                  onTap: () => _showImagePickerOptions(context, true), // true = dueño
+                                  onTap: () => _showImagePickerOptions(context, true), 
                                   child: CircleAvatar(
                                     radius: 60,
                                     backgroundImage: _ownerImage != null

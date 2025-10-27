@@ -20,6 +20,8 @@ class FindDogWalkerModel extends FlutterFlowModel<FindDogWalkerWidget> {
   // State field(s) for findDogWalker_Input widget.
   FocusNode? findDogWalkerInputFocusNode;
   TextEditingController? findDogWalkerInputTextController;
+    FocusNode? findDogWalkerCityInputFocusNode;
+  TextEditingController? findDogWalkerCityInputTextController;
   String? Function(BuildContext, String?)?
       findDogWalkerInputTextControllerValidator;
   // Model for findDogWalker_Card component.

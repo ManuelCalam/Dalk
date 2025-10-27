@@ -55,4 +55,37 @@ class Validators {
     if (!regex.hasMatch(value)) return 'Teléfono a 10 dígitos';
     return null;
   }
+
+
+  static String formatDisplayName(String userName) {
+    if (userName.isEmpty) {
+      return 'Usuario';
+    }
+
+    final cleanName = userName.trim();
+
+    // Dividir la cadena por uno o más espacios y filtrar elementos vacíos
+    final nameParts = cleanName
+        .split(RegExp(r'\s+'))
+        .where((s) => s.isNotEmpty)
+        .toList();
+
+    if (nameParts.isEmpty) {
+      return 'Usuario';
+    }
+    
+    if (nameParts.length == 1) {
+      return nameParts[0];
+    }
+    
+    try {
+      final primerNombre = nameParts[0];
+      final inicialApellido = nameParts[1][0]; 
+
+      return '$primerNombre $inicialApellido.';
+
+    } catch (e) {
+      return nameParts[0]; 
+    }
+  }
 }

@@ -70,13 +70,13 @@ class _PopUpAddReviewWidgetState extends State<PopUpAddReviewWidget> {
   Widget build(BuildContext context) {
 
     return Align(
-      alignment: AlignmentDirectional(0.0, 0.0),
+      alignment: const AlignmentDirectional(0.0, 0.0),
       child: Container(
         width: MediaQuery.sizeOf(context).width * 1.0,
         height: MediaQuery.sizeOf(context).height * 0.45,
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).tertiary,
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
             bottomLeft: Radius.circular(50.0),
             bottomRight: Radius.circular(50.0),
             topLeft: Radius.circular(50.0),
@@ -87,13 +87,13 @@ class _PopUpAddReviewWidgetState extends State<PopUpAddReviewWidget> {
           mainAxisSize: MainAxisSize.max,
           children: [
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(15.0, 20.0, 10.0, 0.0),
+              padding: const EdgeInsetsDirectional.fromSTEB(15.0, 20.0, 10.0, 0.0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 children: [
                   Expanded(
                     child: Align(
-                      alignment: AlignmentDirectional(1.0, 0.0),
+                      alignment: const AlignmentDirectional(1.0, 0.0),
                       child: FlutterFlowIconButton(
                         borderRadius: 8.0,
                         buttonSize: 40.0,
@@ -114,11 +114,11 @@ class _PopUpAddReviewWidgetState extends State<PopUpAddReviewWidget> {
             ),
             Expanded(
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 25.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 25.0),
                 child: Container(
                   width: MediaQuery.sizeOf(context).width * 0.9,
                   height: 100.0,
-                  decoration: BoxDecoration(),
+                  decoration: const BoxDecoration(),
                   child: Form(
                     key: _model.formKey,
                     autovalidateMode: AutovalidateMode.disabled,
@@ -174,7 +174,7 @@ class _PopUpAddReviewWidgetState extends State<PopUpAddReviewWidget> {
                           ],
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 18.0, 0.0, 0.0),
                           child: RatingBar.builder(
                             onRatingUpdate: (newValue) => safeSetState(
@@ -194,7 +194,7 @@ class _PopUpAddReviewWidgetState extends State<PopUpAddReviewWidget> {
                         ),
                         Expanded(
                           child: Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 18.0, 0.0, 0.0),
                             child: Container(
                               width: MediaQuery.sizeOf(context).width * 1.0,
@@ -258,7 +258,7 @@ class _PopUpAddReviewWidgetState extends State<PopUpAddReviewWidget> {
                                     borderRadius: BorderRadius.circular(30.0),
                                   ),
                                   focusedBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
+                                    borderSide: const BorderSide(
                                       color: Color(0x00000000),
                                       width: 1.0,
                                     ),
@@ -329,6 +329,23 @@ class _PopUpAddReviewWidgetState extends State<PopUpAddReviewWidget> {
                                   return;
                                 }
 
+                                if(_model.dogWalkerInfoInputTextController.text.trim() == '' 
+                                  || _model.dogWalkerInfoInputTextController.text.length < 10
+                                  || _model.dogWalkerInfoInputTextController.text.length > 150) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Mínimo 10 caractéres y máximo 150 caractéres.')),
+                                    );
+                                    return;
+                                  }
+
+                                final response = await SupaFlow.client
+                                    .from('users')
+                                    .select('photo_url')
+                                    .eq('uuid', currentUserUid)
+                                    .single();
+                                  
+                                String photoUrl = response['photo_url'] as String;
+
                                 String? reviewedUserId;
                                 int? reviewedDogId;
 
@@ -366,7 +383,7 @@ class _PopUpAddReviewWidgetState extends State<PopUpAddReviewWidget> {
                                         'rating': rating.toInt(),
                                         'comments': _model.dogWalkerInfoInputTextController.text,
                                         'author_id': currentUserUid,
-                                        
+                                        'reviewer_photo': photoUrl,
                                         'reviewed_user_id': reviewedUserId, 
                                         'reviewed_dog_id': reviewedDogId,
                                     });
@@ -380,9 +397,9 @@ class _PopUpAddReviewWidgetState extends State<PopUpAddReviewWidget> {
                             options: FFButtonOptions(
                               width: MediaQuery.sizeOf(context).width * 1.0,
                               height: MediaQuery.sizeOf(context).height * 0.045,
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   16.0, 0.0, 16.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
+                              iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
                               color: FlutterFlowTheme.of(context).accent1,
                               textStyle: FlutterFlowTheme.of(context)

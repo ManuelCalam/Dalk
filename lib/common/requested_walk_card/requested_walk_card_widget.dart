@@ -2,6 +2,7 @@ import 'package:dalk/common/chat/chat_widget.dart';
 import 'package:dalk/components/pop_up_dog_profile/pop_up_dog_profile_widget.dart';
 import 'package:dalk/components/pop_up_dog_walker_profile/pop_up_dog_walker_profile_widget.dart';
 import 'package:dalk/components/pop_up_walk_options/pop_up_walk_options_widget.dart';
+import 'package:dalk/utils/validation.dart';
 
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -76,10 +77,8 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final nameParts = widget.userName.split(' ');
-    final displayName = nameParts.length > 1 
-        ? '${nameParts[0]} ${nameParts[1][0]}.'
-        : '${nameParts[0]}';
+    final displayName = Validators.formatDisplayName(widget.userName);
+
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
       child: Container(
