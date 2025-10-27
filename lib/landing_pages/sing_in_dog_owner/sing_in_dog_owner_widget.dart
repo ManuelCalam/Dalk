@@ -96,6 +96,96 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
     super.dispose();
   }
 
+
+  Future<void> registerOwner(BuildContext context) async {
+    final supabase = Supabase.instance.client;
+
+    try {
+      // 1️Crear usuario en Auth con correo/contraseña
+      final user = await authManager.createAccountWithEmail(
+        context,
+        _model.emailDogOwnerInputTextController.text.trim(),
+        _model.passDogOwnerInputTextController.text.trim(),
+      );
+      if (user == null) throw Exception('No se pudo crear el usuario.');
+      final userId = user.uid;
+
+      // 2Insertar datos en "users"
+      await supabase.from('users').insert({
+        'uuid': userId,
+        'name': _model.nameDogOwnerInputTextController.text.trim(),
+        'email': _model.emailDogOwnerInputTextController.text.trim(),
+        'phone': _model.phoneDogOwnerInputTextController.text.trim(),
+        'birthdate': supaSerialize<DateTime>(_model.datePicked),
+        'gender': _model.genderDogOwnerMenuValue,
+        'address': _model.streetDogOwnerInputTextController.text.trim(),
+        'ext_number': _model.exteriorNumberDogOwnerTextController.text.trim(),
+        'int_number': _model.interiorNumberDogOwnerInputTextController.text.trim(),
+        'zipCode': _model.zipCodeDogOwnerInputTextController.text.trim(),
+        'neighborhood': _model.neighborhoodDogOwnerInputTextController.text.trim(),
+        'city': _model.cityDogOwnerInputTextController.text.trim(),
+        'usertype': 'Dueño',
+      });
+
+      // 3️⃣ Insertar dirección principal en "addresses"
+      await supabase.from('addresses').insert({
+        'uuid': userId,
+        'alias': 'Mi Dirección',
+        'address': _model.streetDogOwnerInputTextController.text.trim(),
+        'ext_number': _model.exteriorNumberDogOwnerTextController.text.trim(),
+        'int_number': _model.interiorNumberDogOwnerInputTextController.text.trim(),
+        'zipCode': _model.zipCodeDogOwnerInputTextController.text.trim(),
+        'neighborhood': _model.neighborhoodDogOwnerInputTextController.text.trim(),
+        'city': _model.cityDogOwnerInputTextController.text.trim(),
+      });
+
+      // 4Subir imagen de perfil o asignar una por defecto
+      String imageUrl;
+
+      if (_ownerImage != null) {
+        final uploadedUrl = await _uploadOwnerImage(userId!, _ownerImage!);
+        imageUrl = uploadedUrl ??
+            supabase.storage.from('profile_pics').getPublicUrl('user.png');
+      } else {
+        imageUrl = supabase.storage.from('profile_pics').getPublicUrl('user.png');
+      }
+
+      // Actualizar URL de la imagen
+      await supabase.from('users').update({'photo_url': imageUrl}).eq('uuid', userId!);
+
+      // Verificación final de que el usuario existe antes de continuar
+      final verify = await supabase
+          .from('users')
+          .select('uuid')
+          .eq('uuid', userId)
+          .maybeSingle();
+
+      if (verify == null) throw Exception('Error al verificar registro.');
+
+      print('✅ Registro completado correctamente.');
+    } on AuthException catch (e) {
+      // Errores específicos de Supabase Auth
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error de autenticación: ${e.message}')),
+      );
+      rethrow;
+    } on PostgrestException catch (e) {
+      // Errores de inserción en la base de datos
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error en base de datos: ${e.message}')),
+      );
+      rethrow;
+    } catch (e) {
+      // Errores generales
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error durante el registro: $e')),
+      );
+      rethrow;
+    }
+  }
+
+
+
   Future<String?> _uploadOwnerImage(String userId, File imageFile) async {
     try {
       final fileSize = await imageFile.length();
@@ -2774,15 +2864,14 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                               padding: const EdgeInsetsDirectional
                                                   .fromSTEB(0, 18, 0, 18),
                                               child: FFButtonWidget(
-                                                onPressed: isRegistering ? null : () async {
-                                                  setState(() => isRegistering = true);
-                                                  GoRouter.of(context).prepareAuthEvent();
-
+                                                onPressed: isRegistering
+                                              ? null
+                                              : () async {
+                                                  // Validaciones básicas antes de iniciar el registro
                                                   if (!_model.formKey.currentState!.validate()) {
                                                     ScaffoldMessenger.of(context).showSnackBar(
                                                       const SnackBar(content: Text('Corrige los campos con errores')),
                                                     );
-                                                    setState(() => isRegistering = false);
                                                     return;
                                                   }
 
@@ -2790,7 +2879,6 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                     ScaffoldMessenger.of(context).showSnackBar(
                                                       const SnackBar(content: Text('Selecciona una fecha de nacimiento')),
                                                     );
-                                                    setState(() => isRegistering = false);
                                                     return;
                                                   }
 
@@ -2799,113 +2887,30 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                     ScaffoldMessenger.of(context).showSnackBar(
                                                       const SnackBar(content: Text('Las contraseñas no coinciden')),
                                                     );
-                                                    setState(() => isRegistering = false);
                                                     return;
                                                   }
 
+                                                  setState(() => isRegistering = true);
+
                                                   try {
-                                                    // Crear usuario en Auth
-                                                    final user = await authManager.createAccountWithEmail(
-                                                      context,
-                                                      _model.emailDogOwnerInputTextController.text,
-                                                      _model.passDogOwnerInputTextController.text,
-                                                    );
-                                                    if (user == null) throw 'No se pudo crear el usuario.';
-                                                    final userId = user.uid;
+                                                    await registerOwner(context); 
 
-                                                    final supabase = Supabase.instance.client;
-                                                    
-                                                    try {
-
-                                                      final response = await supabase.from('users').insert({
-                                                        'uuid': userId,
-                                                        'name': _model.nameDogOwnerInputTextController.text,
-                                                        'email': _model.emailDogOwnerInputTextController.text,
-                                                        'phone': _model.phoneDogOwnerInputTextController.text,
-                                                        'birthdate': supaSerialize<DateTime>(_model.datePicked),
-                                                        'gender': _model.genderDogOwnerMenuValue,
-                                                        'address': _model.streetDogOwnerInputTextController.text,
-                                                        'ext_number': _model.exteriorNumberDogOwnerTextController.text,
-                                                        'int_number': _model.interiorNumberDogOwnerInputTextController.text,  
-                                                        'houseNumber': _model.interiorNumberDogOwnerInputTextController.text,  // Quitar esta linea
-                                                        'zipCode': _model.zipCodeDogOwnerInputTextController.text,
-                                                        'neighborhood': _model.neighborhoodDogOwnerInputTextController.text,
-                                                        'city': _model.cityDogOwnerInputTextController.text,
-                                                        'usertype': 'Dueño',
-                                                      });
-
-                                                      if (response != null) {
-                                                        print('Usuario insertado correctamente: ${response['id']}');
-                                                      } else {
-                                                        print('No se insertó ningún usuario.');
-                                                    }} on PostgrestException catch (error) {
-                                                        print('Error de Supabase: ${error.message}');
-                                                    } catch (e) {
-                                                      print('Error inesperado: $e');
-                                                    }
-
-                                                    await supabase.from('addresses').insert({
-                                                      'uuid': userId,
-                                                      'alias': 'Mi Dirección',
-                                                      'address': _model.streetDogOwnerInputTextController.text,
-                                                      'ext_number': _model.exteriorNumberDogOwnerTextController.text,
-                                                      'int_number': _model.interiorNumberDogOwnerInputTextController.text, 
-                                                      'houseNumber': _model.interiorNumberDogOwnerInputTextController.text, // Quitar esta linea
-                                                      'zipCode': _model.zipCodeDogOwnerInputTextController.text,
-                                                      'neighborhood': _model.neighborhoodDogOwnerInputTextController.text,
-                                                      'city': _model.cityDogOwnerInputTextController.text,
-                                                    });
-
-                                                    String imageUrl;
-
-                                                    if (_ownerImage != null) {
-                                                      final uploadedUrl = await _uploadOwnerImage(userId!, _ownerImage!);
-                                                      if (uploadedUrl != null) {
-                                                        imageUrl = uploadedUrl;
-                                                      } else {
-                                                        // Si falla la subida, usa la imagen por defecto
-                                                        imageUrl = supabase.storage
-                                                            .from('profile_pics')
-                                                            .getPublicUrl('user.png');
-                                                      }
-                                                    } else {
-                                                      // Si no seleccionó foto, usa la predeterminada
-                                                      imageUrl = supabase.storage
-                                                          .from('profile_pics')
-                                                          .getPublicUrl('user.png');
-                                                    }
-
-                                                    await supabase.from('users').update({'photo_url': imageUrl}).eq('uuid', userId!);
-
-
+                                                    if (!mounted) return;
 
                                                     ScaffoldMessenger.of(context).showSnackBar(
                                                       const SnackBar(content: Text('¡Registro exitoso!')),
                                                     );
 
-                                                    if (!mounted) return;
-
                                                     await Future.delayed(const Duration(milliseconds: 500));
+
+                                                    // Navegación segura solo cuando TODO terminó
                                                     context.go('/');
-
-                                                  } on AuthException catch (e) {
-                                                  if (mounted) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(content: Text('Credenciales inválidas: ${e.message}')),
-                                                    );
-                                                  }
-
-  
                                                   } catch (e) {
-                                                    if (mounted) {
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        SnackBar(content: Text('Error: $e')),
-                                                      );
-                                                    }
                                                   } finally {
                                                     if (mounted) setState(() => isRegistering = false);
                                                   }
                                                 },
+
                                                 text: 'Registrarse',
                                                 options: FFButtonOptions(
                                                   width:
