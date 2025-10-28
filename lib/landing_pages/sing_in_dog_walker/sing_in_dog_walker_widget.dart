@@ -17,7 +17,12 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class SingInDogWalkerWidget extends StatefulWidget {
-  const SingInDogWalkerWidget({super.key});
+  const SingInDogWalkerWidget({
+    required this.registerMethod,
+    super.key
+    });
+
+  final String registerMethod;
 
   static String routeName = 'singInDogWalker';
   static String routePath = '/singInDogWalker';
@@ -93,24 +98,42 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
     super.dispose();
   }
 
-    Future<void> registerOwner(BuildContext context) async {
-    final supabase = Supabase.instance.client;
+Future<void> registerDogWalker(BuildContext context, String windowOrigin) async {
+  final supabase = Supabase.instance.client;
 
-    try {
-      // 1️Crear usuario en Auth con correo/contraseña
+  try {
+    String? userId;
+    String? userEmail;
+
+    if (windowOrigin == 'email') {
       final user = await authManager.createAccountWithEmail(
         context,
         _model.emailDogWalkerInputTextController.text.trim(),
         _model.passDogWalkerInputTextController.text.trim(),
       );
       if (user == null) throw Exception('No se pudo crear el usuario.');
-      final userId = user.uid;
+      userId = user.uid;
+      userEmail = _model.emailDogWalkerInputTextController.text.trim();
+    }
 
-      // 2Insertar datos en "users"
+    else if (windowOrigin == 'google') {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) throw Exception('No se encontró sesión de Google.');
+      userId = user.id;
+      userEmail = user.email;
+    } else {
+      throw Exception('Origen de registro no válido: $windowOrigin');
+    }
+
+    if (userId == null || userEmail == null) {
+      throw Exception('Error: datos de usuario incompletos.');
+    }
+
+    if (windowOrigin == 'email') {
       await supabase.from('users').insert({
         'uuid': userId,
         'name': _model.nameDogWalkerInputTextController.text.trim(),
-        'email': _model.emailDogWalkerInputTextController.text.trim(),
+        'email': userEmail,
         'phone': _model.phoneDogWalkerInputTextController.text.trim(),
         'birthdate': supaSerialize<DateTime>(_model.datePicked),
         'gender': _model.genderDogWalkerMenuValue,
@@ -122,63 +145,73 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
         'city': _model.cityDogWalkerInputTextController.text.trim(),
         'usertype': 'Paseador',
       });
-
-      // Insertar dirección principal en "addresses"
-      await supabase.from('addresses').insert({
-        'uuid': userId,
-        'alias': 'Mi Dirección',
+    } else if (windowOrigin == 'google') {
+      await supabase.from('users').update({
+        'name': _model.nameDogWalkerInputTextController.text.trim(),
+        'phone': _model.phoneDogWalkerInputTextController.text.trim(),
+        'birthdate': supaSerialize<DateTime>(_model.datePicked),
+        'gender': _model.genderDogWalkerMenuValue,
         'address': _model.streetDogWalkerInputTextController.text.trim(),
         'ext_number': _model.exteriorNumberDogWalkerTextController.text.trim(),
         'int_number': _model.interiorNumberDogWalkerInputTextController.text.trim(),
         'zipCode': _model.zipCodeDogWalkerInputTextController.text.trim(),
         'neighborhood': _model.neighborhoodDogWalkerInputTextController.text.trim(),
         'city': _model.cityDogWalkerInputTextController.text.trim(),
-      });
-
-      // 4Subir imagen de perfil o asignar una por defecto
-      String imageUrl;
-
-      if (_ownerImage != null) {
-        final uploadedUrl = await _uploadOwnerImage(userId!, _ownerImage!);
-        imageUrl = uploadedUrl ??
-            supabase.storage.from('profile_pics').getPublicUrl('user.png');
-      } else {
-        imageUrl = supabase.storage.from('profile_pics').getPublicUrl('user.png');
-      }
-
-      // Actualizar URL de la imagen
-      await supabase.from('users').update({'photo_url': imageUrl}).eq('uuid', userId!);
-
-      // Verificación final de que el usuario existe antes de continuar
-      final verify = await supabase
-          .from('users')
-          .select('uuid')
-          .eq('uuid', userId)
-          .maybeSingle();
-
-      if (verify == null) throw Exception('Error al verificar registro.');
-
-      print('✅ Registro completado correctamente.');
-    } on AuthException catch (e) {
-      // Errores específicos de Supabase Auth
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error de autenticación: ${e.message}')),
-      );
-      rethrow;
-    } on PostgrestException catch (e) {
-      // Errores de inserción en la base de datos
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error en base de datos: ${e.message}')),
-      );
-      rethrow;
-    } catch (e) {
-      // Errores generales
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error durante el registro: $e')),
-      );
-      rethrow;
+        'usertype': 'Paseador',
+      }).eq('uuid', userId);
     }
+
+    await supabase.from('addresses').insert({
+      'uuid': userId,
+      'alias': 'Mi Dirección',
+      'address': _model.streetDogWalkerInputTextController.text.trim(),
+      'ext_number': _model.exteriorNumberDogWalkerTextController.text.trim(),
+      'int_number': _model.interiorNumberDogWalkerInputTextController.text.trim(),
+      'zipCode': _model.zipCodeDogWalkerInputTextController.text.trim(),
+      'neighborhood': _model.neighborhoodDogWalkerInputTextController.text.trim(),
+      'city': _model.cityDogWalkerInputTextController.text.trim(),
+    });
+
+    String imageUrl;
+    if (_ownerImage != null) {
+      final uploadedUrl = await _uploadOwnerImage(userId!, _ownerImage!);
+      imageUrl = uploadedUrl ??
+          supabase.storage.from('profile_pics').getPublicUrl('user.png');
+    } else {
+      imageUrl = supabase.storage.from('profile_pics').getPublicUrl('user.png');
+    }
+
+    await supabase.from('users').update({'photo_url': imageUrl}).eq('uuid', userId!);
+
+    final verify = await supabase
+        .from('users')
+        .select('uuid')
+        .eq('uuid', userId)
+        .maybeSingle();
+
+    if (verify == null) throw Exception('Error al verificar registro.');
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('¡Registro completado correctamente!')),
+    );
+
+    context.pushReplacement('/');
+
+  } on AuthException catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error de autenticación: ${e.message}')),
+    );
+  } on PostgrestException catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error en base de datos: ${e.message}')),
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error durante el registro: $e')),
+    );
   }
+}
+
 
 
   Future<String?> _uploadOwnerImage(String userId, File imageFile) async {
@@ -617,6 +650,7 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
                                                   ),
                                                 ),
                                               ),
+                                              if(widget.registerMethod == 'email')
                                               Padding(
                                                 padding: const EdgeInsetsDirectional
                                                     .fromSTEB(0, 18, 0, 0),
@@ -2448,6 +2482,8 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
                                                     ],                                               
                                                 ),
                                               ),
+
+                                              if(widget.registerMethod == 'email')
                                               Padding(
                                                 padding: const EdgeInsetsDirectional
                                                     .fromSTEB(0, 18, 0, 0),
@@ -2655,6 +2691,8 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
                                                   maxLength: 16,
                                                 ),
                                               ),
+
+                                              if(widget.registerMethod == 'email')
                                               Padding(
                                                 padding: const EdgeInsetsDirectional
                                                     .fromSTEB(0, 18, 0, 0),
@@ -2863,6 +2901,7 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
                                                   maxLength: 16,
                                                 ),
                                               ),
+
                                               Padding(
                                                 padding: const EdgeInsetsDirectional
                                                     .fromSTEB(0, 18, 0, 18),
@@ -2896,7 +2935,7 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
                                                         setState(() => isRegistering = true);
 
                                                         try {
-                                                          await registerOwner(context); 
+                                                          await registerDogWalker(context, widget.registerMethod); 
 
                                                           if (!mounted) return;
 

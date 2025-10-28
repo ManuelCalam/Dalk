@@ -1,3 +1,5 @@
+import 'package:dalk/backend/supabase/database/database.dart';
+
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -61,11 +63,35 @@ class _ChooseUserTypeWidgetState extends State<ChooseUserTypeWidget> {
                 child: Column(
                   mainAxisSize: MainAxisSize.max,
                   children: [
-                    wrapWithModel(
-                      model: _model.goBackContainerModel,
-                      updateCallback: () => safeSetState(() {}),
-                      child: GoBackContainerWidget(),
+                  Align(
+                    alignment: AlignmentDirectional(0.0, 0.0),
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.fromSTEB(15.0, 15.0, 10.0, 0.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          InkWell(
+                            splashColor: Colors.transparent,
+                            focusColor: Colors.transparent,
+                            hoverColor: Colors.transparent,
+                            highlightColor: Colors.transparent,
+                            onTap: () async {
+                              await Supabase.instance.client.auth.signOut();
+                              if (context.mounted) {
+                                context.goNamedAuth(LoginWidget.routeName, context.mounted);
+                              }
+                            },
+                            child: Icon(
+                              Icons.chevron_left_outlined,
+                              color: FlutterFlowTheme.of(context).primary,
+                              size: 40.0,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                  ),
+
                     Container(
                       width: MediaQuery.sizeOf(context).width,
                       height: 100,
@@ -73,7 +99,7 @@ class _ChooseUserTypeWidgetState extends State<ChooseUserTypeWidget> {
                       child: Align(
                         alignment: AlignmentDirectional(0, 0),
                         child: AutoSizeText(
-                          '?Dueño o paseador?',
+                          '¿Dueño o paseador?',
                           textAlign: TextAlign.center,
                           style:
                               FlutterFlowTheme.of(context).bodyMedium.override(
@@ -115,9 +141,7 @@ class _ChooseUserTypeWidgetState extends State<ChooseUserTypeWidget> {
                                   hoverColor: Colors.transparent,
                                   highlightColor: Colors.transparent,
                                   onTap: () async {
-                                    context.pushNamed(
-                                        SignInWithGoogleDogOwnerWidget
-                                            .routeName);
+                                    context.pushNamed(SignInWithGoogleDogOwnerWidget.routeName);
                                   },
                                   child: Container(
                                     width:
@@ -196,7 +220,11 @@ class _ChooseUserTypeWidgetState extends State<ChooseUserTypeWidget> {
                                   highlightColor: Colors.transparent,
                                   onTap: () async {
                                     context.pushNamed(
-                                        SingInDogWalkerWidget.routeName);
+                                      SingInDogWalkerWidget.routeName,
+                                      queryParameters: {
+                                        'registerMethod': 'google',
+                                      },
+                                    );
                                   },
                                   child: Container(
                                     width:

@@ -189,7 +189,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: ChooseUserTypeWidget.routeName,
           path: ChooseUserTypeWidget.routePath,
           builder: (context, params) => ChooseUserTypeWidget(),
-          requireAuth: true
+          requireAuth: false
         ),
         FFRoute(
           name: DogOwnerProfileWidget.routeName,
@@ -212,7 +212,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: SingInDogWalkerWidget.routeName,
           path: SingInDogWalkerWidget.routePath,
-          builder: (context, params) => SingInDogWalkerWidget(),
+          builder: (context, params) => SingInDogWalkerWidget(registerMethod: params.getParam('registerMethod', ParamType.String) ?? ''),
           requireAuth: false
         ),
         FFRoute(

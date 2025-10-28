@@ -101,7 +101,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
     final supabase = Supabase.instance.client;
 
     try {
-      // 1️Crear usuario en Auth con correo/contraseña
+      // Crear usuario en Auth con correo/contraseña
       final user = await authManager.createAccountWithEmail(
         context,
         _model.emailDogOwnerInputTextController.text.trim(),
@@ -110,7 +110,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
       if (user == null) throw Exception('No se pudo crear el usuario.');
       final userId = user.uid;
 
-      // 2Insertar datos en "users"
+      // Insertar datos en "users"
       await supabase.from('users').insert({
         'uuid': userId,
         'name': _model.nameDogOwnerInputTextController.text.trim(),
@@ -127,7 +127,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
         'usertype': 'Dueño',
       });
 
-      // 3️⃣ Insertar dirección principal en "addresses"
+      // Insertar dirección principal en "addresses"
       await supabase.from('addresses').insert({
         'uuid': userId,
         'alias': 'Mi Dirección',
@@ -139,7 +139,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
         'city': _model.cityDogOwnerInputTextController.text.trim(),
       });
 
-      // 4Subir imagen de perfil o asignar una por defecto
+      // Subir imagen de perfil o asignar una por defecto
       String imageUrl;
 
       if (_ownerImage != null) {
@@ -162,7 +162,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
 
       if (verify == null) throw Exception('Error al verificar registro.');
 
-      print('✅ Registro completado correctamente.');
+      print('Registro completado correctamente.');
     } on AuthException catch (e) {
       // Errores específicos de Supabase Auth
       ScaffoldMessenger.of(context).showSnackBar(
@@ -831,7 +831,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                   obscureText: false,
                                                   decoration: InputDecoration(
                                                     isDense: true,
-                                                    labelText: 'Telefono',
+                                                    labelText: 'Teléfono',
                                                     labelStyle:
                                                         FlutterFlowTheme.of(
                                                                 context)
@@ -2870,7 +2870,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                   // Validaciones básicas antes de iniciar el registro
                                                   if (!_model.formKey.currentState!.validate()) {
                                                     ScaffoldMessenger.of(context).showSnackBar(
-                                                      const SnackBar(content: Text('Corrige los campos con errores')),
+                                                      const SnackBar(content: Text('Por favor completa todos los campos correctamente')),
                                                     );
                                                     return;
                                                   }

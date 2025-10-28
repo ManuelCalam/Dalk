@@ -56,7 +56,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
   AutovalidateMode _descriptionValidateMode = AutovalidateMode.disabled;
 
   @override
-void initState() {
+  void initState() {
   super.initState();
   _model = createModel(context, () => AddPetModel());
 
@@ -104,85 +104,6 @@ void initState() {
   void dispose() {
     _model.dispose();
     super.dispose();
-  }
-
-  String? _validateRequired(String? value, String fieldName) {
-    if (value == null || value.trim().isEmpty) {
-      return '$fieldName es requerido';
-    }
-    return null;
-  }
-
-  String? _validateAge(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Edad es requerida';
-    }
-    final age = int.tryParse(value);
-    if (age == null) {
-      return 'Ingrese una edad válida';
-    }
-    if (age <= 0) {
-      return 'La edad debe ser mayor a 0';
-    }
-    if (age > 30) {
-      return 'La edad debe ser menor a 30';
-    }
-    return null;
-  }
-
-  String? _validateGender(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Género es requerido';
-    }
-    return null;
-  }
-
-  String? _validateSize(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Tamaño es requerido';
-    }
-    return null;
-  }
-
-  String? _validateBehaviour(List<String>? values) {
-    if (values == null || values.isEmpty) {
-      return 'Selecciona al menos un comportamiento';
-    }
-    return null;
-  }
-
-  String? _validateDescription(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Descripción es requerida';
-    }
-    if (value.trim().length < 10) {
-      return 'La descripción debe tener al menos 10 caracteres';
-    }
-    if (value.length > 300) {
-      return 'La descripción no debe exceder 300 caracteres';
-    }
-    return null;
-  }
-
-  // Validaciones condicionales que solo se activan cuando el campo ha sido tocado o el formulario enviado
-  String? _validateName(String? value) {
-    if (!_nameTouched && !_formSubmitted) return null;
-    return Validators.requiredField(value, fieldName: 'Nombre');
-  }
-
-  String? _validateAgeConditional(String? value) {
-    if (!_ageTouched && !_formSubmitted) return null;
-    return _validateAge(value);
-  }
-
-  String? _validateBreeConditional(String? value) {
-    if (!_breeTouched && !_formSubmitted) return null;
-    return _validateRequired(value, 'Raza');
-  }
-
-  String? _validateDescriptionConditional(String? value) {
-    if (!_descriptionTouched && !_formSubmitted) return null;
-    return _validateDescription(value);
   }
 
   bool validarCamposObligatorios() {
@@ -407,9 +328,7 @@ void _showImagePickerOptions(BuildContext context, {int? petId}) {
                                               radius: 60,
                                               backgroundImage: _ownerImage != null
                                                   ? FileImage(_ownerImage!)
-                                                  : const NetworkImage(
-                                                      'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/public/profile_pics/dog.png',
-                                                    ) as ImageProvider,
+                                                  : const AssetImage('assets/images/dog.png') as ImageProvider,
                                             ),
                                           ),
                                         ),
@@ -445,6 +364,7 @@ void _showImagePickerOptions(BuildContext context, {int? petId}) {
                                                       letterSpacing: 0.0,
                                                       fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
                                                       fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                                                      color: FlutterFlowTheme.of(context).primary
                                                     ),
                                                 alignLabelWithHint: false,
                                                 hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
@@ -506,9 +426,18 @@ void _showImagePickerOptions(BuildContext context, {int? petId}) {
                                                     fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
                                                     fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                   ),
-                                              cursorColor: FlutterFlowTheme.of(context).primaryText,
-                                              validator: (value) => Validators.requiredField(value, fieldName: 'Nombre'),
-                                              autovalidateMode: _nameValidateMode,
+                                                  cursorColor: FlutterFlowTheme.of(context).primaryText,
+                                                  validator: (value) {
+                                                    final required = Validators.requiredField(value, fieldName: 'Nombre');
+                                                    if (required != null) return required;
+                                                    final min = Validators.minLength(value, 3, fieldName: 'Nombre');
+                                                    if (min != null) return min;
+                                                    return Validators.maxLength(value, 30, fieldName: 'Nombre');
+                                                  },                                                  
+                                                  inputFormatters: [
+                                                    LengthLimitingTextInputFormatter(30),
+                                                  ],                                              
+                                                  autovalidateMode: _nameValidateMode,
                                             ),
                                           ),
                                         ),
@@ -543,6 +472,7 @@ void _showImagePickerOptions(BuildContext context, {int? petId}) {
                                                       letterSpacing: 0.0,
                                                       fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
                                                       fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                                                      color: FlutterFlowTheme.of(context).primary
                                                     ),
                                                 hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
                                                       font: GoogleFonts.lexend(
@@ -603,9 +533,19 @@ void _showImagePickerOptions(BuildContext context, {int? petId}) {
                                                     fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
                                                     fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                   ),
-                                              keyboardType: TextInputType.number,
+                                              keyboardType: TextInputType.text,
                                               cursorColor: FlutterFlowTheme.of(context).primaryText,
-                                              validator: _validateAge,
+                                              // validator: (value) => Validators.validatePetAge(value, fieldName: 'Edad'),                                              
+                                              validator: (value) {
+                                                final required = Validators.requiredField(value, fieldName: 'Edad');
+                                                  if (required != null) return required;
+                                                  final min = Validators.minLength(value, 1, fieldName: 'Edad');
+                                                  if (min != null) return min;
+                                                  return Validators.maxLength(value, 3, fieldName: 'Edad');
+                                                },                                                  
+                                                inputFormatters: [
+                                                  LengthLimitingTextInputFormatter(3),
+                                                ],   
                                               autovalidateMode: _ageValidateMode,
                                             ),
                                           ),
@@ -720,6 +660,7 @@ void _showImagePickerOptions(BuildContext context, {int? petId}) {
                                                       letterSpacing: 0.0,
                                                       fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
                                                       fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                                                      color: FlutterFlowTheme.of(context).primary
                                                     ),
                                                 hintStyle: FlutterFlowTheme.of(context).bodyMedium.override(
                                                       font: GoogleFonts.lexend(
@@ -780,7 +721,16 @@ void _showImagePickerOptions(BuildContext context, {int? petId}) {
                                                     fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                   ),
                                               cursorColor: FlutterFlowTheme.of(context).primaryText,
-                                              validator: (value) => _validateRequired(value, 'Raza'),
+                                              validator: (value) {
+                                                final required = Validators.requiredField(value, fieldName: 'Raza');
+                                                  if (required != null) return required;
+                                                  final min = Validators.minLength(value, 3, fieldName: 'Raza');
+                                                  if (min != null) return min;
+                                                  return Validators.maxLength(value, 20, fieldName: 'Raza');
+                                                },                                                  
+                                                inputFormatters: [
+                                                  LengthLimitingTextInputFormatter(20),
+                                                ],   
                                               autovalidateMode: _breedValidateMode,
                                             ),
                                           ),
@@ -1166,8 +1116,17 @@ void _showImagePickerOptions(BuildContext context, {int? petId}) {
                                               minLines: 5,
                                               keyboardType: TextInputType.multiline,
                                               cursorColor: FlutterFlowTheme.of(context).primaryText,
-                                              validator: _validateDescription,
-                                              autovalidateMode: _descriptionValidateMode,
+                                              validator: (value) {
+                                                final required = Validators.requiredField(value, fieldName: 'Acerca de');
+                                                  if (required != null) return required;
+                                                  final min = Validators.minLength(value, 10, fieldName: 'Acerca de');
+                                                  if (min != null) return min;
+                                                  return Validators.maxLength(value, 150, fieldName: 'Acerca de');
+                                                },                                                  
+                                                inputFormatters: [
+                                                  LengthLimitingTextInputFormatter(150),
+                                                ],                                              
+                                                autovalidateMode: _descriptionValidateMode,
                                             ),
                                           ),
                                         ),
@@ -1219,7 +1178,7 @@ void _showImagePickerOptions(BuildContext context, {int? petId}) {
                                                       .insert({
                                                         'uuid': userId,
                                                         'name': _model.nameInputTextController.text.trim(),
-                                                        'age': int.parse(_model.ageInputTextController.text),
+                                                        'age': _model.ageInputTextController.text.trim(),
                                                         'gender': _model.genderDogOwnerMenuValue,
                                                         'bree': _model.breeInputTextController.text.trim(),
                                                         'size': _model.dogSizeMenuValue,
@@ -1231,8 +1190,7 @@ void _showImagePickerOptions(BuildContext context, {int? petId}) {
                                                   final petData = response.first;
                                                   final petId = petData['id'] as int;
 
-                                                  String imageUrl =
-                                                      'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/public/profile_pics/dog.png';
+                                                  String imageUrl = 'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/public/profile_pics/dog.png';
 
                                                   if (_ownerImage != null && userId != null) {
                                                     final uploadedUrl = await _uploadPetImage(context, userId, _ownerImage!, petId: petId);

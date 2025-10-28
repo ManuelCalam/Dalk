@@ -1,5 +1,7 @@
 import 'package:dalk/NavBar/nav_bar_dog_walker.dart';
 import 'package:dalk/backend/supabase/database/database.dart';
+import 'package:dalk/flutter_flow/flutter_flow_util.dart';
+import 'package:dalk/landing_pages/choose_user_type/choose_user_type_widget.dart';
 import 'package:dalk/landing_pages/login/login_widget.dart';
 import 'package:flutter/material.dart';
 import 'NavBar/nav_bar_dog_owner.dart';
@@ -49,6 +51,7 @@ class _RootNavWidgetState extends State<RootNavWidget> {
 
       if (userType == null && _attempts < _maxAttempts) {
         _attempts++;
+        print("Haciendo intento en RootNavWidget: $_attempts");
         await Future.delayed(const Duration(milliseconds: 2500));
         return _checkUserType();
       }
@@ -65,11 +68,7 @@ class _RootNavWidgetState extends State<RootNavWidget> {
         Future.delayed(const Duration(seconds: 2), () {
           if (mounted) {
             Supabase.instance.client.auth.signOut();
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (_) => const LoginWidget()),
-              (route) => false,
-            );
+            context.goNamedAuth(LoginWidget.routeName, context.mounted);
           }
         });
 
@@ -118,7 +117,7 @@ class _RootNavWidgetState extends State<RootNavWidget> {
       );
     }
 
-    // ✅ Tu lógica original
+    //Tu lógica original
     if (_userType == 'Dueño') {
       return NavBarOwnerPage(
         key: ValueKey(widget.initialPage),
@@ -126,6 +125,8 @@ class _RootNavWidgetState extends State<RootNavWidget> {
       );
     } else if (_userType == 'Paseador') {
       return NavBarWalkerPage(initialPage: widget.initialPage);
+    } else if (_userType == 'Indefinido') {
+      return ChooseUserTypeWidget();
     } else {
       return const Scaffold(
         body: Center(child: Text('Tipo de usuario no reconocido')),

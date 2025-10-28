@@ -1,6 +1,7 @@
 import 'package:dalk/SubscriptionProvider.dart';
 import 'package:dalk/backend/supabase/database/database.dart';
 import 'package:dalk/cards/article_card/article_card_widget.dart';
+import 'package:dalk/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
 import 'package:provider/provider.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -66,6 +67,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
   Widget build(BuildContext context) {
     final user = context.watch<UserProvider>().user;
     final nombre = (user?.name?.split(" ").first) ?? "User";
+    final address = (user?.address);
     final isPremium = context.watch<SubscriptionProvider>().isPremium;
     
     return GestureDetector(
@@ -351,7 +353,37 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                         hoverColor: Colors.transparent,
                                         highlightColor: Colors.transparent,
                                         onTap: () async {
-                                          context.pushNamed(SetWalkScheduleWidget.routeName);
+                                          if(address == null || address == ''){
+                                            showDialog(
+                                              context: context,
+                                              builder: (context) {
+                                                return Dialog(
+                                                  backgroundColor: Colors.transparent,
+                                                  child: PopUpConfirmDialogWidget(
+                                                    title: "Datos faltantes" ,
+                                                    message: "¡Ocupas completar tu perfil para empezar a agendar!",
+                                                    confirmText: "Completar perfil",
+                                                    cancelText: "En otro momento",
+                                                    confirmColor: FlutterFlowTheme.of(context).primary,
+                                                    cancelColor: FlutterFlowTheme.of(context).accent1,
+                                                    icon: Icons.person,
+                                                    iconColor: FlutterFlowTheme.of(context).primary,
+                                                    onConfirm: () {
+                                                      Navigator.pop(context);
+                                                      context.pushNamed(DogOwnerUpdateProfileWidget.routeName);
+                                                    },
+                                                    onCancel: () {
+                                                      Navigator.pop(context);
+                                                    },
+                                                  ),
+                                                );
+                                              },
+                                            );
+
+                                          }
+                                          else {
+                                            context.pushNamed(SetWalkScheduleWidget.routeName);
+                                          }
                                         },
                                         child: Container(
                                           width:

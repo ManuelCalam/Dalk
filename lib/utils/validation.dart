@@ -2,14 +2,14 @@
 
 class Validators {
   static String? maxLength(String? value, int max, {String? fieldName}) {
-    if (value != null && value.length > max) {
+    if (value != null && value.trim().length > max) {
       return '$fieldName no puede tener más de $max caracteres';
     }
     return null;
   }
 
   static String? minLength(String? value, int min, {String? fieldName}) {
-    if (value != null && value.length < min) {
+    if (value != null && value.trim().length < min) {
       return '$fieldName debe tener al menos $min caracteres';
     }
     return null;
@@ -56,6 +56,35 @@ class Validators {
     return null;
   }
 
+  static String? validatePetAgeFormat(String? value, {String fieldName = 'Edad'}) {
+    if (value == null || value.trim().isEmpty) {
+      return null;
+    }
+
+    final regex = RegExp(r'^\d{1,2}\s+(mes|meses|año|años|día|días|dia|dias)$', caseSensitive: false);
+    final cleanValue = value.trim();
+
+    if (!regex.hasMatch(cleanValue)) {
+      return '$fieldName debe tener el formato "XX unidad" (ej. "10 meses", "1 año")';
+    }
+
+    return null;
+  }
+
+  static String? validatePetAge(String? value, {String fieldName = 'Edad'}) {
+    final requiredError = requiredField(value, fieldName: fieldName);
+    if (requiredError != null) {
+      return requiredError;
+    }
+
+    final formatError = validatePetAgeFormat(value, fieldName: fieldName);
+    if (formatError != null) {
+      return formatError;
+    }
+
+    return null;
+  }
+
 
   static String formatDisplayName(String userName) {
     if (userName.isEmpty) {
@@ -88,4 +117,7 @@ class Validators {
       return nameParts[0]; 
     }
   }
+
+
+  
 }
