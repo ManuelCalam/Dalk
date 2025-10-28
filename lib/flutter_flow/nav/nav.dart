@@ -9,6 +9,7 @@ import '/auth/base_auth_user_provider.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'serialization_util.dart';
+import '/components/ine_validation_webview/ine_validation_webview_widget.dart';
 
 import '/index.dart';
 
@@ -268,6 +269,17 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             status: params.getParam('status', ParamType.String),
           ),
         ),
+        FFRoute(
+          name: IneValidationWebviewWidget.routeName,
+          path: IneValidationWebviewWidget.routePath,
+          builder: (context, params) => IneValidationWebviewWidget(
+              formUrl: params.getParam('formUrl', ParamType.String) ?? '',
+              sessionId: params.getParam('sessionId', ParamType.String) ?? '', 
+              // ✅ 🔑 DEBES PASAR EL ACCESS TOKEN AQUÍ DESDE sing_in_dog_walker
+              accessToken: params.getParam('accessToken', ParamType.String) ?? '', 
+          ),
+          requireAuth: false
+      ),
           
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );

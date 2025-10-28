@@ -7,6 +7,9 @@
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+
+    <uses-permission android:name="android.permission.CAMERA" />
+
     <!-- Permisos necesarios para FCM y notificaciones -->
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
@@ -105,6 +108,19 @@
                 <!-- URL específica para cambio de contraseña -->
                 <data android:scheme="dalkpaseos" android:host="changePassword" />
             </intent-filter>
+
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- Aquí tu esquema personalizado -->
+                <data
+                    android:scheme="dalkpaseos"
+                    android:host="redirect_verificamex" />
+            </intent-filter>
+
 
 
 

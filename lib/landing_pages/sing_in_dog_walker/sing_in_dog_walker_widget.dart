@@ -1,3 +1,5 @@
+import 'package:dalk/components/ine_validation_webview/ine_validation_webview_widget.dart';
+
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
@@ -16,6 +18,7 @@ import 'sing_in_dog_walker_model.dart';
 export 'sing_in_dog_walker_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:permission_handler/permission_handler.dart';
 
 class SingInDogWalkerWidget extends StatefulWidget {
   const SingInDogWalkerWidget({super.key});
@@ -112,6 +115,269 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
   //     return null;
   //   }
   // }
+
+Future<bool> _requestCameraPermission() async {
+  debugPrint('📷 Solicitando permisos de cámara...');
+  
+  try {
+    final status = await Permission.camera.request();
+    
+    debugPrint('📷 Estado del permiso: $status');
+    
+    if (status == PermissionStatus.granted) {
+      debugPrint('✅ Permisos de cámara concedidos');
+      return true;
+    } else if (status == PermissionStatus.denied) {
+      debugPrint('❌ Permisos de cámara denegados');
+      return false;
+    } else if (status == PermissionStatus.permanentlyDenied) {
+      debugPrint('❌ Permisos de cámara permanentemente denegados');
+      
+      await _showPermissionSettingsDialog();
+      return false;
+    }
+    
+    return false;
+  } catch (e) {
+    debugPrint('💥 Error solicitando permisos: $e');
+    return false;
+  }
+}
+
+Future<void> _showPermissionSettingsDialog() async {
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: Color(0xFF1A2332),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        title: Row(
+          children: [
+            Icon(Icons.camera_alt, color: Colors.orange, size: 24),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Permisos requeridos',
+                style: FlutterFlowTheme.of(context).headlineSmall.override(
+                  font: GoogleFonts.lexend(),
+                  color: Colors.white,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'La verificación de identidad requiere acceso a la cámara. Por favor, habilita los permisos en la configuración de la app.',
+          style: FlutterFlowTheme.of(context).bodyMedium.override(
+            font: GoogleFonts.lexend(),
+            color: Colors.white70,
+          ),
+        ),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    'Cancelar',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                ),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    Navigator.of(context).pop();
+                    await openAppSettings();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: FlutterFlowTheme.of(context).primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    'Configuración',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
+Future<void> _startVerification() async {
+  debugPrint('🚀 INICIANDO VERIFICACIÓN CON VERIFICAMEX');
+
+  String? userUuid;
+  String? userEmail;
+
+  try {
+    // ✅ VALIDAR CAMPOS OBLIGATORIOS
+    if (!validarCamposObligatorios()) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Por favor completa todos los campos')),
+        );
+      }
+      return;
+    }
+
+    // ✅ CREAR USUARIO EN SUPABASE AUTH
+    debugPrint('👤 Creando usuario en Supabase Auth...');
+
+    final user = await authManager.createAccountWithEmail(
+      context,
+      _model.emailDogWalkerInputTextController.text,
+      _model.passDogWalkerInputTextController.text,
+    );
+
+    await Supabase.instance.client.auth.signInWithPassword(
+      email: _model.emailDogWalkerInputTextController.text,
+      password: _model.passDogWalkerInputTextController.text,
+    );
+
+    if (user == null) {
+      throw Exception('No se pudo crear el usuario en Supabase Auth');
+    }
+
+    userUuid = currentUserUid;
+    userEmail = currentUserEmail;
+
+    if (userUuid == null || userEmail == null) {
+      throw Exception('No se pudo obtener UUID o email del usuario creado');
+    }
+
+    final session = Supabase.instance.client.auth.currentSession;
+    if (session == null) {
+      throw Exception('No se pudo obtener la sesión después de crear usuario');
+    }
+
+    final accessToken = session.accessToken;
+
+    debugPrint('✅ Usuario Auth creado:');
+    debugPrint('  UUID: $userUuid');
+    debugPrint('  Email: $userEmail');
+    debugPrint('  Access Token length: ${accessToken.length}');
+
+    // ✅ CREAR REGISTRO EN TABLA USERS
+    await Supabase.instance.client.from('users').insert({
+      'uuid': userUuid,
+      'name': _model.nameDogWalkerInputTextController.text,
+      'email': userEmail,
+      'phone': _model.phoneDogWalkerInputTextController.text,
+      'birthdate': supaSerialize<DateTime>(_model.datePicked),
+      'gender': _model.genderDogWalkerMenuValue,
+      'address': _model.streetDogWalkerInputTextController.text,
+      'houseNumber': _model.interiorNumberDogWalkerInputTextController.text,
+      'zipCode': _model.zipCodeDogWalkerInputTextController.text,
+      'neighborhood': _model.neighborhoodDogWalkerInputTextController.text,
+      'city': _model.cityDogWalkerInputTextController.text,
+      'usertype': 'Paseador',
+      'verification_status': 'pending_verification',
+    });
+
+    debugPrint('✅ Usuario guardado en BD');
+
+    // ✅ CREAR DIRECCIÓN
+    await Supabase.instance.client.from('addresses').insert({
+      'uuid': userUuid,
+      'alias': 'Mi Dirección',
+      'address': _model.streetDogWalkerInputTextController.text,
+      'houseNumber': _model.interiorNumberDogWalkerInputTextController.text,
+      'zipCode': _model.zipCodeDogWalkerInputTextController.text,
+      'neighborhood': _model.neighborhoodDogWalkerInputTextController.text,
+      'city': _model.cityDogWalkerInputTextController.text,
+    });
+
+    debugPrint('✅ Dirección guardada');
+
+    // ✅ LLAMAR A EDGE FUNCTION
+    debugPrint('📡 Llamando a Edge Function...');
+    final response = await Supabase.instance.client.functions.invoke(
+      'ine-validation',
+      body: {
+        'action': 'create_session',
+        'user_id': userUuid,
+        'email': userEmail,
+        'access_token': accessToken,
+      },
+    );
+
+    debugPrint('📊 Response status: ${response.status}');
+    debugPrint('📊 Response data: ${jsonEncode(response.data)}');
+
+    if (response.status != 200 || response.data['success'] != true) {
+      throw Exception(response.data['error'] ?? 'Error creando sesión');
+    }
+
+    final formUrl = response.data['form_url'];
+    final sessionId = response.data['session_id'];
+    final returnedToken = response.data['access_token'] as String?;
+
+    if (formUrl == null || sessionId == null) {
+      throw Exception('No se obtuvo form_url o session_id');
+    }
+
+    final tokenToPass = returnedToken ?? accessToken;
+
+    debugPrint('✅ Sesión creada exitosamente');
+    debugPrint('🔄 Navegando al WebView...');
+
+    // 🔑 Navegación al WebView: NO setState antes de esto
+    if (mounted) {
+      final result = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (context) => IneValidationWebviewWidget(
+            formUrl: formUrl,
+            sessionId: sessionId,
+            accessToken: tokenToPass,
+          ),
+        ),
+      );
+
+      debugPrint('🔚 WebView cerrado con resultado: $result');
+    }
+  } catch (e) {
+    debugPrint('💥 Error en verificación: $e');
+
+    if (userUuid != null) {
+      try {
+        await Supabase.instance.client.from('addresses').delete().eq('uuid', userUuid);
+        await Supabase.instance.client.from('users').delete().eq('uuid', userUuid);
+        await authManager.signOut();
+        debugPrint('✅ Usuario eliminado correctamente');
+      } catch (deleteError) {
+        debugPrint('❌ Error eliminando usuario: $deleteError');
+      }
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  } finally {
+    // 🔑 Solo aquí hacemos setState para indicar que ya terminó el proceso
+    if (mounted) setState(() => isRegistering = false);
+  }
+}
+
+
 
   //funcion para seleccionar imagen
   Future<void> _pickImage(bool isOwner, ImageSource source) async {
@@ -2550,137 +2816,187 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                   .fromSTEB(
                                                       0.0, 18.0, 0.0, 18.0),
                                               child: FFButtonWidget(
-
-
                                                 onPressed: isRegistering ? null : () async {
-                                                  setState(() => isRegistering = true);
-                                                  GoRouter.of(context).prepareAuthEvent();
+  setState(() => isRegistering = true);
+  
+  // 1️⃣ VALIDAR FORMULARIO
+  if (!_model.formKey.currentState!.validate()) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Corrige los campos con errores')),
+    );
+    setState(() => isRegistering = false);
+    return;
+  }
 
-                                                  if (!_model.formKey.currentState!.validate()) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      const SnackBar(content: Text('Corrige los campos con errores')),
-                                                    );
-                                                    setState(() => isRegistering = false);
-                                                    return;
-                                                  }
+  // 2️⃣ VALIDAR FECHA
+  if (_model.datePicked == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Selecciona una fecha de nacimiento')),
+    );
+    setState(() => isRegistering = false);
+    return;
+  }
 
-                                                  if (_model.datePicked == null) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      const SnackBar(content: Text('Selecciona una fecha de nacimiento')),
-                                                    );
-                                                    setState(() => isRegistering = false);
-                                                    return;
-                                                  }
+  // 3️⃣ VALIDAR CONTRASEÑAS
+  if (_model.passDogWalkerInputTextController.text !=
+      _model.confirmPassDogWalkerInputTextController.text) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Las contraseñas no coinciden')),
+    );
+    setState(() => isRegistering = false);
+    return;
+  }
 
-                                                  if (_model.passDogWalkerInputTextController.text !=
-                                                      _model.confirmPassDogWalkerInputTextController.text) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      const SnackBar(content: Text('Las contraseñas no coinciden')),
-                                                    );
-                                                    setState(() => isRegistering = false);
-                                                    return;
-                                                  }
-                                                  // String? ownerImageUrl;
-// if (_ownerImage != null) {
-//   ownerImageUrl = await _uploadOwnerImage(currentUserUid, _ownerImage!);
-// }
+  // 4️⃣ MOSTRAR ALERT DIALOG
+  final shouldContinue = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext dialogContext) {
+      return AlertDialog(
+        backgroundColor: Color(0xFF1A2332),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        title: Row(
+          children: [
+            Icon(Icons.verified_user, color: Colors.blue, size: 24),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Verificación de Identidad',
+                style: FlutterFlowTheme.of(context).headlineSmall.override(
+                  font: GoogleFonts.lexend(),
+                  color: Colors.white,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Para completar tu registro como paseador, necesitamos verificar tu identidad con:',
+              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                font: GoogleFonts.lexend(),
+                color: Colors.white70,
+              ),
+            ),
+            SizedBox(height: 16),
+            Row(
+              children: [
+                Icon(Icons.credit_card, color: Colors.green, size: 20),
+                SizedBox(width: 8),
+                Text('• INE (Credencial de Elector)', 
+                  style: TextStyle(color: Colors.white, fontSize: 14)),
+              ],
+            ),
+            SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.fingerprint, color: Colors.green, size: 20),
+                SizedBox(width: 8),
+                Text('• CURP', 
+                  style: TextStyle(color: Colors.white, fontSize: 14)),
+              ],
+            ),
+            SizedBox(height: 16),
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.security, color: Colors.blue, size: 16),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Tus datos están protegidos y encriptados.',
+                      style: TextStyle(color: Colors.blue[200], fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: Text(
+                    'Cancelar',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                ),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: FlutterFlowTheme.of(context).primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    'Continuar',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    },
+  );
 
+  // 5️⃣ VERIFICAR SI CANCELÓ
+  if (shouldContinue != true) {
+    debugPrint('❌ Usuario canceló el alert dialog');
+    setState(() => isRegistering = false);
+    return;
+  }
 
-                                                  try {
-                                                    final user = await authManager.createAccountWithEmail(
-                                                      context,
-                                                      _model.emailDogWalkerInputTextController.text,
-                                                      _model.passDogWalkerInputTextController.text,
-                                                    );
-                                                    if (user == null) throw 'No se pudo crear el usuario.';
+  // 6️⃣ SOLICITAR PERMISOS DE CÁMARA
+  debugPrint('📷 Solicitando permisos de cámara...');
+  final hasPermission = await _requestCameraPermission();
 
-                                                    await Supabase.instance.client.from('users')
-                                                    .insert({
-                                                      'uuid': currentUserUid,
-                                                      'name': _model.nameDogWalkerInputTextController.text,
-                                                      'email': currentUserEmail,
-                                                      'phone': _model.phoneDogWalkerInputTextController.text,
-                                                      'birthdate': supaSerialize<DateTime>(_model.datePicked),
-                                                      'gender': _model.genderDogWalkerMenuValue,
-                                                      'address': _model.streetDogWalkerInputTextController.text,
-                                                      'houseNumber': _model.interiorNumberDogWalkerInputTextController.text, //Cambiar houseNumber por 'int'
-                                                      'zipCode': _model.zipCodeDogWalkerInputTextController.text,
-                                                      'neighborhood': _model.neighborhoodDogWalkerInputTextController.text,
-                                                      'city': _model.cityDogWalkerInputTextController.text,
-                                                      // 'photo_url': ownerImageUrl,
-                                                      'usertype': 'Paseador'
-                                                    });
-                                                    await Supabase.instance.client.from('addresses')
-                                                    .insert({
-                                                      'uuid': currentUserUid,
-                                                      'alias': 'Mi Dirección',
-                                                      'address': _model.streetDogWalkerInputTextController.text,
-                                                      'houseNumber': _model.interiorNumberDogWalkerInputTextController.text, //Cambiar houseNumber por 'int'
-                                                      'zipCode': _model.zipCodeDogWalkerInputTextController.text, 
-                                                      'neighborhood': _model.neighborhoodDogWalkerInputTextController.text,
-                                                      'city': _model.cityDogWalkerInputTextController.text,
-                                                  });
+  if (!hasPermission) {
+    debugPrint('❌ Permisos de cámara denegados');
+    setState(() => isRegistering = false);
+    return; 
+  }
 
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      const SnackBar(content: Text('¡Registro exitoso!')),
-                                                    );
-                                                    context.go('/');
-                                                  } catch (e) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(content: Text('Error: $e')),
-                                                    );
-                                                  } finally {
-                                                    setState(() => isRegistering = false);
-                                                  }
-                                                },
-                                                text: 'Continuar',
+  debugPrint('✅ Permisos concedidos, iniciando verificación...');
+
+  // 7️⃣ LLAMAR A LA FUNCIÓN DE VERIFICACIÓN
+  // ⚠️ NO hacer setState aquí, dejarlo para después de la navegación
+  await _startVerification();
+},
+                                                text: isRegistering ? 'Procesando...' : 'Continuar',
                                                 options: FFButtonOptions(
-                                                  width:
-                                                      MediaQuery.sizeOf(context)
-                                                              .width *
-                                                          1.0,
-                                                  height:
-                                                      MediaQuery.sizeOf(context)
-                                                              .height *
-                                                          0.05,
-                                                  padding: const EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          0.0, 0.0, 0.0, 0.0),
-                                                  iconPadding:
-                                                      const EdgeInsetsDirectional
-                                                          .fromSTEB(0.0, 0.0,
-                                                              0.0, 0.0),
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .accent1,
-                                                  textStyle: FlutterFlowTheme
-                                                          .of(context)
-                                                      .titleSmall
-                                                      .override(
-                                                        font:
-                                                            GoogleFonts.lexend(
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .titleSmall
-                                                                  .fontStyle,
-                                                        ),
-                                                        color: Colors.white,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FontWeight.normal,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .titleSmall
-                                                                .fontStyle,
-                                                      ),
+                                                  width: MediaQuery.sizeOf(context).width * 1.0,
+                                                  height: MediaQuery.sizeOf(context).height * 0.05,
+                                                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                                                  iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                                                  color: FlutterFlowTheme.of(context).accent1,
+                                                  textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                                                    font: GoogleFonts.lexend(),
+                                                    color: Colors.white,
+                                                    letterSpacing: 0.0,
+                                                  ),
                                                   elevation: 0.0,
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          10.0),
+                                                  borderRadius: BorderRadius.circular(10.0),
                                                 ),
                                               ),
                                             ),
@@ -2706,3 +3022,5 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
     );
   }
 }
+
+
