@@ -224,54 +224,45 @@ Future<void> _startVerification() async {
   String? userEmail;
 
   try {
-    // ✅ VALIDAR CAMPOS OBLIGATORIOS
+    // ✅ VALIDAR CAMPOS
     if (!validarCamposObligatorios()) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Por favor completa todos los campos')),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor completa todos los campos')),
+      );
       return;
     }
 
-    // ✅ CREAR USUARIO EN SUPABASE AUTH
+    // ✅ CREAR USUARIO EN AUTH
     debugPrint('👤 Creando usuario en Supabase Auth...');
-
     final user = await authManager.createAccountWithEmail(
       context,
       _model.emailDogWalkerInputTextController.text,
       _model.passDogWalkerInputTextController.text,
     );
 
-    await Supabase.instance.client.auth.signInWithPassword(
-      email: _model.emailDogWalkerInputTextController.text,
-      password: _model.passDogWalkerInputTextController.text,
-    );
-
     if (user == null) {
       throw Exception('No se pudo crear el usuario en Supabase Auth');
     }
 
-    userUuid = currentUserUid;
-    userEmail = currentUserEmail;
+    // 🔐 INICIAR SESIÓN PARA OBTENER TOKEN
+    final signIn = await Supabase.instance.client.auth.signInWithPassword(
+      email: _model.emailDogWalkerInputTextController.text,
+      password: _model.passDogWalkerInputTextController.text,
+    );
 
-    if (userUuid == null || userEmail == null) {
-      throw Exception('No se pudo obtener UUID o email del usuario creado');
-    }
-
-    final session = Supabase.instance.client.auth.currentSession;
+    final session = signIn.session ?? Supabase.instance.client.auth.currentSession;
     if (session == null) {
-      throw Exception('No se pudo obtener la sesión después de crear usuario');
+      throw Exception('No se pudo obtener la sesión del usuario');
     }
 
     final accessToken = session.accessToken;
+    userUuid = session.user.id;
+    userEmail = session.user.email;
 
-    debugPrint('✅ Usuario Auth creado:');
-    debugPrint('  UUID: $userUuid');
-    debugPrint('  Email: $userEmail');
-    debugPrint('  Access Token length: ${accessToken.length}');
+    debugPrint('✅ Usuario autenticado correctamente');
+    debugPrint('UUID: $userUuid | Email: $userEmail');
 
-    // ✅ CREAR REGISTRO EN TABLA USERS
+    // ✅ INSERTAR USUARIO EN TABLA "users"
     await Supabase.instance.client.from('users').insert({
       'uuid': userUuid,
       'name': _model.nameDogWalkerInputTextController.text,
@@ -288,9 +279,9 @@ Future<void> _startVerification() async {
       'verification_status': 'pending_verification',
     });
 
-    debugPrint('✅ Usuario guardado en BD');
+    debugPrint('✅ Usuario guardado en tabla "users"');
 
-    // ✅ CREAR DIRECCIÓN
+    // ✅ INSERTAR DIRECCIÓN
     await Supabase.instance.client.from('addresses').insert({
       'uuid': userUuid,
       'alias': 'Mi Dirección',
@@ -303,10 +294,10 @@ Future<void> _startVerification() async {
 
     debugPrint('✅ Dirección guardada');
 
-    // ✅ LLAMAR A EDGE FUNCTION
-    debugPrint('📡 Llamando a Edge Function...');
+    // ✅ LLAMAR EDGE FUNCTION create_verification
+    debugPrint('📡 Llamando a Edge Function create_verification...');
     final response = await Supabase.instance.client.functions.invoke(
-      'ine-validation',
+      'create_verification',
       body: {
         'action': 'create_session',
         'user_id': userUuid,
@@ -315,49 +306,53 @@ Future<void> _startVerification() async {
       },
     );
 
-    debugPrint('📊 Response status: ${response.status}');
-    debugPrint('📊 Response data: ${jsonEncode(response.data)}');
+    debugPrint('📊 Status: ${response.status}');
+    debugPrint('📊 Data: ${jsonEncode(response.data)}');
 
-    if (response.status != 200 || response.data['success'] != true) {
-      throw Exception(response.data['error'] ?? 'Error creando sesión');
+    if (response.status != 200) {
+      throw Exception('Error en create_verification: ${response.data}');
     }
 
-    final formUrl = response.data['form_url'];
-    final sessionId = response.data['session_id'];
-    final returnedToken = response.data['access_token'] as String?;
+    final data = response.data is String
+        ? jsonDecode(response.data)
+        : response.data as Map<String, dynamic>;
 
-    if (formUrl == null || sessionId == null) {
-      throw Exception('No se obtuvo form_url o session_id');
+    final formUrl = data['form_url'] ?? '';
+    final sessionId = data['session_id'] ?? '';
+    final tokenToPass = data['access_token'] ?? accessToken;
+
+    if (formUrl.isEmpty || sessionId.isEmpty) {
+      throw Exception('No se recibió form_url o session_id válidos');
     }
 
-    final tokenToPass = returnedToken ?? accessToken;
+    debugPrint('✅ formUrl recibido: $formUrl');
 
-    debugPrint('✅ Sesión creada exitosamente');
-    debugPrint('🔄 Navegando al WebView...');
+    // ✅ NAVEGAR AL WEBVIEW
+    if (!mounted) return;
 
-    // 🔑 Navegación al WebView: NO setState antes de esto
-    if (mounted) {
-      final result = await Navigator.of(context).push<bool>(
-        MaterialPageRoute(
-          builder: (context) => IneValidationWebviewWidget(
-            formUrl: formUrl,
-            sessionId: sessionId,
-            accessToken: tokenToPass,
-          ),
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => IneValidationWebviewWidget(
+          formUrl: formUrl,
+          sessionId: sessionId,
+          accessToken: tokenToPass,
         ),
-      );
+      ),
+    );
 
-      debugPrint('🔚 WebView cerrado con resultado: $result');
-    }
+    debugPrint('🌐 WebView abierto correctamente');
+
   } catch (e) {
-    debugPrint('💥 Error en verificación: $e');
+    debugPrint('💥 Error en _startVerification: $e');
 
+    // 🧹 LIMPIEZA SI FALLA
     if (userUuid != null) {
       try {
         await Supabase.instance.client.from('addresses').delete().eq('uuid', userUuid);
         await Supabase.instance.client.from('users').delete().eq('uuid', userUuid);
         await authManager.signOut();
-        debugPrint('✅ Usuario eliminado correctamente');
+        debugPrint('🧹 Usuario eliminado correctamente');
       } catch (deleteError) {
         debugPrint('❌ Error eliminando usuario: $deleteError');
       }
@@ -366,18 +361,13 @@ Future<void> _startVerification() async {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: ${e.toString()}'),
+          content: Text('Error durante la verificación: $e'),
           backgroundColor: Colors.red,
         ),
       );
     }
-  } finally {
-    // 🔑 Solo aquí hacemos setState para indicar que ya terminó el proceso
-    if (mounted) setState(() => isRegistering = false);
   }
 }
-
-
 
   //funcion para seleccionar imagen
   Future<void> _pickImage(bool isOwner, ImageSource source) async {
@@ -2818,170 +2808,170 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                               child: FFButtonWidget(
                                                 onPressed: isRegistering ? null : () async {
   setState(() => isRegistering = true);
-  
-  // 1️⃣ VALIDAR FORMULARIO
-  if (!_model.formKey.currentState!.validate()) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Corrige los campos con errores')),
-    );
-    setState(() => isRegistering = false);
-    return;
-  }
 
-  // 2️⃣ VALIDAR FECHA
-  if (_model.datePicked == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Selecciona una fecha de nacimiento')),
-    );
-    setState(() => isRegistering = false);
-    return;
-  }
+  try {
+    // 1️⃣ VALIDAR FORMULARIO
+    if (!_model.formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Corrige los campos con errores')),
+      );
+      setState(() => isRegistering = false);
+      return;
+    }
 
-  // 3️⃣ VALIDAR CONTRASEÑAS
-  if (_model.passDogWalkerInputTextController.text !=
-      _model.confirmPassDogWalkerInputTextController.text) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Las contraseñas no coinciden')),
-    );
-    setState(() => isRegistering = false);
-    return;
-  }
+    // 2️⃣ VALIDAR FECHA DE NACIMIENTO
+    if (_model.datePicked == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Selecciona una fecha de nacimiento')),
+      );
+      setState(() => isRegistering = false);
+      return;
+    }
 
-  // 4️⃣ MOSTRAR ALERT DIALOG
-  final shouldContinue = await showDialog<bool>(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext dialogContext) {
-      return AlertDialog(
-        backgroundColor: Color(0xFF1A2332),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.0),
-        ),
-        title: Row(
-          children: [
-            Icon(Icons.verified_user, color: Colors.blue, size: 24),
-            SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Verificación de Identidad',
-                style: FlutterFlowTheme.of(context).headlineSmall.override(
-                  font: GoogleFonts.lexend(),
-                  color: Colors.white,
-                  fontSize: 18,
-                ),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Para completar tu registro como paseador, necesitamos verificar tu identidad con:',
-              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                font: GoogleFonts.lexend(),
-                color: Colors.white70,
-              ),
-            ),
-            SizedBox(height: 16),
-            Row(
-              children: [
-                Icon(Icons.credit_card, color: Colors.green, size: 20),
-                SizedBox(width: 8),
-                Text('• INE (Credencial de Elector)', 
-                  style: TextStyle(color: Colors.white, fontSize: 14)),
-              ],
-            ),
-            SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(Icons.fingerprint, color: Colors.green, size: 20),
-                SizedBox(width: 8),
-                Text('• CURP', 
-                  style: TextStyle(color: Colors.white, fontSize: 14)),
-              ],
-            ),
-            SizedBox(height: 16),
-            Container(
-              padding: EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue.withOpacity(0.3)),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.security, color: Colors.blue, size: 16),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Tus datos están protegidos y encriptados.',
-                      style: TextStyle(color: Colors.blue[200], fontSize: 12),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          Row(
+    // 3️⃣ VALIDAR CONTRASEÑAS
+    if (_model.passDogWalkerInputTextController.text !=
+        _model.confirmPassDogWalkerInputTextController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Las contraseñas no coinciden')),
+      );
+      setState(() => isRegistering = false);
+      return;
+    }
+
+    // 4️⃣ CONFIRMAR CON ALERTDIALOG
+    final shouldContinue = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1A2332),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          title: Row(
             children: [
+              const Icon(Icons.verified_user, color: Colors.blue, size: 24),
+              const SizedBox(width: 8),
               Expanded(
-                child: TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(false),
-                  child: Text(
-                    'Cancelar',
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                ),
-              ),
-              SizedBox(width: 8),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(true),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: FlutterFlowTheme.of(context).primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text(
-                    'Continuar',
-                    style: TextStyle(color: Colors.white),
+                child: Text(
+                  'Verificación de Identidad',
+                  style: FlutterFlowTheme.of(context).headlineSmall.override(
+                    font: GoogleFonts.lexend(),
+                    color: Colors.white,
+                    fontSize: 18,
                   ),
                 ),
               ),
             ],
           ),
-        ],
-      );
-    },
-  );
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Para completar tu registro como paseador, necesitamos verificar tu identidad con:',
+                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                  font: GoogleFonts.lexend(),
+                  color: Colors.white70,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Row(
+                children: [
+                  Icon(Icons.credit_card, color: Colors.green, size: 20),
+                  SizedBox(width: 8),
+                  Text('• INE (Credencial de Elector)',
+                      style: TextStyle(color: Colors.white, fontSize: 14)),
+                ],
+              ),
+              const SizedBox(height: 8),
+              const Row(
+                children: [
+                  Icon(Icons.fingerprint, color: Colors.green, size: 20),
+                  SizedBox(width: 8),
+                  Text('• CURP',
+                      style: TextStyle(color: Colors.white, fontSize: 14)),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.security, color: Colors.blue, size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Tus datos están protegidos y encriptados.',
+                        style: TextStyle(color: Colors.blue[200], fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(false),
+                    child: const Text('Cancelar',
+                        style: TextStyle(color: Colors.white70)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: FlutterFlowTheme.of(context).primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text('Continuar',
+                        style: TextStyle(color: Colors.white)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
 
-  // 5️⃣ VERIFICAR SI CANCELÓ
-  if (shouldContinue != true) {
-    debugPrint('❌ Usuario canceló el alert dialog');
-    setState(() => isRegistering = false);
-    return;
+    // 5️⃣ SI CANCELÓ
+    if (shouldContinue != true) {
+      debugPrint('❌ Usuario canceló verificación');
+      setState(() => isRegistering = false);
+      return;
+    }
+
+    // 6️⃣ SOLICITAR PERMISOS DE CÁMARA
+    debugPrint('📷 Solicitando permisos de cámara...');
+    final hasPermission = await _requestCameraPermission();
+
+    if (!hasPermission) {
+      debugPrint('❌ Permisos de cámara denegados');
+      setState(() => isRegistering = false);
+      return;
+    }
+
+    debugPrint('✅ Permisos concedidos, iniciando verificación...');
+
+    // 7️⃣ LLAMAR A VERIFICACIÓN
+    await _startVerification();
+
+  } finally {
+    if (mounted) setState(() => isRegistering = false);
   }
-
-  // 6️⃣ SOLICITAR PERMISOS DE CÁMARA
-  debugPrint('📷 Solicitando permisos de cámara...');
-  final hasPermission = await _requestCameraPermission();
-
-  if (!hasPermission) {
-    debugPrint('❌ Permisos de cámara denegados');
-    setState(() => isRegistering = false);
-    return; 
-  }
-
-  debugPrint('✅ Permisos concedidos, iniciando verificación...');
-
-  // 7️⃣ LLAMAR A LA FUNCIÓN DE VERIFICACIÓN
-  // ⚠️ NO hacer setState aquí, dejarlo para después de la navegación
-  await _startVerification();
 },
                                                 text: isRegistering ? 'Procesando...' : 'Continuar',
                                                 options: FFButtonOptions(
