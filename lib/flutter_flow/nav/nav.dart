@@ -10,6 +10,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'serialization_util.dart';
 import '/components/ine_validation_webview/ine_validation_webview_widget.dart';
+import '/landing_pages/VerificationCallbackPage/VerificationCallbackPage_widget.dart';
 
 import '/index.dart';
 
@@ -31,12 +32,11 @@ class AppStateNotifier extends ChangeNotifier {
   bool showSplashImage = true;
   String? _redirectLocation;
 
-  /// Determines whether the app will refresh and build again when a sign
-  /// in or sign out happens. This is useful when the app is launched or
-  /// on an unexpected logout. However, this must be turned off when we
-  /// intend to sign in/out and then navigate or perform any actions after.
-  /// Otherwise, this will trigger a refresh and interrupt the action(s).
+  /// Determina si la app se reconstruye cuando cambia la autenticación.
   bool notifyOnAuthChange = true;
+
+  /// 🚩 NUEVO: Ignorar temporalmente cambios de autenticación (por ejemplo, durante verificación)
+  bool _ignoreAuthChange = false;
 
   bool get loading => user == null || showSplashImage;
   bool get loggedIn => user?.loggedIn ?? false;
@@ -48,22 +48,24 @@ class AppStateNotifier extends ChangeNotifier {
   void setRedirectLocationIfUnset(String loc) => _redirectLocation ??= loc;
   void clearRedirectLocation() => _redirectLocation = null;
 
-  /// Mark as not needing to notify on a sign in / out when we intend
-  /// to perform subsequent actions (such as navigation) afterwards.
   void updateNotifyOnAuthChange(bool notify) => notifyOnAuthChange = notify;
 
+  /// Actualiza el estado del usuario, con soporte para ignorar cambios
   void update(BaseAuthUser newUser) {
+    if (_ignoreAuthChange) {
+      debugPrint('🚫 AuthChange ignorado temporalmente (modo verificación activo)');
+      return;
+    }
+
     final shouldUpdate =
         user?.uid == null || newUser.uid == null || user?.uid != newUser.uid;
     initialUser ??= newUser;
     user = newUser;
-    // Refresh the app on auth change unless explicitly marked otherwise.
-    // No need to update unless the user has changed.
+
     if (notifyOnAuthChange && shouldUpdate) {
       notifyListeners();
     }
-    // Once again mark the notifier as needing to update on auth change
-    // (in order to catch sign in / out events).
+
     updateNotifyOnAuthChange(true);
   }
 
@@ -71,6 +73,14 @@ class AppStateNotifier extends ChangeNotifier {
     showSplashImage = false;
     notifyListeners();
   }
+
+  /// 👇 NUEVOS MÉTODOS PARA CONTROLAR ignoreAuthChange
+  void setIgnoreAuthChange(bool value) {
+    _ignoreAuthChange = value;
+    debugPrint('🧭 AuthChange Ignorado: $_ignoreAuthChange');
+  }
+
+  bool get isIgnoringAuthChange => _ignoreAuthChange;
 }
 
 GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
@@ -106,7 +116,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: HomeDogOwnerWidget.routeName,
           path: HomeDogOwnerWidget.routePath,
           builder: (context, params) => HomeDogOwnerWidget(),
-          requireAuth: true
+          requireAuth: true,
         ),
         FFRoute(
           name: SetWalkScheduleWidget.routeName,
@@ -124,9 +134,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: AddAddressWidget.routeName,
           path: AddAddressWidget.routePath,
           builder: (context, params) => AddAddressWidget (
-
             originWindow: params.getParam('originWindow', ParamType.String),
-
           ),
           requireAuth: true,
         ),
@@ -244,7 +252,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: HomeDogWalkerWidget.routeName,
           path: HomeDogWalkerWidget.routePath,
           builder: (context, params) => HomeDogWalkerWidget(),
-          requireAuth: true
+          requireAuth: false
         ),
         FFRoute(
           name: WalksDogWalkerWidget.routeName,
@@ -273,17 +281,24 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: IneValidationWebviewWidget.routeName,
           path: IneValidationWebviewWidget.routePath,
           builder: (context, params) => IneValidationWebviewWidget(
-              formUrl: params.getParam('formUrl', ParamType.String) ?? '',
-              sessionId: params.getParam('sessionId', ParamType.String) ?? '', 
-              // ✅ 🔑 DEBES PASAR EL ACCESS TOKEN AQUÍ DESDE sing_in_dog_walker
-              accessToken: params.getParam('accessToken', ParamType.String) ?? '', 
+            formUrl: params.getParam('formUrl', ParamType.String) ?? '',
+            sessionId: params.getParam('sessionId', ParamType.String) ?? '',
+            accessToken: params.getParam('accessToken', ParamType.String) ?? '',
           ),
-          requireAuth: false
+          requireAuth: false,
+        ),
+      FFRoute(
+        name: VerificationCallbackPage.routeName,
+        path: VerificationCallbackPage.routePath,
+        builder: (context, params) => VerificationCallbackPage(
+          status: params.getParam('status', ParamType.String),
+          sessionId: params.getParam('session_id', ParamType.String),
+          userId: params.getParam('user_id', ParamType.String),
+        ),
+        requireAuth: false,
       ),
-          
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
-
 extension NavParamExtensions on Map<String, String?> {
   Map<String, String> get withoutNulls => Map.fromEntries(
         entries

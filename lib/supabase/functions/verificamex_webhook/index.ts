@@ -68,9 +68,16 @@ serve(async (req: Request) => {
 
     await supabase.from('identity_verifications').update(updateData).eq('session_id', sessionId);
 
+    
+    let userVerificationStatus = 'pending_verification';
+    if (finalStatus === 'completed') userVerificationStatus = 'verified';
+    else if (finalStatus === 'failed' || finalStatus === 'cancelled') userVerificationStatus = 'rejected';
+
+
     // (Opcional) actualizar tabla users.verification_status
     if (userId) {
-      await supabase.from('users').update({ verification_status: finalStatus }).eq('id', userId);
+      await supabase.from('users').update({ verification_status: userVerificationStatus }).eq('uuid', userId);
+
     }
 
     console.log('✅ Verificación actualizada en DB correctamente:', { sessionId, finalStatus });

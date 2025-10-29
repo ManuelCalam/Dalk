@@ -232,6 +232,9 @@ Future<void> _startVerification() async {
       return;
     }
 
+    // ✅ Activar bandera para ignorar cambios de autenticación
+    AppStateNotifier.instance.setIgnoreAuthChange(true);
+
     // ✅ CREAR USUARIO EN AUTH
     debugPrint('👤 Creando usuario en Supabase Auth...');
     final user = await authManager.createAccountWithEmail(
@@ -326,10 +329,11 @@ Future<void> _startVerification() async {
     }
 
     debugPrint('✅ formUrl recibido: $formUrl');
+    debugPrint('🌍 Navegando al WebView con: $formUrl');
+    debugPrint('🌍 Contexto actual: $context');
 
     // ✅ NAVEGAR AL WEBVIEW
     if (!mounted) return;
-
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -366,6 +370,10 @@ Future<void> _startVerification() async {
         ),
       );
     }
+  } finally {
+    // ✅ Restablecer bandera al finalizar (éxito o error)
+    AppStateNotifier.instance.setIgnoreAuthChange(false);
+    debugPrint('🔄 Bandera ignoreAuthChange restablecida a FALSE');
   }
 }
 
@@ -2970,7 +2978,7 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
     await _startVerification();
 
   } finally {
-    if (mounted) setState(() => isRegistering = false);
+    AppStateNotifier.instance.setIgnoreAuthChange(false);
   }
 },
                                                 text: isRegistering ? 'Procesando...' : 'Continuar',

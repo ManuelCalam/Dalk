@@ -6,6 +6,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 import 'ine_validation_webview_model.dart';
+import 'package:url_launcher/url_launcher.dart';
 export 'ine_validation_webview_model.dart';
 
 class IneValidationWebviewWidget extends StatefulWidget {
@@ -140,6 +141,24 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
                           onProgressChanged: (controller, progress) {
                             if (mounted) setState(() => _progress = progress / 100.0);
                           },
+                          shouldOverrideUrlLoading: (controller, navigationAction) async {
+                              final uri = navigationAction.request.url;
+                              if (uri != null && uri.scheme == 'dalkpaseos') {
+                                debugPrint('🚀 Detectado deep link hacia app: $uri');
+                                try {
+                                  // Importante: usar url_launcher
+                                  await launchUrl(
+                                    uri,
+                                    mode: LaunchMode.externalApplication,
+                                  );
+                                } catch (e) {
+                                  debugPrint('💥 Error lanzando deep link: $e');
+                                }
+                                return NavigationActionPolicy.CANCEL;
+                              }
+                              return NavigationActionPolicy.ALLOW;
+                            },
+
                           onPermissionRequest: (controller, permissionRequest) async {
                             // 🔓 Permitir cámara y micrófono dentro del WebView
                             return PermissionResponse(

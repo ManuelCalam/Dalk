@@ -18,10 +18,11 @@ import 'flutter_flow/flutter_flow_util.dart';
 import 'user_provider.dart';
 import '/services/notification_service.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:dalk/landing_pages/VerificationCallbackPage/VerificationCallbackPage_widget.dart';
 
 // GlobalKey para el ScaffoldMessenger 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
-late final AppLinks _appLinks;
+late final AppLinks _appLinks; 
 
 // HANDLER TOP-LEVEL SIMPLE (REQUERIDO)
 @pragma('vm:entry-point')
@@ -71,11 +72,16 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   ThemeMode _themeMode = FlutterFlowTheme.themeMode;
+
   late Stream<BaseAuthUser> userStream;
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
+  
   bool _isCacheLoaded = false;
   late StreamSubscription _linkSub;
+
+  // 🚦 BANDERA GLOBAL PARA BLOQUEAR REDIRECCIÓN DURANTE REGISTRO
+  static bool isRegistrationInProgress = false;
 
   String getRoute([RouteMatch? routeMatch]) {
     final RouteMatch lastMatch =
@@ -104,56 +110,19 @@ class _MyAppState extends State<MyApp> {
     
     _appStateNotifier = AppStateNotifier.instance;
     _router = createRouter(_appStateNotifier);
-
-    // ✅ LISTENER UNIFICADO DE DEEP LINKS
-    _linkSub = _appLinks.uriLinkStream.listen((uri) async {
-      if (uri == null) return;
-      print('🔗 Deep Link recibido: $uri');
-
-      // 🔍 CASO 1: Verificamex Redirect
-      if (uri.host == 'redirect_verificamex') {
-        final sessionId = uri.queryParameters['session_id'];
-        final userId = uri.queryParameters['user_id'];
-
-        if (userId != null) {
-          print('✅ Redirigiendo a RedirectVerificamex con userId: $userId');
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            context.pushNamed(
-              'RedirectVerificamex',
-              queryParameters: {
-                'userId': userId,
-                'sessionId': sessionId ?? '',
-              },
-            );
-          });
-        } else {
-          print('❌ Error: userId es null en redirect_verificamex');
-        }
-        return; // Importante: salir después de manejar este caso
-      }
-
-      // 🔍 CASO 2: Recuperación de Contraseña (fragment)
-      if (uri.fragment.isNotEmpty) {
-        final params = Uri.splitQueryString(uri.fragment);
-        final type = params['type'];
-
-        if (type == 'recovery') {
-          print('🔐 Redirigiendo a cambio de contraseña');
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _router.go('/changePassword');
-          });
-        }
-        return;
-      }
-
-      print('⚠️ Deep link no manejado: $uri');
-    });
     
-    // Listener de Autenticación
+    // --- Listener de Autenticación (Manejo de Caché) ---
     userStream = dalkSupabaseUserStream()
       ..listen((user) {
-        _appStateNotifier.update(user);
+        // 🚦 BLOQUEAR ACTUALIZACIÓN SI ESTAMOS EN PROCESO DE REGISTRO
+        if (_appStateNotifier.isIgnoringAuthChange) {
+          debugPrint('⏸️ Auth change bloqueado por ignoreAuthChange');
+        } else {
+          _appStateNotifier.update(user);
+        }
+
         
+        // Lógica de Carga/Limpieza de Caché del UserProvider
         if (user.uid != null && !_isCacheLoaded) {
           context.read<UserProvider>().loadUser();
           _isCacheLoaded = true;
@@ -162,6 +131,7 @@ class _MyAppState extends State<MyApp> {
           _isCacheLoaded = false;
         }
 
+        // Actualizar token FCM
         if (user.uid != null) {
           notificationService.updateFcmToken(user.uid!);
         }
@@ -174,6 +144,61 @@ class _MyAppState extends State<MyApp> {
       () => _appStateNotifier.stopShowingSplashImage(),
     );
 
+    // ----------------------------------------------------
+    // --- Lógica de AppLinks para Recuperación de Contraseña ---
+    // ----------------------------------------------------
+    
+    // Escucha deeplinks (por ejemplo dalkpaseos://auth#access_token=...)
+    _linkSub = _appLinks.uriLinkStream.listen((uri) async {
+      if (uri == null) return;
+      print("🔗 Deep link recibido: $uri");
+
+      // --- 🔒 Recuperación de contraseña (fragment-based) ---
+      if (uri.fragment.isNotEmpty) {
+        final params = Uri.splitQueryString(uri.fragment);
+        final type = params['type'];
+
+        if (type == 'recovery') {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _router.go('/changePassword');
+          });
+        }
+        return;
+      }
+
+      if (uri.scheme == 'dalkpaseos' && uri.host == 'verification_callback') {
+        final params = uri.queryParameters;
+        final status = params['status'];
+        final sessionId = params['session_id'];
+        final userId = params['user_id'];
+
+        print("📦 Parámetros del deep link:");
+        print("status: $status");
+        print("sessionId: $sessionId");
+        print("userId: $userId");
+
+        if (status != null && sessionId != null && userId != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+        _router.goNamed(
+          VerificationCallbackPage.routeName,
+          queryParameters: {
+            'status': status,
+            'session_id': sessionId,
+            'user_id': userId,
+          },
+        );
+      });
+
+        } else {
+          print("⚠️ Faltan parámetros en el deep link de verificación");
+        }
+      } else {
+            print("ℹ️ Deep link no reconocido: $uri");
+          }
+        });
+
+
+
     _handleInitialUri();
   }
   
@@ -183,37 +208,18 @@ class _MyAppState extends State<MyApp> {
     if (uri == null) return;
     print("🔗 URI inicial: $uri");
 
-    // 🔍 CASO 1: Verificamex Redirect (cuando la app está cerrada)
-    if (uri.host == 'redirect_verificamex') {
-      final sessionId = uri.queryParameters['session_id'];
-      final userId = uri.queryParameters['user_id'];
-
-      if (userId != null) {
-        print('✅ URI Inicial: Redirigiendo a RedirectVerificamex');
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          context.pushNamed(
-            'RedirectVerificamex',
-            queryParameters: {
-              'userId': userId,
-              'sessionId': sessionId ?? '',
-            },
-          );
-        });
-      }
-      return;
-    }
-
-    // 🔍 CASO 2: Recuperación de Contraseña
     if (uri.fragment.isNotEmpty) {
       final params = Uri.splitQueryString(uri.fragment);
       final type = params['type'];
 
       if (type == 'recovery') {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          print("🔐 Redirigiendo a cambio de contraseña desde URI inicial");
+          print("Redirigiendo a cambio de contraseña desde URI inicial");
           _router.go('/changePassword');
         });
       }
+    } else {
+      print("No se encontró fragmento en la URI inicial");
     }
   }
   
@@ -237,6 +243,7 @@ class _MyAppState extends State<MyApp> {
         final event = authState?.event;
         final session = authState?.session;
 
+        // Lógica para el evento AuthChangeEvent.passwordRecovery
         if (event == AuthChangeEvent.passwordRecovery) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _router.go('/changePassword');
@@ -267,6 +274,7 @@ class _MyAppState extends State<MyApp> {
           routerConfig: _router,
         );
 
+        // Proveedor de Suscripciones
         if (isAuthenticated) {
           return ChangeNotifierProvider(
             create: (context) => SubscriptionProvider(Supabase.instance.client),

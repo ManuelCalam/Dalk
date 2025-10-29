@@ -118,11 +118,11 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <!-- Aquí tu esquema personalizado -->
                 <data
                     android:scheme="dalkpaseos"
-                    android:host="redirect_verificamex" />
+                    android:host="verification_callback" />
             </intent-filter>
+
 
 
 
