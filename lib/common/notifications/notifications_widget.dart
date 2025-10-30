@@ -11,6 +11,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import '/auth/supabase_auth/auth_util.dart';
 import 'notifications_model.dart';
 export 'notifications_model.dart';
+import '/services/notification_service.dart';
 
 class NotificationsWidget extends StatefulWidget {
   const NotificationsWidget({super.key});
@@ -148,10 +149,29 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                               width: MediaQuery.sizeOf(context).width * 0.2,
                               height: MediaQuery.sizeOf(context).height * 1.0,
                               decoration: BoxDecoration(),
-                              child: Icon(
-                                Icons.settings_rounded,
-                                color: FlutterFlowTheme.of(context).primaryText,
-                                size: 27.0,
+                              child: InkWell(
+                                splashColor: Colors.transparent,
+                                focusColor: Colors.transparent,
+                                hoverColor: Colors.transparent,
+                                highlightColor: Colors.transparent,
+                                onTap: () async {
+                                  // Aquí llamamos al método para pedir permisos
+                                  final notificationService = NotificationService();
+                                  await notificationService.requestNotificationPermission();
+                                  
+                                  // Opcional: Mostrar un mensaje de confirmación
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Ya cuentas con los permisos de notificaciones'),
+                                      duration: Duration(seconds: 2),
+                                    ),
+                                  );
+                                },
+                                child: Icon(
+                                  Icons.settings_rounded,
+                                  color: FlutterFlowTheme.of(context).primaryText,
+                                  size: 27.0,
+                                ),
                               ),
                             ),
                           ],
