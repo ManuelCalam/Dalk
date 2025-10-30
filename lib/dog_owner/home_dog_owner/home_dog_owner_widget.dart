@@ -1,6 +1,7 @@
 import 'package:dalk/SubscriptionProvider.dart';
 import 'package:dalk/backend/supabase/database/database.dart';
 import 'package:dalk/cards/article_card/article_card_widget.dart';
+import 'package:dalk/common/article_web_view/article_web_view.dart';
 import 'package:dalk/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
 import 'package:provider/provider.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -737,74 +738,63 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                       ),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsetsDirectional.fromSTEB(
-                                          6.0, 6.0, 12.0, 12.0),
-                                      child: Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                0.4,
-                                        decoration: BoxDecoration(
-                                          color: FlutterFlowTheme.of(context)
-                                              .tertiary,
-                                          borderRadius:
-                                              BorderRadius.circular(10.0),
-                                        ),
-                                        child: Align(
-                                          alignment:
-                                              const AlignmentDirectional(0.0, 0.0),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.info_rounded,
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primary,
-                                                size: 80.0,
+                                      padding: const EdgeInsetsDirectional.fromSTEB(6.0, 6.0, 12.0, 12.0),
+                                      child: InkWell(
+                                        splashColor: Colors.transparent,
+                                        focusColor: Colors.transparent,
+                                        hoverColor: Colors.transparent,
+                                        highlightColor: Colors.transparent,
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => ArticleWebViewWidget(
+                                                url: 'https://dalk-legal-git-main-noe-ibarras-projects.vercel.app/?_vercel_share=H06ZuiEgfwHGNcHZ9AdimDz34FNJepDa',
+                                                title: 'Acerca de Nosotros',
                                               ),
-                                              Align(
-                                                alignment: const AlignmentDirectional(
-                                                    0.0, 1.0),
-                                                child: Padding(
-                                                  padding: const EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          0.0, 0.0, 0.0, 6.0),
-                                                  child: AutoSizeText(
-                                                    'Nosotros',
-                                                    textAlign: TextAlign.center,
-                                                    style: FlutterFlowTheme.of(
-                                                            context)
-                                                        .bodyMedium
-                                                        .override(
-                                                          font: GoogleFonts
-                                                              .lexend(
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .secondaryBackground,
-                                                          fontSize: 16.0,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
+                                            ),
+                                          );
+                                        },
+                                        child: Container(
+                                          width: MediaQuery.sizeOf(context).width * 0.4,
+                                          decoration: BoxDecoration(
+                                            color: FlutterFlowTheme.of(context).tertiary,
+                                            borderRadius: BorderRadius.circular(10.0),
+                                          ),
+                                          child: Align(
+                                            alignment: const AlignmentDirectional(0.0, 0.0),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.info_rounded,
+                                                  color: FlutterFlowTheme.of(context).primary,
+                                                  size: 80.0,
+                                                ),
+                                                Align(
+                                                  alignment: const AlignmentDirectional(0.0, 1.0),
+                                                  child: Padding(
+                                                    padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 6.0),
+                                                    child: AutoSizeText(
+                                                      'Nosotros',
+                                                      textAlign: TextAlign.center,
+                                                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                        font: GoogleFonts.lexend(
+                                                          fontWeight: FontWeight.w500,
+                                                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                         ),
+                                                        color: FlutterFlowTheme.of(context).secondaryBackground,
+                                                        fontSize: 16.0,
+                                                        letterSpacing: 0.0,
+                                                        fontWeight: FontWeight.w500,
+                                                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                      ),
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ),
