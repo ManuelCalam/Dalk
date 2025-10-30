@@ -211,7 +211,7 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                                         final thirtyDaysAgoDate = DateTime.now().subtract(Duration(days: 30));
                                         return notificationDate.isAfter(thirtyDaysAgoDate);
                                       } catch (e) {
-                                        return false; // ✅ REMOVIDO: Log innecesario
+                                        return false; //  REMOVIDO: Log innecesario
                                       }
                                     }).toList();
 
@@ -254,7 +254,7 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                                             ),
                                             child: InkWell(
                                               onTap: () async {
-                                                // ✅ REMOVIDO: Logs innecesarios
+                                                //  REMOVIDO: Logs innecesarios
                                                 if (!notification['is_read']) {
                                                   try {
                                                     await Supabase.instance.client
@@ -291,7 +291,7 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                                                         mainAxisSize: MainAxisSize.min,
                                                         crossAxisAlignment: CrossAxisAlignment.start,
                                                         children: [
-                                                          // ✅ CORREGIDO: Mostrar title + body en lugar de message
+                                                          //  CORREGIDO: Mostrar title + body en lugar de message
                                                           Text(
                                                             notification['title'] ?? 'Sin título',
                                                             style: FlutterFlowTheme.of(context)

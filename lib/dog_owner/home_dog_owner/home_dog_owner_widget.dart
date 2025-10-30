@@ -1,7 +1,7 @@
 import 'package:dalk/SubscriptionProvider.dart';
 import 'package:dalk/backend/supabase/database/database.dart';
 import 'package:dalk/cards/article_card/article_card_widget.dart';
-import 'package:dalk/common/article_web_view/article_web_view.dart';
+import 'package:dalk/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
 import 'package:provider/provider.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -49,24 +49,25 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
   }
 
   // Método para obtener los artículos
-Future<List<Map<String, dynamic>>> _fetchArticles() async {
-  try {
-    final response = await Supabase.instance.client 
-        .from('content_links')
-        .select()
-        .eq('isActive', true);
+  Future<List<Map<String, dynamic>>> _fetchArticles() async {
+    try {
+      final response = await Supabase.instance.client 
+          .from('content_links')
+          .select()
+          .eq('isActive', true);
 
-    return (response as List<dynamic>).cast<Map<String, dynamic>>();
-  } catch (e) {
-    print('Error fetching articles: $e');
-    return [];
+      return (response as List<dynamic>).cast<Map<String, dynamic>>();
+    } catch (e) {
+      print('Error fetching articles: $e');
+      return [];
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
     final user = context.watch<UserProvider>().user;
     final nombre = (user?.name?.split(" ").first) ?? "User";
+    final address = (user?.address);
     final isPremium = context.watch<SubscriptionProvider>().isPremium;
     
     return GestureDetector(
@@ -240,81 +241,178 @@ Future<List<Map<String, dynamic>>> _fetchArticles() async {
                       shrinkWrap: true,
                       scrollDirection: Axis.vertical,
                       children:  [ 
-                        Padding(
+                        // Padding(
+                        //   padding: const EdgeInsetsDirectional.fromSTEB(
+                        //       0.0, 5.0, 0.0, 0.0),
+                        //   child: InkWell(
+                        //     splashColor: Colors.transparent,
+                        //     focusColor: Colors.transparent,
+                        //     hoverColor: Colors.transparent,
+                        //     highlightColor: Colors.transparent,
+                        //     onTap: () async {
+                        //       context
+                        //           .pushNamed(PremiumPlanInfoWidget.routeName);
+                        //     },
+                        //     child: Container(
+                        //       width: MediaQuery.sizeOf(context).width * 1.0,
+                        //       height: MediaQuery.sizeOf(context).height * 0.02,
+                        //       constraints: BoxConstraints(
+                        //         minHeight:
+                        //             MediaQuery.sizeOf(context).height * 0.04,
+                        //       ),
+                        //       decoration: BoxDecoration(
+                        //         color: FlutterFlowTheme.of(context).accent1,
+                        //         borderRadius: BorderRadius.circular(5.0),
+                        //       ),
+                        //       child: Row(
+                        //         mainAxisSize: MainAxisSize.max,
+                        //         children: [
+                        //           Align(
+                        //             alignment: const AlignmentDirectional(-1.0, 0.0),
+                        //             child: Padding(
+                        //               padding: const EdgeInsetsDirectional.fromSTEB(
+                        //                   5.0, 0.0, 0.0, 0.0),
+                        //               child: AutoSizeText(
+                        //                                         isPremium ? "Revisa tus beneficios premium!" :
+                        //                 'Descubre los beneficios del plan premium!' ,
+                        //                 textAlign: TextAlign.start,
+                        //                 minFontSize: 10.0,
+                        //                 style: FlutterFlowTheme.of(context)
+                        //                     .bodyMedium
+                        //                     .override(
+                        //                       font: GoogleFonts.lexend(
+                        //                         fontWeight:
+                        //                             FlutterFlowTheme.of(context)
+                        //                                 .bodyMedium
+                        //                                 .fontWeight,
+                        //                         fontStyle:
+                        //                             FlutterFlowTheme.of(context)
+                        //                                 .bodyMedium
+                        //                                 .fontStyle,
+                        //                       ),
+                        //                       color: Colors.white,
+                        //                       fontSize: 14.0,
+                        //                       letterSpacing: 0.0,
+                        //                       fontWeight:
+                        //                           FlutterFlowTheme.of(context)
+                        //                               .bodyMedium
+                        //                               .fontWeight,
+                        //                       fontStyle:
+                        //                           FlutterFlowTheme.of(context)
+                        //                               .bodyMedium
+                        //                               .fontStyle,
+                        //                     ),
+                        //               ),
+                        //             ),
+                        //           ),
+                        //           Flexible(
+                        //             child: Align(
+                        //               alignment: const AlignmentDirectional(1.0, 0.0),
+                        //               child: Padding(
+                        //                 padding: const EdgeInsetsDirectional.fromSTEB(
+                        //                     0.0, 0.0, 5.0, 0.0),
+                        //                 child: Icon(
+                        //                   Icons.chevron_right_outlined,
+                        //                   color: FlutterFlowTheme.of(context)
+                        //                       .tertiary,
+                        //                   size: 24.0,
+                        //                 ),
+                        //               ),
+                        //             ),
+                        //           ),
+                        //         ],
+                        //       ),
+                        //     ),
+                        //   ),
+                        // ),
+                                                Padding(
                           padding: const EdgeInsetsDirectional.fromSTEB(
-                              0.0, 5.0, 0.0, 0.0),
+                              0, 5, 0, 0),
                           child: InkWell(
                             splashColor: Colors.transparent,
                             focusColor: Colors.transparent,
                             hoverColor: Colors.transparent,
                             highlightColor: Colors.transparent,
                             onTap: () async {
-                              context
-                                  .pushNamed(PremiumPlanInfoWidget.routeName);
+                              context.pushNamed(
+                                  PremiumPlanInfoWidget.routeName);
                             },
                             child: Container(
-                              width: MediaQuery.sizeOf(context).width * 1.0,
-                              height: MediaQuery.sizeOf(context).height * 0.02,
+                              width: MediaQuery.sizeOf(context).width,
                               constraints: BoxConstraints(
                                 minHeight:
-                                    MediaQuery.sizeOf(context).height * 0.04,
+                                    MediaQuery.sizeOf(context).height *
+                                        0.04,
                               ),
                               decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context).accent1,
-                                borderRadius: BorderRadius.circular(5.0),
+                                color: FlutterFlowTheme.of(context)
+                                    .accent1,
+                                borderRadius: BorderRadius.circular(5),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
-                                  Align(
-                                    alignment: const AlignmentDirectional(-1.0, 0.0),
-                                    child: Padding(
-                                      padding: const EdgeInsetsDirectional.fromSTEB(
-                                          5.0, 0.0, 0.0, 0.0),
-                                      child: AutoSizeText(
-                                                                isPremium ? "Revisa tus beneficios premium!" :
-                                        'Descubre los beneficios del plan premium!' ,
-                                        textAlign: TextAlign.start,
-                                        minFontSize: 10.0,
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              font: GoogleFonts.lexend(
+                                  Expanded(
+                                    flex: 8,
+                                    child: Align(
+                                      alignment:
+                                          const AlignmentDirectional(-1, 0),
+                                      child: Padding(
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(5, 0, 0, 0),
+                                        child: AutoSizeText(
+                                           isPremium ? "Revisa tus beneficios premium!" :
+                                          'Descubre los beneficios del plan premium!',
+                                          textAlign: TextAlign.start,
+                                          minFontSize: 10,
+                                          style: FlutterFlowTheme.of(
+                                                  context)
+                                              .bodyMedium
+                                              .override(
+                                                font:
+                                                    GoogleFonts.lexend(
+                                                  fontWeight:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .bodyMedium
+                                                          .fontWeight,
+                                                  fontStyle:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .bodyMedium
+                                                          .fontStyle,
+                                                ),
+                                                color: Colors.white,
+                                                fontSize: 14,
+                                                letterSpacing: 0.0,
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                    FlutterFlowTheme.of(
+                                                            context)
                                                         .bodyMedium
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    FlutterFlowTheme.of(
+                                                            context)
                                                         .bodyMedium
                                                         .fontStyle,
                                               ),
-                                              color: Colors.white,
-                                              fontSize: 14.0,
-                                              letterSpacing: 0.0,
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                            ),
+                                        ),
                                       ),
                                     ),
                                   ),
                                   Flexible(
                                     child: Align(
-                                      alignment: const AlignmentDirectional(1.0, 0.0),
+                                      alignment:
+                                          const AlignmentDirectional(1, 0),
                                       child: Padding(
-                                        padding: const EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, 5.0, 0.0),
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(0, 0, 5, 0),
                                         child: Icon(
                                           Icons.chevron_right_outlined,
-                                          color: FlutterFlowTheme.of(context)
+                                          color: FlutterFlowTheme.of(
+                                                  context)
                                               .tertiary,
-                                          size: 24.0,
+                                          size: 24,
                                         ),
                                       ),
                                     ),
@@ -352,15 +450,37 @@ Future<List<Map<String, dynamic>>> _fetchArticles() async {
                                         hoverColor: Colors.transparent,
                                         highlightColor: Colors.transparent,
                                         onTap: () async {
-                                          context.pushNamed(
-                                            SetWalkScheduleWidget.routeName,
-                                            queryParameters: {
-                                              'selectedAddress': serializeParam(
-                                                0,
-                                                ParamType.int,
-                                              ),
-                                            }.withoutNulls,
-                                          );
+                                          if(address == null || address == ''){
+                                            showDialog(
+                                              context: context,
+                                              builder: (context) {
+                                                return Dialog(
+                                                  backgroundColor: Colors.transparent,
+                                                  child: PopUpConfirmDialogWidget(
+                                                    title: "Datos faltantes" ,
+                                                    message: "¡Ocupas completar tu perfil para empezar a agendar!",
+                                                    confirmText: "Completar perfil",
+                                                    cancelText: "En otro momento",
+                                                    confirmColor: FlutterFlowTheme.of(context).primary,
+                                                    cancelColor: FlutterFlowTheme.of(context).accent1,
+                                                    icon: Icons.person,
+                                                    iconColor: FlutterFlowTheme.of(context).primary,
+                                                    onConfirm: () {
+                                                      Navigator.pop(context);
+                                                      context.pushNamed(DogOwnerUpdateProfileWidget.routeName);
+                                                    },
+                                                    onCancel: () {
+                                                      Navigator.pop(context);
+                                                    },
+                                                  ),
+                                                );
+                                              },
+                                            );
+
+                                          }
+                                          else {
+                                            context.pushNamed(SetWalkScheduleWidget.routeName);
+                                          }
                                         },
                                         child: Container(
                                           width:

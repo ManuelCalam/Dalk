@@ -1,6 +1,7 @@
 import 'package:dalk/backend/supabase/supabase.dart';
 import 'package:dalk/components/pop_up_add_review/pop_up_add_review_widget.dart';
 import 'package:dalk/components/pop_up_review_details/pop_up_review_details_widget.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -99,83 +100,202 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
   }
 
 
-    bool _hasReview = false; 
-    String _paymentStatus = 'pending'; 
+  bool _hasReview = false; 
+  String _paymentStatus = 'pending'; 
 
-    void _handleStripePayment() => print('Acción: Abrir Stripe Payment Sheet');
-    void _handleCashPayment() => {
-      context.pushReplacementNamed(
-        '_initialize', 
-        queryParameters: {'initialPage': 'homeDogOwner'},
-      )
-    };
-    
-    Future<void> _handleReviewAction(Map<String, dynamic> walkData) async {
-      // Determina el nombre del usuario/mascota para el pop-up
-      final reviewedName = widget.userType == 'Dueño' ? walkData['walker_name'] : walkData['pet_name'];
+  Future<void> _handleStripePayment(Map<String, dynamic> walkData) async {
+    try {
 
-      if (_hasReview) {
-        // Acción: VER RESEÑA
-        await showModalBottomSheet(
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          enableDrag: false,
-          context: context,
-          builder: (context) {
-            return Padding(
-              padding: MediaQuery.viewInsetsOf(context),
-              child: PopUpReviewDetailsWidget(
-                walkId: widget.walkId, 
-                reviewedName: reviewedName,
-              ),
-            );
-          },
-        );
-      } else {
-        // Acción: AGREGAR RESEÑA
-        await showModalBottomSheet(
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          enableDrag: false,
-          context: context,
-          builder: (context) {
-            return Padding(
-              padding: MediaQuery.viewInsetsOf(context),
-              child: PopUpAddReviewWidget(
-                walkId: widget.walkId,
-                userTypeName: reviewedName,
-                reviewType: widget.userType == 'Dueño' ? 'Paseador' : 'Perro',
-              ),
-            );
-          },
-        );
+      final supabase = Supabase.instance.client;
+      final userId = supabase.auth.currentUser?.id;
+      if (userId == null) throw Exception('No hay usuario autenticado.');
+
+      final customerRes = await supabase
+          .from('users')
+          .select('customer_stripe_id')
+          .eq('uuid', userId)
+          .maybeSingle();
+
+      final customerStripeId = customerRes?['customer_stripe_id'];
+      if (customerStripeId == null) {
+        throw Exception('No se encontró el customer_stripe_id del usuario actual.');
       }
-      
-      // Después de cerrar CUALQUIERA de los modales, re-verifica el estado.
-      await _checkReviewStatus(); 
+
+      print({
+        'walk_id': walkData['id'],
+        'walker_id': walkData['walker_id'],
+        'customer_stripe_id': customerStripeId,
+        'fee': walkData['fee'],
+      });
+
+
+      final session = supabase.auth.currentSession;
+      final response = await supabase.functions.invoke(
+        'pay-walk-intent',
+        body: {
+          'walk_id': walkData['id'],
+          'walker_id': walkData['walker_id'],
+          'customer_stripe_id': customerStripeId,
+          'fee': double.parse(walkData['fee'].toString()),
+        },
+        headers: {
+          'Authorization': 'Bearer ${session!.accessToken}',
+        },
+      );
+
+      if (response.data == null) {
+        throw Exception('Error al crear el PaymentIntent.');
+      }
+
+      final clientSecret = response.data['client_secret'];
+      final ephemeralKey = response.data['ephemeralKey'];
+
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          merchantDisplayName: 'Dalk',
+          paymentIntentClientSecret: clientSecret,
+          customerEphemeralKeySecret: ephemeralKey,
+          customerId: customerStripeId,
+        ),
+      );
+
+      await Stripe.instance.presentPaymentSheet();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pago completado con éxito.')),
+      );
+
+    } on StripeException catch (e) {
+      print('Error de Stripe: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Pago cancelado o fallido.')),
+      );
+    } catch (e) {
+      print('Error general: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al procesar el pago: $e')),
+      );
     }
+  }
 
-    void _goToHome() => print('Acción: Volver al Home');
+    
+    
+  Future<void> _handleCashPayment(Map<String, dynamic> walkData) async {
+    try {
+      final supabase = Supabase.instance.client;
+
+      final walkerId = walkData['walker_id'];
+      final walkId = walkData['id'];
+      final fee = double.parse(walkData['fee'].toString());
+
+      final updateWalk = await supabase
+          .from('walks')
+          .update({'payment_status': 'Pagado'})
+          .eq('id', walkId)
+          .select(); 
+
+      if (updateWalk.isEmpty) {
+        throw Exception('Error al actualizar el estado del paseo.');
+      }
+
+      final appFee = double.parse((fee * 0.05).toStringAsFixed(2));
+
+      final walkerRes = await supabase
+          .from('walker_payments')
+          .select('debt')
+          .eq('walker_uuid', walkerId)
+          .maybeSingle();
+
+      if (walkerRes == null) {
+        throw Exception('No se encontró la información del paseador.');
+      }
+
+      final currentDebt = double.parse((walkerRes['debt'] ?? 0).toString());
+      final newDebt = double.parse((currentDebt + appFee).toStringAsFixed(2));
+
+      await supabase
+          .from('walker_payments')
+          .update({'debt': newDebt})
+          .eq('walker_uuid', walkerId);
+
+      context.pushReplacementNamed(
+        '_initialize',
+        queryParameters: {'initialPage': 'homeDogOwner'},
+      );
+
+    } catch (e) {
+      print('Error en pago en efectivo: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudo procesar el pago en efectivo: $e')),
+      );
+    }
+  }
+
+    
+  Future<void> _handleReviewAction(Map<String, dynamic> walkData) async {
+    // Determina el nombre del usuario/mascota para el pop-up
+    final reviewedName = widget.userType == 'Dueño' ? walkData['walker_name'] : walkData['pet_name'];
+
+    if (_hasReview) {
+      // Acción: VER RESEÑA
+      await showModalBottomSheet(
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        enableDrag: false,
+        context: context,
+        builder: (context) {
+          return Padding(
+            padding: MediaQuery.viewInsetsOf(context),
+            child: PopUpReviewDetailsWidget(
+              walkId: widget.walkId, 
+              reviewedName: reviewedName,
+            ),
+          );
+        },
+      );
+    } else {
+      // Acción: AGREGAR RESEÑA
+      await showModalBottomSheet(
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        enableDrag: false,
+        context: context,
+        builder: (context) {
+          return Padding(
+            padding: MediaQuery.viewInsetsOf(context),
+            child: PopUpAddReviewWidget(
+              walkId: widget.walkId,
+              userTypeName: reviewedName,
+              reviewType: widget.userType == 'Dueño' ? 'Paseador' : 'Perro',
+            ),
+          );
+        },
+      );
+    }
+    
+    await _checkReviewStatus(); 
+  }
+
+  void _goToHome() => print('Acción: Volver al Home');
 
 
-    Widget _buildActionButton({
+  Widget _buildActionButton({
     required BuildContext context,
     required String text,
     required Color color,
     required VoidCallback onPressed,
-    Widget? iconWidget, // Ahora acepta un Widget (Icon o FaIcon)
+    Widget? iconWidget,
     bool isDisabled = false,
     Color? disabledColor,
   }) {
     final theme = FlutterFlowTheme.of(context);
     
-    // Determina el color y la función del onPressed
     final resolvedColor = isDisabled ? disabledColor ?? theme.alternate : color;
     final resolvedOnPressed = isDisabled ? null : onPressed;
 
     final resolvedTextStyle = theme.titleSmall.override(
       font: GoogleFonts.lexend(
-        fontWeight: FontWeight.w500, // Usamos un fontWeight específico para que se vea bien
+        fontWeight: FontWeight.w500, 
         fontStyle: theme.titleSmall.fontStyle,
       ),
       color: isDisabled ? theme.secondaryText : Colors.white,
@@ -186,7 +306,6 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
     );
 
     return Padding(
-      // Padding vertical entre botones
       padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0), 
       child: FFButtonWidget(
         onPressed: resolvedOnPressed, 
@@ -195,7 +314,6 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
         options: FFButtonOptions(
           width: MediaQuery.sizeOf(context).width,
           height: MediaQuery.sizeOf(context).height * 0.05,
-          // Corregimos el padding interno para que no interfiera con el height
           padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0), 
           iconPadding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
           iconAlignment: IconAlignment.end,
@@ -222,14 +340,11 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
     // --- 1. BOTÓN DE RESEÑA (Común a ambos usuarios) ---
     final reviewButton = _buildActionButton(
       context: context,
-      // Texto dinámico basado en el estado
       text: hasReview ? 'Ver Reseña' : 'Agregar Reseña',
       
-      // La acción corregida (closure)
       onPressed: () => _handleReviewAction(walkData), 
       
       iconWidget: Icon(
-        // Ícono dinámico basado en el estado
         hasReview ? Icons.rate_review_rounded : Icons.reviews_sharp,
         color: Colors.white,
         size: 23,
@@ -243,27 +358,41 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
       // BOTONES PARA DUEÑO
       // ------------------------------------
 
-      // 1. Pagar con Tarjeta (Principal)
-      buttons.add(_buildActionButton(
-        context: context,
-        text: isPaid ? 'Pago Confirmado' : 'Pagar con Tarjeta',
-        color: theme.primary,
-        onPressed: _handleStripePayment,
-        iconWidget: const Icon(Icons.credit_card, color: Colors.white, size: 23),
-        // Se deshabilita si ya está pagado
-        isDisabled: isPaid,
-      ));
+      // 1. Pagar con Tarjeta 
+      if(walkData['payment_status'] != 'Pagado'){
+        buttons.add(_buildActionButton(
+          context: context,
+          text: 'Pagar con Tarjeta',
+          color: theme.primary,
+          onPressed: () => _handleStripePayment(walkData), 
+          iconWidget: const Icon(Icons.home, color: Colors.white, size: 23),
+          isDisabled: isPaid,
+        ));
+      
 
-      // 2. Pagar con Efectivo (Secundario)
-      buttons.add(_buildActionButton(
-        context: context,
-        text: isPaid ? 'Efectivo Acordado' : 'Pagar con Efectivo',
-        color: theme.success,
-        onPressed: _handleCashPayment,
-        iconWidget: const FaIcon(FontAwesomeIcons.moneyBill1, color: Colors.white, size: 23),
-        // Se deshabilita si ya está pagado o acordado
-        isDisabled: isPaid,
-      ));
+        // 2. Pagar con Efectivo 
+        buttons.add(_buildActionButton(
+          context: context,
+          text: 'Pagar con Efectivo',
+          color: theme.success,
+          onPressed: () => _handleCashPayment(walkData),
+          iconWidget: const FaIcon(FontAwesomeIcons.moneyBill1, color: Colors.white, size: 23),
+          isDisabled: isPaid,
+        ));
+
+      } else if (walkData['payment_status'] == 'Pagado') {
+          buttons.add(_buildActionButton(
+          context: context,
+          text: "Menú principal",
+          color: theme.primary,
+          onPressed: () => context.pushReplacementNamed(
+            '_initialize', 
+            queryParameters: {'initialPage': 'homeDogOwner'},
+          ),
+          iconWidget: const Icon(Icons.credit_card, color: Colors.white, size: 23),
+          isDisabled: isPaid,
+        ));
+      }
       
       // 3. Botón de Reseña
       buttons.add(reviewButton);
@@ -273,14 +402,12 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
       // BOTONES PARA PASEADOR
       // ------------------------------------
 
-      // 1. Volver al Home (Depende del pago)
       buttons.add(_buildActionButton(
         context: context,
         text: isPaid ? 'Volver al Home' : 'Esperando Pago...',
         color: theme.secondary,
         onPressed: _goToHome,
         iconWidget: const Icon(Icons.home_rounded, color: Colors.white, size: 23),
-        // Está deshabilitado si el pago está pendiente
         isDisabled: !isPaid,
         disabledColor: theme.alternate,
       ));
@@ -353,6 +480,33 @@ Widget build(BuildContext context) {
 
                     // Datos cargados correctamente
                     final walkData = snapshot.data!;
+                    final Color statusColor;
+                    final String displayStatus;
+                    final IconData icon;
+
+                    switch(walkData['payment_status'].toString()){
+                      case 'Pendiente': 
+                        statusColor = const Color(0xFFEAB521);
+                        displayStatus = 'Pendiente';
+                        icon = Icons.pending;
+
+                      case 'Pagado': 
+                        statusColor = FlutterFlowTheme.of(context).success;
+                        displayStatus = 'Pagado';
+                        icon = Icons.check_circle;
+
+                      case 'Fallido': 
+                        statusColor = FlutterFlowTheme.of(context).error;
+                        displayStatus = 'Pagado';
+                        icon = Icons.cancel_rounded;
+
+                      default:
+                        statusColor = const Color(0xFFEAB521);
+                        displayStatus = 'Pendiente';
+                        icon = Icons.pending;
+                    }
+                      
+
 
                     return Column(
                       mainAxisSize: MainAxisSize.max,
@@ -396,8 +550,8 @@ Widget build(BuildContext context) {
                                     padding: const EdgeInsetsDirectional.fromSTEB(
                                         0, 20, 0, 0),
                                     child: Icon(
-                                      Icons.pending,
-                                      color: FlutterFlowTheme.of(context).warning,
+                                      icon,
+                                      color: statusColor,
                                       size: 100,
                                     ),
                                   ),
@@ -415,8 +569,7 @@ Widget build(BuildContext context) {
                                                     .bodyMedium
                                                     .fontStyle,
                                           ),
-                                          color: FlutterFlowTheme.of(context)
-                                              .warning,
+                                          color: statusColor,
                                           fontSize: 20,
                                           letterSpacing: 0.0,
                                           fontWeight: FontWeight.bold,

@@ -119,3 +119,36 @@ entrypoint = "./functions/buy-tracker-intent/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/buy-tracker-intent/*.html" ]
+
+[functions.create-walker-stripe-account]
+enabled = true
+verify_jwt = true
+import_map = "./functions/create-walker-stripe-account/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/create-walker-stripe-account/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/create-walker-stripe-account/*.html" ]
+
+[functions.stripe-connect-webhook]
+enabled = true
+verify_jwt = true
+import_map = "./functions/stripe-connect-webhook/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/stripe-connect-webhook/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/stripe-connect-webhook/*.html" ]
+
+[functions.pay-walk-intent]
+enabled = true
+verify_jwt = true
+import_map = "./functions/pay-walk-intent/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/pay-walk-intent/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/pay-walk-intent/*.html" ]

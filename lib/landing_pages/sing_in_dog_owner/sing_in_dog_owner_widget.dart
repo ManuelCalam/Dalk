@@ -6,14 +6,10 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
-import 'dart:ui';
-import '/index.dart';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import '/utils/validation.dart';
 
 import 'sing_in_dog_owner_model.dart';
@@ -45,7 +41,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
           _model.phoneDogOwnerInputTextController.text.trim().isNotEmpty &&
           _model.genderDogOwnerMenuValue != null &&
           _model.streetDogOwnerInputTextController.text.trim().isNotEmpty &&
-          _model.apartamentNumDogOwnerInputTextController.text.trim().isNotEmpty &&
+          _model.exteriorNumberDogOwnerTextController.text.trim().isNotEmpty &&
           _model.zipCodeDogOwnerInputTextController.text.trim().isNotEmpty &&
           _model.neighborhoodDogOwnerInputTextController.text.trim().isNotEmpty &&
           _model.cityDogOwnerInputTextController.text.trim().isNotEmpty;
@@ -71,8 +67,11 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
     _model.streetDogOwnerInputTextController ??= TextEditingController();
     _model.streetDogOwnerInputFocusNode ??= FocusNode();
 
-    _model.apartamentNumDogOwnerInputTextController ??= TextEditingController();
-    _model.apartamentNumDogOwnerInputFocusNode ??= FocusNode();
+    _model.interiorNumberDogOwnerInputTextController ??= TextEditingController();
+    _model.interiorNumberDogOwnerInputFocusNode ??= FocusNode();
+
+    _model.exteriorNumberDogOwnerTextController ??= TextEditingController();
+    _model.exteriorNumberDogOwnerFocusNode ??= FocusNode();
 
     _model.zipCodeDogOwnerInputTextController ??= TextEditingController();
     _model.zipCodeDogOwnerInputFocusNode ??= FocusNode();
@@ -97,9 +96,111 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
     super.dispose();
   }
 
+
+  Future<void> registerOwner(BuildContext context) async {
+    final supabase = Supabase.instance.client;
+
+    try {
+      // Crear usuario en Auth con correo/contraseña
+      final user = await authManager.createAccountWithEmail(
+        context,
+        _model.emailDogOwnerInputTextController.text.trim(),
+        _model.passDogOwnerInputTextController.text.trim(),
+      );
+      if (user == null) throw Exception('No se pudo crear el usuario.');
+      final userId = user.uid;
+
+      // Insertar datos en "users"
+      await supabase.from('users').insert({
+        'uuid': userId,
+        'name': _model.nameDogOwnerInputTextController.text.trim(),
+        'email': _model.emailDogOwnerInputTextController.text.trim(),
+        'phone': _model.phoneDogOwnerInputTextController.text.trim(),
+        'birthdate': supaSerialize<DateTime>(_model.datePicked),
+        'gender': _model.genderDogOwnerMenuValue,
+        'address': _model.streetDogOwnerInputTextController.text.trim(),
+        'ext_number': _model.exteriorNumberDogOwnerTextController.text.trim(),
+        'int_number': _model.interiorNumberDogOwnerInputTextController.text.trim(),
+        'zipCode': _model.zipCodeDogOwnerInputTextController.text.trim(),
+        'neighborhood': _model.neighborhoodDogOwnerInputTextController.text.trim(),
+        'city': _model.cityDogOwnerInputTextController.text.trim(),
+        'usertype': 'Dueño',
+      });
+
+      // Insertar dirección principal en "addresses"
+      await supabase.from('addresses').insert({
+        'uuid': userId,
+        'alias': 'Mi Dirección',
+        'address': _model.streetDogOwnerInputTextController.text.trim(),
+        'ext_number': _model.exteriorNumberDogOwnerTextController.text.trim(),
+        'int_number': _model.interiorNumberDogOwnerInputTextController.text.trim(),
+        'zipCode': _model.zipCodeDogOwnerInputTextController.text.trim(),
+        'neighborhood': _model.neighborhoodDogOwnerInputTextController.text.trim(),
+        'city': _model.cityDogOwnerInputTextController.text.trim(),
+      });
+
+      // Subir imagen de perfil o asignar una por defecto
+      String imageUrl;
+
+      if (_ownerImage != null) {
+        final uploadedUrl = await _uploadOwnerImage(userId!, _ownerImage!);
+        imageUrl = uploadedUrl ?? 'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/public/profile_pics/user.png';
+      } else {
+        imageUrl = 'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/public/profile_pics/user.png';
+      }
+
+      // Actualizar URL de la imagen
+      await supabase.from('users').update({'photo_url': imageUrl}).eq('uuid', userId!);
+
+      // Verificación final de que el usuario existe antes de continuar
+      final verify = await supabase
+          .from('users')
+          .select('uuid')
+          .eq('uuid', userId)
+          .maybeSingle();
+
+      if (verify == null) throw Exception('Error al verificar registro.');
+
+      print('Registro completado correctamente.');
+    } on AuthException catch (e) {
+      // Errores específicos de Supabase Auth
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error de autenticación: ${e.message}')),
+      );
+      rethrow;
+    } on PostgrestException catch (e) {
+      // Errores de inserción en la base de datos
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error en base de datos: ${e.message}')),
+      );
+      rethrow;
+    } catch (e) {
+      // Errores generales
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error durante el registro: $e')),
+      );
+      rethrow;
+    }
+  }
+
+
+
   Future<String?> _uploadOwnerImage(String userId, File imageFile) async {
     try {
-      final filePath = 'owners/$userId/profile.jpg'; // ruta dentro del bucket
+      final fileSize = await imageFile.length();
+      const maxSize = 5 * 1024 * 1024;
+
+      if (fileSize > maxSize) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('La imagen supera el tamaño máximo permitido (5 MB).'),
+          ),
+        );
+        return null;
+      }
+
+
+      final filePath = 'owners/$userId/profile.jpg';
       final storage = Supabase.instance.client.storage;
 
       // Subir la imagen, si existe reemplazar
@@ -111,7 +212,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
 
       // Obtener URL pública
       final imageUrl = storage.from('profile_pics').getPublicUrl(filePath);
-
+      print('Imagen subida: $imageUrl');
       return imageUrl; // ahora es un String
     } catch (e) {
       print('Error al subir imagen: $e');
@@ -134,6 +235,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
   }
 
   void _showImagePickerOptions(BuildContext context, bool isOwner) {
+    
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
@@ -279,23 +381,21 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                               ),
                             ),
                             Align(
-  alignment: const AlignmentDirectional(0, 0),
-  child: Padding(
-    padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
-    child: GestureDetector(
-      onTap: () => _showImagePickerOptions(context, true), // true = dueño
-      child: CircleAvatar(
-        radius: 60,
-        backgroundImage: _ownerImage != null
-            ? FileImage(_ownerImage!)
-            : const NetworkImage(
-                'https://static.vecteezy.com/system/resources/previews/007/407/996/non_2x/user-icon-person-icon-client-symbol-login-head-sign-icon-design-vector.jpg',
-              ) as ImageProvider,
-      ),
-    ),
-  ),
-),
-Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMedium.override()),
+                              alignment: const AlignmentDirectional(0, 0),
+                              child: Padding(
+                                padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                child: GestureDetector(
+                                  onTap: () => _showImagePickerOptions(context, true), 
+                                  child: CircleAvatar(
+                                    radius: 60,
+                                    backgroundImage: _ownerImage != null
+                                    ? FileImage(_ownerImage!)
+                                    : const AssetImage('assets/images/user.png') as ImageProvider,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMedium.override()),
                             Expanded(
                               child: Padding(
                                 padding:
@@ -308,7 +408,6 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                         MediaQuery.sizeOf(context).width * 0.6,
                                     child: Form(
                                       key: _model.formKey,
-                                      autovalidateMode: AutovalidateMode.onUserInteraction,
                                       child: SingleChildScrollView(
                                         child: Column(
                                           mainAxisSize: MainAxisSize.max,
@@ -325,6 +424,7 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                     MediaQuery.sizeOf(context)
                                                         .width,
                                                 child: TextFormField(
+                                                  autovalidateMode: AutovalidateMode.onUserInteraction,
                                                   controller: _model
                                                       .nameDogOwnerInputTextController,
                                                   focusNode: _model
@@ -501,8 +601,16 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                       FlutterFlowTheme.of(
                                                               context)
                                                           .primaryText,
-                                                  //validar el nombre como requerido
-  validator: (value) => Validators.requiredField(value, fieldName: 'Nombre'),
+                                                  validator: (value) {
+                                                    final required = Validators.requiredField(value, fieldName: 'Nombre');
+                                                    if (required != null) return required;
+                                                    final min = Validators.minLength(value, 3, fieldName: 'Nombre');
+                                                    if (min != null) return min;
+                                                    return Validators.maxLength(value, 50, fieldName: 'Nombre');
+                                                  },                                                  
+                                                  inputFormatters: [
+                                                    LengthLimitingTextInputFormatter(50),
+                                                  ],                                                
                                                 ),
                                               ),
                                             ),
@@ -514,6 +622,7 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                     MediaQuery.sizeOf(context)
                                                         .width,
                                                 child: TextFormField(
+                                                  autovalidateMode: AutovalidateMode.onUserInteraction,
                                                   controller: _model
                                                       .emailDogOwnerInputTextController,
                                                   focusNode: _model
@@ -690,9 +799,16 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                       FlutterFlowTheme.of(
                                                               context)
                                                           .primaryText,
-                                                  //validar el correo como valido
-  validator: (value) => Validators.email(value),
-                                                ),
+                                                  validator: (value) {
+                                                      final required = Validators.requiredField(value, fieldName: 'Correo');
+                                                      if (required != null) return required;
+                                                      final min = Validators.minLength(value, 5, fieldName: 'Correo');
+                                                      if (min != null) return min;
+                                                      final max = Validators.maxLength(value, 100, fieldName: 'Correo');
+                                                      if (max != null) return max;
+                                                      return Validators.email(value);
+                                                    },                                                
+                                                  ),
                                               ),
                                             ),
                                             Padding(
@@ -703,6 +819,7 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                     MediaQuery.sizeOf(context)
                                                         .width,
                                                 child: TextFormField(
+                                                  autovalidateMode: AutovalidateMode.onUserInteraction,
                                                   controller: _model
                                                       .phoneDogOwnerInputTextController,
                                                   focusNode: _model
@@ -713,7 +830,7 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                   obscureText: false,
                                                   decoration: InputDecoration(
                                                     isDense: true,
-                                                    labelText: 'Telefono',
+                                                    labelText: 'Teléfono',
                                                     labelStyle:
                                                         FlutterFlowTheme.of(
                                                                 context)
@@ -900,14 +1017,16 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                 highlightColor:
                                                     Colors.transparent,
                                                 onTap: () async {
+                                                  final now = DateTime.now();
+                                                  final eighteenYearsAgo = DateTime(now.year - 18, now.month, now.day);
+
                                                   final _datePickedDate =
                                                       await showDatePicker(
                                                     context: context,
-                                                    initialDate:
-                                                        getCurrentTimestamp,
-                                                    firstDate:
-                                                        DateTime(1900),
-                                                    lastDate: DateTime(2050),
+                                                    initialDate: eighteenYearsAgo, 
+                                                    firstDate: DateTime(1900), 
+                                                    lastDate: eighteenYearsAgo, 
+                                                    locale: const Locale('es', 'ES'),
                                                     builder: (context, child) {
                                                       return wrapInMaterialDatePickerTheme(
                                                         context,
@@ -1029,8 +1148,8 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                                     7, 0, 0, 0),
                                                         child: AutoSizeText(
                                                            _model.datePicked == null
-                    ? 'Fecha de nacimiento\n'
-                    : '${_model.datePicked!.day}/${_model.datePicked!.month}/${_model.datePicked!.year}',
+                                                          ? 'Fecha de nacimiento\n'
+                                                          : '${_model.datePicked!.day}/${_model.datePicked!.month}/${_model.datePicked!.year}',
                                                           textAlign:
                                                               TextAlign.start,
                                                           maxLines: 1,
@@ -1051,9 +1170,7 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                                       .bodyMedium
                                                                       .fontStyle,
                                                                 ),
-                                                                color: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .primary,
+                                                                color: FlutterFlowTheme.of(context).primary,
                                                                 fontSize: 16,
                                                                 letterSpacing:
                                                                     0.0,
@@ -1089,7 +1206,7 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                   'Mujer',
                                                   'Otro'
                                                 ]),
-                                                optionLabels: [
+                                                optionLabels: const [
                                                   'Hombre',
                                                   'Mujer',
                                                   'Otro'
@@ -1153,7 +1270,7 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                 elevation: 2,
                                                 borderColor: Colors.transparent,
                                                 borderWidth: 0,
-                                                borderRadius: 8,
+                                                borderRadius: 30,
                                                 margin: const EdgeInsetsDirectional
                                                     .fromSTEB(12, 0, 12, 0),
                                                 hidesUnderline: true,
@@ -1170,6 +1287,7 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                     MediaQuery.sizeOf(context)
                                                         .width,
                                                 child: TextFormField(
+                                                  autovalidateMode: AutovalidateMode.onUserInteraction,
                                                   controller: _model
                                                       .streetDogOwnerInputTextController,
                                                   focusNode: _model
@@ -1346,13 +1464,211 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                       FlutterFlowTheme.of(
                                                               context)
                                                           .primaryText,
-                                                  validator: (value) => Validators.requiredField(value, fieldName: 'Calle'),
+                                                  validator: (value) {
+                                                    final required = Validators.requiredField(value, fieldName: 'Calle');
+                                                    if (required != null) return required;
+                                                    final min = Validators.minLength(value, 5, fieldName: 'Calle');
+                                                    if (min != null) return min;
+                                                    return Validators.maxLength(value, 50, fieldName: 'Calle');
+                                                  },                                                  
+                                                  inputFormatters: [
+                                                    LengthLimitingTextInputFormatter(50),
+                                                  ],  
                                                 ),
                                               ),
                                             ),
+
                                             Padding(
-                                              padding: const EdgeInsetsDirectional
-                                                  .fromSTEB(0, 18, 0, 0),
+                                              padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
+                                              child: Container(
+                                                width: MediaQuery.sizeOf(context).width,
+                                                child: TextFormField(
+                                                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                                                  controller: _model.zipCodeDogOwnerInputTextController,
+                                                  focusNode: _model.zipCodeDogOwnerInputFocusNode,
+                                                  autofocus: false,
+                                                  textInputAction:
+                                                      TextInputAction.next,
+                                                  obscureText: false,
+                                                  decoration: InputDecoration(
+                                                    isDense: true,
+                                                    labelText: 'Código postal',
+                                                    labelStyle:
+                                                        FlutterFlowTheme.of(
+                                                                context)
+                                                            .bodyLarge
+                                                            .override(
+                                                              font: GoogleFonts
+                                                                  .lexend(
+                                                                fontWeight: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyLarge
+                                                                    .fontWeight,
+                                                                fontStyle: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyLarge
+                                                                    .fontStyle,
+                                                              ),
+                                                              color: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .primary,
+                                                              fontSize: 16,
+                                                              letterSpacing:
+                                                                  0.0,
+                                                              fontWeight:
+                                                                  FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyLarge
+                                                                      .fontWeight,
+                                                              fontStyle:
+                                                                  FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyLarge
+                                                                      .fontStyle,
+                                                            ),
+                                                    hintStyle: FlutterFlowTheme
+                                                            .of(context)
+                                                        .labelMedium
+                                                        .override(
+                                                          font: GoogleFonts
+                                                              .lexend(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontStyle:
+                                                                FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .labelMedium
+                                                                    .fontStyle,
+                                                          ),
+                                                          color: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .primary,
+                                                          fontSize: 16,
+                                                          letterSpacing: 0.0,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontStyle:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .labelMedium
+                                                                  .fontStyle,
+                                                        ),
+                                                    enabledBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .alternate,
+                                                        width: 1,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              30),
+                                                    ),
+                                                    focusedBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: const BorderSide(
+                                                        color:
+                                                            Color(0x00000000),
+                                                        width: 1,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              30),
+                                                    ),
+                                                    errorBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .error,
+                                                        width: 1,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              30),
+                                                    ),
+                                                    focusedErrorBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .error,
+                                                        width: 1,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              30),
+                                                    ),
+                                                    filled: true,
+                                                    fillColor:
+                                                        FlutterFlowTheme.of(
+                                                                context)
+                                                            .alternate,
+                                                    contentPadding:
+                                                        const EdgeInsetsDirectional
+                                                            .fromSTEB(
+                                                                0, 0, 0, 20),
+                                                    prefixIcon: Icon(
+                                                      Icons.home_rounded,
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primary,
+                                                      size: 25,
+                                                    ),
+                                                  ),
+                                                  style: FlutterFlowTheme.of(
+                                                          context)
+                                                      .bodyMedium
+                                                      .override(
+                                                        font:
+                                                            GoogleFonts.lexend(
+                                                          fontWeight:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .bodyMedium
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .bodyMedium
+                                                                  .fontStyle,
+                                                        ),
+                                                        color: FlutterFlowTheme
+                                                                .of(context)
+                                                            .secondaryBackground,
+                                                        fontSize: 16,
+                                                        letterSpacing: 0.0,
+                                                        fontWeight:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .bodyMedium
+                                                                .fontWeight,
+                                                        fontStyle:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .bodyMedium
+                                                                .fontStyle,
+                                                      ),
+                                                      keyboardType:
+                                                                TextInputType
+                                                                    .number,
+                                                  cursorColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .primaryText,
+                                                  validator: (value) => Validators.postalCode(value),
+                                                            inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9]'))],
+                                                ),
+                                              ),
+                                            ),
+
+                                            Padding(
+                                              padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
                                               child: Container(
                                                 // height:
                                                 //     MediaQuery.sizeOf(context)
@@ -1362,20 +1678,20 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                 child: Row(
                                                   mainAxisSize:
                                                       MainAxisSize.max,
+                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                   children: [
                                                     Expanded(
                                                       child: Padding(
                                                         padding:
-                                                            const EdgeInsetsDirectional
-                                                                .fromSTEB(0, 0,
-                                                                    10, 0),
+                                                            const EdgeInsetsDirectional.fromSTEB(0, 0, 10, 0),
                                                         child: Container(
                                                           width: 350,
                                                           child: TextFormField(
+                                                            autovalidateMode: AutovalidateMode.onUserInteraction,
                                                             controller: _model
-                                                                .apartamentNumDogOwnerInputTextController,
+                                                                .exteriorNumberDogOwnerTextController,
                                                             focusNode: _model
-                                                                .apartamentNumDogOwnerInputFocusNode,
+                                                                .exteriorNumberDogOwnerFocusNode,
                                                             autofocus: false,
                                                             textInputAction:
                                                                 TextInputAction
@@ -1384,7 +1700,199 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                             decoration:
                                                                 InputDecoration(
                                                               isDense: true,
-  contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
+                                                              contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
+                                                              labelText: 'Ext',
+                                                              labelStyle:
+                                                                  FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .labelMedium
+                                                                      .override(
+                                                                        font: GoogleFonts
+                                                                            .lexend(
+                                                                          fontWeight: FlutterFlowTheme.of(context)
+                                                                              .labelMedium
+                                                                              .fontWeight,
+                                                                          fontStyle: FlutterFlowTheme.of(context)
+                                                                              .labelMedium
+                                                                              .fontStyle,
+                                                                        ),
+                                                                        color: FlutterFlowTheme.of(context)
+                                                                            .primary,
+                                                                        fontSize:
+                                                                            16,
+                                                                        letterSpacing:
+                                                                            0.0,
+                                                                        fontWeight: FlutterFlowTheme.of(context)
+                                                                            .labelMedium
+                                                                            .fontWeight,
+                                                                        fontStyle: FlutterFlowTheme.of(context)
+                                                                            .labelMedium
+                                                                            .fontStyle,
+                                                                      ),
+                                                              hintStyle:
+                                                                  FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .labelMedium
+                                                                      .override(
+                                                                        font: GoogleFonts
+                                                                            .lexend(
+                                                                          fontWeight: FlutterFlowTheme.of(context)
+                                                                              .labelMedium
+                                                                              .fontWeight,
+                                                                          fontStyle: FlutterFlowTheme.of(context)
+                                                                              .labelMedium
+                                                                              .fontStyle,
+                                                                        ),
+                                                                        color: FlutterFlowTheme.of(context)
+                                                                            .primary,
+                                                                        fontSize:
+                                                                            16,
+                                                                        letterSpacing:
+                                                                            0.0,
+                                                                        fontWeight: FlutterFlowTheme.of(context)
+                                                                            .labelMedium
+                                                                            .fontWeight,
+                                                                        fontStyle: FlutterFlowTheme.of(context)
+                                                                            .labelMedium
+                                                                            .fontStyle,
+                                                                      ),
+                                                              enabledBorder:
+                                                                  OutlineInputBorder(
+                                                                borderSide:
+                                                                    const BorderSide(
+                                                                  color: Color(
+                                                                      0x00000000),
+                                                                  width: 1,
+                                                                ),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            30),
+                                                              ),
+                                                              focusedBorder:
+                                                                  OutlineInputBorder(
+                                                                borderSide:
+                                                                    const BorderSide(
+                                                                  color: Color(
+                                                                      0x00000000),
+                                                                  width: 1,
+                                                                ),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            30),
+                                                              ),
+                                                              errorBorder:
+                                                                  OutlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide(
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .error,
+                                                                  width: 1,
+                                                                ),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            30),
+                                                              ),
+                                                              focusedErrorBorder:
+                                                                  OutlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide(
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .error,
+                                                                  width: 1,
+                                                                ),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            30),
+                                                              ),
+                                                              filled: true,
+                                                              fillColor:
+                                                                  FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .alternate,
+                                                              prefixIcon: Icon(
+                                                                Icons
+                                                                    .numbers_sharp,
+                                                                color: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .primary,
+                                                                size: 25,
+                                                              ),
+                                                            ),
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .bodyMedium
+                                                                .override(
+                                                                  font: GoogleFonts
+                                                                      .lexend(
+                                                                    fontWeight: FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .bodyMedium
+                                                                        .fontWeight,
+                                                                    fontStyle: FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .bodyMedium
+                                                                        .fontStyle,
+                                                                  ),
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .secondaryBackground,
+                                                                  fontSize: 16,
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                  fontWeight: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyMedium
+                                                                      .fontWeight,
+                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyMedium
+                                                                      .fontStyle,
+                                                                ),
+                                                            keyboardType:
+                                                                TextInputType
+                                                                    .number,
+                                                            cursorColor:
+                                                                FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .primaryText,
+
+                                                            validator: (value) => Validators.requiredField(value, fieldName: 'No. exterior'),
+                                                            inputFormatters: 
+                                                              [
+                                                                FilteringTextInputFormatter.allow(RegExp('[0-9]')),
+                                                                LengthLimitingTextInputFormatter(7)
+                                                              ], 
+                                                          ),
+                                                          
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Expanded(
+                                                      child: Padding(
+                                                        padding:
+                                                          const EdgeInsetsDirectional.fromSTEB(10, 0, 0, 0),
+                                                        child: Container(
+                                                          width: 350,
+                                                          child: TextFormField(
+                                                            controller: _model
+                                                                .interiorNumberDogOwnerInputTextController,
+                                                            focusNode: _model
+                                                                .interiorNumberDogOwnerInputFocusNode,
+                                                            autofocus: false,
+                                                            textInputAction:
+                                                                TextInputAction
+                                                                    .next,
+                                                            obscureText: false,
+                                                            decoration:
+                                                                InputDecoration(
+                                                              isDense: true,
+                                                              contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
                                                               labelText: 'Int',
                                                               labelStyle:
                                                                   FlutterFlowTheme.of(
@@ -1545,204 +2053,7 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                                 FlutterFlowTheme.of(
                                                                         context)
                                                                     .primaryText,
-                                                            validator: (value) => Validators.requiredField(value, fieldName: ''),
-                                                            inputFormatters: [
-                                                              FilteringTextInputFormatter
-                                                                  .allow(RegExp(
-                                                                      '[0-9]'))
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Expanded(
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsetsDirectional
-                                                                .fromSTEB(10, 0,
-                                                                    0, 0),
-                                                        child: Container(
-                                                          width: 350,
-                                                          child: TextFormField(
-                                                            controller: _model
-                                                                .zipCodeDogOwnerInputTextController,
-                                                            focusNode: _model
-                                                                .zipCodeDogOwnerInputFocusNode,
-                                                            autofocus: false,
-                                                            textInputAction:
-                                                                TextInputAction
-                                                                    .next,
-                                                            obscureText: false,
-                                                            decoration:
-                                                                InputDecoration(
-                                                              isDense: true,
-                                                              contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
-                                                              labelText: 'Cp',
-                                                              labelStyle:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .labelMedium
-                                                                      .override(
-                                                                        font: GoogleFonts
-                                                                            .lexend(
-                                                                          fontWeight: FlutterFlowTheme.of(context)
-                                                                              .labelMedium
-                                                                              .fontWeight,
-                                                                          fontStyle: FlutterFlowTheme.of(context)
-                                                                              .labelMedium
-                                                                              .fontStyle,
-                                                                        ),
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .primary,
-                                                                        fontSize:
-                                                                            16,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        fontWeight: FlutterFlowTheme.of(context)
-                                                                            .labelMedium
-                                                                            .fontWeight,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                                            .labelMedium
-                                                                            .fontStyle,
-                                                                      ),
-                                                              hintStyle:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .labelMedium
-                                                                      .override(
-                                                                        font: GoogleFonts
-                                                                            .lexend(
-                                                                          fontWeight: FlutterFlowTheme.of(context)
-                                                                              .labelMedium
-                                                                              .fontWeight,
-                                                                          fontStyle: FlutterFlowTheme.of(context)
-                                                                              .labelMedium
-                                                                              .fontStyle,
-                                                                        ),
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .primary,
-                                                                        fontSize:
-                                                                            16,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        fontWeight: FlutterFlowTheme.of(context)
-                                                                            .labelMedium
-                                                                            .fontWeight,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                                            .labelMedium
-                                                                            .fontStyle,
-                                                                      ),
-                                                              enabledBorder:
-                                                                  OutlineInputBorder(
-                                                                borderSide:
-                                                                    const BorderSide(
-                                                                  color: Color(
-                                                                      0x00000000),
-                                                                  width: 1,
-                                                                ),
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            30),
-                                                              ),
-                                                              focusedBorder:
-                                                                  OutlineInputBorder(
-                                                                borderSide:
-                                                                    const BorderSide(
-                                                                  color: Color(
-                                                                      0x00000000),
-                                                                  width: 1,
-                                                                ),
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            30),
-                                                              ),
-                                                              errorBorder:
-                                                                  OutlineInputBorder(
-                                                                borderSide:
-                                                                    BorderSide(
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .error,
-                                                                  width: 1,
-                                                                ),
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            30),
-                                                              ),
-                                                              focusedErrorBorder:
-                                                                  OutlineInputBorder(
-                                                                borderSide:
-                                                                    BorderSide(
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .error,
-                                                                  width: 1,
-                                                                ),
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            30),
-                                                              ),
-                                                              filled: true,
-                                                              fillColor:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .alternate,
-                                                              prefixIcon: Icon(
-                                                                Icons
-                                                                    .home_rounded,
-                                                                color: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .primary,
-                                                                size: 25,
-                                                              ),
-                                                            ),
-                                                            style: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  font: GoogleFonts
-                                                                      .lexend(
-                                                                    fontWeight: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .secondaryBackground,
-                                                                  fontSize: 16,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                            keyboardType:
-                                                                TextInputType
-                                                                    .number,
-                                                            cursorColor:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .primaryText,
-                                                            validator: (value) => Validators.postalCode(value),
-                                                            inputFormatters: [
-                                                              FilteringTextInputFormatter
-                                                                  .allow(RegExp(
-                                                                      '[0-9]'))
-                                                            ],
+                                                            
                                                           ),
                                                         ),
                                                       ),
@@ -1755,6 +2066,7 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                               padding: const EdgeInsetsDirectional
                                                   .fromSTEB(0, 18, 0, 0),
                                               child: TextFormField(
+                                                autovalidateMode: AutovalidateMode.onUserInteraction,
                                                 controller: _model
                                                     .neighborhoodDogOwnerInputTextController,
                                                 focusNode: _model
@@ -1929,13 +2241,23 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                 cursorColor:
                                                     FlutterFlowTheme.of(context)
                                                         .primaryText,
-                                                validator: (value) => Validators.requiredField(value, fieldName: 'Colonia'),
+                                                  validator: (value) {
+                                                    final required = Validators.requiredField(value, fieldName: 'Colonia');
+                                                    if (required != null) return required;
+                                                    final min = Validators.minLength(value, 4, fieldName: 'Colonia');
+                                                    if (min != null) return min;
+                                                    return Validators.maxLength(value, 30, fieldName: 'Colonia');
+                                                  },                                                  
+                                                  inputFormatters: [
+                                                    LengthLimitingTextInputFormatter(30),
+                                                  ],                                         
                                               ),
                                             ),
                                             Padding(
                                               padding: const EdgeInsetsDirectional
                                                   .fromSTEB(0, 18, 0, 0),
                                               child: TextFormField(
+                                                autovalidateMode: AutovalidateMode.onUserInteraction,
                                                 controller: _model
                                                     .cityDogOwnerInputTextController,
                                                 focusNode: _model
@@ -2110,13 +2432,23 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                 cursorColor:
                                                     FlutterFlowTheme.of(context)
                                                         .primaryText,
-                                                validator: (value) => Validators.requiredField(value, fieldName: 'Ciudad'),
+                                                  validator: (value) {
+                                                    final required = Validators.requiredField(value, fieldName: 'Ciudad');
+                                                    if (required != null) return required;
+                                                    final min = Validators.minLength(value, 3, fieldName: 'Ciudad');
+                                                    if (min != null) return min;
+                                                    return Validators.maxLength(value, 50, fieldName: 'Ciudad');
+                                                  },                                                  
+                                                  inputFormatters: [
+                                                    LengthLimitingTextInputFormatter(50),
+                                                  ],                                               
                                               ),
                                             ),
                                             Padding(
                                               padding: const EdgeInsetsDirectional
                                                   .fromSTEB(0, 18, 0, 0),
                                               child: TextFormField(
+                                                autovalidateMode: AutovalidateMode.onUserInteraction,
                                                 controller: _model
                                                     .passDogOwnerInputTextController,
                                                 focusNode: _model
@@ -2269,9 +2601,9 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                     child: Icon(
                                                       _model.passDogOwnerInputVisibility
                                                           ? Icons
-                                                              .visibility_outlined
+                                                              .visibility_off_outlined
                                                           : Icons
-                                                              .visibility_off_outlined,
+                                                              .visibility_outlined,
                                                       color:
                                                           FlutterFlowTheme.of(
                                                                   context)
@@ -2323,6 +2655,7 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                               padding: const EdgeInsetsDirectional
                                                   .fromSTEB(0, 18, 0, 0),
                                               child: TextFormField(
+                                                autovalidateMode: AutovalidateMode.onUserInteraction,
                                                 controller: _model
                                                     .confirmPassDogOwnerInputTextController,
                                                 focusNode: _model
@@ -2476,9 +2809,9 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                                     child: Icon(
                                                       _model.confirmPassDogOwnerInputVisibility
                                                           ? Icons
-                                                              .visibility_outlined
+                                                              .visibility_off_outlined
                                                           : Icons
-                                                              .visibility_off_outlined,
+                                                              .visibility_outlined,
                                                       color:
                                                           FlutterFlowTheme.of(
                                                                   context)
@@ -2530,103 +2863,53 @@ Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMe
                                               padding: const EdgeInsetsDirectional
                                                   .fromSTEB(0, 18, 0, 18),
                                               child: FFButtonWidget(
-                                                onPressed: isRegistering ? null : () async {
-  setState(() => isRegistering = true);
-  GoRouter.of(context).prepareAuthEvent();
+                                                onPressed: isRegistering
+                                              ? null
+                                              : () async {
+                                                  // Validaciones básicas antes de iniciar el registro
+                                                  if (!_model.formKey.currentState!.validate()) {
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      const SnackBar(content: Text('Por favor completa todos los campos correctamente')),
+                                                    );
+                                                    return;
+                                                  }
 
-  if (!_model.formKey.currentState!.validate()) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Corrige los campos con errores')),
-    );
-    setState(() => isRegistering = false);
-    return;
-  }
+                                                  if (_model.datePicked == null) {
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      const SnackBar(content: Text('Selecciona una fecha de nacimiento')),
+                                                    );
+                                                    return;
+                                                  }
 
-  if (_model.datePicked == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Selecciona una fecha de nacimiento')),
-    );
-    setState(() => isRegistering = false);
-    return;
-  }
+                                                  if (_model.passDogOwnerInputTextController.text !=
+                                                      _model.confirmPassDogOwnerInputTextController.text) {
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      const SnackBar(content: Text('Las contraseñas no coinciden')),
+                                                    );
+                                                    return;
+                                                  }
 
-  if (_model.passDogOwnerInputTextController.text !=
-      _model.confirmPassDogOwnerInputTextController.text) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Las contraseñas no coinciden')),
-    );
-    setState(() => isRegistering = false);
-    return;
-  }
+                                                  setState(() => isRegistering = true);
 
-  try {
-    // 1️⃣ Crear usuario en Auth
-    final user = await authManager.createAccountWithEmail(
-      context,
-      _model.emailDogOwnerInputTextController.text,
-      _model.passDogOwnerInputTextController.text,
-    );
-    if (user == null) throw 'No se pudo crear el usuario.';
-    final userId = user.uid;
+                                                  try {
+                                                    await registerOwner(context); 
 
-    final supabase = Supabase.instance.client;
+                                                    if (!mounted) return;
 
-    // 2️⃣ Insertar dueño en la tabla users
-    await supabase.from('users').insert({
-      'uuid': userId,
-      'name': _model.nameDogOwnerInputTextController.text,
-      'email': _model.emailDogOwnerInputTextController.text,
-      'phone': _model.phoneDogOwnerInputTextController.text,
-      'birthdate': supaSerialize<DateTime>(_model.datePicked),
-      'gender': _model.genderDogOwnerMenuValue,
-      'address': _model.streetDogOwnerInputTextController.text,
-      'houseNumber': _model.apartamentNumDogOwnerInputTextController.text,
-      'zipCode': _model.zipCodeDogOwnerInputTextController.text,
-      'neighborhood': _model.neighborhoodDogOwnerInputTextController.text,
-      'city': _model.cityDogOwnerInputTextController.text,
-      'usertype': 'Dueño',
-    });
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      const SnackBar(content: Text('¡Registro exitoso!')),
+                                                    );
 
-    await supabase.from('addresses').insert({
-      'uuid': userId,
-      'alias': 'Mi Dirección',
-      'address': _model.streetDogOwnerInputTextController.text,
-      'houseNumber': _model.apartamentNumDogOwnerInputTextController.text,
-      'zipCode': _model.zipCodeDogOwnerInputTextController.text,
-      'neighborhood': _model.neighborhoodDogOwnerInputTextController.text,
-      'city': _model.cityDogOwnerInputTextController.text,
-    });
+                                                    await Future.delayed(const Duration(milliseconds: 500));
 
-    // 3️⃣ Subir imagen si el usuario eligió una
-    if (_ownerImage != null) {
-      final filePath = 'owners/$userId/profile.jpg';
-      await supabase.storage.from('profile_pics').upload(
-        filePath,
-        _ownerImage!,
-        fileOptions: const FileOptions(upsert: true),
-      );
-      final imageUrl = supabase.storage.from('profile_pics').getPublicUrl(filePath);
+                                                    // Navegación segura solo cuando TODO terminó
+                                                    context.go('/');
+                                                  } catch (e) {
+                                                  } finally {
+                                                    if (mounted) setState(() => isRegistering = false);
+                                                  }
+                                                },
 
-      // 4️⃣ Actualizar registro del usuario con la URL de la imagen
-      await supabase.from('users').update({'photo_url': imageUrl}).eq('uuid', userId!);
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('¡Registro exitoso!')),
-    );
-
-    if (!mounted) return;
-    context.go('/');
-  } catch (e) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
-    }
-  } finally {
-    if (mounted) setState(() => isRegistering = false);
-  }
-},
                                                 text: 'Registrarse',
                                                 options: FFButtonOptions(
                                                   width:

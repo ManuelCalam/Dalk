@@ -146,7 +146,7 @@ class NotificationService {
     });
   }
 
-  // ✅ REMOVIDA: _saveNotificationToDatabase (ya se guarda desde servidor)
+  //  REMOVIDA: _saveNotificationToDatabase (ya se guarda desde servidor)
 
   void handleFirebaseNotificationTap(RemoteMessage message) {
     final String targetUserType = message.data['target_user_type'] ?? '';

@@ -1,4 +1,5 @@
 import 'package:dalk/SubscriptionProvider.dart';
+import 'package:dalk/services/recommendation_service.dart';
 import 'package:provider/provider.dart';
 
 import '/auth/supabase_auth/auth_util.dart';
@@ -39,6 +40,8 @@ class SetWalkScheduleWidget extends StatefulWidget {
 
 class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
   late SetWalkScheduleModel _model;
+  bool _isLoadingRecommendations = false;
+  List<String> _recommendedWalkerUUIDs = [];
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
   int? selectedAddressId;
@@ -59,9 +62,100 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
     super.dispose();
   }
 
-  @override
+
+  Future<void> _navigateToFindDogWalker({
+    required DateTime date,
+    required DateTime time,
+    required String addressId,
+    required String petId,
+    required int walkDuration,
+    required String instructions,
+  }) async {
+    print('INICIANDO _navigateToFindDogWalker');
+    print('Fecha: $date');
+    print('Hora: $time');
+    print('Address ID: $addressId');
+    print('Pet ID: $petId');
+    print('Duracion: $walkDuration min');
+    print('Instrucciones: $instructions');
+
+    // Mostrar que estamos cargando recomendaciones
+    setState(() {
+      _isLoadingRecommendations = true;
+    });
+    print('Estado: _isLoadingRecommendations = true');
+
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) {
+        print('Usuario autenticado: ${user.id}');
+        print('Obteniendo recomendaciones...');
+        
+        _recommendedWalkerUUIDs =
+            await RecommendationService.getTop3RecommendedWalkers(user.id);
+        
+        print('Recomendaciones obtenidas exitosamente');
+        print('UUIDs recomendados: $_recommendedWalkerUUIDs');
+        print('Total de recomendados: ${_recommendedWalkerUUIDs.length}');
+      } else {
+        print('Usuario no autenticado, recomendaciones vacias');
+        _recommendedWalkerUUIDs = [];
+      }
+    } catch (e) {
+      print('ERROR obteniendo recomendaciones: $e');
+      print('StackTrace: ${e.toString()}');
+      _recommendedWalkerUUIDs = [];
+      print('UUIDs recomendados establecidos a lista vacia');
+    } finally {
+      // Ocultar indicador de carga
+      if (mounted) {
+        setState(() {
+          _isLoadingRecommendations = false;
+        });
+        print('Estado: _isLoadingRecommendations = false');
+      } else {
+        print('Widget no montado, no se puede actualizar estado');
+      }
+    }
+
+    // Navegación solo después de obtener los datos
+    if (mounted) {
+      print('Iniciando navegacion a FindDogWalkerWidget...');
+      print('Parametros a enviar:');
+      print('   - date: ${date.toIso8601String()}');
+      print('   - time: ${time.toIso8601String()}');
+      print('   - addressId: $addressId');
+      print('   - petId: $petId');
+      print('   - walkDuration: $walkDuration');
+      print('   - instructions: $instructions');
+      print('   - recommendedWalkerUUIDs: ${_recommendedWalkerUUIDs.join(',')}');
+      print('   - Total UUIDs: ${_recommendedWalkerUUIDs.length}');
+      
+      context.pushNamed(
+        FindDogWalkerWidget.routeName,
+        queryParameters: {
+          'date': date.toIso8601String(),
+          'time': time.toIso8601String(),
+          'addressId': addressId,
+          'petId': petId,
+          'walkDuration': walkDuration.toString(),
+          'instructions': instructions,
+          'recommendedWalkerUUIDs': _recommendedWalkerUUIDs.join(','),
+        },
+      );
+      print('Navegacion completada');
+    } else {
+      print('Widget no montado, navegacion cancelada');
+    }
+    
+    print('FINALIZANDO _navigateToFindDogWalker');
+  }
+  
+   @override
   Widget build(BuildContext context) {
     final isPremium = context.watch<SubscriptionProvider>().isPremium;
+    String serializedUUIDs = _recommendedWalkerUUIDs.join(',');
+
 
     return GestureDetector(
       onTap: () {
@@ -90,8 +184,8 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                         height: MediaQuery.sizeOf(context).height * 0.1,
                         decoration: BoxDecoration(
                           color: FlutterFlowTheme.of(context).secondary,
-                          boxShadow: [
-                            const BoxShadow(
+                          boxShadow: const [
+                            BoxShadow(
                               blurRadius: 4.0,
                               color: Color(0xFF162C43),
                               offset: Offset(
@@ -185,7 +279,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                   Align(
                                     alignment: const AlignmentDirectional(-1.0, 0.0),
                                     child: AutoSizeText(
-                                      'Escoge la fecha',
+                                      'Escoge la fecha y hora del paseo',
                                       maxLines: 1,
                                       minFontSize: 11.0,
                                       style: FlutterFlowTheme.of(context)
@@ -224,6 +318,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                           initialDate: getCurrentTimestamp,
                                           firstDate: getCurrentTimestamp,
                                           lastDate: DateTime(2050),
+                                          locale: const Locale('es', 'ES'),
                                           builder: (context, child) {
                                             return wrapInMaterialDatePickerTheme(
                                               context,
@@ -358,8 +453,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                     ),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 18.0, 0.0, 0.0),
+                                    padding: const EdgeInsetsDirectional.fromSTEB(0.0, 18.0, 0.0, 0.0),
                                     child: InkWell(
                                       splashColor: Colors.transparent,
                                       focusColor: Colors.transparent,
@@ -367,122 +461,118 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                       highlightColor: Colors.transparent,
                                       onTap: () async {
                                         await showModalBottomSheet<bool>(
-                                            context: context,
-                                            builder: (context) {
-                                              final _datePicked2CupertinoTheme =
-                                                  CupertinoTheme.of(context);
-                                              return Container(
-                                                height: MediaQuery.of(context)
-                                                        .size
-                                                        .height /
-                                                    3,
-                                                width: MediaQuery.of(context)
-                                                    .size
-                                                    .width,
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .alternate,
-                                                child: CupertinoTheme(
-                                                  data:
-                                                      _datePicked2CupertinoTheme
-                                                          .copyWith(
-                                                    textTheme:
-                                                        _datePicked2CupertinoTheme
-                                                            .textTheme
-                                                            .copyWith(
-                                                      dateTimePickerTextStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .headlineMedium
-                                                              .override(
-                                                                font:
-                                                                    GoogleFonts
-                                                                        .lexend(
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .headlineMedium
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .headlineMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                                color: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .primaryText,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .headlineMedium
-                                                                    .fontWeight,
-                                                                fontStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .headlineMedium
-                                                                    .fontStyle,
-                                                              ),
+                                          context: context,
+                                          builder: (context) {
+                                            final _datePicked2CupertinoTheme = CupertinoTheme.of(context);
+                                            DateTime now = DateTime.now();
+                                            DateTime today = DateTime(now.year, now.month, now.day);
+                                            
+                                            DateTime referenceDate = _model.datePicked1 ?? today;
+                                            bool isToday = referenceDate.year == now.year && 
+                                                          referenceDate.month == now.month && 
+                                                          referenceDate.day == now.day;
+                                            
+                                            DateTime selectedTime = _model.datePicked2 ?? now;
+                                            DateTime minimumDate = isToday ? now : today;
+                                            
+                                            if (selectedTime.isBefore(minimumDate)) {
+                                              selectedTime = minimumDate;
+                                            }
+
+                                            return Container(
+                                              height: MediaQuery.of(context).size.height / 3 + 60,
+                                              width: MediaQuery.of(context).size.width,
+                                              color: FlutterFlowTheme.of(context).alternate,
+                                              child: Column(
+                                                children: [
+                                                  Container(
+                                                    width: double.infinity,
+                                                    padding: const EdgeInsetsDirectional.fromSTEB(20, 10, 20, 10),
+                                                    child: ElevatedButton(
+                                                      onPressed: () {
+                                                        Navigator.pop(context);
+                                                        setState(() {
+                                                          _model.datePicked2 = selectedTime;
+                                                        });
+                                                      },
+                                                      style: ElevatedButton.styleFrom(
+                                                        backgroundColor: FlutterFlowTheme.of(context).primary,
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius: BorderRadius.circular(20),
+                                                        ),
+                                                        padding: EdgeInsets.symmetric(vertical: 12),
+                                                      ),
+                                                      child: Text(
+                                                        'Aceptar',
+                                                        style: GoogleFonts.lexend(
+                                                          color: Colors.white,
+                                                          fontSize: 18,
+                                                          fontWeight: FontWeight.w600,
+                                                        ),
+                                                      ),
                                                     ),
                                                   ),
-                                                  child: CupertinoDatePicker(
-                                                    mode:
-                                                        CupertinoDatePickerMode
-                                                            .time,
-                                                    minimumDate: DateTime(1900),
-                                                    initialDateTime:
-                                                        getCurrentTimestamp,
-                                                    maximumDate: DateTime(2050),
-                                                    backgroundColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .alternate,
-                                                    use24hFormat: false,
-                                                    onDateTimeChanged:
-                                                        (newDateTime) =>
-                                                            safeSetState(() {
-                                                      _model.datePicked2 =
-                                                          newDateTime;
-                                                    }),
+                                                  // Selector de hora
+                                                  Expanded(
+                                                    child: CupertinoTheme(
+                                                      data: _datePicked2CupertinoTheme.copyWith(
+                                                        textTheme: _datePicked2CupertinoTheme.textTheme.copyWith(
+                                                          dateTimePickerTextStyle:
+                                                              FlutterFlowTheme.of(context).headlineMedium.override(
+                                                                    font: GoogleFonts.lexend(
+                                                                      fontWeight: FlutterFlowTheme.of(context)
+                                                                          .headlineMedium
+                                                                          .fontWeight,
+                                                                      fontStyle: FlutterFlowTheme.of(context)
+                                                                          .headlineMedium
+                                                                          .fontStyle,
+                                                                    ),
+                                                                    color: FlutterFlowTheme.of(context).primaryText,
+                                                                    letterSpacing: 0.0,
+                                                                  ),
+                                                        ),
+                                                      ),
+                                                      child: CupertinoDatePicker(
+                                                        mode: CupertinoDatePickerMode.time,
+                                                        minimumDate: minimumDate,
+                                                        initialDateTime: selectedTime,
+                                                        maximumDate: DateTime(2050),
+                                                        backgroundColor: FlutterFlowTheme.of(context).alternate,
+                                                        use24hFormat: false,
+                                                        onDateTimeChanged: (newDateTime) {
+                                                          selectedTime = newDateTime;
+                                                        },
+                                                      ),
+                                                    ),
                                                   ),
-                                                ),
-                                              );
-                                            });
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        );
                                       },
                                       child: Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
-                                        height:
-                                            MediaQuery.sizeOf(context).height *
-                                                0.05,
+                                        width: MediaQuery.sizeOf(context).width * 1.0,
+                                        height: MediaQuery.sizeOf(context).height * 0.05,
                                         decoration: BoxDecoration(
-                                          color: FlutterFlowTheme.of(context)
-                                              .alternate,
-                                          borderRadius:
-                                              BorderRadius.circular(20.0),
+                                          color: FlutterFlowTheme.of(context).alternate,
+                                          borderRadius: BorderRadius.circular(20.0),
                                         ),
                                         child: Padding(
-                                          padding:
-                                              const EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 1.0, 0.0, 0.0),
+                                          padding: const EdgeInsetsDirectional.fromSTEB(0.0, 1.0, 0.0, 0.0),
                                           child: Row(
                                             mainAxisSize: MainAxisSize.max,
                                             children: [
                                               Padding(
-                                                padding: const EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        8.0, 0.0, 0.0, 0.0),
+                                                padding: const EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 0.0, 0.0),
                                                 child: Icon(
                                                   Icons.timer_sharp,
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primary,
+                                                  color: FlutterFlowTheme.of(context).primary,
                                                   size: 25.0,
                                                 ),
                                               ),
                                               Padding(
-                                                padding: const EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        7.0, 0.0, 0.0, 0.0),
+                                                padding: const EdgeInsetsDirectional.fromSTEB(7.0, 0.0, 0.0, 0.0),
                                                 child: AutoSizeText(
                                                   _model.datePicked2 != null
                                                       ? dateTimeFormat('Hm', _model.datePicked2)
@@ -490,25 +580,14 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                   textAlign: TextAlign.start,
                                                   maxLines: 1,
                                                   minFontSize: 12.0,
-                                                  style: FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .override(
+                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                         font: GoogleFonts.lexend(
                                                           fontWeight: FlutterFlowTheme.of(context)
                                                               .bodyMedium
                                                               .fontWeight,
-                                                          fontStyle: FlutterFlowTheme.of(context)
-                                                              .bodyMedium
-                                                              .fontStyle,
                                                         ),
                                                         fontSize: 16.0,
                                                         letterSpacing: 0.0,
-                                                        fontWeight: FlutterFlowTheme.of(context)
-                                                            .bodyMedium
-                                                            .fontWeight,
-                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                            .bodyMedium
-                                                            .fontStyle,
                                                       ),
                                                 ),
                                               ),
@@ -518,8 +597,6 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                       ),
                                     ),
                                   ),
-                                  
-
                                   Align(
                                     alignment: const AlignmentDirectional(-1.0, 0.0),
                                     child: Padding(
@@ -772,21 +849,16 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
         
                                   // ListView Dinamico de las Direcciones
                                   Padding(
-                                    padding: const EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 10.0, 0.0, 0.0),
+                                    padding: const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
                                     child: Container(
-                                      width: MediaQuery.sizeOf(context).width *
-                                          1.0,
+                                      width: MediaQuery.sizeOf(context).width * 1.0,
                                       height: 110.0,
                                       decoration: const BoxDecoration(),
-                                      
-                                      child: StreamBuilder<List<AddressesRow>>(
-                                        stream: _model.addressesListViewSupabaseStream ??=
-                                            SupaFlow.client
-                                                .from("addresses")
-                                                .stream(primaryKey: ['id'])
-                                                .eqOrNull('uuid', currentUserUid)
-                                                .map((list) => list.map((item) => AddressesRow(item)).toList()),
+                                      child: StreamBuilder<List<Map<String, dynamic>>>(
+                                        stream: SupaFlow.client
+                                            .from("addresses")
+                                            .stream(primaryKey: ['id'])
+                                            .eq('uuid', currentUserUid),
                                         builder: (context, snapshot) {
                                           if (!snapshot.hasData) {
                                             return Center(
@@ -801,37 +873,38 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                               ),
                                             );
                                           }
-                                          List<AddressesRow> addressesList = snapshot.data!;
-
+                                          final addressList = snapshot.data!;
                                           return ListView.separated(
                                             padding: EdgeInsets.zero,
                                             primary: false,
                                             shrinkWrap: true,
                                             scrollDirection: Axis.horizontal,
-                                            itemCount: addressesList.length + 1, // +1 para el botón extra
+                                            itemCount: addressList.length + 1, 
                                             separatorBuilder: (_, __) => const SizedBox(width: 10.0),
                                             itemBuilder: (context, index) {
-                                              if (index < addressesList.length) {
-                                                final address = addressesList[index];
+                                              if (index < addressList.length) {
+                                                final address = addressList[index];
                                                 return GestureDetector(
                                                   onTap: () {
                                                     setState(() {
-                                                      if (selectedAddressId == address.id) {
+                                                      if (selectedAddressId == address['id']) {
                                                         selectedAddressId = null; 
                                                       } else {
-                                                        selectedAddressId = address.id; 
+                                                        selectedAddressId = address['id']; 
                                                       }
                                                     });
                                                   },
+                                             
+
                                                   child: AddressCardWidget(
-                                                    key: Key('Keyil1_${address.id}'),
-                                                    alias: address.alias,
-                                                    id: address.id,
-                                                    selected: selectedAddressId == address.id,
+                                                    key: Key('AddressCard_${address['id']}'),
+                                                    alias: address['alias'],
+                                                    id: address['id'],
+                                                    selected: selectedAddressId == address['id'],
                                                   ),
                                                 );
                                               } else {
-                                                // Último elemento: botón para agregar dirección
+                                                // Último elemento
                                                 return InkWell(
                                                   splashColor: Colors.transparent,
                                                   focusColor: Colors.transparent,
@@ -841,10 +914,10 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                     context.pushNamed(
                                                         AddAddressWidget.routeName,
                                                         queryParameters: {
-                                                          'originWindow': 'addWalk',
+                                                          'originWindow': 'addWalk', 
                                                         },
-                                                      );                  
-                                                    },
+                                                      );                                                  
+                                                  },
                                                   child: Container(
                                                     width: 100.0,
                                                     height: 110.0,
@@ -860,7 +933,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                           height: 70.0,
                                                           decoration: const BoxDecoration(),
                                                           child: Icon(
-                                                            Icons.add_home_work_rounded,
+                                                            Icons.add_box,
                                                             color: FlutterFlowTheme.of(context).primary,
                                                             size: 45.0,
                                                           ),
@@ -905,9 +978,11 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                             },
                                           );
                                         },
-                                      )
+                                      ),
                                     ),
                                   ),
+
+
                                   Align(
                                     alignment: const AlignmentDirectional(-1.0, 0.0),
                                     child: Padding(
@@ -1071,122 +1146,122 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
 
 
 
-if(isPremium)
-Align(
-  alignment: const AlignmentDirectional(-1.0, 0.0),
-  child: Padding(
-    padding: const EdgeInsetsDirectional.fromSTEB(0.0, 25.0, 0.0, 0.0),
-    child: AutoSizeText(
-      'Instrucciones especiales para el paseador',
-      textAlign: TextAlign.start,
-      maxLines: 2,
-      minFontSize: 10.0,
-      style: FlutterFlowTheme.of(context)
-          .bodyMedium
-          .override(
-            font: GoogleFonts.lexend(
-              fontWeight: FontWeight.normal,
-              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-            ),
-            color: FlutterFlowTheme.of(context).accent1,
-            letterSpacing: 0.0,
-            fontWeight: FontWeight.normal,
-            fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-          ),
-    ),
-  ),
-),
+                                  if(isPremium)
+                                  Align(
+                                    alignment: const AlignmentDirectional(-1.0, 0.0),
+                                    child: Padding(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 25.0, 0.0, 0.0),
+                                      child: AutoSizeText(
+                                        'Instrucciones especiales para el paseador',
+                                        textAlign: TextAlign.start,
+                                        maxLines: 2,
+                                        minFontSize: 10.0,
+                                        style: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .override(
+                                              font: GoogleFonts.lexend(
+                                                fontWeight: FontWeight.normal,
+                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                              ),
+                                              color: FlutterFlowTheme.of(context).accent1,
+                                              letterSpacing: 0.0,
+                                              fontWeight: FontWeight.normal,
+                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                            ),
+                                      ),
+                                    ),
+                                  ),
 
-if(isPremium)
-Align(
-  alignment: const AlignmentDirectional(-1.0, 0.0),
-  child: Padding(
-    padding: const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
-    child: TextFormField(
-      controller: _model.instructionsTextController,
-      focusNode: _model.instructionsFocusNode,
-      autofocus: false,
-      textInputAction: TextInputAction.done,
-      obscureText: false,
-      decoration: InputDecoration(
-        isDense: true,
-        filled: true,
-        fillColor: FlutterFlowTheme.of(context).alternate,
-        labelText: 'Instrucciones para el paseador',
-        labelStyle: FlutterFlowTheme.of(context).bodyLarge.override(
-          font: GoogleFonts.lexend(
-            fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
-            fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
-          ),
-          letterSpacing: 0.0,
-          fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
-          fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
-          color: FlutterFlowTheme.of(context).primary
-        ),
-        alignLabelWithHint: false,
-        hintText: 'Ej. Ruta preferida, cuidados especiales, etc.',
-        hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
-          font: GoogleFonts.lexend(
-            fontWeight: FontWeight.w500,
-            fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
-          ),
-          color: FlutterFlowTheme.of(context).primary,
-          fontSize: 16,
-          letterSpacing: 0.0,
-          fontWeight: FontWeight.w500,
-          fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
-        ),
-        prefixIcon: Icon(
-          Icons.note_alt_outlined,
-          color: FlutterFlowTheme.of(context).primary,
-          size: 25,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(
-            color: Color(0x00000000),
-            width: 1,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(
-            color: Color(0x00000000),
-            width: 1,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: FlutterFlowTheme.of(context).error,
-            width: 1,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: FlutterFlowTheme.of(context).error,
-            width: 1,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-      ),
-      style: FlutterFlowTheme.of(context).bodyMedium.override(
-        font: GoogleFonts.lexend(
-          fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-        ),
-        color: FlutterFlowTheme.of(context).secondaryBackground,
-        fontSize: 16,
-        letterSpacing: 0.0,
-        fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-      ),
-      cursorColor: FlutterFlowTheme.of(context).primaryText,
-      maxLines: 4,
-      textAlign: TextAlign.start,
-    ),
-  ),
-),
+                                  if(isPremium)
+                                  Align(
+                                    alignment: const AlignmentDirectional(-1.0, 0.0),
+                                    child: Padding(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+                                      child: TextFormField(
+                                        controller: _model.instructionsTextController,
+                                        focusNode: _model.instructionsFocusNode,
+                                        autofocus: false,
+                                        textInputAction: TextInputAction.done,
+                                        obscureText: false,
+                                        decoration: InputDecoration(
+                                          isDense: true,
+                                          filled: true,
+                                          fillColor: FlutterFlowTheme.of(context).alternate,
+                                          labelText: 'Instrucciones para el paseador',
+                                          labelStyle: FlutterFlowTheme.of(context).bodyLarge.override(
+                                            font: GoogleFonts.lexend(
+                                              fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+                                              fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                                            ),
+                                            letterSpacing: 0.0,
+                                            fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+                                            fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+                                            color: FlutterFlowTheme.of(context).primary
+                                          ),
+                                          alignLabelWithHint: false,
+                                          hintText: 'Ej. Ruta preferida, cuidados especiales, etc.',
+                                          hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                                            font: GoogleFonts.lexend(
+                                              fontWeight: FontWeight.w500,
+                                              fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
+                                            ),
+                                            color: FlutterFlowTheme.of(context).primary,
+                                            fontSize: 16,
+                                            letterSpacing: 0.0,
+                                            fontWeight: FontWeight.w500,
+                                            fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
+                                          ),
+                                          prefixIcon: Icon(
+                                            Icons.note_alt_outlined,
+                                            color: FlutterFlowTheme.of(context).primary,
+                                            size: 25,
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                              color: Color(0x00000000),
+                                              width: 1,
+                                            ),
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                              color: Color(0x00000000),
+                                              width: 1,
+                                            ),
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          errorBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                              color: FlutterFlowTheme.of(context).error,
+                                              width: 1,
+                                            ),
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          focusedErrorBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                              color: FlutterFlowTheme.of(context).error,
+                                              width: 1,
+                                            ),
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                        ),
+                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                          font: GoogleFonts.lexend(
+                                            fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                            fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                          ),
+                                          color: FlutterFlowTheme.of(context).secondaryBackground,
+                                          fontSize: 16,
+                                          letterSpacing: 0.0,
+                                          fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                        ),
+                                        cursorColor: FlutterFlowTheme.of(context).primaryText,
+                                        maxLines: 4,
+                                        textAlign: TextAlign.start,
+                                      ),
+                                    ),
+                                  ),
 
 
 
@@ -1206,17 +1281,35 @@ Align(
                                             finalWalkDurationInMinutes = 30;
                                         }
 
-                                        context.pushNamed(
-                                          FindDogWalkerWidget.routeName,
-                                            queryParameters: {
-                                              'date': _model.datePicked1?.toIso8601String(),
-                                              'time': _model.datePicked2?.toIso8601String(),
-                                              'addressId': selectedAddressId?.toString(),
-                                              'petId': selectedPetId?.toString(),
-                                              'walkDuration': finalWalkDurationInMinutes.toString(),
-                                              'instructions': _model.instructionsTextController?.text ?? ''
-                                            },
-                                          );
+                                        if(_model.datePicked1 == null || _model.datePicked2 == null || selectedPetId == null || selectedAddressId == null){
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(
+                                                content: Text('Por favor, ingresa los datos faltantes'),
+                                            ));
+
+                                            return;
+                                        }
+
+                                        // context.pushNamed(
+                                        //   FindDogWalkerWidget.routeName,
+                                        //     queryParameters: {
+                                        //       'date': _model.datePicked1?.toIso8601String(),
+                                        //       'time': _model.datePicked2?.toIso8601String(),
+                                        //       'addressId': selectedAddressId?.toString(),
+                                        //       'petId': selectedPetId?.toString(),
+                                        //       'walkDuration': finalWalkDurationInMinutes.toString(),
+                                        //       'instructions': _model.instructionsTextController?.text ?? ''
+                                        //     },
+                                        //   );
+
+                                        await _navigateToFindDogWalker(
+                                          date: _model.datePicked1!,
+                                          time: _model.datePicked2!,
+                                          addressId: selectedAddressId.toString(),
+                                          petId: selectedPetId.toString(),
+                                          walkDuration: finalWalkDurationInMinutes,
+                                          instructions: _model.instructionsTextController?.text ?? '',
+                                        );
                                       },
                                       text: 'Buscar paseador',
                                       options: FFButtonOptions(

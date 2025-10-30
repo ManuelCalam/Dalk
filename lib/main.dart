@@ -22,8 +22,7 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 
 // GlobalKey para el ScaffoldMessenger 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
-late final AppLinks _appLinks; // ⭐️ Inicializamos globalmente
-// late final AppLinks _appLinks = AppLinks(); // Ya que AppLinks no es const, lo hacemos late
+late final AppLinks _appLinks; 
 
 // HANDLER TOP-LEVEL SIMPLE (REQUERIDO)
 @pragma('vm:entry-point')
@@ -126,8 +125,9 @@ class _MyAppState extends State<MyApp> {
         // Lógica de Carga/Limpieza de Caché del UserProvider
         if (user.uid != null && !_isCacheLoaded) {
               context.read<UserProvider>().loadUser();
-              _isCacheLoaded = true; // Marca como cargado
-        } else if (user.uid == null) {
+              _isCacheLoaded = true;
+        }
+         else if (user.uid == null) {
             // Si el usuario no está logueado, limpiamos el provider por si acaso
             context.read<UserProvider>().clearUser();
             _isCacheLoaded = false;
@@ -154,14 +154,12 @@ class _MyAppState extends State<MyApp> {
     // Escucha deeplinks (por ejemplo dalkpaseos://auth#access_token=...)
     _linkSub = _appLinks.uriLinkStream.listen((uri) async {
       if (uri == null) return;
-      print("🔗 Deep link recibido: $uri");
+      print("Deep link recibido: $uri");
 
-      // Supabase usa el FRAGMENTO (#...) para devolver los tokens y el tipo
       if (uri.fragment.isNotEmpty) {
         final params = Uri.splitQueryString(uri.fragment);
         final type = params['type'];
 
-        // Caso: Si el link es de recuperación, navegamos manualmente.
         if (type == 'recovery') {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _router.go('/changePassword');
@@ -187,7 +185,7 @@ class _MyAppState extends State<MyApp> {
 
       if (type == 'recovery') {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          print("🔐 Redirigiendo a cambio de contraseña desde URI inicial");
+          print("Redirigiendo a cambio de contraseña desde URI inicial");
           _router.go('/changePassword');
         });
       }

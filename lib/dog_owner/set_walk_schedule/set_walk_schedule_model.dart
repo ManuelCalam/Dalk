@@ -1,4 +1,3 @@
-import '/backend/supabase/supabase.dart';
 import '/cards/address_card/address_card_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -11,7 +10,6 @@ class SetWalkScheduleModel extends FlutterFlowModel<SetWalkScheduleWidget> {
 
   DateTime? datePicked1;
   DateTime? datePicked2;
-  Stream<List<AddressesRow>>? addressesListViewSupabaseStream;
   String selectedWalkDuration = '30 min';
   int customWalkDuration = 30;
   final TextEditingController customDurationTextController = TextEditingController();

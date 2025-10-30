@@ -2,10 +2,8 @@ import 'dart:convert';
 import 'package:dalk/backend/supabase/database/database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
-// Asegúrate de tener el paquete 'http' en tu pubspec.yaml
 import 'package:http/http.dart' as http; 
 
-// URL de tu Edge Function (Asegúrate de reemplazar 'bsactypehgxluqyaymui' con tu propio ID de proyecto Supabase)
 const String SUPABASE_EDGE_FUNCTION_URL = 'https://bsactypehgxluqyaymui.supabase.co/functions/v1/buy-tracker-intent';
 
 /// Maneja la llamada a la Edge Function, la inicialización del Payment Sheet

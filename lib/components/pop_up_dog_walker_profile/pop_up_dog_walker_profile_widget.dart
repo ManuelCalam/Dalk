@@ -178,18 +178,7 @@ class _PopUpDogWalkerProfileWidgetState
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 children: [
-                  FlutterFlowIconButton(
-                    borderRadius: 8,
-                    buttonSize: 40,
-                    icon: Icon(
-                      Icons.chat,
-                      color: FlutterFlowTheme.of(context).primary,
-                      size: 28,
-                    ),
-                    onPressed: () {
-                      print('IconButton pressed ...');
-                    },
-                  ),
+                  
                   Expanded(
                     child: Align(
                       alignment: const AlignmentDirectional(1, 0),
@@ -237,7 +226,7 @@ class _PopUpDogWalkerProfileWidgetState
                                 shape: BoxShape.circle,
                               ),
                               child: Image.network(
-                                walkerPhotoUrl?? 'https://picsum.photos/seed/854/600',
+                                walkerPhotoUrl?? 'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/public/profile_pics/user.png',
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -323,7 +312,7 @@ class _PopUpDogWalkerProfileWidgetState
                                         child: Align(
                                           alignment: const AlignmentDirectional(0, 1),
                                           child: Icon(
-                                            Icons.star_border,
+                                            Icons.star_rounded,
                                             color: FlutterFlowTheme.of(context)
                                                 .primary,
                                             size: 42,
@@ -334,7 +323,7 @@ class _PopUpDogWalkerProfileWidgetState
                                     Align(
                                       alignment: const AlignmentDirectional(0, -1),
                                       child: AutoSizeText(
-                                        walkerAvgRating.toString()?? '0',
+                                        walkerAvgRating.toString(),
                                         textAlign: TextAlign.center,
                                         maxLines: 1,
                                         style: FlutterFlowTheme.of(context)
@@ -734,7 +723,7 @@ class _PopUpDogWalkerProfileWidgetState
                                 rating: review['rating'] ?? 0,
                                 comment: review['comments'] ?? '',
                                 date: DateTime.parse(review['created_at']),
-                                imageUrl: review['reviewer_photo'] ?? 'https://images.unsplash.com/photo-1604004555489-723a93d6ce74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080',
+                                imageUrl: review['reviewer_photo'] ?? 'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/public/profile_pics/user.png',
                               ),
                             );
                           },

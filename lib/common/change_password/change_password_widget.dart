@@ -43,7 +43,7 @@ class _ChangePasswordWidgetState extends State<ChangePasswordWidget> {
       final session = data.session;
 
       if (event == AuthChangeEvent.passwordRecovery && session != null) {
-        print("✅ Recuperación detectada con accessToken: ${session.accessToken}");
+        print(" Recuperación detectada con accessToken: ${session.accessToken}");
 
         // Ya tienes sesión, ahora sí puedes cambiar contraseña
         setState(() {
@@ -71,13 +71,13 @@ class _ChangePasswordWidgetState extends State<ChangePasswordWidget> {
 
       if (accessToken != null && refreshToken != null) {
         Supabase.instance.client.auth.setSession(refreshToken).then((res) {
-          print("✅ Sesión restaurada desde fragmento");
+          print(" Sesión restaurada desde fragmento");
         }).catchError((e) {
-          print("❌ Error al restaurar sesión: $e");
+          print("Error al restaurar sesión: $e");
         });
       }
     } else {
-      print("⚠️ No se encontró fragmento en la URL");
+      print("No se encontró fragmento en la URL");
     }
   }
 
@@ -548,14 +548,14 @@ class _ChangePasswordWidgetState extends State<ChangePasswordWidget> {
                                                 );
 
                                                 if (res.user != null) {
-                                                  // ✅ cerrar sesión para que tenga que iniciar con la nueva contraseña
+                                                  //  cerrar sesión para que tenga que iniciar con la nueva contraseña
                                                   await Supabase.instance.client.auth.signOut();
 
                                                   ScaffoldMessenger.of(context).showSnackBar(
                                                     SnackBar(content: Text('Contraseña actualizada, inicia sesión de nuevo')),
                                                   );
 
-                                                  // ✅ redirigir al login
+                                                  //  redirigir al login
                                                   context.go('/login');
                                                 } else {
                                                   ScaffoldMessenger.of(context).showSnackBar(

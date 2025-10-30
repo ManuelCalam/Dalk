@@ -82,11 +82,9 @@ class ScheduledWalkContainerWidgetState
     _model.textController ??= TextEditingController(text: '[username]');
     _model.textFieldFocusNode ??= FocusNode();
 
-    // Timer
   }
 
   // --- LÓGICA DEL CICLO DE VIDA (RESUMED/PAUSED) ---
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (widget.userType != 'Paseador') return;
@@ -122,7 +120,7 @@ class ScheduledWalkContainerWidgetState
         .toList();
   }
 
-  // Lógica centralizada para enviar IDs de rastreo al servicio de fondo
+  // Lógica  para enviar IDs de rastreo al servicio de fondo
   Future<void> _setTrackingIds({required bool includeCurrentWalk}) async {
     final allActiveWalkIds = await _getActiveWalkIds();
     
@@ -141,7 +139,7 @@ class ScheduledWalkContainerWidgetState
     }
   }
   
-  // 1. Helper para configurar e iniciar el servicio si no está corriendo.
+  // Helper para configurar e iniciar el servicio si no está corriendo.
   Future<void> _ensureServiceIsRunning() async { 
     final service = FlutterBackgroundService();
 
@@ -168,8 +166,8 @@ class ScheduledWalkContainerWidgetState
 
 
   void _startSendingLocation() async {
-    final hasPermission = await _handleLocationPermission();
-    if (!hasPermission) return;
+    // final hasPermission = await _handleLocationPermission();
+    // if (!hasPermission) return;
 
     await _setTrackingIds(includeCurrentWalk: false); 
     
@@ -205,13 +203,11 @@ class ScheduledWalkContainerWidgetState
       // Obtener el controlador del mapa
       final controller = await _model.googleMapsController.future;
 
-      // Check de mounted antes de usar el ValueNotifier
       if (!mounted) {
           timer.cancel();
           return;
       }
       
-      // Actualizar solo el ValueNotifier de marcadores
       final newWalkerMarker = Marker(
         markerId: const MarkerId("walker"),
         position: currentLatLng,
@@ -229,25 +225,25 @@ class ScheduledWalkContainerWidgetState
     });
   }
 
-Future<bool> _handleLocationPermission() async {
-  LocationPermission permission = await Geolocator.checkPermission();
+// Future<bool> _handleLocationPermission() async {
+//   LocationPermission permission = await Geolocator.checkPermission();
 
-  if (permission == LocationPermission.denied) {
-    permission = await Geolocator.requestPermission(); 
-    if (permission == LocationPermission.denied) {
-      return false;
-    }
-  }
+//   if (permission == LocationPermission.denied) {
+//     permission = await Geolocator.requestPermission(); 
+//     if (permission == LocationPermission.denied) {
+//       return false;
+//     }
+//   }
 
-  if (permission == LocationPermission.deniedForever) {
-    return false;
-  }
+//   if (permission == LocationPermission.deniedForever) {
+//     return false;
+//   }
 
-  return true;
-}
+//   return true;
+// }
 
 
-  // --- NUEVA LÓGICA DE RASTREO POR UUID DEL DISPOSITIVO ---
+  // --- LÓGICA DE RASTREO POR UUID DEL DISPOSITIVO ---
 
   // 1. Obtener TODOS los UUIDs de rastreador del Dueño
   Future<List<String>> _fetchAllTrackerIds() async {
@@ -278,9 +274,8 @@ Future<bool> _handleLocationPermission() async {
     }
   }
 
-  // 2. Escuchar la ubicación de CADA rastreador (Tracker UUID) en Firebase RTDB
+  // Escuchar la ubicación de CADA rastreador (Tracker UUID) en Firebase RTDB
   void _listenToTrackerLocation() async {
-    // 1. Obtener TODOS los UUIDs
     final trackerIds = await _fetchAllTrackerIds();
 
     if (trackerIds.isEmpty) {
@@ -288,33 +283,28 @@ Future<bool> _handleLocationPermission() async {
       return;
     }
 
-    // Limpiar suscripciones anteriores
     _trackerSubscriptions.forEach((sub) => sub.cancel());
     _trackerSubscriptions.clear();
 
     // Crear una suscripción para CADA rastreador
     for (final trackerId in trackerIds) {
-      // Ruta de Firebase: dog_locations/UUID_DEL_RASTREADOR
       final ref = FirebaseDatabase.instance.ref('dog_locations/$trackerId');
 
       final subscription = ref.onValue.listen((event) async {
         if (!mounted) return;
 
         final data = event.snapshot.value as Map?;
-        // La estructura de datos esperada es {lat: ..., lng: ...}
         if (data != null && data.containsKey('lat') && data.containsKey('lng')) {
           final lat = (data['lat'] as num).toDouble();
           final lng = (data['lng'] as num).toDouble();
           final position = LatLng(lat, lng);
 
-          // Usamos el UUID como ID del marcador para poder actualizarlo
           final markerId = "tracker_$trackerId"; 
 
-          // Marcador del Rastreador (Azul para diferenciarlo del Paseador)
           final newTrackerMarker = Marker(
             markerId: MarkerId(markerId),
             position: position,
-            infoWindow: InfoWindow(title: 'Rastreador: ${trackerId.substring(0, 8)}...'), // Mostrar parte del UUID
+            infoWindow: InfoWindow(title: 'Rastreador: ${trackerId.substring(0, 8)}...'),
             icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure), 
           );
 
@@ -343,7 +333,7 @@ Future<bool> _handleLocationPermission() async {
     }
   }
 
-  // --- FIN NUEVA LÓGICA DE RASTREO ---
+  // --- FIN LÓGICA DE RASTREO ---
 
 
   // Método aplicado para el dueño para obtener la ubicación del paseador
@@ -351,7 +341,6 @@ Future<bool> _handleLocationPermission() async {
     final ref = FirebaseDatabase.instance.ref('walk_locations/${widget.walkId}');
 
     _locationSubscription = ref.onValue.listen((event) async {
-      // Comprobar mounted y cancelar la suscripción si el widget se ha ido
       if (!mounted) {
         _locationSubscription?.cancel();
         return;

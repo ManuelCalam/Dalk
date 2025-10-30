@@ -324,8 +324,8 @@ class _LoginWidgetState extends State<LoginWidget> {
                                   focusNode: FocusNode(skipTraversal: true),
                                   child: Icon(
                                     _model.passwordInputVisibility
-                                        ? Icons.visibility_outlined
-                                        : Icons.visibility_off_outlined,
+                                        ? Icons.visibility_off_outlined
+                                        : Icons.visibility_outlined,
                                     color: FlutterFlowTheme.of(context).primary,
                                     size: 23.0,
                                   ),
@@ -460,11 +460,23 @@ class _LoginWidgetState extends State<LoginWidget> {
                                 // Redirige según el tipo de usuario
                                 context.go('/');
                                 
+                              } on AuthException catch (e) {
+                                // Manejo específico de credenciales inválidas
+                                if (e.message == 'Invalid login credentials') {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Email o contraseña incorrectos. Intenta nuevamente.'),
+                                    ),
+                                  );
+                                } else {
+                                  // Otros errores de autenticación
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Error de autenticación: ${e.message}')),
+                                  );
+                                }
                               } catch (e) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Error al iniciar sesión: $e'),
-                                  ),
+                                  SnackBar(content: Text('Error inesperado: $e')),
                                 );
                               }
                             },
@@ -585,57 +597,37 @@ class _LoginWidgetState extends State<LoginWidget> {
                                           size: 35,
                                         ),
                                         onPressed: () async {
-  // try {
-  //   GoRouter.of(context).prepareAuthEvent();
+                                          try {
+                                            GoRouter.of(context).prepareAuthEvent();
 
-  //   var user = Supabase.instance.client.auth.currentUser;
+                                            await authManager.signInWithGoogle(context);
 
-  //   // Si no hay usuario actual, inicia sesión con Google
-  //   if (user == null) {
-  //     await authManager.signInWithGoogle(context);
-  //     user = Supabase.instance.client.auth.currentUser;
-  //   }
+                                            final user = Supabase.instance.client.auth.currentUser;
+                                            if (user == null) {
+                                              return;
+                                            }
 
-  //   // Si sigue siendo nulo, salimos
-  //   if (user == null) return;
+                                            final userProfile = await SupaFlow.client
+                                                .from('users')
+                                                .select('usertype')
+                                                .eq('uuid', user.id)
+                                                .maybeSingle();
 
-  //   // Buscar si el usuario ya existe en la tabla 'users'
-  //   final userProfile = await SupaFlow.client
-  //       .from('users')
-  //       .select('usertype')
-  //       .eq('uuid', user.id)
-  //       .maybeSingle();
+                                            // if (!context.mounted) return;
+                                            if (userProfile == null) {
+                                              print('🟠 Usuario completamente nuevo → Crear registro en tabla users');
+                                              await SupaFlow.client.from('users').insert({
+                                                'uuid': user.id,
+                                                'email': user.email,
+                                                'usertype': 'Indefinido',
+                                              });
+                                              return;
+                                            }
 
-  //   // Extraer el tipo de usuario (si existe)
-  //   final userType = userProfile != null ? userProfile['usertype'] : null;
-
-  //   if (!context.mounted) return;
-
-  //   // Lógica de flujo
-  //   if (userProfile == null || userType == null) {
-  //     // 🆕 Usuario sin tipo definido → redirigir a ChooseUserType
-  //     context.pushNamedAuth(
-  //       ChooseUserTypeWidget.routeName,
-  //       context.mounted,
-  //     );
-  //   } else {
-  //     // ✅ Usuario ya registrado con tipo → redirigir al home
-  //     context.go('/');
-  //   }
-  // } catch (e) {
-  //   print('Error en autenticación: $e');
-  //   if (context.mounted) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text('Error al iniciar sesión: $e')),
-  //     );
-  //   }
-  // }
-
-  ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(content: Text('Está en fix')),
-                                                );
-}
-
+                                            context.go('/');
+                                          } catch (e) {
+                                          }
+                                        }
 
                                       ),
                                     ),
@@ -734,7 +726,11 @@ class _LoginWidgetState extends State<LoginWidget> {
                                       highlightColor: Colors.transparent,
                                       onTap: () async {
                                         context.pushNamed(
-                                            SingInDogWalkerWidget.routeName);
+                                          SingInDogWalkerWidget.routeName,
+                                          queryParameters: {
+                                            'registerMethod': 'email',
+                                          },
+                                        );
                                       },
                                       child: AutoSizeText(
                                         'Registrate como Paseador',

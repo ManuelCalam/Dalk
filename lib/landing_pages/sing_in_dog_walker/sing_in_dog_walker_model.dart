@@ -1,17 +1,9 @@
 import '/components/go_back_container/go_back_container_widget.dart';
-import '/flutter_flow/flutter_flow_drop_down.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
-import 'dart:ui';
 import 'sing_in_dog_walker_widget.dart' show SingInDogWalkerWidget;
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
+
 
 class SingInDogWalkerModel extends FlutterFlowModel<SingInDogWalkerWidget> {
   ///  State fields for stateful widgets in this page.
@@ -24,15 +16,6 @@ class SingInDogWalkerModel extends FlutterFlowModel<SingInDogWalkerWidget> {
   TextEditingController? nameDogWalkerInputTextController;
   String? Function(BuildContext, String?)?
       nameDogWalkerInputTextControllerValidator;
-  String? _nameDogWalkerInputTextControllerValidator(
-      BuildContext context, String? val) {
-    if (val == null || val.isEmpty) {
-      return 'Teléfono is required';
-    }
-
-    return null;
-  }
-
   // State field(s) for EmailDogWalker_Input widget.
   FocusNode? emailDogWalkerInputFocusNode;
   TextEditingController? emailDogWalkerInputTextController;
@@ -43,15 +26,6 @@ class SingInDogWalkerModel extends FlutterFlowModel<SingInDogWalkerWidget> {
   TextEditingController? phoneDogWalkerInputTextController;
   String? Function(BuildContext, String?)?
       phoneDogWalkerInputTextControllerValidator;
-  String? _phoneDogWalkerInputTextControllerValidator(
-      BuildContext context, String? val) {
-    if (val == null || val.isEmpty) {
-      return 'Ingresa un numero de telefono';
-    }
-
-    return null;
-  }
-
   DateTime? datePicked;
   // State field(s) for GenderDogWalker_Menu widget.
   String? genderDogWalkerMenuValue;
@@ -61,71 +35,28 @@ class SingInDogWalkerModel extends FlutterFlowModel<SingInDogWalkerWidget> {
   TextEditingController? streetDogWalkerInputTextController;
   String? Function(BuildContext, String?)?
       streetDogWalkerInputTextControllerValidator;
-  String? _streetDogWalkerInputTextControllerValidator(
-      BuildContext context, String? val) {
-    if (val == null || val.isEmpty) {
-      return 'Calle is required';
-    }
-
-    return null;
-  }
-
-  // State field(s) for ApartamentNumDogWalker_Input widget.
-  FocusNode? apartamentNumDogWalkerInputFocusNode;
-  TextEditingController? apartamentNumDogWalkerInputTextController;
-  String? Function(BuildContext, String?)?
-      apartamentNumDogWalkerInputTextControllerValidator;
-  String? _apartamentNumDogWalkerInputTextControllerValidator(
-      BuildContext context, String? val) {
-    if (val == null || val.isEmpty) {
-      return 'Int is required';
-    }
-
-    return null;
-  }
-
+  // State field(s) for interiorNumberDogWalker_Input widget.
+  FocusNode? interiorNumberDogWalkerInputFocusNode;
+  TextEditingController? interiorNumberDogWalkerInputTextController;
+  String? Function(BuildContext, String?)?interiorNumberDogWalkerInputTextControllerValidator;
   // State field(s) for ZipCodeDogWalker_Input widget.
   FocusNode? zipCodeDogWalkerInputFocusNode;
   TextEditingController? zipCodeDogWalkerInputTextController;
-  String? Function(BuildContext, String?)?
-      zipCodeDogWalkerInputTextControllerValidator;
-  String? _zipCodeDogWalkerInputTextControllerValidator(
-      BuildContext context, String? val) {
-    if (val == null || val.isEmpty) {
-      return 'Cp is required';
-    }
-
-    return null;
-  }
-
+  String? Function(BuildContext, String?)? zipCodeDogWalkerInputTextControllerValidator;
+  // State field(s) for ZipCodeDogWalker_Input widget.
+  FocusNode? exteriorNumberDogWalkerFocusNode;
+  TextEditingController? exteriorNumberDogWalkerTextController;
+  String? Function(BuildContext, String?)? exteriorNumberDogWalkerTextControllerValidator;
   // State field(s) for NeighborhoodDogWalker_Input widget.
   FocusNode? neighborhoodDogWalkerInputFocusNode;
   TextEditingController? neighborhoodDogWalkerInputTextController;
   String? Function(BuildContext, String?)?
       neighborhoodDogWalkerInputTextControllerValidator;
-  String? _neighborhoodDogWalkerInputTextControllerValidator(
-      BuildContext context, String? val) {
-    if (val == null || val.isEmpty) {
-      return 'Colonia is required';
-    }
-
-    return null;
-  }
-
   // State field(s) for CountryDogWalker_Input widget.
   FocusNode? cityDogWalkerInputFocusNode;
   TextEditingController? cityDogWalkerInputTextController;
   String? Function(BuildContext, String?)?
       cityDogWalkerInputTextControllerValidator;
-  String? _cityDogWalkerInputTextControllerValidator(
-      BuildContext context, String? val) {
-    if (val == null || val.isEmpty) {
-      return 'Ciudad is required';
-    }
-
-    return null;
-  }
-
   // State field(s) for PassDogWalker_Input widget.
   FocusNode? passDogWalkerInputFocusNode;
   TextEditingController? passDogWalkerInputTextController;
@@ -142,20 +73,6 @@ class SingInDogWalkerModel extends FlutterFlowModel<SingInDogWalkerWidget> {
   @override
   void initState(BuildContext context) {
     goBackContainerModel = createModel(context, () => GoBackContainerModel());
-    nameDogWalkerInputTextControllerValidator =
-        _nameDogWalkerInputTextControllerValidator;
-    phoneDogWalkerInputTextControllerValidator =
-        _phoneDogWalkerInputTextControllerValidator;
-    streetDogWalkerInputTextControllerValidator =
-        _streetDogWalkerInputTextControllerValidator;
-    apartamentNumDogWalkerInputTextControllerValidator =
-        _apartamentNumDogWalkerInputTextControllerValidator;
-    zipCodeDogWalkerInputTextControllerValidator =
-        _zipCodeDogWalkerInputTextControllerValidator;
-    neighborhoodDogWalkerInputTextControllerValidator =
-        _neighborhoodDogWalkerInputTextControllerValidator;
-    cityDogWalkerInputTextControllerValidator =
-        _cityDogWalkerInputTextControllerValidator;
     passDogWalkerInputVisibility = false;
     confirmPassDogWalkerInputVisibility = false;
   }
@@ -175,8 +92,11 @@ class SingInDogWalkerModel extends FlutterFlowModel<SingInDogWalkerWidget> {
     streetDogWalkerInputFocusNode?.dispose();
     streetDogWalkerInputTextController?.dispose();
 
-    apartamentNumDogWalkerInputFocusNode?.dispose();
-    apartamentNumDogWalkerInputTextController?.dispose();
+    interiorNumberDogWalkerInputFocusNode?.dispose();
+    interiorNumberDogWalkerInputTextController?.dispose();
+
+    exteriorNumberDogWalkerFocusNode?.dispose();
+    exteriorNumberDogWalkerTextController?.dispose();
 
     zipCodeDogWalkerInputFocusNode?.dispose();
     zipCodeDogWalkerInputTextController?.dispose();

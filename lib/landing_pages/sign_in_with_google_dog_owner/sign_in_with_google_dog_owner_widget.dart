@@ -1,3 +1,5 @@
+import 'package:dalk/utils/validation.dart';
+
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
@@ -73,7 +75,7 @@ class _SignInWithGoogleDogOwnerWidgetState
                 height: MediaQuery.sizeOf(context).height * 0.1,
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).secondary,
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(0),
                     bottomRight: Radius.circular(0),
                     topLeft: Radius.circular(0),
@@ -87,7 +89,7 @@ class _SignInWithGoogleDogOwnerWidgetState
                   height: double.infinity,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).tertiary,
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(0),
                       bottomRight: Radius.circular(0),
                       topLeft: Radius.circular(50),
@@ -100,26 +102,26 @@ class _SignInWithGoogleDogOwnerWidgetState
                       wrapWithModel(
                         model: _model.goBackContainerModel,
                         updateCallback: () => safeSetState(() {}),
-                        child: GoBackContainerWidget(),
+                        child: const GoBackContainerWidget(),
                       ),
                       Expanded(
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 0.9,
-                            decoration: BoxDecoration(),
+                            decoration: const BoxDecoration(),
                             child: SingleChildScrollView(
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Container(
                                     width: MediaQuery.sizeOf(context).width,
-                                    decoration: BoxDecoration(),
+                                    decoration: const BoxDecoration(),
                                     child: Column(
                                       mainAxisSize: MainAxisSize.max,
                                       children: [
                                         Align(
-                                          alignment: AlignmentDirectional(0, 0),
+                                          alignment: const AlignmentDirectional(0, 0),
                                           child: AutoSizeText(
                                             'Dueño',
                                             textAlign: TextAlign.center,
@@ -151,7 +153,7 @@ class _SignInWithGoogleDogOwnerWidgetState
                                           ),
                                         ),
                                         Align(
-                                          alignment: AlignmentDirectional(0, 0),
+                                          alignment: const AlignmentDirectional(0, 0),
                                           child: AutoSizeText(
                                             '!Solo faltan unos datos!',
                                             textAlign: TextAlign.center,
@@ -186,7 +188,7 @@ class _SignInWithGoogleDogOwnerWidgetState
                                         Container(
                                           width: 100,
                                           height: 100,
-                                          decoration: BoxDecoration(),
+                                          decoration: const BoxDecoration(),
                                           child: Icon(
                                             Icons.blind_sharp,
                                             color: FlutterFlowTheme.of(context)
@@ -199,7 +201,7 @@ class _SignInWithGoogleDogOwnerWidgetState
                                   ),
                                   Container(
                                     width: MediaQuery.sizeOf(context).width,
-                                    decoration: BoxDecoration(),
+                                    decoration: const BoxDecoration(),
                                     child: Column(
                                       mainAxisSize: MainAxisSize.max,
                                       children: [
@@ -211,13 +213,14 @@ class _SignInWithGoogleDogOwnerWidgetState
                                             mainAxisSize: MainAxisSize.max,
                                             children: [
                                               Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(0, 20, 0, 0),
                                                 child: Container(
                                                   width:
                                                       MediaQuery.sizeOf(context)
                                                           .width,
                                                   child: TextFormField(
+                                                    autovalidateMode: AutovalidateMode.onUserInteraction,
                                                     controller: _model
                                                         .nameInputTextController,
                                                     focusNode: _model
@@ -293,7 +296,7 @@ class _SignInWithGoogleDogOwnerWidgetState
                                                               ),
                                                       enabledBorder:
                                                           OutlineInputBorder(
-                                                        borderSide: BorderSide(
+                                                        borderSide: const BorderSide(
                                                           color:
                                                               Color(0x00000000),
                                                           width: 1,
@@ -304,7 +307,7 @@ class _SignInWithGoogleDogOwnerWidgetState
                                                       ),
                                                       focusedBorder:
                                                           OutlineInputBorder(
-                                                        borderSide: BorderSide(
+                                                        borderSide: const BorderSide(
                                                           color:
                                                               Color(0x00000000),
                                                           width: 1,
@@ -343,7 +346,7 @@ class _SignInWithGoogleDogOwnerWidgetState
                                                                   context)
                                                               .alternate,
                                                       prefixIcon: Icon(
-                                                        Icons.phone,
+                                                        Icons.person,
                                                         color:
                                                             FlutterFlowTheme.of(
                                                                     context)
@@ -388,20 +391,28 @@ class _SignInWithGoogleDogOwnerWidgetState
                                                         FlutterFlowTheme.of(
                                                                 context)
                                                             .primaryText,
-                                                    validator: _model
-                                                        .nameInputTextControllerValidator
-                                                        .asValidator(context),
+                                                    validator: (value) {
+                                                      final required = Validators.requiredField(value, fieldName: 'Nombre');
+                                                      if (required != null) return required;
+                                                      final min = Validators.minLength(value, 3, fieldName: 'Nombre');
+                                                      if (min != null) return min;
+                                                      return Validators.maxLength(value, 50, fieldName: 'Nombre');
+                                                    },                                                  
+                                                    inputFormatters: [
+                                                      LengthLimitingTextInputFormatter(50),
+                                                    ],                                    
                                                   ),
                                                 ),
                                               ),
                                               Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(0, 20, 0, 0),
                                                 child: Container(
                                                   width:
                                                       MediaQuery.sizeOf(context)
                                                           .width,
                                                   child: TextFormField(
+                                                    autovalidateMode: AutovalidateMode.onUserInteraction,
                                                     controller: _model
                                                         .phoneInputTextController,
                                                     focusNode: _model
@@ -477,7 +488,7 @@ class _SignInWithGoogleDogOwnerWidgetState
                                                               ),
                                                       enabledBorder:
                                                           OutlineInputBorder(
-                                                        borderSide: BorderSide(
+                                                        borderSide: const BorderSide(
                                                           color:
                                                               Color(0x00000000),
                                                           width: 1,
@@ -488,7 +499,7 @@ class _SignInWithGoogleDogOwnerWidgetState
                                                       ),
                                                       focusedBorder:
                                                           OutlineInputBorder(
-                                                        borderSide: BorderSide(
+                                                        borderSide: const BorderSide(
                                                           color:
                                                               Color(0x00000000),
                                                           width: 1,
@@ -574,13 +585,11 @@ class _SignInWithGoogleDogOwnerWidgetState
                                                         FlutterFlowTheme.of(
                                                                 context)
                                                             .primaryText,
-                                                    validator: _model
-                                                        .phoneInputTextControllerValidator
-                                                        .asValidator(context),
+                                                    validator: (value) => Validators.phone(value),
                                                     inputFormatters: [
                                                       FilteringTextInputFormatter
-                                                          .allow(
-                                                              RegExp('[0-9]'))
+                                                          .allow(RegExp(
+                                                              '[0-9]'))
                                                     ],
                                                   ),
                                                 ),
@@ -770,32 +779,39 @@ class _SignInWithGoogleDogOwnerWidgetState
                                               //   ),
                                               // ),
                                               Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(0, 18, 0, 0),
                                                 child: FFButtonWidget(
                                                    onPressed: () async {
                                                       if (currentUserUid == null) {
                                                         ScaffoldMessenger.of(context).showSnackBar(
-                                                          SnackBar(content: Text('Error: usuario no autenticado')),
+                                                          const SnackBar(content: Text('Error: usuario no autenticado')),
                                                         );
                                                         return;
                                                       }
+
+                                                      if (!_model.formKey.currentState!.validate()) {
+                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                          const SnackBar(content: Text('Por favor completa todos los campos correctamente')),
+                                                        );
+                                                        return;
+                                                      }
+
                                                       try {
                                                           final response = await Supabase.instance.client
                                                             .from('users')
-                                                            .insert({
-                                                              'uuid': currentUserUid,
+                                                            .update({
                                                               'name': _model.nameInputTextController.text,
                                                               'email': currentUserEmail,
                                                               'usertype': 'Dueño',
                                                               'phone': _model.phoneInputTextController.text,
-                                                              // 'neighborhood': _model.neighborhoodInputTextController.text,
-                                                            });
+                                                              'photo_url': 'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/public/profile_pics/user.png'
+                                                            }).eq('uuid', currentUserUid);
 
                                                           ScaffoldMessenger.of(context).showSnackBar(
-                                                            SnackBar(content: Text('¡Registro exitoso!')),
+                                                            const SnackBar(content: Text('¡Registro exitoso!')),
                                                           );
-                                                          context.go('/');
+                                                          context.pushReplacement('/');
                                                         } catch (e) {
                                                           ScaffoldMessenger.of(context).showSnackBar(
                                                             SnackBar(content: Text('Error al registrar usuario: $e')),
@@ -812,11 +828,11 @@ class _SignInWithGoogleDogOwnerWidgetState
                                                             .height *
                                                         0.05,
                                                     padding:
-                                                        EdgeInsetsDirectional
+                                                        const EdgeInsetsDirectional
                                                             .fromSTEB(
                                                                 16, 0, 16, 0),
                                                     iconPadding:
-                                                        EdgeInsetsDirectional
+                                                        const EdgeInsetsDirectional
                                                             .fromSTEB(
                                                                 0, 0, 0, 0),
                                                     color: FlutterFlowTheme.of(

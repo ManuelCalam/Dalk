@@ -38,10 +38,10 @@ class MainActivity: FlutterFragmentActivity() {
             // Verificar que el canal se creó correctamente
             val createdChannel = notificationManager.getNotificationChannel(channelId)
             if (createdChannel != null) {
-                Log.d("MainActivity", "✅ Canal verificado: ${createdChannel.name}")
-                Log.d("MainActivity", "✅ Importancia del canal: ${createdChannel.importance}")
+                Log.d("MainActivity", " Canal verificado: ${createdChannel.name}")
+                Log.d("MainActivity", " Importancia del canal: ${createdChannel.importance}")
             } else {
-                Log.e("MainActivity", "❌ Error: Canal no se pudo crear")
+                Log.e("MainActivity", "Error: Canal no se pudo crear")
             }
         } else {
             Log.d("MainActivity", "Android version < 26, no se necesita canal")

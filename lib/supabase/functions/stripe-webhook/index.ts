@@ -100,7 +100,6 @@ async function preventDuplicateSubscriptions(customerId: string, newSubscription
 // =====================
 serve(async (req) => {
   try {
-    // ✅ Solo verificar método POST, NO verificar auth header
     if (req.method !== "POST") {
       return new Response(
         JSON.stringify({ error: "Method not allowed" }), 
@@ -129,7 +128,7 @@ serve(async (req) => {
       );
     }
 
-    console.log("✅ Webhook received:", event.type, "ID:", event.id);
+    console.log("Webhook received:", event.type, "ID:", event.id);
 
     // Manejar eventos
     switch (event.type) {
@@ -163,6 +162,23 @@ serve(async (req) => {
       case "payment_intent.payment_failed":
         await handlePaymentIntentFailed(event.data.object);
         break;
+      case "transfer.created":
+        await handleTransferCreated(event.data.object);
+        break;
+      case "transfer.updated":
+        await handleTransferUpdated(event.data.object);
+        break;
+      case "transfer.reversed":
+        await handleTransferReversed(event.data.object);
+        break;
+      case "charge.succeeded":
+        await handleChargeSucceeded(event.data.object);
+        break;
+      case "charge.failed":
+        await handleChargeFailed(event.data.object);
+        break;
+
+
       default:
         console.log("Unhandled event type:", event.type);
     }
@@ -185,7 +201,7 @@ serve(async (req) => {
 // Handlers
 // =====================
 async function handleSetupIntentSucceeded(setupIntent: any) {
-  console.log("✅ SetupIntent succeeded:", setupIntent.id);
+  console.log("SetupIntent succeeded:", setupIntent.id);
 
   const customerId = setupIntent.customer;
   const paymentMethodId = setupIntent.payment_method;
@@ -267,11 +283,10 @@ async function handleInvoicePaid(invoice: any) {
   const customerId = invoice.customer;
   const subscriptionId = invoice.subscription;
 
-  console.log("💰 Invoice paid:", subscriptionId, "Customer:", customerId);
+  console.log("Invoice paid:", subscriptionId, "Customer:", customerId);
 
   if (!customerId || !subscriptionId) return;
 
-  // ✅ ACTUALIZACIÓN MÁS ROBUSTA
   const { error } = await supabase
     .from("users")
     .update({
@@ -284,9 +299,9 @@ async function handleInvoicePaid(invoice: any) {
     .eq("customer_stripe_id", customerId);
 
   if (error) {
-    console.error("❌ DB error [InvoicePaid]:", error);
+    console.error("DB error [InvoicePaid]:", error);
     
-    // ✅ FALLBACK: Intentar por subscription_id
+    // 
     const { error: fallbackError } = await supabase
       .from("users")
       .update({
@@ -298,12 +313,12 @@ async function handleInvoicePaid(invoice: any) {
       .eq("subscription_id", subscriptionId);
 
     if (fallbackError) {
-      console.error("❌ Fallback update also failed:", fallbackError);
+      console.error("Fallback update also failed:", fallbackError);
     } else {
-      console.log("✅ Fallback update successful using subscription_id");
+      console.log("Fallback update successful using subscription_id");
     }
   } else {
-    console.log("✅ Database updated successfully for paid invoice");
+    console.log("Database updated successfully for paid invoice");
   }
 }
 
@@ -435,44 +450,6 @@ async function handleSubscriptionDeleted(subscription: any) {
   }
 }
 
-// async function handlePaymentIntentSucceeded(paymentIntent: any) {
-//   console.log("Payment intent succeeded:", paymentIntent.id);
-
-//   const subscriptionId = paymentIntent.metadata?.subscription_id;
-//   if (!subscriptionId) return;
-
-//   const { error } = await supabase
-//     .from("users")
-//     .update({
-//       subscription_status: "active",
-//     })
-//     .eq("subscription_id", subscriptionId)
-//     .in("subscription_status", ["incomplete", "past_due"]);
-
-//   if (error) {
-//     console.error("DB error [PaymentIntentSucceeded]:", error);
-//   } else {
-//     console.log("Subscription activated from incomplete state:", subscriptionId);
-//   }
-// }
-
-// async function handlePaymentIntentFailed(paymentIntent: any) {
-//   console.log("Payment intent failed:", paymentIntent.id);
-
-//   const subscriptionId = paymentIntent.metadata?.subscription_id;
-//   if (!subscriptionId) return;
-
-//   const success = await safeUpdateUser(
-//     paymentIntent.customer,
-//     { subscription_status: "past_due" },
-//     "PaymentIntentFailed"
-//   );
-
-//   if (success) {
-//     console.log("Updated to past_due for subscription:", subscriptionId);
-//   }
-// }
-
 async function handlePaymentIntentSucceeded(paymentIntent: any) {
   console.log("Payment intent succeeded:", paymentIntent.id);
 
@@ -494,7 +471,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: any) {
     if (error) {
       console.error("DB error [TrackerOrderSucceeded]:", error);
     } else {
-      console.log("✅ Tracker Order marked as PAID. ID:", trackerId);
+      console.log("Tracker Order marked as PAID. ID:", trackerId);
     }
     return;
   }
@@ -541,7 +518,6 @@ async function handlePaymentIntentFailed(paymentIntent: any) {
     } else {
       console.log("Tracker Order marked as FAILED. ID:", trackerId);
     }
-    // Si manejamos una orden de rastreador, terminamos la función aquí.
     return;
   }
 
@@ -558,4 +534,64 @@ async function handlePaymentIntentFailed(paymentIntent: any) {
   if (success) {
     console.log("Updated to past_due for subscription:", subscriptionId);
   }
+
 }
+
+
+async function handleTransferCreated(transfer) {
+  console.log(
+    `Transfer created: ${transfer.id} for account ${transfer.destination}, amount: ${transfer.amount / 100}`
+  );
+}
+
+async function handleTransferUpdated(transfer) {
+  console.log(
+    `Transfer updated: ${transfer.id}, status: ${transfer.status}, destination: ${transfer.destination}`
+  );
+}
+
+async function handleTransferReversed(transfer) {
+  console.log(
+    `Transfer reversed: ${transfer.id}, amount: ${transfer.amount_reversed / 100}`
+  );
+}
+
+async function handleChargeSucceeded(charge) {
+  console.log(`Charge succeeded: ${charge.id}, amount: ${charge.amount / 100}`);
+
+  const walkId = charge.metadata?.walk_id;
+
+  if (!walkId) {
+    console.error("No walk_id in charge metadata");
+    return;
+  }
+
+  const { error } = await supabase
+    .from("walks")
+    .update({ payment_status: "Pagado" })
+    .eq("id", walkId);
+
+  if (error) console.error("Error updating walk payment_status:", error);
+  else console.log(`Walk ${walkId} marcado como pagado`);
+}
+
+async function handleChargeFailed(charge) {
+  console.log(`Charge failed: ${charge.id}`);
+
+  const walkId = charge.metadata?.walk_id;
+  if (!walkId) {
+    console.error("No walk_id in failed charge metadata");
+    return;
+  }
+
+  const { error } = await supabase
+    .from("walks")
+    .update({ payment_status: "Fallido" })
+    .eq("id", walkId);
+
+  if (error) console.error("Error updating failed payment:", error);
+  else console.log(`Walk ${walkId} marcado como fallido`);
+}
+
+
+

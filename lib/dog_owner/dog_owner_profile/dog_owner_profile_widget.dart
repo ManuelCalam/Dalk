@@ -45,6 +45,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
   @override
   void initState() {
     super.initState();
+    context.read<UserProvider>().loadUser(forceRefresh: true);
     _model = createModel(context, () => DogOwnerProfileModel());
     context.read<UserProvider>().loadUser(forceRefresh: true);
   }
@@ -104,14 +105,10 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      wrapWithModel(
-                        model: _model.goBackContainerModel,
-                        updateCallback: () => safeSetState(() {}),
-                        child: const GoBackContainerWidget(),
-                      ),
+
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 35, 0, 15),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 0.9,
                             decoration: const BoxDecoration(),
@@ -155,132 +152,132 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                             .fontStyle,
                                       ),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(
-                                      0, 5, 0, 0),
-                                  child: Text(
-                                    'Plan Gratuito',
-                                    // isPremium ? 'Plan Premium' : 'Plan Gratuito',
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          font: GoogleFonts.lexend(
-                                            fontWeight: FontWeight.w500,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
-                                          ),
-                                          color: FlutterFlowTheme.of(context)
-                                              .accent1,
-                                          fontSize: 20,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.w500,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontStyle,
-                                        ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(
-                                      0, 5, 0, 0),
-                                  child: InkWell(
-                                    splashColor: Colors.transparent,
-                                    focusColor: Colors.transparent,
-                                    hoverColor: Colors.transparent,
-                                    highlightColor: Colors.transparent,
-                                    onTap: () async {
-                                      context.pushNamed(
-                                          PremiumPlanInfoWidget.routeName);
-                                    },
-                                    child: Container(
-                                      width: MediaQuery.sizeOf(context).width,
-                                      constraints: BoxConstraints(
-                                        minHeight:
-                                            MediaQuery.sizeOf(context).height *
-                                                0.04,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: FlutterFlowTheme.of(context)
-                                            .primary,
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.max,
-                                        children: [
-                                          Expanded(
-                                            flex: 8,
-                                            child: Align(
-                                              alignment:
-                                                  const AlignmentDirectional(-1, 0),
-                                              child: Padding(
-                                                padding: const EdgeInsetsDirectional
-                                                    .fromSTEB(5, 0, 0, 0),
-                                                child: AutoSizeText(
-                                                  //  isPremium ? "Revisa tus beneficios premium!" :
-                                                  //   'Descubre los beneficios del plan premium!' ,
-                                                  'Descubre los beneficios del plan premium!',
-                                                  textAlign: TextAlign.start,
-                                                  minFontSize: 10,
-                                                  style: FlutterFlowTheme.of(
-                                                          context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font:
-                                                            GoogleFonts.lexend(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        color: Colors.white,
-                                                        fontSize: 14,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          Flexible(
-                                            child: Align(
-                                              alignment:
-                                                  const AlignmentDirectional(1, 0),
-                                              child: Padding(
-                                                padding: const EdgeInsetsDirectional
-                                                    .fromSTEB(0, 0, 5, 0),
-                                                child: Icon(
-                                                  Icons.chevron_right_outlined,
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .tertiary,
-                                                  size: 24,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                                // Padding(
+                                //   padding: const EdgeInsetsDirectional.fromSTEB(
+                                //       0, 5, 0, 0),
+                                //   child: Text(
+                                //     'Plan Gratuito',
+                                //     // isPremium ? 'Plan Premium' : 'Plan Gratuito',
+                                //     style: FlutterFlowTheme.of(context)
+                                //         .bodyMedium
+                                //         .override(
+                                //           font: GoogleFonts.lexend(
+                                //             fontWeight: FontWeight.w500,
+                                //             fontStyle:
+                                //                 FlutterFlowTheme.of(context)
+                                //                     .bodyMedium
+                                //                     .fontStyle,
+                                //           ),
+                                //           color: FlutterFlowTheme.of(context)
+                                //               .accent1,
+                                //           fontSize: 20,
+                                //           letterSpacing: 0.0,
+                                //           fontWeight: FontWeight.w500,
+                                //           fontStyle:
+                                //               FlutterFlowTheme.of(context)
+                                //                   .bodyMedium
+                                //                   .fontStyle,
+                                //         ),
+                                //   ),
+                                // ),
+                                // Padding(
+                                //   padding: const EdgeInsetsDirectional.fromSTEB(
+                                //       0, 5, 0, 0),
+                                //   child: InkWell(
+                                //     splashColor: Colors.transparent,
+                                //     focusColor: Colors.transparent,
+                                //     hoverColor: Colors.transparent,
+                                //     highlightColor: Colors.transparent,
+                                //     onTap: () async {
+                                //       context.pushNamed(
+                                //           PremiumPlanInfoWidget.routeName);
+                                //     },
+                                //     child: Container(
+                                //       width: MediaQuery.sizeOf(context).width,
+                                //       constraints: BoxConstraints(
+                                //         minHeight:
+                                //             MediaQuery.sizeOf(context).height *
+                                //                 0.04,
+                                //       ),
+                                //       decoration: BoxDecoration(
+                                //         color: FlutterFlowTheme.of(context)
+                                //             .primary,
+                                //         borderRadius: BorderRadius.circular(5),
+                                //       ),
+                                //       child: Row(
+                                //         mainAxisSize: MainAxisSize.max,
+                                //         children: [
+                                //           Expanded(
+                                //             flex: 8,
+                                //             child: Align(
+                                //               alignment:
+                                //                   const AlignmentDirectional(-1, 0),
+                                //               child: Padding(
+                                //                 padding: const EdgeInsetsDirectional
+                                //                     .fromSTEB(5, 0, 0, 0),
+                                //                 child: AutoSizeText(
+                                //                   //  isPremium ? "Revisa tus beneficios premium!" :
+                                //                   //   'Descubre los beneficios del plan premium!' ,
+                                //                   'Descubre los beneficios del plan premium!',
+                                //                   textAlign: TextAlign.start,
+                                //                   minFontSize: 10,
+                                //                   style: FlutterFlowTheme.of(
+                                //                           context)
+                                //                       .bodyMedium
+                                //                       .override(
+                                //                         font:
+                                //                             GoogleFonts.lexend(
+                                //                           fontWeight:
+                                //                               FlutterFlowTheme.of(
+                                //                                       context)
+                                //                                   .bodyMedium
+                                //                                   .fontWeight,
+                                //                           fontStyle:
+                                //                               FlutterFlowTheme.of(
+                                //                                       context)
+                                //                                   .bodyMedium
+                                //                                   .fontStyle,
+                                //                         ),
+                                //                         color: Colors.white,
+                                //                         fontSize: 14,
+                                //                         letterSpacing: 0.0,
+                                //                         fontWeight:
+                                //                             FlutterFlowTheme.of(
+                                //                                     context)
+                                //                                 .bodyMedium
+                                //                                 .fontWeight,
+                                //                         fontStyle:
+                                //                             FlutterFlowTheme.of(
+                                //                                     context)
+                                //                                 .bodyMedium
+                                //                                 .fontStyle,
+                                //                       ),
+                                //                 ),
+                                //               ),
+                                //             ),
+                                //           ),
+                                //           Flexible(
+                                //             child: Align(
+                                //               alignment:
+                                //                   const AlignmentDirectional(1, 0),
+                                //               child: Padding(
+                                //                 padding: const EdgeInsetsDirectional
+                                //                     .fromSTEB(0, 0, 5, 0),
+                                //                 child: Icon(
+                                //                   Icons.chevron_right_outlined,
+                                //                   color: FlutterFlowTheme.of(
+                                //                           context)
+                                //                       .tertiary,
+                                //                   size: 24,
+                                //                 ),
+                                //               ),
+                                //             ),
+                                //           ),
+                                //         ],
+                                //       ),
+                                //     ),
+                                //   ),
+                                // ),
                                 Align(
                                   alignment: const AlignmentDirectional(-1, 0),
                                   child: Padding(
@@ -634,15 +631,12 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                                 hoverColor: Colors.transparent,
                                                 highlightColor:
                                                     Colors.transparent,
-                                    onTap: () async {
-                                      context.goNamed(
-                                        '_initialize', 
-                                        queryParameters: {'initialPage': 'petList'},
-                                      );  
-                                      // final navState = navBarOwnerKey.currentState;
-
-                                      // navState?.changePage('petList');
-                                    },
+                                                onTap: () async {
+                                                  context.goNamed(
+                                                    '_initialize', 
+                                                    queryParameters: {'initialPage': 'petList'},
+                                                  );  
+                                                },
                                                 child: Icon(
                                                   Icons.arrow_forward_ios,
                                                   color: FlutterFlowTheme.of(

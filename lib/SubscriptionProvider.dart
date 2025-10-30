@@ -20,7 +20,7 @@ class SubscriptionProvider extends ChangeNotifier {
       return;
     }
 
-    // 1. Obtener el estado inicial de la suscripción
+    // Obtener el estado inicial de la suscripción
     _supabase
         .from('users')
         .select('subscription_status')
@@ -32,7 +32,7 @@ class SubscriptionProvider extends ChangeNotifier {
           notifyListeners();
         });
 
-    // 2. Suscribirse a los cambios en tiempo real en la base de datos
+    // Suscribirse a los cambios en tiempo real en la base de datos
     _subscription = _supabase
         .from('users')
         .stream(primaryKey: ['uuid']) // stream() es para escuchar cambios
