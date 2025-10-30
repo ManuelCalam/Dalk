@@ -47,7 +47,7 @@ class _CurrentWalkEmpyWindowWidgetState
   }
 
 Future<void> checkCurrentWalk() async {
-  // 1. Consultamos la tabla 'users' para obtener el 'usertype' y el 'current_walk_id'
+  // Consulta a la tabla 'users' para obtener el 'usertype' y el 'current_walk_id'
   final userRes = await Supabase.instance.client
       .from('users')
       .select('usertype, current_walk_id')
@@ -67,10 +67,8 @@ Future<void> checkCurrentWalk() async {
 
   currentWalkId = ''; // Inicializamos la variable local
 
-  // 2. Si el usuario tiene un ID de paseo activo, lo validamos.
   if (currentWalkIdFromUser != null && currentWalkIdFromUser.isNotEmpty) {
     
-    // Verificación de estado: Consultamos la tabla 'walks' para asegurarnos que el paseo SÍ esté activo.
     final walkStatusRes = await Supabase.instance.client
         .from('walks')
         .select('status')
@@ -87,9 +85,7 @@ Future<void> checkCurrentWalk() async {
             .update({'current_walk_id': null}) 
             .eq('uuid', currentUserUid);
             
-        // currentWalkId ya está en ''
     } else {
-        // El paseo está activo, lo asignamos.
         currentWalkId = currentWalkIdFromUser;
     }
   }

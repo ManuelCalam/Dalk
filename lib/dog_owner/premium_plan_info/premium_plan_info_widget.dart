@@ -116,13 +116,13 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
       await Stripe.instance.presentPaymentSheet();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Método de pago guardado ✅")),
+        const SnackBar(content: Text("Método de pago guardado ")),
       );
 
 
     } on StripeException catch (e) {
       if (e.error.code == FailureCode.Canceled) {
-        // Usuario canceló el PaymentSheet → no hacemos nada
+        // Usuario canceló el PaymentSheet
         debugPrint("Usuario canceló el PaymentSheet");
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -220,7 +220,6 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
 
   Future<void> openSubscriptionPaymentSheet(BuildContext context, bool monthly) async {
     try {
-      // 1. Llamar a tu función de Supabase para obtener todos los datos necesarios
       final result = await _createSubscription(monthly);
 
       final clientSecret = result?["client_secret"] as String?;
@@ -234,7 +233,7 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
         return;
       }
 
-      // 2. Inicializar el PaymentSheet con todos los parámetros
+      // Inicializar el PaymentSheet con todos los parámetros
       await Stripe.instance.initPaymentSheet(
         paymentSheetParameters: SetupPaymentSheetParameters(
           customFlow: false,
@@ -246,11 +245,11 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
         ),
       );
 
-      // 3. Presentar el PaymentSheet
+      // Presentar el PaymentSheet
       await Stripe.instance.presentPaymentSheet();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Suscripción en proceso. Recibirás una confirmación pronto. ✅")),
+        const SnackBar(content: Text("Suscripción en proceso. Recibirás una confirmación pronto. ")),
       );
 
     } on StripeException catch (e) {
@@ -292,7 +291,7 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                 height: MediaQuery.sizeOf(context).height * 0.1,
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).secondary,
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(0),
                     bottomRight: Radius.circular(0),
                     topLeft: Radius.circular(0),
@@ -302,7 +301,7 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                 child: wrapWithModel(
                   model: _model.notificationContainerModel,
                   updateCallback: () => setState(() {}),
-                  child: NotificationContainerWidget(),
+                  child: const NotificationContainerWidget(),
                 ),
               ),
               
@@ -312,7 +311,7 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                   width: MediaQuery.sizeOf(context).width,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).tertiary,
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(0),
                       bottomRight: Radius.circular(0),
                       topLeft: Radius.circular(50),
@@ -325,11 +324,11 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                       wrapWithModel(
                         model: _model.goBackContainerModel,
                         updateCallback: () => setState(() {}),
-                        child: GoBackContainerWidget(),
+                        child: const GoBackContainerWidget(),
                       ),
                       
                       Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                        padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                         child: AutoSizeText(
                           'Membresía Premium',
                           textAlign: TextAlign.center,
@@ -349,33 +348,32 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                       
                       Expanded(
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 15),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 15),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 0.9,
-                            decoration: BoxDecoration(),
+                            decoration: const BoxDecoration(),
                             child: ListView(
                               padding: EdgeInsets.zero,
                               shrinkWrap: true,
                               scrollDirection: Axis.vertical,
                               children: [
-                                // Plan Gratuito - Siempre primero, pero diseño cambia según isPremium
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                                  padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                                   child: Container(
                                     width: MediaQuery.sizeOf(context).width,
                                     decoration: BoxDecoration(
                                       color: isPremium 
-                                          ? FlutterFlowTheme.of(context).tertiary  // Cuando es premium, usa diseño premium
-                                          : FlutterFlowTheme.of(context).alternate, // Cuando no es premium, usa diseño gratuito
+                                          ? FlutterFlowTheme.of(context).tertiary  
+                                          : FlutterFlowTheme.of(context).alternate, 
                                       borderRadius: BorderRadius.circular(15),
                                       shape: BoxShape.rectangle,
-                                      border: isPremium ? Border.all(  // Solo borde cuando es premium
+                                      border: isPremium ? Border.all(  
                                         color: FlutterFlowTheme.of(context).alternate,
                                         width: 10,
                                       ) : null,
                                     ),
                                     child: Padding(
-                                      padding: EdgeInsets.all(15),
+                                      padding: const EdgeInsets.all(15),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
@@ -384,7 +382,7 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
                                               AutoSizeText(
-                                                'Gratuita',  // Siempre "Gratuita"
+                                                'Gratuita', 
                                                 textAlign: TextAlign.start,
                                                 maxLines: 1,
                                                 minFontSize: 12,
@@ -398,30 +396,30 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                               ),
                                               Flexible(
                                                 child: Align(
-                                                  alignment: AlignmentDirectional(1, 0),
+                                                  alignment: const AlignmentDirectional(1, 0),
                                                   child: Container(
                                                     width: MediaQuery.sizeOf(context).width * 0.21,
                                                     height: MediaQuery.sizeOf(context).height * 0.05,
-                                                    constraints: BoxConstraints(
+                                                    constraints: const BoxConstraints(
                                                       minWidth: 20,
                                                       minHeight: 5,
                                                     ),
                                                     decoration: BoxDecoration(
                                                       color: isPremium 
-                                                          ? FlutterFlowTheme.of(context).alternate  // Cuando es premium
-                                                          : FlutterFlowTheme.of(context).tertiary,  // Cuando no es premium
+                                                          ? FlutterFlowTheme.of(context).alternate  
+                                                          : FlutterFlowTheme.of(context).tertiary,  
                                                       borderRadius: BorderRadius.circular(5),
                                                     ),
                                                     child: Align(
-                                                      alignment: AlignmentDirectional(0, 0),
+                                                      alignment: const AlignmentDirectional(0, 0),
                                                       child: AutoSizeText(
-                                                        isPremium ? 'Gratis' : 'Activa',  // Cambia según premium
+                                                        isPremium ? 'Gratis' : 'Activa', 
                                                         textAlign: TextAlign.center,
                                                         maxLines: 1,
                                                         minFontSize: 8,
                                                         style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                           font: GoogleFonts.lexend(fontWeight: FontWeight.w600),
-                                                          color: FlutterFlowTheme.of(context).primary,
+                                                          color: isPremium ? FlutterFlowTheme.of(context).primary : FlutterFlowTheme.of(context).success,
                                                           fontSize: 16,
                                                           letterSpacing: 0.0,
                                                           fontWeight: FontWeight.w600,
@@ -434,14 +432,14 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                             ],
                                           ),
                                           Padding(
-                                            padding: EdgeInsetsDirectional.fromSTEB(0, 6, 0, 0),
+                                            padding: const EdgeInsetsDirectional.fromSTEB(0, 6, 0, 0),
                                             child: Row(
                                               mainAxisSize: MainAxisSize.min,
                                               mainAxisAlignment: MainAxisAlignment.start,
                                               crossAxisAlignment: CrossAxisAlignment.center,
                                               children: [
                                                 Padding(
-                                                  padding: EdgeInsetsDirectional.fromSTEB(0, 0, 2, 0),
+                                                  padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 2, 0),
                                                   child: Icon(
                                                     Icons.check_sharp,
                                                     color: FlutterFlowTheme.of(context).primary,
@@ -465,9 +463,9 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                             ),
                                           ),
                                           Align(
-                                            alignment: AlignmentDirectional(-1, 0),
+                                            alignment: const AlignmentDirectional(-1, 0),
                                             child: Padding(
-                                              padding: EdgeInsetsDirectional.fromSTEB(32, 0, 0, 0),
+                                              padding: const EdgeInsetsDirectional.fromSTEB(32, 0, 0, 0),
                                               child: Text(
                                                 'Paseos ideales para necesidades básicas',
                                                 textAlign: TextAlign.start,
@@ -481,12 +479,12 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                             ),
                                           ),
                                           Padding(
-                                            padding: EdgeInsetsDirectional.fromSTEB(0, 6, 0, 0),
+                                            padding: const EdgeInsetsDirectional.fromSTEB(0, 6, 0, 0),
                                             child: Row(
                                               mainAxisSize: MainAxisSize.max,
                                               children: [
                                                 Padding(
-                                                  padding: EdgeInsetsDirectional.fromSTEB(0, 0, 2, 0),
+                                                  padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 2, 0),
                                                   child: Icon(
                                                     Icons.check_sharp,
                                                     color: FlutterFlowTheme.of(context).primary,
@@ -509,9 +507,9 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                             ),
                                           ),
                                           Align(
-                                            alignment: AlignmentDirectional(-1, 0),
+                                            alignment: const AlignmentDirectional(-1, 0),
                                             child: Padding(
-                                              padding: EdgeInsetsDirectional.fromSTEB(32, 0, 0, 0),
+                                              padding: const EdgeInsetsDirectional.fromSTEB(32, 0, 0, 0),
                                               child: Text(
                                                 'Localización en tiempo real de la posición del paseador',
                                                 style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -531,7 +529,7 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
 
                                 // Plan Premium - Siempre segundo, pero diseño cambia según isPremium
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(0, 8, 0, 0),
+                                  padding: const EdgeInsetsDirectional.fromSTEB(0, 8, 0, 0),
                                   child: Container(
                                     width: MediaQuery.sizeOf(context).width,
                                     decoration: BoxDecoration(
@@ -545,7 +543,7 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                       ),
                                     ),
                                     child: Padding(
-                                      padding: EdgeInsets.all(15),
+                                      padding: const EdgeInsets.all(15),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         mainAxisAlignment: MainAxisAlignment.start,
@@ -554,7 +552,7 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                             mainAxisSize: MainAxisSize.max,
                                             children: [
                                               Align(
-                                                alignment: AlignmentDirectional(1, -1),
+                                                alignment: const AlignmentDirectional(1, -1),
                                                 child: Text(
                                                   'Premium',  // Siempre "Premium"
                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -568,11 +566,11 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                               ),
                                               Flexible(
                                                 child: Align(
-                                                  alignment: AlignmentDirectional(1, 0),
+                                                  alignment: const AlignmentDirectional(1, 0),
                                                   child: Container(
                                                     width: MediaQuery.sizeOf(context).width * 0.21,
                                                     height: MediaQuery.sizeOf(context).height * 0.05,
-                                                    constraints: BoxConstraints(
+                                                    constraints: const BoxConstraints(
                                                       minWidth: 20,
                                                       minHeight: 5,
                                                     ),
@@ -583,13 +581,13 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                                       borderRadius: BorderRadius.circular(5),
                                                     ),
                                                     child: Align(
-                                                      alignment: AlignmentDirectional(0, 0),
+                                                      alignment: const AlignmentDirectional(0, 0),
                                                       child: AutoSizeText(
-                                                        isPremium ? 'Activo' : _model.planValidity == true ? '\$149' : '\$1699',  // Cambia según premium
+                                                        isPremium ? 'Activo' : _model.planValidity == true ? '\$149' : '\$1699', 
                                                         maxLines: 1,
                                                         style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                           font: GoogleFonts.lexend(fontWeight: FontWeight.w600),
-                                                          color: FlutterFlowTheme.of(context).primary,
+                                                          color: isPremium ? FlutterFlowTheme.of(context).success : FlutterFlowTheme.of(context).primary,
                                                           fontSize: 16,
                                                           letterSpacing: 0.0,
                                                           fontWeight: FontWeight.w600,
@@ -602,12 +600,55 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                             ],
                                           ),
                                           Padding(
-                                            padding: EdgeInsetsDirectional.fromSTEB(0, 6, 0, 0),
+                                            padding: const EdgeInsetsDirectional.fromSTEB(0, 6, 0, 0),
                                             child: Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 Padding(
-                                                  padding: EdgeInsetsDirectional.fromSTEB(0, 0, 2, 0),
+                                                  padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 2, 0),
+                                                  child: Icon(
+                                                    Icons.check_sharp,
+                                                    color: FlutterFlowTheme.of(context).primary,
+                                                    size: 30,
+                                                  ),
+                                                ),
+                                                Expanded(
+                                                  child: Text(
+                                                    'Tiempo de paseos determinados por ti',
+                                                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                      font: GoogleFonts.lexend(fontWeight: FontWeight.w500),
+                                                      color: FlutterFlowTheme.of(context).primary,
+                                                      fontSize: 16,
+                                                      letterSpacing: 0.0,
+                                                      fontWeight: FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Align(
+                                            alignment: const AlignmentDirectional(-1, 0),
+                                            child: Padding(
+                                              padding: const EdgeInsetsDirectional.fromSTEB(32, 0, 0, 0),
+                                              child: Text(
+                                                'Tú decides el tiempo del paseo',
+                                                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                  font: GoogleFonts.lexend(),
+                                                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                                                  fontSize: 16,
+                                                  letterSpacing: 0.0,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsetsDirectional.fromSTEB(0, 6, 0, 0),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.max,
+                                              children: [
+                                                Padding(
+                                                  padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 2, 0),
                                                   child: Icon(
                                                     Icons.check_sharp,
                                                     color: FlutterFlowTheme.of(context).primary,
@@ -630,11 +671,11 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                             ),
                                           ),
                                           Align(
-                                            alignment: AlignmentDirectional(-1, 0),
+                                            alignment: const AlignmentDirectional(-1, 0),
                                             child: Padding(
-                                              padding: EdgeInsetsDirectional.fromSTEB(32, 0, 0, 0),
+                                              padding: const EdgeInsetsDirectional.fromSTEB(32, 0, 0, 0),
                                               child: Text(
-                                                'Paseos ideales para necesidades básicas',
+                                                'Deja instrucciones especiales al paseador',
                                                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                   font: GoogleFonts.lexend(),
                                                   color: FlutterFlowTheme.of(context).secondaryBackground,
@@ -645,50 +686,7 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                             ),
                                           ),
                                           Padding(
-                                            padding: EdgeInsetsDirectional.fromSTEB(0, 6, 0, 0),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.max,
-                                              children: [
-                                                Padding(
-                                                  padding: EdgeInsetsDirectional.fromSTEB(0, 0, 2, 0),
-                                                  child: Icon(
-                                                    Icons.check_sharp,
-                                                    color: FlutterFlowTheme.of(context).primary,
-                                                    size: 30,
-                                                  ),
-                                                ),
-                                                Expanded(
-                                                  child: Text(
-                                                    'Ofertas exclusivas',
-                                                    style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                      font: GoogleFonts.lexend(fontWeight: FontWeight.w500),
-                                                      color: FlutterFlowTheme.of(context).primary,
-                                                      fontSize: 16,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight: FontWeight.w500,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Align(
-                                            alignment: AlignmentDirectional(-1, 0),
-                                            child: Padding(
-                                              padding: EdgeInsetsDirectional.fromSTEB(32, 0, 0, 0),
-                                              child: Text(
-                                                'Paseos ideales para necesidades básicas',
-                                                style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                  font: GoogleFonts.lexend(),
-                                                  color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                  fontSize: 16,
-                                                  letterSpacing: 0.0,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: EdgeInsetsDirectional.fromSTEB(0, 6, 0, 0),
+                                            padding: const EdgeInsetsDirectional.fromSTEB(0, 6, 0, 0),
                                             child: Row(
                                               mainAxisSize: MainAxisSize.max,
                                               children: [
@@ -711,11 +709,11 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                             ),
                                           ),
                                           Align(
-                                            alignment: AlignmentDirectional(-1, 0),
+                                            alignment: const AlignmentDirectional(-1, 0),
                                             child: Padding(
-                                              padding: EdgeInsetsDirectional.fromSTEB(32, 0, 0, 0),
+                                              padding: const EdgeInsetsDirectional.fromSTEB(32, 0, 0, 0),
                                               child: Text(
-                                                'Paseos ideales para necesidades básicas',
+                                                'Utiliza la app libre de anuncios',
                                                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                   font: GoogleFonts.lexend(),
                                                   color: FlutterFlowTheme.of(context).secondaryBackground,
@@ -728,7 +726,7 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                           
                                           // Switch solo cuando NO es premium
                                           if (!isPremium) Align(
-                                            alignment: AlignmentDirectional(1, 0),
+                                            alignment: const AlignmentDirectional(1, 0),
                                             child: Container(
                                               width: MediaQuery.sizeOf(context).width * 0.18,
                                               decoration: BoxDecoration(
@@ -739,9 +737,9 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
                                                   Align(
-                                                    alignment: AlignmentDirectional(0, -1),
+                                                    alignment: const AlignmentDirectional(0, -1),
                                                     child: Padding(
-                                                      padding: EdgeInsetsDirectional.fromSTEB(0, 5, 0, 0),
+                                                      padding: const EdgeInsetsDirectional.fromSTEB(0, 5, 0, 0),
                                                       child: AutoSizeText(
                                                         _model.planValidity == true ? '1 mes' : '1 año',
                                                         textAlign: TextAlign.center,
@@ -754,7 +752,7 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                                     ),
                                                   ),
                                                   Align(
-                                                    alignment: AlignmentDirectional(0, -1),
+                                                    alignment: const AlignmentDirectional(0, -1),
                                                     child: Switch.adaptive(
                                                       value: _model.planValiditySwitchValue!,
                                                       onChanged: (newValue) async {
@@ -769,7 +767,7 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                                       inactiveThumbColor: Colors.white,
                                                     ),
                                                   ),
-                                                ].addToStart(SizedBox(height: 5)).addToEnd(SizedBox(height: 5)),
+                                                ].addToStart(const SizedBox(height: 5)).addToEnd(const SizedBox(height: 5)),
                                               ),
                                             ),
                                           ),
@@ -779,7 +777,7 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
+                                  padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
                                   child: FFButtonWidget(
                                   onPressed: () async {
                                     try {
@@ -809,8 +807,8 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                     options: FFButtonOptions(
                                       width: MediaQuery.sizeOf(context).width,
                                       height: MediaQuery.sizeOf(context).height * 0.05,
-                                      padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
-                                      iconPadding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                                      padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+                                      iconPadding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
                                       color: FlutterFlowTheme.of(context).accent1,
                                       textStyle: FlutterFlowTheme.of(context).titleSmall.override(
                                         font: GoogleFonts.lexend(),

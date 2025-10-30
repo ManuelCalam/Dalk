@@ -20,7 +20,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 });
 
 Deno.serve(async (req) => {
-// --- Lógica de Manejo de Solicitudes y Autenticación ---
 // 1. Verificar el método de la solicitud (debe ser POST para pagos)
 if (req.method !== 'POST') {
  return new Response(
@@ -47,7 +46,6 @@ if (req.method !== 'POST') {
       headers: { "Content-Type": "application/json" },
     });
   }
-  // --- FIN de Lógica de Manejo de Solicitudes y Autenticación ---
 
 try {
  const body = await req.json();
@@ -78,7 +76,6 @@ try {
  const productTotalCents = productUnitPriceCents * itemCount;
  const totalAmountCents = productTotalCents + shippingPriceCents;
  
-//  console.log(`Total a cobrar (Cents): ${totalAmountCents}`);
    
  // 3. CREAR LA CLAVE EFÍMERA 
  let ephemeralKeySecret = null;

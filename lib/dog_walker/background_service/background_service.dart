@@ -15,11 +15,9 @@ void onStart(ServiceInstance service) async {
       return;
   }
 
-  // Set para almacenar múltiples IDs de paseos a rastrear.
   Set<String> activeWalkIds = {}; 
   Timer? locationTimer;
   
-  // Flag para saber si el timer ya está corriendo
   bool isTimerRunning = false;
 
   // Configuración de la Notificación de Aviso.

@@ -1169,13 +1169,13 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                                                         ChipData('Amigable con personas'),
                                                       ],
 
-                                                      // ✅ Solo un controller
+                                                      //  Solo un controller
                                                       controller: _model.behaviourChipsValueController ??=
                                                           FormFieldController<List<String>>(
                                                             selectedBehaviours?.toList() ?? [],
                                                           ),
 
-                                                      // ✅ Solo un multiselect
+                                                      //  Solo un multiselect
                                                       multiselect: true,
 
                                                       onChanged: (val) {

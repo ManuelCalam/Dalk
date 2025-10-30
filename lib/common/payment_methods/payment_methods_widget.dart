@@ -105,13 +105,13 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
 
   Future<void> openSetupPaymentSheet(BuildContext context) async {
     try {
-      // 1. Asegurarnos de que existe un customer
+      // Asegurarnos de que existe un customer
       final customerId = await createCustomerIfNeeded();
 
-      // 2. Crear SetupIntent en Stripe
+      // Crear SetupIntent en Stripe
       final clientSecret = await createSetupIntent();
 
-      // 3. Inicializar PaymentSheet
+      // Inicializar PaymentSheet
       await Stripe.instance.initPaymentSheet(
         paymentSheetParameters: SetupPaymentSheetParameters(
           setupIntentClientSecret: clientSecret,
@@ -120,7 +120,7 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
         ),
       );
 
-      // 4. Mostrar PaymentSheet
+      // Mostrar PaymentSheet
       await Stripe.instance.presentPaymentSheet();
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -133,7 +133,7 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
 
     } on StripeException catch (e) {
       if (e.error.code == FailureCode.Canceled) {
-        // Usuario canceló el PaymentSheet → no hacemos nada
+        // Usuario canceló el PaymentSheet 
         debugPrint("Usuario canceló el PaymentSheet");
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

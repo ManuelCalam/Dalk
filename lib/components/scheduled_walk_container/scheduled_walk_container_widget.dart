@@ -120,7 +120,7 @@ class ScheduledWalkContainerWidgetState
         .toList();
   }
 
-  // Lógica centralizada para enviar IDs de rastreo al servicio de fondo
+  // Lógica  para enviar IDs de rastreo al servicio de fondo
   Future<void> _setTrackingIds({required bool includeCurrentWalk}) async {
     final allActiveWalkIds = await _getActiveWalkIds();
     
@@ -139,7 +139,7 @@ class ScheduledWalkContainerWidgetState
     }
   }
   
-  // 1. Helper para configurar e iniciar el servicio si no está corriendo.
+  // Helper para configurar e iniciar el servicio si no está corriendo.
   Future<void> _ensureServiceIsRunning() async { 
     final service = FlutterBackgroundService();
 
@@ -203,13 +203,11 @@ class ScheduledWalkContainerWidgetState
       // Obtener el controlador del mapa
       final controller = await _model.googleMapsController.future;
 
-      // Check de mounted antes de usar el ValueNotifier
       if (!mounted) {
           timer.cancel();
           return;
       }
       
-      // Actualizar solo el ValueNotifier de marcadores
       final newWalkerMarker = Marker(
         markerId: const MarkerId("walker"),
         position: currentLatLng,
@@ -285,7 +283,6 @@ class ScheduledWalkContainerWidgetState
       return;
     }
 
-    // Limpiar suscripciones anteriores
     _trackerSubscriptions.forEach((sub) => sub.cancel());
     _trackerSubscriptions.clear();
 
@@ -348,7 +345,6 @@ class ScheduledWalkContainerWidgetState
     final ref = FirebaseDatabase.instance.ref('walk_locations/${widget.walkId}');
 
     _locationSubscription = ref.onValue.listen((event) async {
-      // Comprobar mounted y cancelar la suscripción si el widget se ha ido
       if (!mounted) {
         _locationSubscription?.cancel();
         return;

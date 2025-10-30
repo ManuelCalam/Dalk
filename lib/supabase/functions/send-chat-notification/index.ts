@@ -15,14 +15,14 @@ try {
   if (!rawFirebase) throw new Error("FIREBASE_SERVICE_ACCOUNT no definida");
   firebaseConfig = JSON.parse(rawFirebase);
 } catch (err) {
-  console.error("❌ Error Firebase config:", err);
+  console.error("Error Firebase config:", err);
   throw new Error("Error de configuración Firebase");
 }
 
 try {
   admin.initializeApp({ credential: admin.credential.cert(firebaseConfig) });
 } catch (err) {
-  console.error("❌ Error inicializando Firebase:", err);
+  console.error("Error inicializando Firebase:", err);
   throw new Error("Falló la inicialización de Firebase");
 }
 

@@ -15,14 +15,14 @@ try {
   if (!rawFirebase) throw new Error("FIREBASE_SERVICE_ACCOUNT no definida");
   firebaseConfig = JSON.parse(rawFirebase);
 } catch (err) {
-  console.error("❌ Error Firebase config:", err);
+  console.error("Error Firebase config:", err);
   throw new Error("Error de configuración Firebase");
 }
 
 try {
   admin.initializeApp({ credential: admin.credential.cert(firebaseConfig) });
 } catch (err) {
-  console.error("❌ Error inicializando Firebase:", err);
+  console.error("Error inicializando Firebase:", err);
   throw new Error("Falló la inicialización de Firebase");
 }
 
@@ -36,7 +36,7 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// ✅ FUNCIÓN AUXILIAR: Enviar notificación y push a un usuario
+//  FUNCIÓN AUXILIAR: Enviar notificación y push a un usuario
 async function sendNotificationToUser(
   userId: string,
   title: string,
@@ -59,7 +59,7 @@ async function sendNotificationToUser(
   ]);
 
   if (insertError) {
-    console.error(`⚠️ Error insertando notificación para ${userId}:`, insertError);
+    console.error(`Error insertando notificación para ${userId}:`, insertError);
   }
 
   // Buscar token FCM
@@ -103,7 +103,7 @@ async function sendNotificationToUser(
     
     return { sent: true, saved: true };
   } catch (fcmError) {
-    console.error(`⚠️ Error enviando push a ${userId}:`, fcmError);
+    console.error(`Error enviando push a ${userId}:`, fcmError);
     return { sent: false, saved: true };
   }
 }
@@ -134,7 +134,7 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Walk no encontrado" }), { status: 404 });
     }
 
-    // ✅ CASO ESPECIAL: Estado "Cancelado" - Enviar a AMBOS usuarios
+    //  CASO ESPECIAL: Estado "Cancelado" - Enviar a AMBOS usuarios
     if (new_status === "Cancelado") {
       // Notificación para el PASEADOR
       await sendNotificationToUser(
@@ -163,7 +163,7 @@ Deno.serve(async (req) => {
       }), { status: 200 });
     }
 
-    // ✅ RESTO DE CASOS (un solo destinatario)
+    //  RESTO DE CASOS (un solo destinatario)
     let targetUserId: string;
     let targetUserType: string;
     let notificationTitle: string;
@@ -218,7 +218,7 @@ Deno.serve(async (req) => {
     }), { status: 200 });
 
   } catch (err) {
-    console.error("❌ Error general:", err);
+    console.error("Error general:", err);
     return new Response(JSON.stringify({ 
       error: "Error interno"
     }), { status: 500 });

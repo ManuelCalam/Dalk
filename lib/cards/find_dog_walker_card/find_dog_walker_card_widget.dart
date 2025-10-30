@@ -297,7 +297,7 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                             }
 
                             try {
-                              print('🚀 Iniciando solicitud de paseo...');
+                              print(' Iniciando solicitud de paseo...');
 
                               if (petId == null || addressId == null || currentUserUid.isEmpty) {
                                 throw Exception('Datos insuficientes para crear el paseo');
