@@ -1,4 +1,5 @@
 import 'package:dalk/SubscriptionProvider.dart';
+import 'package:dalk/services/recommendation_service.dart';
 import 'package:provider/provider.dart';
 
 import '/auth/supabase_auth/auth_util.dart';
@@ -39,6 +40,8 @@ class SetWalkScheduleWidget extends StatefulWidget {
 
 class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
   late SetWalkScheduleModel _model;
+  bool _isLoadingRecommendations = false;
+  List<String> _recommendedWalkerUUIDs = [];
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
   int? selectedAddressId;
@@ -59,9 +62,100 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
     super.dispose();
   }
 
-  @override
+
+  Future<void> _navigateToFindDogWalker({
+    required DateTime date,
+    required DateTime time,
+    required String addressId,
+    required String petId,
+    required int walkDuration,
+    required String instructions,
+  }) async {
+    print('INICIANDO _navigateToFindDogWalker');
+    print('Fecha: $date');
+    print('Hora: $time');
+    print('Address ID: $addressId');
+    print('Pet ID: $petId');
+    print('Duracion: $walkDuration min');
+    print('Instrucciones: $instructions');
+
+    // Mostrar que estamos cargando recomendaciones
+    setState(() {
+      _isLoadingRecommendations = true;
+    });
+    print('Estado: _isLoadingRecommendations = true');
+
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) {
+        print('Usuario autenticado: ${user.id}');
+        print('Obteniendo recomendaciones...');
+        
+        _recommendedWalkerUUIDs =
+            await RecommendationService.getTop3RecommendedWalkers(user.id);
+        
+        print('Recomendaciones obtenidas exitosamente');
+        print('UUIDs recomendados: $_recommendedWalkerUUIDs');
+        print('Total de recomendados: ${_recommendedWalkerUUIDs.length}');
+      } else {
+        print('Usuario no autenticado, recomendaciones vacias');
+        _recommendedWalkerUUIDs = [];
+      }
+    } catch (e) {
+      print('ERROR obteniendo recomendaciones: $e');
+      print('StackTrace: ${e.toString()}');
+      _recommendedWalkerUUIDs = [];
+      print('UUIDs recomendados establecidos a lista vacia');
+    } finally {
+      // Ocultar indicador de carga
+      if (mounted) {
+        setState(() {
+          _isLoadingRecommendations = false;
+        });
+        print('Estado: _isLoadingRecommendations = false');
+      } else {
+        print('Widget no montado, no se puede actualizar estado');
+      }
+    }
+
+    // Navegación solo después de obtener los datos
+    if (mounted) {
+      print('Iniciando navegacion a FindDogWalkerWidget...');
+      print('Parametros a enviar:');
+      print('   - date: ${date.toIso8601String()}');
+      print('   - time: ${time.toIso8601String()}');
+      print('   - addressId: $addressId');
+      print('   - petId: $petId');
+      print('   - walkDuration: $walkDuration');
+      print('   - instructions: $instructions');
+      print('   - recommendedWalkerUUIDs: ${_recommendedWalkerUUIDs.join(',')}');
+      print('   - Total UUIDs: ${_recommendedWalkerUUIDs.length}');
+      
+      context.pushNamed(
+        FindDogWalkerWidget.routeName,
+        queryParameters: {
+          'date': date.toIso8601String(),
+          'time': time.toIso8601String(),
+          'addressId': addressId,
+          'petId': petId,
+          'walkDuration': walkDuration.toString(),
+          'instructions': instructions,
+          'recommendedWalkerUUIDs': _recommendedWalkerUUIDs.join(','),
+        },
+      );
+      print('Navegacion completada');
+    } else {
+      print('Widget no montado, navegacion cancelada');
+    }
+    
+    print('FINALIZANDO _navigateToFindDogWalker');
+  }
+  
+   @override
   Widget build(BuildContext context) {
     final isPremium = context.watch<SubscriptionProvider>().isPremium;
+    String serializedUUIDs = _recommendedWalkerUUIDs.join(',');
+
 
     return GestureDetector(
       onTap: () {
@@ -1196,17 +1290,26 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                             return;
                                         }
 
-                                        context.pushNamed(
-                                          FindDogWalkerWidget.routeName,
-                                            queryParameters: {
-                                              'date': _model.datePicked1?.toIso8601String(),
-                                              'time': _model.datePicked2?.toIso8601String(),
-                                              'addressId': selectedAddressId?.toString(),
-                                              'petId': selectedPetId?.toString(),
-                                              'walkDuration': finalWalkDurationInMinutes.toString(),
-                                              'instructions': _model.instructionsTextController?.text ?? ''
-                                            },
-                                          );
+                                        // context.pushNamed(
+                                        //   FindDogWalkerWidget.routeName,
+                                        //     queryParameters: {
+                                        //       'date': _model.datePicked1?.toIso8601String(),
+                                        //       'time': _model.datePicked2?.toIso8601String(),
+                                        //       'addressId': selectedAddressId?.toString(),
+                                        //       'petId': selectedPetId?.toString(),
+                                        //       'walkDuration': finalWalkDurationInMinutes.toString(),
+                                        //       'instructions': _model.instructionsTextController?.text ?? ''
+                                        //     },
+                                        //   );
+
+                                        await _navigateToFindDogWalker(
+                                          date: _model.datePicked1!,
+                                          time: _model.datePicked2!,
+                                          addressId: selectedAddressId.toString(),
+                                          petId: selectedPetId.toString(),
+                                          walkDuration: finalWalkDurationInMinutes,
+                                          instructions: _model.instructionsTextController?.text ?? '',
+                                        );
                                       },
                                       text: 'Buscar paseador',
                                       options: FFButtonOptions(

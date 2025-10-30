@@ -139,7 +139,13 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             addressId: int.tryParse(params.getParam('addressId', ParamType.String) ?? ''),
             petId: int.tryParse(params.getParam('petId', ParamType.String) ?? ''),
             walkDuration: int.tryParse(params.getParam('walkDuration', ParamType.String) ?? '') ?? 30, 
-            instructions: params.getParam('instructions', ParamType.String) ?? ''
+            instructions: params.getParam('instructions', ParamType.String) ?? '',
+            recommendedWalkerUUIDs: ((params.getParam('recommendedWalkerUUIDs', ParamType.String) ?? '')
+            .split(',')
+            .map((e) => e.trim())
+            .where((e) => (e is String) && e.isNotEmpty)
+            .toList())
+            .cast<String>(), // fuerza a List<String>
           ),
           requireAuth: true
         ),

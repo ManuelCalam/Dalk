@@ -4,7 +4,6 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:firebase_database/firebase_database.dart';
 
-// Definir el entry point de la ejecución del servicio de fondo
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
 
@@ -28,7 +27,6 @@ void onStart(ServiceInstance service) async {
       );
   }
 
-  // ESCUCHAR DATOS (Lista de walkIds)
   // El evento 'setTrackingIds' ahora recibe la lista completa de paseos a rastrear.
   service.on('setTrackingIds').listen((event) {
     final newWalkIds = event?['walkIds'] as List<dynamic>?;
@@ -36,11 +34,9 @@ void onStart(ServiceInstance service) async {
     activeWalkIds = (newWalkIds?.cast<String>() ?? []).toSet(); 
     print('Background Service: IDs de rastreo actualizados: $activeWalkIds');
 
-    // Si tenemos IDs y el Timer no está corriendo, lo iniciamos.
     if (activeWalkIds.isNotEmpty && !isTimerRunning) {
       isTimerRunning = true;
       
-      // 2. INICIAR EL TIMER
       locationTimer = Timer.periodic(const Duration(seconds: 6), (timer) async {
           
           if (activeWalkIds.isEmpty) {
@@ -83,7 +79,6 @@ void onStart(ServiceInstance service) async {
           }
       });
     } else if (activeWalkIds.isEmpty && locationTimer?.isActive == true) {
-        // Si no hay IDs, cancelamos el timer y lo detenemos
         locationTimer?.cancel();
         isTimerRunning = false;
         service.invoke('stopService');

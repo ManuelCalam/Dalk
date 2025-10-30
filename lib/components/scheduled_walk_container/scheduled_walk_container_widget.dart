@@ -288,27 +288,23 @@ class ScheduledWalkContainerWidgetState
 
     // Crear una suscripción para CADA rastreador
     for (final trackerId in trackerIds) {
-      // Ruta de Firebase: dog_locations/UUID_DEL_RASTREADOR
       final ref = FirebaseDatabase.instance.ref('dog_locations/$trackerId');
 
       final subscription = ref.onValue.listen((event) async {
         if (!mounted) return;
 
         final data = event.snapshot.value as Map?;
-        // La estructura de datos esperada es {lat: ..., lng: ...}
         if (data != null && data.containsKey('lat') && data.containsKey('lng')) {
           final lat = (data['lat'] as num).toDouble();
           final lng = (data['lng'] as num).toDouble();
           final position = LatLng(lat, lng);
 
-          // Usamos el UUID como ID del marcador para poder actualizarlo
           final markerId = "tracker_$trackerId"; 
 
-          // Marcador del Rastreador (Azul para diferenciarlo del Paseador)
           final newTrackerMarker = Marker(
             markerId: MarkerId(markerId),
             position: position,
-            infoWindow: InfoWindow(title: 'Rastreador: ${trackerId.substring(0, 8)}...'), // Mostrar parte del UUID
+            infoWindow: InfoWindow(title: 'Rastreador: ${trackerId.substring(0, 8)}...'),
             icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure), 
           );
 

@@ -144,10 +144,9 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
 
       if (_ownerImage != null) {
         final uploadedUrl = await _uploadOwnerImage(userId!, _ownerImage!);
-        imageUrl = uploadedUrl ??
-            supabase.storage.from('profile_pics').getPublicUrl('user.png');
+        imageUrl = uploadedUrl ?? 'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/public/profile_pics/user.png';
       } else {
-        imageUrl = supabase.storage.from('profile_pics').getPublicUrl('user.png');
+        imageUrl = 'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/public/profile_pics/user.png';
       }
 
       // Actualizar URL de la imagen
