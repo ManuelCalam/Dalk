@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'find_dog_walker_model.dart';
 export 'find_dog_walker_model.dart';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 // String? recommendedWalker;

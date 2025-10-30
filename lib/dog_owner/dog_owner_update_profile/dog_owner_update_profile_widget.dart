@@ -2189,6 +2189,20 @@ class _DogOwnerUpdateProfileWidgetState
                                                     .fromSTEB(0, 18, 0, 18),
                                                 child: FFButtonWidget(
                                                   onPressed: () async {
+                                                    if (!_model.formKey.currentState!.validate()) {
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        const SnackBar(content: Text('Corrige los campos con errores')),
+                                                      );
+                                                      return;
+                                                    }
+
+                                                    if (_model.datePicked == null) {
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        const SnackBar(content: Text('Selecciona una fecha de nacimiento')),
+                                                      );
+                                                      return;
+                                                    }
+                                                        
                                                     try {
                                                       final response = await Supabase.instance.client
                                                           .from('users')

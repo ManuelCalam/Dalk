@@ -144,13 +144,13 @@ class _DogWalkerServiceWidgetState extends State<DogWalkerServiceWidget> {
       };
 
       if (existingServiceId == null) {
-        // 🟢 Insertar nuevo servicio
+        // Insertar nuevo servicio
         await Supabase.instance.client.from('dog_walker_service').insert(data);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('¡Servicio registrado con éxito!')),
         );
       } else {
-        // 🟡 Actualizar servicio existente
+        // Actualizar servicio existente
         await Supabase.instance.client
             .from('dog_walker_service')
             .update(data)
@@ -221,14 +221,14 @@ class _DogWalkerServiceWidgetState extends State<DogWalkerServiceWidget> {
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      wrapWithModel(
-                        model: _model.goBackContainerModel,
-                        updateCallback: () => safeSetState(() {}),
-                        child: const GoBackContainerWidget(),
-                      ),
+                      // wrapWithModel(
+                      //   model: _model.goBackContainerModel,
+                      //   updateCallback: () => safeSetState(() {}),
+                      //   child: const GoBackContainerWidget(),
+                      // ),
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 30, 0, 15),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 0.9,
                             decoration: const BoxDecoration(),

@@ -2945,7 +2945,6 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
 
                                                           await Future.delayed(const Duration(milliseconds: 500));
 
-                                                          // Navegación segura solo cuando TODO terminó
                                                           context.go('/');
                                                         } catch (e) {
                                                         } finally {

@@ -503,11 +503,11 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                     hoverColor: Colors.transparent,
                                     highlightColor: Colors.transparent,
                                     onTap: () async {
-                                      context.goNamed(
-                                        '_initialize', 
-                                        queryParameters: {'initialPage': 'walkerService'},
-                                      );  
-
+                                      // context.goNamed(
+                                      //   '_initialize', 
+                                      //   queryParameters: {'initialPage': 'walkerService'},
+                                      // );  
+                                 
                                     },
                                     child: Container(
                                       width: MediaQuery.sizeOf(context).width,

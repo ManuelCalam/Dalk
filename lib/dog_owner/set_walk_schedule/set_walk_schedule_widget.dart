@@ -1290,18 +1290,6 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                             return;
                                         }
 
-                                        // context.pushNamed(
-                                        //   FindDogWalkerWidget.routeName,
-                                        //     queryParameters: {
-                                        //       'date': _model.datePicked1?.toIso8601String(),
-                                        //       'time': _model.datePicked2?.toIso8601String(),
-                                        //       'addressId': selectedAddressId?.toString(),
-                                        //       'petId': selectedPetId?.toString(),
-                                        //       'walkDuration': finalWalkDurationInMinutes.toString(),
-                                        //       'instructions': _model.instructionsTextController?.text ?? ''
-                                        //     },
-                                        //   );
-
                                         await _navigateToFindDogWalker(
                                           date: _model.datePicked1!,
                                           time: _model.datePicked2!,
