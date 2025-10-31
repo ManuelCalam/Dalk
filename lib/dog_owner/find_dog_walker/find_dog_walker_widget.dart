@@ -147,7 +147,6 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // final String recommendedWalker = 'Paoo';
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();

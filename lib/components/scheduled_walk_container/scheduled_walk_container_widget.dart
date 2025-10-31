@@ -6,6 +6,7 @@ import 'package:dalk/dog_walker/background_service/background_service.dart';
 import 'package:dalk/dog_walker/background_service/on_ios_background';
 import 'package:dalk/flutter_flow/flutter_flow_icon_button.dart';
 import 'package:dalk/flutter_flow/flutter_flow_widgets.dart';
+import 'package:dalk/utils/validation.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_background_service/flutter_background_service.dart'
     show
@@ -530,7 +531,6 @@ class ScheduledWalkContainerWidgetState
                   );
                 }
 
-                // Datos cargados correctamente - ahora snapshot.data contiene la info
                 final walkData = snapshot.data!;
 
                 return SingleChildScrollView(
@@ -540,7 +540,6 @@ class ScheduledWalkContainerWidgetState
                       width: MediaQuery.sizeOf(context).width,
                       decoration: BoxDecoration(
                         color: FlutterFlowTheme.of(context).tertiary,
-                        // borderRadius: BorderRadius.circular(15),
                       ),
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
@@ -578,7 +577,7 @@ class ScheduledWalkContainerWidgetState
                                     child: TextFormField(
                                   
                                       controller: _model.textController..text = widget.userType == 'Dueño' 
-                                                  ? walkData['walker_name'] 
+                                                  ? Validators.formatDisplayName(walkData['walker_name'])
                                                   : walkData['pet_name'],
                                       focusNode: _model.textFieldFocusNode,
                                       autofocus: false,

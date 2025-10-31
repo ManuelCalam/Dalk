@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart';
 
-import '/components/go_back_container/go_back_container_widget.dart';
 import '/flutter_flow/flutter_flow_choice_chips.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -11,7 +10,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/backend/supabase/supabase.dart';
-import '/index.dart';
 import 'dog_walker_service_model.dart';
 export 'dog_walker_service_model.dart';
 
@@ -61,7 +59,7 @@ class _DogWalkerServiceWidgetState extends State<DogWalkerServiceWidget> {
           .from('dog_walker_service')
           .select()
           .eq('walker_id', currentUser.id)
-          .maybeSingle(); // devuelve null si no hay registro
+          .maybeSingle(); 
 
       if (response != null) {
         existingServiceId = response['id'];

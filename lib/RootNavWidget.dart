@@ -21,7 +21,7 @@ class _RootNavWidgetState extends State<RootNavWidget> {
   bool _loading = true;
   bool _redirecting = false;
   int _attempts = 0;
-  final int _maxAttempts = 8;
+  final int _maxAttempts = 10;
 
   @override
   void initState() {

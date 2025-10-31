@@ -37,8 +37,8 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
     super.initState();
     _model = createModel(context, () => HomeDogOwnerModel());
     //recarga el cached del usuario
-    context.read<UserProvider>().loadUser();
-    // context.read<UserProvider>().loadUser(forceRefresh: true);
+    // context.read<UserProvider>().loadUser();
+    context.read<UserProvider>().loadUser(forceRefresh: true);
   }
   
 
@@ -326,7 +326,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                         //     ),
                         //   ),
                         // ),
-                                                Padding(
+                        Padding(
                           padding: const EdgeInsetsDirectional.fromSTEB(
                               0, 5, 0, 0),
                           child: InkWell(

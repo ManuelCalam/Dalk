@@ -947,7 +947,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                     'Mujer',
                                                     'Otro'
                                                   ]),
-                                                  optionLabels: [
+                                                  optionLabels: const [
                                                     'Hombre',
                                                     'Mujer',
                                                     'Otro'
@@ -2202,6 +2202,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                       );
                                                       return;
                                                     }
+                                                    final address = (user?.address);
                                                         
                                                     try {
                                                       final response = await Supabase.instance.client
@@ -2220,6 +2221,19 @@ class _DogOwnerUpdateProfileWidgetState
                                                             'city': _model.cityDogOwnerInputTextController.text,
                                                           })
                                                           .eq('uuid', currentUserUid); 
+
+                                                          if(address == null || address == '') {
+                                                            await supabase.from('addresses').insert({
+                                                              'uuid': currentUserUid,
+                                                              'alias': 'Mi Dirección',
+                                                              'address': _model.streetDogOwnerInputTextController.text.trim(),
+                                                              'ext_number': _model.exteriorNumberDogOwnerInputTextController.text.trim(),
+                                                              'int_number': _model.interiorNumberDogOwnerInputTextController.text.trim(),
+                                                              'zipCode': _model.zipCodeDogOwnerInputTextController.text.trim(),
+                                                              'neighborhood': _model.neighborhoodDogOwnerInputTextController.text.trim(),
+                                                              'city': _model.cityDogOwnerInputTextController.text.trim(),
+                                                            });
+                                                          }
 
                                                           ScaffoldMessenger.of(context).showSnackBar(
                                                             const SnackBar(content: Text('¡Perfil actualizado exitosamente!')),
@@ -2247,13 +2261,11 @@ class _DogOwnerUpdateProfileWidgetState
                                                       context.read<UserProvider>().setUser(updatedUser);
                                                       await UserPrefs.saveUser(updatedUser);
 
-                                                      // Limpiar temporal para que NetworkImage tome la nueva URL
                                                       setState(() {
                                                         _tempImage = null;
                                                       });
                                                     }
 
-                                                    // 3. Refrescar el widget
                                                     setState(() {});
 
                                                   },

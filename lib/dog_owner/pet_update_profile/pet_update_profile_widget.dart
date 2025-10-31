@@ -338,7 +338,6 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
   }
 
   Future<void> _saveChanges() async {
-    // Marcar que el formulario ha sido enviado y todos los campos como tocados
     setState(() {
       _formSubmitted = true;
       _nameTouched = true;
@@ -412,7 +411,6 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
       try {
         setState(() => _isSaving = true);
 
-        // 🔹 Si hay una imagen nueva seleccionada, súbela primero
         String? imageUrl;
         if (_petImage  != null) {
           imageUrl = await _uploadPetImage(userId, _petImage !, petId: petId);
@@ -421,8 +419,8 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
           }
         }
 
-        print('🔹 Enviando actualización para ID: $petId');
-        print('🔹 Payload: $payload');
+        print(' Enviando actualización para ID: $petId');
+        print(' Payload: $payload');
 
         final response = await supabase
             .from('pets')
@@ -430,7 +428,7 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
             .eq('id', petId)
             .select();
 
-        print('🔹 Supabase response: $response');
+        print('Supabase response: $response');
 
         if (response is List && response.isNotEmpty) {
           final updated = Map<String, dynamic>.from(response.first);
@@ -501,7 +499,7 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                 height: MediaQuery.sizeOf(context).height * 0.1,
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).secondary,
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(0),
                     bottomRight: Radius.circular(0),
                     topLeft: Radius.circular(0),
@@ -511,7 +509,7 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                 child: wrapWithModel(
                   model: _model.notificationContainerModel,
                   updateCallback: () => safeSetState(() {}),
-                  child: NotificationContainerWidget(),
+                  child: const NotificationContainerWidget(),
                 ),
               ),
               Expanded(
@@ -519,7 +517,7 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                   width: MediaQuery.sizeOf(context).width,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).tertiary,
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(0),
                       bottomRight: Radius.circular(0),
                       topLeft: Radius.circular(50),
@@ -532,7 +530,7 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                       wrapWithModel(
                         model: _model.goBackContainerModel,
                         updateCallback: () => safeSetState(() {}),
-                        child: GoBackContainerWidget(),
+                        child: const GoBackContainerWidget(),
                       ),
                       AutoSizeText(
                         'Editar datos',
@@ -575,14 +573,14 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                       ),
                       Expanded(
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 0.9,
                             height: double.infinity,
-                            decoration: BoxDecoration(),
+                            decoration: const BoxDecoration(),
                             child: Padding(
                               padding:
-                                  EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+                                  const EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
                               child: SingleChildScrollView(
                                 child: Form(
                                   key: _formKey,
@@ -591,7 +589,7 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                                     children: [
                                       Flexible(
                                         child: Align(
-                                          alignment: AlignmentDirectional(0, 0),
+                                          alignment: const AlignmentDirectional(0, 0),
                                           child: Padding(
                                             padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
                                             child: GestureDetector(
@@ -859,7 +857,7 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                                                   onChanged: (val) {
                                                     safeSetState(() {
                                                       _model.genderDogOwnerMenuValue = val;
-                                                      _showGenderError = false; // Oculta el error cuando se selecciona
+                                                      _showGenderError = false; 
                                                     });
                                                   },
                                                   width: MediaQuery.sizeOf(context).width,
@@ -1091,21 +1089,21 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                                       ),
                                       Expanded(
                                         child: Padding(
-                                          padding: EdgeInsetsDirectional.fromSTEB(
+                                          padding: const EdgeInsetsDirectional.fromSTEB(
                                               0, 18, 0, 0),
                                           child: Container(
                                             width:
                                                 MediaQuery.sizeOf(context).width,
-                                            decoration: BoxDecoration(),
+                                            decoration: const BoxDecoration(),
                                             child: Column(
                                               mainAxisSize: MainAxisSize.max,
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
                                                 Align(
                                                   alignment:
-                                                      AlignmentDirectional(-1, 0),
+                                                      const AlignmentDirectional(-1, 0),
                                                   child: Padding(
-                                                    padding: EdgeInsetsDirectional
+                                                    padding: const EdgeInsetsDirectional
                                                         .fromSTEB(0, 0, 0, 5),
                                                     child: AutoSizeText(
                                                       'Comportamiento',
@@ -1156,17 +1154,17 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                                                     borderRadius: BorderRadius.circular(8),
                                                   ),
                                                   child: Align(
-                                                    alignment: AlignmentDirectional(0, 0),
+                                                    alignment: const AlignmentDirectional(0, 0),
                                                     child: FlutterFlowChoiceChips(
                                                       options: [
-                                                        ChipData('Sociable con otros perros'),
-                                                        ChipData('Nervioso'),
-                                                        ChipData('Tranquilo'),
-                                                        ChipData('Obediente'),
-                                                        ChipData('Energético'),
-                                                        ChipData('Tira de la correa'),
-                                                        ChipData('No se lleva con otros perros'),
-                                                        ChipData('Amigable con personas'),
+                                                        const ChipData('Sociable con otros perros'),
+                                                        const ChipData('Nervioso'),
+                                                        const ChipData('Tranquilo'),
+                                                        const ChipData('Obediente'),
+                                                        const ChipData('Energético'),
+                                                        const ChipData('Tira de la correa'),
+                                                        const ChipData('No se lleva con otros perros'),
+                                                        const ChipData('Amigable con personas'),
                                                       ],
 
                                                       //  Solo un controller
@@ -1198,7 +1196,7 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                                                             ),
                                                         iconColor: FlutterFlowTheme.of(context).info,
                                                         iconSize: 16,
-                                                        labelPadding: EdgeInsets.all(5),
+                                                        labelPadding: const EdgeInsets.all(5),
                                                         elevation: 0,
                                                         borderRadius: BorderRadius.circular(8),
                                                       ),
@@ -1219,7 +1217,7 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                                                         iconColor:
                                                             FlutterFlowTheme.of(context).secondaryBackground,
                                                         iconSize: 16,
-                                                        labelPadding: EdgeInsets.all(5),
+                                                        labelPadding: const EdgeInsets.all(5),
                                                         elevation: 0,
                                                         borderRadius: BorderRadius.circular(8),
                                                       ),
@@ -1356,7 +1354,7 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                                         ),
                                       Flexible(
                                         child: Padding(
-                                          padding: EdgeInsetsDirectional.fromSTEB(
+                                          padding: const EdgeInsetsDirectional.fromSTEB(
                                               0, 18, 0, 0),
                                           child: FFButtonWidget(
                                             onPressed: () async {
@@ -1370,10 +1368,10 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                                                       .height *
                                                   0.05,
                                               padding:
-                                                  EdgeInsetsDirectional.fromSTEB(
+                                                  const EdgeInsetsDirectional.fromSTEB(
                                                       0, 0, 0, 0),
                                               iconPadding:
-                                                  EdgeInsetsDirectional.fromSTEB(
+                                                  const EdgeInsetsDirectional.fromSTEB(
                                                       0, 0, 0, 0),
                                               color: FlutterFlowTheme.of(context)
                                                   .accent1,
