@@ -14,6 +14,7 @@ import '/utils/validation.dart';
 import 'sing_in_dog_walker_model.dart';
 export 'sing_in_dog_walker_model.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:dalk/services/zipCode_service.dart';
 import 'dart:io';
 
 class SingInDogWalkerWidget extends StatefulWidget {
@@ -2916,6 +2917,19 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
                                                           );
                                                           return;
                                                         }
+
+                                                        // Validar código postal con la API de Google
+                                                        final geoService = ZipCodeService();
+                                                        final postalCode = _model.zipCodeDogWalkerInputTextController.text.trim();
+
+                                                        final isValidPostal = await geoService.validatePostalCode(postalCode);
+                                                        if (!isValidPostal) {
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            const SnackBar(content: Text('El código postal no es válido o no pertenece a Jalisco.')),
+                                                          );
+                                                          return;
+                                                        }
+
 
                                                         if (_model.datePicked == null) {
                                                           ScaffoldMessenger.of(context).showSnackBar(
