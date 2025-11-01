@@ -46,7 +46,7 @@ class _NotificationContainerWidgetState
       height: 100.0,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).secondary,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(0.0),
           bottomRight: Radius.circular(0.0),
           topLeft: Radius.circular(0.0),
@@ -61,12 +61,12 @@ class _NotificationContainerWidgetState
         children: [
           Expanded(
             child: Align(
-              alignment: AlignmentDirectional(1.0, 0.0),
+              alignment: const AlignmentDirectional(1.0, 0.0),
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 15.0, 5.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 15.0, 5.0),
                 child: Container(
-                  decoration: BoxDecoration(),
-                  alignment: AlignmentDirectional(1.0, 0.0),
+                  decoration: const BoxDecoration(),
+                  alignment: const AlignmentDirectional(1.0, 0.0),
                   child: InkWell(
                     splashColor: Colors.transparent,
                     focusColor: Colors.transparent,

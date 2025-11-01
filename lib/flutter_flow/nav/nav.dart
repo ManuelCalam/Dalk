@@ -1,14 +1,23 @@
 import 'dart:async';
+import 'package:dalk/NavBar/nav_bar_dog_owner.dart';
+import 'package:dalk/NavBar/nav_bar_dog_walker.dart';
 import 'package:dalk/RootNavWidget.dart';
+import 'package:dalk/common/current_walk_empty_window/current_walk_empty_window_widget.dart';
+import 'package:dalk/common/password_recovery/password_recovery_widget.dart';
+import 'package:dalk/common/payment_methods/payment_methods_widget.dart';
+import 'package:dalk/common/walk_payment_window/walk_payment_window_widget.dart';
+import 'package:dalk/common/walks_record/walks_record_widget.dart';
+import 'package:dalk/components/not_scheduled_walk_container/not_scheduled_walk_container_widget.dart';
+import 'package:dalk/components/scheduled_walk_container/scheduled_walk_container_widget.dart';
+import 'package:dalk/dog_owner/buy_tracker/buy_tracker_widget.dart';
+import 'package:dalk/dog_owner/pet_update_profile/pet_update_profile_widget.dart';
+import 'package:dalk/dog_owner/tracker_details/tracker_details_widget.dart';
 import 'package:dalk/dog_walker/walks_dog_walker/walks_dog_walker_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 import '/auth/base_auth_user_provider.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'serialization_util.dart';
 
 import '/index.dart';
 
@@ -72,6 +81,420 @@ class AppStateNotifier extends ChangeNotifier {
   }
 }
 
+
+GoRouter createRouter(AppStateNotifier appStateNotifier) {
+  // Helper para crear redirect similar a FFRoute.toRoute
+  String? authRedirect(BuildContext context, GoRouterState state, bool requireAuth) {
+    if (appStateNotifier.shouldRedirect) {
+      final redirectLocation = appStateNotifier.getRedirectLocation();
+      appStateNotifier.clearRedirectLocation();
+      return redirectLocation;
+    }
+    if (requireAuth && !appStateNotifier.loggedIn) {
+      appStateNotifier.setRedirectLocationIfUnset(state.uri.toString());
+      return '/login';
+    }
+    return null;
+  }
+
+  Page<dynamic> pageBuilderFor(GoRouterState state, Widget child) {
+    final context = appNavigatorKey.currentContext;
+    if (context != null && appStateNotifier.loading) {
+      return MaterialPage(
+        key: state.pageKey,
+        child: Center(
+          child: SizedBox(
+            width: 50.0,
+            height: 50.0,
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(
+                FlutterFlowTheme.of(context).primary,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return MaterialPage(key: state.pageKey, child: child);
+  }
+
+  return GoRouter(
+    initialLocation: '/',
+    debugLogDiagnostics: true,
+    refreshListenable: appStateNotifier,
+    navigatorKey: appNavigatorKey,
+    redirect: (context, state) {
+      final loggedIn = appStateNotifier.loggedIn;
+
+      if (loggedIn && state.matchedLocation == LoginWidget.routePath) {
+        return '/';
+      }
+      return null;
+    },
+    routes: <RouteBase>[
+      GoRoute(
+        name: '_initialize',
+        path: '/',
+        pageBuilder: (context, state) => pageBuilderFor(
+          state,
+          RootNavWidget(
+            initialPage: state.queryParams['initialPage'],
+          ),
+        ),
+        redirect: (context, state) {
+          // Mantengo comportamientos de auth si hace falta
+          if (appStateNotifier.shouldRedirect) {
+            final redirectLocation = appStateNotifier.getRedirectLocation();
+            appStateNotifier.clearRedirectLocation();
+            return redirectLocation;
+          }
+          return null;
+        },
+      ),
+
+      GoRoute(
+        name: LoginWidget.routeName,
+        path: LoginWidget.routePath,
+        pageBuilder: (context, state) => pageBuilderFor(state, const LoginWidget()),
+        redirect: (context, state) => authRedirect(context, state, false),
+      ),
+      GoRoute(
+        name: ChangePasswordWidget.routeName,
+        path: ChangePasswordWidget.routePath,
+        pageBuilder: (context, state) => pageBuilderFor(state, const ChangePasswordWidget()),
+        redirect: (context, state) => authRedirect(context, state, false),
+      ),
+      GoRoute(
+        name: SingInDogOwnerWidget.routeName,
+        path: SingInDogOwnerWidget.routePath,
+        pageBuilder: (context, state) => pageBuilderFor(state, const SingInDogOwnerWidget()),
+        redirect: (context, state) => authRedirect(context, state, false),
+      ),
+
+      GoRoute(
+        name: SingInDogOwnerWidget.routeName,
+        path: SingInDogOwnerWidget.routePath,
+        pageBuilder: (context, state) {
+          final args = state.extra as Map<String, dynamic>? ?? {};
+          return pageBuilderFor(state, SingInDogWalkerWidget(
+            registerMethod: args['registerMethod']
+          ));
+
+        },
+        redirect: (context, state) => authRedirect(context, state, false),
+      ),
+
+      GoRoute(
+        name: SingInDogOwnerWidget.routeName,
+        path: SingInDogOwnerWidget.routePath,
+        pageBuilder: (context, state) => pageBuilderFor(state, const SignInWithGoogleDogOwnerWidget()),
+        redirect: (context, state) => authRedirect(context, state, false),
+      ),
+
+      GoRoute(
+        name: SingInDogOwnerWidget.routeName,
+        path: SingInDogOwnerWidget.routePath,
+        pageBuilder: (context, state) => pageBuilderFor(state, const ChooseUserTypeWidget()),
+        redirect: (context, state) => authRedirect(context, state, false),
+      ),
+
+      GoRoute(
+        name: SingInDogOwnerWidget.routeName,
+        path: SingInDogOwnerWidget.routePath,
+        pageBuilder: (context, state) => pageBuilderFor(state, const PasswordRecoveryWidget()),
+        redirect: (context, state) => authRedirect(context, state, false),
+      ),
+      
+
+      // ---------------------------
+      // ShellRoute para OWNER (NavBarOwnerPage)
+      // ---------------------------
+      ShellRoute(
+        builder: (context, state, child) {
+          return NavBarOwnerPage(
+            page: child,
+            disableResizeToAvoidBottomInset: false,
+          );
+        },
+        routes: [
+          // Rutas comunes
+          GoRoute(
+            name: 'owner_notifications',
+            path: 'owner/notifications', 
+            pageBuilder: (context, state) => pageBuilderFor(state, const NotificationsWidget()),
+            redirect: (context, state) => authRedirect(context, state, true),
+          ),
+          GoRoute(
+            name: 'owner_chat',
+            path: 'owner/chat', 
+            pageBuilder: (context, state)  {
+              final args = state.extra as Map<String, dynamic>? ?? {};
+              return pageBuilderFor(state, 
+                ChatWidget(
+                  ownerId: args['ownerId'] ?? '',
+                  walkerId: args['walkerId'] ?? '',
+                  senderId: args['senderId'],
+                  userName: args['userName'],
+                  status: args['status'],                
+                )
+              );
+            },
+            redirect: (context, state) => authRedirect(context, state, true),
+          ),
+          // Rutas de nav
+          GoRoute(
+            name: 'owner_home',
+            path: '/owner/home',
+            pageBuilder: (context, state) => pageBuilderFor(state, const HomeDogOwnerWidget()),
+            redirect: (context, state) => authRedirect(context, state, true),
+          ),
+          GoRoute(
+            name: 'owner_currentWalk',
+            path: '/owner/currentWalk',
+            pageBuilder: (context, state) => pageBuilderFor(state, const CurrentWalkEmptyWindowWidget()),
+            redirect: (context, state) => authRedirect(context, state, true),
+          ),
+          GoRoute(
+            name: 'owner_petList',
+            path: 'owner/petList', 
+            pageBuilder: (context, state) => pageBuilderFor(state, const PetListWidget()),
+            redirect: (context, state) => authRedirect(context, state,  true),
+          ),
+          GoRoute(
+            name: 'owner_profile',
+            path: 'owner/profile', 
+            pageBuilder: (context, state) => pageBuilderFor(state, const DogOwnerProfileWidget()),
+            redirect: (context, state) => authRedirect(context, state, true),
+          ),
+
+          // Rutas de agendar paseo
+          GoRoute(
+            name: 'owner_requestWalk',
+            path: '/owner/requestWalk',
+            pageBuilder: (context, state) {
+              final args = state.extra as Map<String, dynamic>? ?? {};
+              return pageBuilderFor(state,
+                SetWalkScheduleWidget(
+                  selectedAddress: args['selectedAddress'],
+                  selectedPet: args['selectedPet'],
+                ),
+              );
+            },
+            redirect: (context, state) => authRedirect(context, state, true),
+          ),
+          GoRoute(
+            name: 'owner_addAddress',
+            path: 'owner/addAddress', 
+            pageBuilder: (context, state)  {
+              final args = state.extra as Map<String, dynamic>? ?? {};
+              return pageBuilderFor(state, 
+                AddAddressWidget(
+                  originWindow: args['originWindow'],
+                )
+              );
+            },
+            redirect: (context, state) => authRedirect(context, state, true),
+          ),
+          GoRoute(
+            name: 'owner_addPet',
+            path: 'owner/addPet', 
+            pageBuilder: (context, state) => pageBuilderFor(state, const AddPetWidget()),
+            redirect: (context, state) => authRedirect(context, state, true),
+          ),
+          GoRoute(
+            name: 'owner_premiumInfo',
+            path: 'owner/premiumInfo', 
+            pageBuilder: (context, state) => pageBuilderFor(state, const PremiumPlanInfoWidget()),
+            redirect: (context, state) => authRedirect(context, state, true),
+          ),
+          GoRoute(
+            name: 'owner_addPet',
+            path: 'owner/addPet', 
+            pageBuilder: (context, state) => pageBuilderFor(state, const AddPetWidget()),
+            redirect: (context, state) => authRedirect(context, state, true),
+          ),
+          GoRoute(
+            name: 'owner_findDogWalker',
+            path: 'owner/findDogWalker',
+            pageBuilder: (context, state) {
+              final args = state.extra as Map<String, dynamic>? ?? {};
+              return pageBuilderFor(
+                state,
+                FindDogWalkerWidget(
+                  date: args['date'] as DateTime?,
+                  time: args['time'] as DateTime?,
+                  addressId: args['addressId'] as int?,
+                  petId: args['petId'] as int?,
+                  walkDuration: (args['walkDuration'] as int?) ?? 30,
+                  instructions: args['instructions'] as String? ?? '',
+                  recommendedWalkerUUIDs:
+                      (args['recommendedWalkerUUIDs'] as List<String>?) ?? [],
+                ),
+              );
+            },
+            redirect: (context, state) => authRedirect(context, state, true),
+          ),
+
+          // Rutas de ventana de paseos
+          GoRoute(
+            name: 'owner_walksDogOwner',
+            path: 'owner/walksDogOwner', 
+            pageBuilder: (context, state) => pageBuilderFor(state, const WalksDogOwnerWidget()),
+            redirect: (context, state) => authRedirect(context, state, true),
+          ),
+          GoRoute(
+            name: 'owner_walksRecord',
+            path: 'owner/walksRecord', 
+            pageBuilder: (context, state)  {
+              final args = state.extra as Map<String, dynamic>? ?? {};
+              return pageBuilderFor(state, 
+                WalksRecordWidget(
+                  userType: args['userType'],
+                )
+              );
+            },
+            redirect: (context, state) => authRedirect(context, state, true),
+          ),
+
+          // Rutas de currentWalk
+          GoRoute(
+            name: 'owner_scheduledWalk',
+            path: 'owner/scheduledWalk', 
+            pageBuilder: (context, state)  {
+              final args = state.extra as Map<String, dynamic>? ?? {};
+              return pageBuilderFor(state, 
+                ScheduledWalkContainerWidget(
+                  walkId: args['walkId'],
+                  userType: args['userType'],
+                )
+              );
+            },
+            redirect: (context, state) => authRedirect(context, state, true),
+          ),          
+          GoRoute(
+            name: 'owner_notScheduledWalk',
+            path: 'owner/notScheduledWalk', 
+            pageBuilder: (context, state)  {
+              final args = state.extra as Map<String, dynamic>? ?? {};
+              return pageBuilderFor(state, 
+                NotScheduledWalkContainerWidget(
+                  userType: args['userType'],
+                )
+              );
+            },
+            redirect: (context, state) => authRedirect(context, state, true),
+          ),          
+
+          // Rutas de petList 
+          GoRoute(
+            name: 'owner_updatePet',
+            path: 'pet/updatePet', 
+            pageBuilder: (context, state) {
+              final args = state.extra as Map<String, dynamic>? ?? {};
+              return pageBuilderFor(
+                state,
+                PetUpdateProfileWidget(
+                  petData: args['petData'],
+                ),
+              );
+            },
+            redirect: (context, state) => authRedirect(context, state, true),
+          ),
+
+          // Rutas de perfil de dueño
+          GoRoute(
+            name: 'owner_updateProfile',
+            path: 'owner/updateProfile', 
+            pageBuilder: (context, state) => pageBuilderFor(state, const DogOwnerUpdateProfileWidget()),
+            redirect: (context, state) => authRedirect(context, state, true),
+          ),
+          GoRoute(
+            name: 'owner_paymentMethods',
+            path: 'owner/paymentMethods', 
+            pageBuilder: (context, state) => pageBuilderFor(state, const PaymentMethodsWidget()),
+            redirect: (context, state) => authRedirect(context, state, true),
+          ),
+          GoRoute(
+            name: 'owner_trackerDetails',
+            path: 'owner/trackerDetails', 
+            pageBuilder: (context, state) => pageBuilderFor(state, const TrackerDetailsWidget()),
+            redirect: (context, state) => authRedirect(context, state, true),
+          ),
+          GoRoute(
+            name: 'owner_buyTracker',
+            path: 'owner/buyTracker', 
+            pageBuilder: (context, state) => pageBuilderFor(state, const BuyTrackerWidget()),
+            redirect: (context, state) => authRedirect(context, state, true),
+          ),
+
+          // Ruta para pago de paseo
+          GoRoute(
+            name: 'owner_walkPayment',
+            path: 'owner/paymentWalk', 
+            pageBuilder: (context, state)  {
+              final args = state.extra as Map<String, dynamic>? ?? {};
+              return pageBuilderFor(state, 
+                WalkPaymentWindowWidget(
+                  walkId: args['walkId'],
+                  userType: args['userType'],
+                )
+              );
+            },
+            redirect: (context, state) => authRedirect(context, state, true),
+          ),          
+
+
+        ],
+      ),
+
+      // ---------------------------
+      // ShellRoute para WALKER (NavBarWalkerPage)
+      // ---------------------------
+      ShellRoute(
+        builder: (context, state, child) {
+          return NavBarWalkerPage(
+            page: child,
+            disableResizeToAvoidBottomInset: false,
+          );
+        },
+        routes: [
+          GoRoute(
+            name: 'walker_home',
+            path: '/walker/home',
+            pageBuilder: (context, state) => pageBuilderFor(state, HomeDogWalkerWidget()),
+            redirect: (context, state) => authRedirect(context, state, /*requireAuth*/ true),
+          ),
+          GoRoute(
+            name: 'walker_current',
+            path: '/walker/current',
+            pageBuilder: (context, state) => pageBuilderFor(state, CurrentWalkWidget()),
+            redirect: (context, state) => authRedirect(context, state, /*requireAuth*/ true),
+          ),
+          GoRoute(
+            name: WalksDogWalkerWidget.routeName,
+            path: WalksDogWalkerWidget.routePath,
+            pageBuilder: (context, state) => pageBuilderFor(state, WalksDogWalkerWidget()),
+            redirect: (context, state) => authRedirect(context, state, /*requireAuth*/ true),
+          ),
+          GoRoute(
+            name: DogWalkerProfileWidget.routeName,
+            path: DogWalkerProfileWidget.routePath,
+            pageBuilder: (context, state) => pageBuilderFor(state, DogWalkerProfileWidget()),
+            redirect: (context, state) => authRedirect(context, state, /*requireAuth*/ true),
+          ),
+          // Añade más rutas hijas de Walker aquí...
+        ],
+      ),
+
+      // ---------------------------
+      // Resto de rutas que necesites (si tienes muchas rutas definidas con FFRoute,
+      // puedes mantener la lista FFRoute -> toRoute para las que no están dentro de shells).
+      // ---------------------------
+    ],
+  );
+}
+
+
 GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       initialLocation: '/',
       debugLogDiagnostics: true,
@@ -79,11 +502,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       navigatorKey: appNavigatorKey,
       redirect: (context, state) {
         final loggedIn = appStateNotifier.loggedIn;
-
-        // Si no está logeado mandar al usuario a la ventana del login
-        // if (!loggedIn && state.matchedLocation != LoginWidget.routePath) {
-        //   return LoginWidget.routePath;
-        // }
 
         // Si está logeado y trata de entrar, mándalo a raíz con navBar
         if (loggedIn && state.matchedLocation == LoginWidget.routePath) {
@@ -111,10 +529,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: SetWalkScheduleWidget.routeName,
           path: SetWalkScheduleWidget.routePath,
           builder: (context, params) => SetWalkScheduleWidget(
-            selectedAddress: params.getParam(
-              'selectedAddress',
-              ParamType.int,
-            ),
+            selectedAddress: params.getParam('selectedAddress',ParamType.int,),
             selectedPet: params.getParam('selectedPet', ParamType.int),
           ),
           requireAuth: true

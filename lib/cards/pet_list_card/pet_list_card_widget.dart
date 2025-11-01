@@ -238,7 +238,7 @@ class _PetListCardWidgetState extends State<PetListCardWidget> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => PetUpdateProfileWidget(
-                                  petData: widget.petData, // 👈 pasamos los datos de la mascota seleccionada
+                                  petData: widget.petData, // pasamos los datos de la mascota seleccionada
                                 ),
                               ),
                             );

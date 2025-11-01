@@ -97,7 +97,7 @@ class _PasswordRecoveryWidgetState extends State<PasswordRecoveryWidget> {
                         child: GoBackContainerWidget(),
                       ),
                       Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(10, 0, 10, 0),
+                        padding: EdgeInsetsDirectional.fromSTEB(12, 5, 12, 0),
                         child: AutoSizeText(
                           'Restablecer contraseña',
                           textAlign: TextAlign.center,

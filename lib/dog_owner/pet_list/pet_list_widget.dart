@@ -36,7 +36,7 @@ class _PetListWidgetState extends State<PetListWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => PetListModel());
-    _loadPets(); // 👈 carga las mascotas al iniciar
+    _loadPets(); // carga las mascotas al iniciar
   }
 
   Future<void> _loadPets() async {
