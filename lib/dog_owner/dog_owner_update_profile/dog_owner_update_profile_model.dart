@@ -20,7 +20,7 @@ class DogOwnerUpdateProfileModel
   String? _nameDogOwnerInputTextControllerValidator(
       BuildContext context, String? val) {
     if (val == null || val.isEmpty) {
-      return 'TelÃ©fono is required';
+      return 'Teléfono is required';
     }
 
     return null;
@@ -34,7 +34,7 @@ class DogOwnerUpdateProfileModel
   String? _phoneDogOwnerInputTextControllerValidator(
       BuildContext context, String? val) {
     if (val == null || val.isEmpty) {
-      return 'TelÃ©fono is required';
+      return 'Teléfono is required';
     }
 
     return null;
@@ -58,7 +58,7 @@ class DogOwnerUpdateProfileModel
     return null;
   }
 
-  // State field(s) for interiorNumberDogOwner_Input widget.
+  // State field(s) for exteriorNumberDogOwner_Input widget.
   FocusNode? exteriorNumberDogOwnerInputFocusNode;
   TextEditingController? exteriorNumberDogOwnerInputTextController;
   String? Function(BuildContext, String?)? exteriorNumberDogOwnerInputTextControllerValidator;
@@ -104,6 +104,10 @@ class DogOwnerUpdateProfileModel
     return null;
   }
 
+  // AGREGAR: State field(s) for NeighborhoodDogOwner_Menu widget (Dropdown)
+  String? neighborhoodDogOwnerMenuValue;
+  FormFieldController<String>? neighborhoodDogOwnerMenuValueController;
+
   // State field(s) for CityDogOwner_Input widget.
   FocusNode? cityDogOwnerInputFocusNode;
   TextEditingController? cityDogOwnerInputTextController;
@@ -134,6 +138,7 @@ class DogOwnerUpdateProfileModel
         _neighborhoodDogOwnerInputTextControllerValidator;
     cityDogOwnerInputTextControllerValidator =
         _cityDogOwnerInputTextControllerValidator;
+    
   }
 
   @override
