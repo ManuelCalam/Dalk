@@ -34,6 +34,11 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
   File? _ownerImage;
   File? _walkerImage;
   final ImagePicker _picker = ImagePicker();
+  List<String> _availableNeighborhoods = [];
+  bool _isLoadingPostalCode = false;
+  String? _selectedNeighborhood;
+  bool _postalCodeValidated = false;
+  bool _showCustomNeighborhoodInput = false;
 
   bool validarCamposObligatorios() {
     return _model.emailDogOwnerInputTextController.text.trim().isNotEmpty &&
@@ -44,7 +49,8 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
           _model.streetDogOwnerInputTextController.text.trim().isNotEmpty &&
           _model.exteriorNumberDogOwnerTextController.text.trim().isNotEmpty &&
           _model.zipCodeDogOwnerInputTextController.text.trim().isNotEmpty &&
-          _model.neighborhoodDogOwnerInputTextController.text.trim().isNotEmpty &&
+          _postalCodeValidated &&
+          _selectedNeighborhood != null &&
           _model.cityDogOwnerInputTextController.text.trim().isNotEmpty;
   }
 
@@ -76,6 +82,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
 
     _model.zipCodeDogOwnerInputTextController ??= TextEditingController();
     _model.zipCodeDogOwnerInputFocusNode ??= FocusNode();
+    _model.zipCodeDogOwnerInputTextController!.addListener(_onPostalCodeChanged);
 
     _model.neighborhoodDogOwnerInputTextController ??= TextEditingController();
     _model.neighborhoodDogOwnerInputFocusNode ??= FocusNode();
@@ -92,8 +99,8 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
 
   @override
   void dispose() {
+    _model.zipCodeDogOwnerInputTextController?.removeListener(_onPostalCodeChanged);
     _model.dispose();
-
     super.dispose();
   }
 
@@ -184,7 +191,87 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
     }
   }
 
+  // NUEVA FUNCIÓN PARA VALIDAR CP AUTOMÁTICAMENTE
+  void _onPostalCodeChanged() async {
+    final postalCode = _model.zipCodeDogOwnerInputTextController!.text.trim();
 
+    if (postalCode.length != 5) {
+      if (_postalCodeValidated) {
+        setState(() {
+          _postalCodeValidated = false;
+          _availableNeighborhoods = [];
+          _selectedNeighborhood = null;
+          _showCustomNeighborhoodInput = false;
+          _model.neighborhoodDogOwnerInputTextController?.clear();
+          _model.cityDogOwnerInputTextController?.clear();
+        });
+      }
+      return;
+    }
+
+    setState(() => _isLoadingPostalCode = true);
+
+    try {
+      final geoService = ZipCodeService();
+      final postalInfo = await geoService.getPostalCodeInfo(postalCode);
+
+      if (!mounted) return;
+
+      if (postalInfo.isValid) {
+        setState(() {
+          _postalCodeValidated = true;
+          // Agregar "Otra" al final de las opciones
+          _availableNeighborhoods = [...postalInfo.neighborhoods, 'Otra'];
+          _selectedNeighborhood = null;
+          _showCustomNeighborhoodInput = false;
+          
+          // Auto-completar ciudad (pero ahora será editable)
+          _model.cityDogOwnerInputTextController?.text = postalInfo.city;
+          
+          // Limpiar colonia anterior
+          _model.neighborhoodDogOwnerInputTextController?.clear();
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Código postal válido. ${postalInfo.neighborhoods.length} colonia(s) encontrada(s).'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } else {
+        setState(() {
+          _postalCodeValidated = false;
+          _availableNeighborhoods = [];
+          _selectedNeighborhood = null;
+          _showCustomNeighborhoodInput = false;
+          _model.neighborhoodDogOwnerInputTextController?.clear();
+          _model.cityDogOwnerInputTextController?.clear();
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Código postal no válido o no pertenece a Jalisco.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error validando código postal: $e');
+      if (mounted) {
+        setState(() {
+          _postalCodeValidated = false;
+          _availableNeighborhoods = [];
+          _showCustomNeighborhoodInput = false;
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingPostalCode = false);
+      }
+    }
+  }
 
   Future<String?> _uploadOwnerImage(String userId, File imageFile) async {
     try {
@@ -1480,193 +1567,115 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                             ),
 
                                             Padding(
-                                              padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
-                                              child: Container(
-                                                width: MediaQuery.sizeOf(context).width,
-                                                child: TextFormField(
-                                                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                                                  controller: _model.zipCodeDogOwnerInputTextController,
-                                                  focusNode: _model.zipCodeDogOwnerInputFocusNode,
-                                                  autofocus: false,
-                                                  textInputAction:
-                                                      TextInputAction.next,
-                                                  obscureText: false,
-                                                  decoration: InputDecoration(
-                                                    isDense: true,
-                                                    labelText: 'Código postal',
-                                                    labelStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyLarge
-                                                            .override(
-                                                              font: GoogleFonts
-                                                                  .lexend(
-                                                                fontWeight: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyLarge
-                                                                    .fontWeight,
-                                                                fontStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyLarge
-                                                                    .fontStyle,
-                                                              ),
-                                                              color: FlutterFlowTheme
-                                                                      .of(context)
-                                                                  .primary,
-                                                              fontSize: 16,
-                                                              letterSpacing:
-                                                                  0.0,
-                                                              fontWeight:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyLarge
-                                                                      .fontWeight,
-                                                              fontStyle:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyLarge
-                                                                      .fontStyle,
-                                                            ),
-                                                    hintStyle: FlutterFlowTheme
-                                                            .of(context)
-                                                        .labelMedium
-                                                        .override(
-                                                          font: GoogleFonts
-                                                              .lexend(
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .labelMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .primary,
-                                                          fontSize: 16,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                    enabledBorder:
-                                                        OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .alternate,
-                                                        width: 1,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              30),
-                                                    ),
-                                                    focusedBorder:
-                                                        OutlineInputBorder(
-                                                      borderSide: const BorderSide(
-                                                        color:
-                                                            Color(0x00000000),
-                                                        width: 1,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              30),
-                                                    ),
-                                                    errorBorder:
-                                                        OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .error,
-                                                        width: 1,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              30),
-                                                    ),
-                                                    focusedErrorBorder:
-                                                        OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .error,
-                                                        width: 1,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              30),
-                                                    ),
-                                                    filled: true,
-                                                    fillColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .alternate,
-                                                    contentPadding:
-                                                        const EdgeInsetsDirectional
-                                                            .fromSTEB(
-                                                                0, 0, 0, 20),
-                                                    prefixIcon: Icon(
-                                                      Icons.home_rounded,
-                                                      color:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .primary,
-                                                      size: 25,
-                                                    ),
-                                                  ),
-                                                  style: FlutterFlowTheme.of(
-                                                          context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font:
-                                                            GoogleFonts.lexend(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        color: FlutterFlowTheme
-                                                                .of(context)
-                                                            .secondaryBackground,
-                                                        fontSize: 16,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                      keyboardType:
-                                                                TextInputType
-                                                                    .number,
-                                                  cursorColor:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .primaryText,
-                                                  validator: (value) => Validators.postalCode(value),
-                                                            inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9]'))],
-                                                ),
-                                              ),
-                                            ),
+  padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
+  child: Container(
+    width: MediaQuery.sizeOf(context).width,
+    child: TextFormField(
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      controller: _model.zipCodeDogOwnerInputTextController,
+      focusNode: _model.zipCodeDogOwnerInputFocusNode,
+      autofocus: false,
+      textInputAction: TextInputAction.next,
+      obscureText: false,
+      decoration: InputDecoration(
+        isDense: true,
+        labelText: 'Código postal',
+        labelStyle: FlutterFlowTheme.of(context).bodyLarge.override(
+          font: GoogleFonts.lexend(
+            fontWeight: FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+            fontStyle: FlutterFlowTheme.of(context).bodyLarge.fontStyle,
+          ),
+          color: FlutterFlowTheme.of(context).primary,
+          fontSize: 16,
+          letterSpacing: 0.0,
+        ),
+        hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
+          font: GoogleFonts.lexend(
+            fontWeight: FontWeight.bold,
+            fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
+          ),
+          color: FlutterFlowTheme.of(context).primary,
+          fontSize: 16,
+          letterSpacing: 0.0,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: FlutterFlowTheme.of(context).alternate,
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(30),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: const BorderSide(
+            color: Color(0x00000000),
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(30),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: FlutterFlowTheme.of(context).error,
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(30),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: FlutterFlowTheme.of(context).error,
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(30),
+        ),
+        filled: true,
+        fillColor: FlutterFlowTheme.of(context).alternate,
+        contentPadding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 20),
+        prefixIcon: Icon(
+          Icons.location_on,
+          color: FlutterFlowTheme.of(context).primary,
+          size: 25,
+        ),
+        // AGREGAR INDICADOR DE CARGA
+        suffixIcon: _isLoadingPostalCode
+            ? Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      FlutterFlowTheme.of(context).primary,
+                    ),
+                  ),
+                ),
+              )
+            : _postalCodeValidated
+                ? Icon(
+                    Icons.check_circle,
+                    color: Colors.green,
+                    size: 25,
+                  )
+                : null,
+      ),
+      style: FlutterFlowTheme.of(context).bodyMedium.override(
+        font: GoogleFonts.lexend(
+          fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+        ),
+        color: FlutterFlowTheme.of(context).secondaryBackground,
+        fontSize: 16,
+        letterSpacing: 0.0,
+      ),
+      keyboardType: TextInputType.number,
+      cursorColor: FlutterFlowTheme.of(context).primaryText,
+      validator: (value) => Validators.postalCode(value),
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp('[0-9]')),
+        LengthLimitingTextInputFormatter(5),
+      ],
+    ),
+  ),
+),
 
                                             Padding(
                                               padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
@@ -2064,387 +2073,358 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                               ),
                                             ),
                                             Padding(
-                                              padding: const EdgeInsetsDirectional
-                                                  .fromSTEB(0, 18, 0, 0),
-                                              child: TextFormField(
-                                                autovalidateMode: AutovalidateMode.onUserInteraction,
-                                                controller: _model
-                                                    .neighborhoodDogOwnerInputTextController,
-                                                focusNode: _model
-                                                    .neighborhoodDogOwnerInputFocusNode,
-                                                autofocus: false,
-                                                textInputAction:
-                                                    TextInputAction.next,
-                                                obscureText: false,
-                                                decoration: InputDecoration(
-                                                  isDense: true,
-                                                  labelText: 'Colonia',
-                                                  labelStyle: FlutterFlowTheme
-                                                          .of(context)
-                                                      .bodyLarge
-                                                      .override(
-                                                        font:
-                                                            GoogleFonts.lexend(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyLarge
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyLarge
-                                                                  .fontStyle,
-                                                        ),
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primary,
-                                                        fontSize: 16,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyLarge
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyLarge
-                                                                .fontStyle,
-                                                      ),
-                                                  hintStyle: FlutterFlowTheme
-                                                          .of(context)
-                                                      .labelMedium
-                                                      .override(
-                                                        font:
-                                                            GoogleFonts.lexend(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primary,
-                                                        fontSize: 16,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontStyle,
-                                                      ),
-                                                  enabledBorder:
-                                                      OutlineInputBorder(
-                                                    borderSide: BorderSide(
-                                                      color:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .alternate,
-                                                      width: 1,
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            30),
-                                                  ),
-                                                  focusedBorder:
-                                                      OutlineInputBorder(
-                                                    borderSide: const BorderSide(
-                                                      color: Color(0x00000000),
-                                                      width: 1,
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            30),
-                                                  ),
-                                                  errorBorder:
-                                                      OutlineInputBorder(
-                                                    borderSide: BorderSide(
-                                                      color:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .error,
-                                                      width: 1,
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            30),
-                                                  ),
-                                                  focusedErrorBorder:
-                                                      OutlineInputBorder(
-                                                    borderSide: BorderSide(
-                                                      color:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .error,
-                                                      width: 1,
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            30),
-                                                  ),
-                                                  filled: true,
-                                                  fillColor:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .alternate,
-                                                  contentPadding:
-                                                      const EdgeInsetsDirectional
-                                                          .fromSTEB(
-                                                              0, 0, 0, 20),
-                                                  prefixIcon: Icon(
-                                                    Icons.home_rounded,
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .primary,
-                                                    size: 25,
-                                                  ),
-                                                ),
-                                                style: FlutterFlowTheme.of(
-                                                        context)
-                                                    .bodyMedium
-                                                    .override(
-                                                      font: GoogleFonts.lexend(
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                      color: FlutterFlowTheme
-                                                              .of(context)
-                                                          .secondaryBackground,
-                                                      fontSize: 16,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .fontStyle,
-                                                    ),
-                                                cursorColor:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                                  validator: (value) {
-                                                    final required = Validators.requiredField(value, fieldName: 'Colonia');
-                                                    if (required != null) return required;
-                                                    final min = Validators.minLength(value, 4, fieldName: 'Colonia');
-                                                    if (min != null) return min;
-                                                    return Validators.maxLength(value, 30, fieldName: 'Colonia');
-                                                  },                                                  
-                                                  inputFormatters: [
-                                                    LengthLimitingTextInputFormatter(30),
-                                                  ],                                         
-                                              ),
-                                            ),
+  padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
+  child: _availableNeighborhoods.isEmpty
+      ? // Campo deshabilitado si no hay CP válido
+        TextFormField(
+          controller: _model.neighborhoodDogOwnerInputTextController,
+          focusNode: _model.neighborhoodDogOwnerInputFocusNode,
+          enabled: false,
+          decoration: InputDecoration(
+            isDense: true,
+            labelText: 'Colonia',
+            hintText: 'Ingresa un código postal válido primero',
+            labelStyle: FlutterFlowTheme.of(context).bodyLarge.override(
+              font: GoogleFonts.lexend(),
+              color: FlutterFlowTheme.of(context).primary,
+              fontSize: 16,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(
+                color: FlutterFlowTheme.of(context).alternate,
+                width: 1,
+              ),
+              borderRadius: BorderRadius.circular(30),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(
+                color: FlutterFlowTheme.of(context).alternate,
+                width: 1,
+              ),
+              borderRadius: BorderRadius.circular(30),
+            ),
+            filled: true,
+            fillColor: FlutterFlowTheme.of(context).alternate.withOpacity(0.5),
+            contentPadding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 20),
+            prefixIcon: Icon(
+              Icons.home_rounded,
+              color: FlutterFlowTheme.of(context).primary.withOpacity(0.5),
+              size: 25,
+            ),
+          ),
+          style: FlutterFlowTheme.of(context).bodyMedium.override(
+            font: GoogleFonts.lexend(),
+            color: FlutterFlowTheme.of(context).secondaryBackground.withOpacity(0.5),
+            fontSize: 16,
+          ),
+        )
+      : _showCustomNeighborhoodInput
+          ? // Input de texto para escribir colonia personalizada
+            TextFormField(
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              controller: _model.neighborhoodDogOwnerInputTextController,
+              focusNode: _model.neighborhoodDogOwnerInputFocusNode,
+              autofocus: true,
+              textInputAction: TextInputAction.next,
+              obscureText: false,
+              decoration: InputDecoration(
+                isDense: true,
+                labelText: 'Escribe tu colonia',
+                hintText: 'Nombre de la colonia',
+                labelStyle: FlutterFlowTheme.of(context).bodyLarge.override(
+                  font: GoogleFonts.lexend(),
+                  color: FlutterFlowTheme.of(context).primary,
+                  fontSize: 16,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: FlutterFlowTheme.of(context).alternate,
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(
+                    color: Color(0x00000000),
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: FlutterFlowTheme.of(context).error,
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: FlutterFlowTheme.of(context).error,
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                filled: true,
+                fillColor: FlutterFlowTheme.of(context).alternate,
+                contentPadding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 20),
+                prefixIcon: Icon(
+                  Icons.home_rounded,
+                  color: FlutterFlowTheme.of(context).primary,
+                  size: 25,
+                ),
+                // Botón para volver al dropdown
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    Icons.arrow_back,
+                    color: FlutterFlowTheme.of(context).primary,
+                    size: 20,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _showCustomNeighborhoodInput = false;
+                      _selectedNeighborhood = null;
+                      _model.neighborhoodDogOwnerInputTextController?.clear();
+                    });
+                  },
+                ),
+              ),
+              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                font: GoogleFonts.lexend(),
+                color: FlutterFlowTheme.of(context).secondaryBackground,
+                fontSize: 16,
+              ),
+              cursorColor: FlutterFlowTheme.of(context).primaryText,
+              validator: (value) {
+                final required = Validators.requiredField(value, fieldName: 'Colonia');
+                if (required != null) return required;
+                final min = Validators.minLength(value, 3, fieldName: 'Colonia');
+                if (min != null) return min;
+                return Validators.maxLength(value, 50, fieldName: 'Colonia');
+              },
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(50),
+              ],
+            )
+          : // Dropdown con colonias + "Otra"
+            FlutterFlowDropDown<String>(
+              controller: _model.neighborhoodDogOwnerMenuValueController ??=
+                  FormFieldController<String>(null),
+              options: _availableNeighborhoods,
+              onChanged: (val) {
+                setState(() {
+                  if (val == 'Otra') {
+                    _showCustomNeighborhoodInput = true;
+                    _selectedNeighborhood = null;
+                    _model.neighborhoodDogOwnerInputTextController?.clear();
+                  } else {
+                    _selectedNeighborhood = val;
+                    _model.neighborhoodDogOwnerInputTextController?.text = val ?? '';
+                  }
+                });
+              },
+              width: MediaQuery.sizeOf(context).width,
+              height: MediaQuery.sizeOf(context).height * 0.05,
+              textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
+                font: GoogleFonts.lexend(),
+                color: FlutterFlowTheme.of(context).primary,
+                fontSize: 16,
+              ),
+              hintText: 'Selecciona una colonia',
+              icon: Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: FlutterFlowTheme.of(context).primary,
+                size: 25,
+              ),
+              fillColor: FlutterFlowTheme.of(context).alternate,
+              elevation: 2,
+              borderColor: Colors.transparent,
+              borderWidth: 0,
+              borderRadius: 30,
+              margin: const EdgeInsetsDirectional.fromSTEB(12, 0, 12, 0),
+              hidesUnderline: true,
+              isOverButton: false,
+              isSearchable: false,
+              isMultiSelect: false,
+            ),
+),
+                                              Padding(
+  padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
+  child: TextFormField(
+    autovalidateMode: AutovalidateMode.onUserInteraction,
+    controller: _model.cityDogOwnerInputTextController,
+    focusNode: _model.cityDogOwnerInputFocusNode,
+    enabled: _postalCodeValidated, // Habilitado solo si hay CP válido
+    textInputAction: TextInputAction.next,
+    obscureText: false,
+    decoration: InputDecoration(
+      isDense: true,
+      labelText: 'Ciudad',
+      hintText: _postalCodeValidated 
+          ? 'Puedes editar si es necesario'
+          : 'Se completará automáticamente',
+      labelStyle: FlutterFlowTheme.of(context).bodyLarge.override(
+        font: GoogleFonts.lexend(),
+        color: FlutterFlowTheme.of(context).primary,
+        fontSize: 16,
+      ),
+      hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
+        font: GoogleFonts.lexend(),
+        color: FlutterFlowTheme.of(context).primary.withOpacity(0.7),
+        fontSize: 14,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(
+          color: FlutterFlowTheme.of(context).alternate,
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: const BorderSide(
+          color: Color(0x00000000),
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderSide: BorderSide(
+          color: FlutterFlowTheme.of(context).error,
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderSide: BorderSide(
+          color: FlutterFlowTheme.of(context).error,
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      disabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(
+          color: FlutterFlowTheme.of(context).alternate,
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      filled: true,
+      fillColor: _postalCodeValidated 
+          ? FlutterFlowTheme.of(context).alternate
+          : FlutterFlowTheme.of(context).alternate.withOpacity(0.5),
+      contentPadding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 20),
+      prefixIcon: Icon(
+        Icons.location_city,
+        color: FlutterFlowTheme.of(context).primary,
+        size: 25,
+      ),
+    ),
+    style: FlutterFlowTheme.of(context).bodyMedium.override(
+      font: GoogleFonts.lexend(),
+      color: FlutterFlowTheme.of(context).secondaryBackground,
+      fontSize: 16,
+    ),
+    cursorColor: FlutterFlowTheme.of(context).primaryText,
+    validator: (value) {
+      final required = Validators.requiredField(value, fieldName: 'Ciudad');
+      if (required != null) return required;
+      final min = Validators.minLength(value, 3, fieldName: 'Ciudad');
+      if (min != null) return min;
+      return Validators.maxLength(value, 50, fieldName: 'Ciudad');
+    },
+    inputFormatters: [
+      LengthLimitingTextInputFormatter(50),
+    ],
+  ),
+),
                                             Padding(
-                                              padding: const EdgeInsetsDirectional
-                                                  .fromSTEB(0, 18, 0, 0),
-                                              child: TextFormField(
-                                                autovalidateMode: AutovalidateMode.onUserInteraction,
-                                                controller: _model
-                                                    .cityDogOwnerInputTextController,
-                                                focusNode: _model
-                                                    .cityDogOwnerInputFocusNode,
-                                                autofocus: false,
-                                                textInputAction:
-                                                    TextInputAction.next,
-                                                obscureText: false,
-                                                decoration: InputDecoration(
-                                                  isDense: true,
-                                                  labelText: 'Ciudad',
-                                                  labelStyle: FlutterFlowTheme
-                                                          .of(context)
-                                                      .bodyLarge
-                                                      .override(
-                                                        font:
-                                                            GoogleFonts.lexend(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyLarge
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyLarge
-                                                                  .fontStyle,
-                                                        ),
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primary,
-                                                        fontSize: 16,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyLarge
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyLarge
-                                                                .fontStyle,
-                                                      ),
-                                                  hintStyle: FlutterFlowTheme
-                                                          .of(context)
-                                                      .labelMedium
-                                                      .override(
-                                                        font:
-                                                            GoogleFonts.lexend(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primary,
-                                                        fontSize: 16,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontStyle,
-                                                      ),
-                                                  enabledBorder:
-                                                      OutlineInputBorder(
-                                                    borderSide: BorderSide(
-                                                      color:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .alternate,
-                                                      width: 1,
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            30),
-                                                  ),
-                                                  focusedBorder:
-                                                      OutlineInputBorder(
-                                                    borderSide: const BorderSide(
-                                                      color: Color(0x00000000),
-                                                      width: 1,
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            30),
-                                                  ),
-                                                  errorBorder:
-                                                      OutlineInputBorder(
-                                                    borderSide: BorderSide(
-                                                      color:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .error,
-                                                      width: 1,
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            30),
-                                                  ),
-                                                  focusedErrorBorder:
-                                                      OutlineInputBorder(
-                                                    borderSide: BorderSide(
-                                                      color:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .error,
-                                                      width: 1,
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            30),
-                                                  ),
-                                                  filled: true,
-                                                  fillColor:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .alternate,
-                                                  contentPadding:
-                                                      const EdgeInsetsDirectional
-                                                          .fromSTEB(
-                                                              0, 0, 0, 20),
-                                                  prefixIcon: Icon(
-                                                    Icons.home_rounded,
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .primary,
-                                                    size: 25,
-                                                  ),
-                                                ),
-                                                style: FlutterFlowTheme.of(
-                                                        context)
-                                                    .bodyMedium
-                                                    .override(
-                                                      font: GoogleFonts.lexend(
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                      color: FlutterFlowTheme
-                                                              .of(context)
-                                                          .secondaryBackground,
-                                                      fontSize: 16,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .fontStyle,
-                                                    ),
-                                                cursorColor:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                                  validator: (value) {
-                                                    final required = Validators.requiredField(value, fieldName: 'Ciudad');
-                                                    if (required != null) return required;
-                                                    final min = Validators.minLength(value, 3, fieldName: 'Ciudad');
-                                                    if (min != null) return min;
-                                                    return Validators.maxLength(value, 50, fieldName: 'Ciudad');
-                                                  },                                                  
-                                                  inputFormatters: [
-                                                    LengthLimitingTextInputFormatter(50),
-                                                  ],                                               
-                                              ),
-                                            ),
+  padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
+  child: TextFormField(
+    autovalidateMode: AutovalidateMode.onUserInteraction,
+    controller: _model.cityDogOwnerInputTextController,
+    focusNode: _model.cityDogOwnerInputFocusNode,
+    enabled: _postalCodeValidated, // Habilitado solo si hay CP válido
+    textInputAction: TextInputAction.next,
+    obscureText: false,
+    decoration: InputDecoration(
+      isDense: true,
+      labelText: 'Ciudad',
+      hintText: _postalCodeValidated 
+          ? 'Puedes editar si es necesario'
+          : 'Se completará automáticamente',
+      labelStyle: FlutterFlowTheme.of(context).bodyLarge.override(
+        font: GoogleFonts.lexend(),
+        color: FlutterFlowTheme.of(context).primary,
+        fontSize: 16,
+      ),
+      hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
+        font: GoogleFonts.lexend(),
+        color: FlutterFlowTheme.of(context).primary.withOpacity(0.7),
+        fontSize: 14,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(
+          color: FlutterFlowTheme.of(context).alternate,
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: const BorderSide(
+          color: Color(0x00000000),
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderSide: BorderSide(
+          color: FlutterFlowTheme.of(context).error,
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderSide: BorderSide(
+          color: FlutterFlowTheme.of(context).error,
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      disabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(
+          color: FlutterFlowTheme.of(context).alternate,
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      filled: true,
+      fillColor: _postalCodeValidated 
+          ? FlutterFlowTheme.of(context).alternate
+          : FlutterFlowTheme.of(context).alternate.withOpacity(0.5),
+      contentPadding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 20),
+      prefixIcon: Icon(
+        Icons.location_city,
+        color: FlutterFlowTheme.of(context).primary,
+        size: 25,
+      ),
+    ),
+    style: FlutterFlowTheme.of(context).bodyMedium.override(
+      font: GoogleFonts.lexend(),
+      color: FlutterFlowTheme.of(context).secondaryBackground,
+      fontSize: 16,
+    ),
+    cursorColor: FlutterFlowTheme.of(context).primaryText,
+    validator: (value) {
+      final required = Validators.requiredField(value, fieldName: 'Ciudad');
+      if (required != null) return required;
+      final min = Validators.minLength(value, 3, fieldName: 'Ciudad');
+      if (min != null) return min;
+      return Validators.maxLength(value, 50, fieldName: 'Ciudad');
+    },
+    inputFormatters: [
+      LengthLimitingTextInputFormatter(50),
+    ],
+  ),
+),
                                             Padding(
                                               padding: const EdgeInsetsDirectional
                                                   .fromSTEB(0, 18, 0, 0),
@@ -2885,7 +2865,18 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                       const SnackBar(content: Text('El código postal no es válido o no pertenece a Jalisco.')),
                                                       );
                                                       return;
-                                                    }                                
+                                                    }
+
+                                                  // VALIDAR COLONIA SELECCIONADA
+                                                        final coloniaValue = _model.neighborhoodDogOwnerInputTextController.text.trim();
+                                                        if (coloniaValue.isEmpty) {
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            const SnackBar(
+                                                              content: Text('Por favor ingresa o selecciona una colonia'),
+                                                            ),
+                                                          );
+                                                          return;
+                                                        }                                
 
                                                   if (_model.datePicked == null) {
                                                     ScaffoldMessenger.of(context).showSnackBar(
