@@ -594,27 +594,27 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Flexible(
-  child: Align(
-    alignment: const AlignmentDirectional(0, 0),
-    child: Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
-                                            child: GestureDetector(
-                                              onTap: () => _showImagePickerOptions(context, false, widget.petData?['id']),
-              child: CircleAvatar(
-                radius: 60,
-                backgroundImage: _petImage != null
-                    ? FileImage(_petImage!) // Imagen nueva seleccionada
-                    : (widget.petData?['photo_url'] != null &&
-                            (widget.petData?['photo_url'] as String).isNotEmpty)
-                        ? NetworkImage(widget.petData!['photo_url'])
-                        : const NetworkImage(
-                            'https://static.vecteezy.com/system/resources/previews/007/407/996/non_2x/user-icon-person-icon-client-symbol-login-head-sign-icon-design-vector.jpg',
-                          ) as ImageProvider,
-              ),
-            ),
-          ),
-  ),
-),
+                                        child: Align(
+                                          alignment: const AlignmentDirectional(0, 0),
+                                          child: Padding(
+                                            padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                                                                  child: GestureDetector(
+                                                                                    onTap: () => _showImagePickerOptions(context, false, widget.petData?['id']),
+                                                    child: CircleAvatar(
+                                                      radius: 60,
+                                                      backgroundImage: _petImage != null
+                                                          ? FileImage(_petImage!) // Imagen nueva seleccionada
+                                                          : (widget.petData?['photo_url'] != null &&
+                                                                  (widget.petData?['photo_url'] as String).isNotEmpty)
+                                                              ? NetworkImage(widget.petData!['photo_url'])
+                                                              : const NetworkImage(
+                                                                  'https://static.vecteezy.com/system/resources/previews/007/407/996/non_2x/user-icon-person-icon-client-symbol-login-head-sign-icon-design-vector.jpg',
+                                                                ) as ImageProvider,
+                                                    ),
+                                                  ),
+                                                ),
+                                        ),
+                                      ),
                                       Align(
                                         alignment: const AlignmentDirectional(-1, -1),
                                         child: Padding(
