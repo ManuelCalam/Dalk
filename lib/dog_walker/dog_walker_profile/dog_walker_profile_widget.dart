@@ -13,6 +13,8 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dog_walker_profile_model.dart';
+import 'package:dalk/common/article_web_view/article_web_view.dart';
+
 export 'dog_walker_profile_model.dart';
 
 class DogWalkerProfileWidget extends StatefulWidget {
@@ -875,40 +877,40 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                         ),
                                         Flexible(
                                           child: Align(
-                                            alignment:
-                                                const AlignmentDirectional(-1, 0),
+                                            alignment: const AlignmentDirectional(-1, 0),
                                             child: Padding(
-                                              padding: const EdgeInsetsDirectional
-                                                  .fromSTEB(8, 0, 0, 0),
-                                              child: Text(
-                                                'Acerca de nosotros',
-                                                textAlign: TextAlign.start,
-                                                style: FlutterFlowTheme.of(
-                                                        context)
-                                                    .bodyMedium
-                                                    .override(
-                                                      font: GoogleFonts.lexend(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
+                                              padding: const EdgeInsetsDirectional.fromSTEB(8, 0, 0, 0),
+                                              child: InkWell(
+                                                splashColor: Colors.transparent,
+                                                focusColor: Colors.transparent,
+                                                hoverColor: Colors.transparent,
+                                                highlightColor: Colors.transparent,
+                                                onTap: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) => ArticleWebViewWidget(
+                                                        url: 'https://dalk-legal-git-main-noe-ibarras-projects.vercel.app/?_vercel_share=H06ZuiEgfwHGNcHZ9AdimDz34FNJepDa',
+                                                        title: 'Acerca de Nosotros',
                                                       ),
-                                                      color: FlutterFlowTheme
-                                                              .of(context)
-                                                          .secondaryBackground,
-                                                      fontSize: 16,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .fontStyle,
                                                     ),
+                                                  );
+                                                },
+                                                child: Text(
+                                                  'Acerca de nosotros',
+                                                  textAlign: TextAlign.start,
+                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                    font: GoogleFonts.lexend(
+                                                      fontWeight: FontWeight.w500,
+                                                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                    ),
+                                                    color: FlutterFlowTheme.of(context).secondaryBackground,
+                                                    fontSize: 16,
+                                                    letterSpacing: 0.0,
+                                                    fontWeight: FontWeight.w500,
+                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                  ),
+                                                ),
                                               ),
                                             ),
                                           ),
