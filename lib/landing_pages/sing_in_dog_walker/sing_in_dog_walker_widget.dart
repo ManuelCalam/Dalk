@@ -43,6 +43,7 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
   String? _selectedNeighborhood;
   bool _postalCodeValidated = false;
   bool _showCustomNeighborhoodInput = false;
+  bool _showGenderError = false;
 
   bool validarCamposObligatorios() {
     return _model.emailDogWalkerInputTextController.text.trim().isNotEmpty &&
@@ -57,6 +58,13 @@ class _SingInDogWalkerWidgetState extends State<SingInDogWalkerWidget> {
           _selectedNeighborhood != null && 
           _model.cityDogWalkerInputTextController.text.trim().isNotEmpty;
   }
+
+  String? _validateGender(String? value) {
+  if (value == null || value.isEmpty) {
+    return 'Selecciona tu género';
+  }
+  return null;
+}
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
   bool isRegistering = false;
@@ -1320,92 +1328,76 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
                                                 ),
                                               ),
                                               Padding(
-                                                padding: const EdgeInsetsDirectional
-                                                    .fromSTEB(0, 18, 0, 0),
-                                                child:
-                                                    FlutterFlowDropDown<String>(
-                                                  controller: _model
-                                                          .genderDogWalkerMenuValueController ??=
-                                                      FormFieldController<String>(
-                                                    _model.genderDogWalkerMenuValue ??=
-                                                        '',
-                                                  ),
-                                                  options: List<String>.from([
-                                                    'Hombre',
-                                                    'Mujer',
-                                                    'Otro'
-                                                  ]),
-                                                  optionLabels: [
-                                                    'Hombre',
-                                                    'Mujer',
-                                                    'Otro'
-                                                  ],
-                                                  onChanged: (val) =>
-                                                      safeSetState(() => _model
-                                                              .genderDogWalkerMenuValue =
-                                                          val),
-                                                  width:
-                                                      MediaQuery.sizeOf(context)
-                                                          .width,
-                                                  height:
-                                                      MediaQuery.sizeOf(context)
-                                                              .height *
-                                                          0.05,
-                                                  textStyle: FlutterFlowTheme.of(
-                                                          context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font: GoogleFonts.lexend(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primary,
-                                                        fontSize: 16,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
+                                                padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Container(
+                                                      decoration: BoxDecoration(
+                                                        borderRadius: BorderRadius.circular(30),
+                                                        border: _showGenderError
+                                                            ? Border.all(
+                                                                color: FlutterFlowTheme.of(context).error,
+                                                                width: 2,
+                                                              )
+                                                            : null,
                                                       ),
-                                                  hintText: 'Género',
-                                                  icon: Icon(
-                                                    Icons
-                                                        .keyboard_arrow_down_rounded,
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .primary,
-                                                    size: 25,
-                                                  ),
-                                                  fillColor:
-                                                      FlutterFlowTheme.of(context)
-                                                          .alternate,
-                                                  elevation: 2,
-                                                  borderColor: Colors.transparent,
-                                                  borderWidth: 0,
-                                                  borderRadius: 30,
-                                                  margin: const EdgeInsetsDirectional
-                                                      .fromSTEB(12, 0, 12, 0),
-                                                  hidesUnderline: true,
-                                                  isOverButton: false,
-                                                  isSearchable: false,
-                                                  isMultiSelect: false,
+                                                      child: FlutterFlowDropDown<String>(
+                                                        controller: _model.genderDogWalkerMenuValueController ??=
+                                                            FormFieldController<String>(
+                                                          _model.genderDogWalkerMenuValue ?? '',
+                                                        ),
+                                                        options: List<String>.from(['Hombre', 'Mujer', 'Otro']),
+                                                        optionLabels: ['Hombre', 'Mujer', 'Otro'],
+                                                        onChanged: (val) {
+                                                          safeSetState(() {
+                                                            _model.genderDogWalkerMenuValue = val;
+                                                            _showGenderError = false; // 🔑 Ocultar error al seleccionar
+                                                          });
+                                                        },
+                                                        width: MediaQuery.sizeOf(context).width,
+                                                        height: MediaQuery.sizeOf(context).height * 0.05,
+                                                        textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                              font: GoogleFonts.lexend(
+                                                                fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                              ),
+                                                              color: FlutterFlowTheme.of(context).primary,
+                                                              fontSize: 16,
+                                                              letterSpacing: 0.0,
+                                                              fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                            ),
+                                                        hintText: 'Género',
+                                                        icon: Icon(
+                                                          Icons.keyboard_arrow_down_rounded,
+                                                          color: FlutterFlowTheme.of(context).primary,
+                                                          size: 25,
+                                                        ),
+                                                        fillColor: FlutterFlowTheme.of(context).alternate,
+                                                        elevation: 2,
+                                                        borderColor: Colors.transparent,
+                                                        borderWidth: 0,
+                                                        borderRadius: 30,
+                                                        margin: const EdgeInsetsDirectional.fromSTEB(12, 0, 12, 0),
+                                                        hidesUnderline: true,
+                                                        isOverButton: false,
+                                                        isSearchable: false,
+                                                        isMultiSelect: false,
+                                                      ),
+                                                    ),
+                                                    if (_showGenderError)
+                                                      Padding(
+                                                        padding: const EdgeInsets.only(left: 12.0, top: 4.0),
+                                                        child: Text(
+                                                          'Selecciona tu género',
+                                                          style: TextStyle(
+                                                            color: FlutterFlowTheme.of(context).error,
+                                                            fontSize: 12,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                  ],
                                                 ),
                                               ),
                                               Padding(
@@ -2803,6 +2795,22 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
                                                    onPressed: isRegistering
                                                     ? null
                                                     : () async {
+                                                        final genderValid = _model.genderDogWalkerMenuValue != null && 
+                                                                          _model.genderDogWalkerMenuValue!.isNotEmpty;
+                                                        
+                                                        setState(() {
+                                                          _showGenderError = !genderValid;
+                                                        });
+
+                                                        if (!genderValid) {
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            const SnackBar(
+                                                              content: Text('Por favor selecciona tu género'),
+                                                            ),
+                                                          );
+                                                          return; 
+                                                        }
+
                                                         // Validaciones básicas antes de iniciar el registro
                                                         if (!_model.formKey.currentState!.validate()) {
                                                           ScaffoldMessenger.of(context).showSnackBar(
@@ -2864,6 +2872,9 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
 
                                                           context.go('/');
                                                         } catch (e) {
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            SnackBar(content: Text('Error: $e')),
+                                                          );
                                                         } finally {
                                                           if (mounted) setState(() => isRegistering = false);
                                                         }

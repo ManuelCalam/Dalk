@@ -39,6 +39,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
   String? _selectedNeighborhood;
   bool _postalCodeValidated = false;
   bool _showCustomNeighborhoodInput = false;
+  bool _showGenderError = false;
 
   bool validarCamposObligatorios() {
     return _model.emailDogOwnerInputTextController.text.trim().isNotEmpty &&
@@ -53,6 +54,13 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
           _selectedNeighborhood != null &&
           _model.cityDogOwnerInputTextController.text.trim().isNotEmpty;
   }
+
+  String? _validateGender(String? value) {
+  if (value == null || value.isEmpty) {
+    return 'Selecciona tu género';
+  }
+  return null;
+}
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
   bool isRegistering = false;
@@ -1279,92 +1287,76 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                               ),
                                             ),
                                             Padding(
-                                              padding: const EdgeInsetsDirectional
-                                                  .fromSTEB(0, 18, 0, 0),
-                                              child:
-                                                  FlutterFlowDropDown<String>(
-                                                controller: _model
-                                                        .genderDogOwnerMenuValueController ??=
-                                                    FormFieldController<String>(
-                                                  _model.genderDogOwnerMenuValue ??=
-                                                      '',
-                                                ),
-                                                options: List<String>.from([
-                                                  'Hombre',
-                                                  'Mujer',
-                                                  'Otro'
-                                                ]),
-                                                optionLabels: const [
-                                                  'Hombre',
-                                                  'Mujer',
-                                                  'Otro'
-                                                ],
-                                                onChanged: (val) =>
-                                                    safeSetState(() => _model
-                                                            .genderDogOwnerMenuValue =
-                                                        val),
-                                                width:
-                                                    MediaQuery.sizeOf(context)
-                                                        .width,
-                                                height:
-                                                    MediaQuery.sizeOf(context)
-                                                            .height *
-                                                        0.05,
-                                                textStyle: FlutterFlowTheme.of(
-                                                        context)
-                                                    .bodyMedium
-                                                    .override(
-                                                      font: GoogleFonts.lexend(
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                      color:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .primary,
-                                                      fontSize: 16,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .fontStyle,
+                                              padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Container(
+                                                    decoration: BoxDecoration(
+                                                      borderRadius: BorderRadius.circular(30),
+                                                      border: _showGenderError
+                                                          ? Border.all(
+                                                              color: FlutterFlowTheme.of(context).error,
+                                                              width: 2,
+                                                            )
+                                                          : null,
                                                     ),
-                                                hintText: 'Género',
-                                                icon: Icon(
-                                                  Icons
-                                                      .keyboard_arrow_down_rounded,
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primary,
-                                                  size: 25,
-                                                ),
-                                                fillColor:
-                                                    FlutterFlowTheme.of(context)
-                                                        .alternate,
-                                                elevation: 2,
-                                                borderColor: Colors.transparent,
-                                                borderWidth: 0,
-                                                borderRadius: 30,
-                                                margin: const EdgeInsetsDirectional
-                                                    .fromSTEB(12, 0, 12, 0),
-                                                hidesUnderline: true,
-                                                isOverButton: false,
-                                                isSearchable: false,
-                                                isMultiSelect: false,
+                                                    child: FlutterFlowDropDown<String>(
+                                                      controller: _model.genderDogOwnerMenuValueController ??=
+                                                          FormFieldController<String>(
+                                                        _model.genderDogOwnerMenuValue ?? '',
+                                                      ),
+                                                      options: List<String>.from(['Hombre', 'Mujer', 'Otro']),
+                                                      optionLabels: const ['Hombre', 'Mujer', 'Otro'],
+                                                      onChanged: (val) {
+                                                        safeSetState(() {
+                                                          _model.genderDogOwnerMenuValue = val;
+                                                          _showGenderError = false; 
+                                                        });
+                                                      },
+                                                      width: MediaQuery.sizeOf(context).width,
+                                                      height: MediaQuery.sizeOf(context).height * 0.05,
+                                                      textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                            font: GoogleFonts.lexend(
+                                                              fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                            ),
+                                                            color: FlutterFlowTheme.of(context).primary,
+                                                            fontSize: 16,
+                                                            letterSpacing: 0.0,
+                                                            fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                            fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                          ),
+                                                      hintText: 'Género',
+                                                      icon: Icon(
+                                                        Icons.keyboard_arrow_down_rounded,
+                                                        color: FlutterFlowTheme.of(context).primary,
+                                                        size: 25,
+                                                      ),
+                                                      fillColor: FlutterFlowTheme.of(context).alternate,
+                                                      elevation: 2,
+                                                      borderColor: Colors.transparent,
+                                                      borderWidth: 0,
+                                                      borderRadius: 30,
+                                                      margin: const EdgeInsetsDirectional.fromSTEB(12, 0, 12, 0),
+                                                      hidesUnderline: true,
+                                                      isOverButton: false,
+                                                      isSearchable: false,
+                                                      isMultiSelect: false,
+                                                    ),
+                                                  ),
+                                                  if (_showGenderError)
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(left: 12.0, top: 4.0),
+                                                      child: Text(
+                                                        'Selecciona tu género',
+                                                        style: TextStyle(
+                                                          color: FlutterFlowTheme.of(context).error,
+                                                          fontSize: 12,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                ],
                                               ),
                                             ),
                                             Padding(
@@ -2847,7 +2839,22 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                 onPressed: isRegistering
                                               ? null
                                               : () async {
-                                                  // Validaciones básicas antes de iniciar el registro
+                                                  final genderValid = _model.genderDogOwnerMenuValue != null && 
+                                                                    _model.genderDogOwnerMenuValue!.isNotEmpty;
+                                                  
+                                                  setState(() {
+                                                    _showGenderError = !genderValid;
+                                                  });
+
+                                                  if (!genderValid) {
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      const SnackBar(
+                                                        content: Text('Por favor selecciona tu género'),
+                                                      ),
+                                                    );
+                                                    return;
+                                                  }
+
                                                   if (!_model.formKey.currentState!.validate()) {
                                                     ScaffoldMessenger.of(context).showSnackBar(
                                                       const SnackBar(content: Text('Por favor completa todos los campos correctamente')),
@@ -2860,23 +2867,23 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                   final postalCode = _model.zipCodeDogOwnerInputTextController.text.trim();
 
                                                   final isValidPostal = await geoService.validatePostalCode(postalCode);
-                                                    if (!isValidPostal) {
-                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                  if (!isValidPostal) {
+                                                    ScaffoldMessenger.of(context).showSnackBar(
                                                       const SnackBar(content: Text('El código postal no es válido o no pertenece a Jalisco.')),
-                                                      );
-                                                      return;
-                                                    }
+                                                    );
+                                                    return;
+                                                  }
 
                                                   // VALIDAR COLONIA SELECCIONADA
-                                                        final coloniaValue = _model.neighborhoodDogOwnerInputTextController.text.trim();
-                                                        if (coloniaValue.isEmpty) {
-                                                          ScaffoldMessenger.of(context).showSnackBar(
-                                                            const SnackBar(
-                                                              content: Text('Por favor ingresa o selecciona una colonia'),
-                                                            ),
-                                                          );
-                                                          return;
-                                                        }                                
+                                                  final coloniaValue = _model.neighborhoodDogOwnerInputTextController.text.trim();
+                                                  if (coloniaValue.isEmpty) {
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      const SnackBar(
+                                                        content: Text('Por favor ingresa o selecciona una colonia'),
+                                                      ),
+                                                    );
+                                                    return;
+                                                  }
 
                                                   if (_model.datePicked == null) {
                                                     ScaffoldMessenger.of(context).showSnackBar(
@@ -2906,14 +2913,15 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
 
                                                     await Future.delayed(const Duration(milliseconds: 500));
 
-                                                    // Navegación segura solo cuando TODO terminó
                                                     context.go('/');
                                                   } catch (e) {
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(content: Text('Error: $e')),
+                                                    );
                                                   } finally {
                                                     if (mounted) setState(() => isRegistering = false);
                                                   }
                                                 },
-
                                                 text: 'Registrarse',
                                                 options: FFButtonOptions(
                                                   width:
