@@ -368,10 +368,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                                 0.0, 10.0, 0.0, 0.0),
                             child: FFButtonWidget(
                               onPressed: () async {
-                                Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => const PasswordRecoveryWidget()),
-                                    );
+                                context.push(PasswordRecoveryWidget.routePath);
                               },
                               text: '¿Olvidaste tu contraseña?',
                               options: FFButtonOptions(
@@ -457,11 +454,10 @@ class _LoginWidgetState extends State<LoginWidget> {
                                   return;
                                 }
 
-                                // Redirige según el tipo de usuario
-                                context.go('/');
-                                
+                                if (context.mounted) {
+                                    GoRouter.of(context).go('/');
+                                }                                
                               } on AuthException catch (e) {
-                                // Manejo específico de credenciales inválidas
                                 if (e.message == 'Invalid login credentials') {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
@@ -469,7 +465,6 @@ class _LoginWidgetState extends State<LoginWidget> {
                                     ),
                                   );
                                 } else {
-                                  // Otros errores de autenticación
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(content: Text('Error de autenticación: ${e.message}')),
                                   );
@@ -615,7 +610,6 @@ class _LoginWidgetState extends State<LoginWidget> {
 
                                             // if (!context.mounted) return;
                                             if (userProfile == null) {
-                                              print('🟠 Usuario completamente nuevo → Crear registro en tabla users');
                                               await SupaFlow.client.from('users').insert({
                                                 'uuid': user.id,
                                                 'email': user.email,
@@ -682,8 +676,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                                       hoverColor: Colors.transparent,
                                       highlightColor: Colors.transparent,
                                       onTap: () async {
-                                        context.pushNamed(
-                                            SingInDogOwnerWidget.routeName);
+                                        context.pushNamed(SingInDogOwnerWidget.routeName);
                                       },
                                       child: AutoSizeText(
                                         'Registrate como Dueño',
@@ -725,8 +718,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                                       hoverColor: Colors.transparent,
                                       highlightColor: Colors.transparent,
                                       onTap: () async {
-                                        context.pushNamed(
-                                          SingInDogWalkerWidget.routeName,
+                                        context.pushNamed(SingInDogWalkerWidget.routeName,
                                           queryParameters: {
                                             'registerMethod': 'email',
                                           },

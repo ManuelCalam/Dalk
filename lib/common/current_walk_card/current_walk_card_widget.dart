@@ -467,14 +467,12 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
                           size: 35,
                         ),
                         onPressed: () async {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ChatWidget(
-                                walkerId: widget.walkerId,
-                                ownerId: widget.ownerId,   
-                              ),
-                            ),
+                          context.push(
+                            '/owner/chat', 
+                            extra: <String, dynamic>{
+                              'walkerId': widget.walkerId, 
+                              'ownerId': widget.ownerId,
+                            },
                           );
                         },
                       ),
@@ -508,10 +506,7 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
                       print("Error al actualizar current_walk_id en Supabase: $e");
                     }
 
-                    context.goNamed(
-                      '_initialize',
-                      queryParameters: {'initialPage': 'CurrentWalk'},
-                    );
+                    context.pushNamed('/owner/currentWalk');
                   },
                   text: 'Abrir mapa',
                   icon: const FaIcon(FontAwesomeIcons.mapLocation, size: 25),

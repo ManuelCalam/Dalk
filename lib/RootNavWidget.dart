@@ -1,11 +1,8 @@
-import 'package:dalk/NavBar/nav_bar_dog_walker.dart';
 import 'package:dalk/backend/supabase/database/database.dart';
 import 'package:dalk/flutter_flow/flutter_flow_util.dart';
-import 'package:dalk/landing_pages/choose_user_type/choose_user_type_widget.dart';
-import 'package:dalk/landing_pages/login/login_widget.dart';
 import 'package:flutter/material.dart';
-import 'NavBar/nav_bar_dog_owner.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:go_router/go_router.dart';
 import 'dart:async';
 
 class RootNavWidget extends StatefulWidget {
@@ -37,6 +34,8 @@ class _RootNavWidgetState extends State<RootNavWidget> {
         _loading = false;
         _userType = null;
       });
+      
+      Future.microtask(() => GoRouter.of(context).go('/login')); 
       return;
     }
 
@@ -57,35 +56,43 @@ class _RootNavWidgetState extends State<RootNavWidget> {
       }
 
       if (userType == null && _attempts >= _maxAttempts) {
-        // Ya se intentó varias veces y no se encontró usuario
         setState(() {
           _loading = false;
           _userType = null;
           _redirecting = true;
         });
 
-        // Esperar 2 segundos antes de enviar al login
-        Future.delayed(const Duration(seconds: 2), () {
+        Future.delayed(const Duration(seconds: 2), () async {
           if (mounted) {
-            Supabase.instance.client.auth.signOut();
-            context.goNamedAuth(LoginWidget.routeName, context.mounted);
+            await Supabase.instance.client.auth.signOut();
+            GoRouter.of(context).go('/login');
           }
         });
-
         return;
       }
 
-      // Si se encontró userType
       setState(() {
         _userType = userType;
         _loading = false;
       });
+
+      // Redirección según tipo
+      if (userType == 'Dueño') {
+        GoRouter.of(context).go(widget.initialPage ?? '/owner/home'); 
+      } else if (userType == 'Paseador') {
+        GoRouter.of(context).go(widget.initialPage ?? '/walker/home');
+      } else if (userType == 'Indefinido') {
+        GoRouter.of(context).go('/chooseUserType');
+      } else {
+        GoRouter.of(context).go('/login');
+      }
     } catch (e) {
       debugPrint('Error al obtener userType: $e');
       setState(() {
         _loading = false;
         _userType = null;
       });
+      GoRouter.of(context).go('/login');
     }
   }
 
@@ -109,7 +116,6 @@ class _RootNavWidgetState extends State<RootNavWidget> {
     }
 
     if (_userType == null) {
-      // No debería pasar (ya se maneja arriba), pero lo dejamos por seguridad
       return const Scaffold(
         body: Center(
           child: Text('Error inesperado. Intenta iniciar sesión nuevamente.'),
@@ -117,20 +123,8 @@ class _RootNavWidgetState extends State<RootNavWidget> {
       );
     }
 
-    //Tu lógica original
-    if (_userType == 'Dueño') {
-      return NavBarOwnerPage(
-        key: ValueKey(widget.initialPage),
-        initialPage: widget.initialPage,
-      );
-    } else if (_userType == 'Paseador') {
-      return NavBarWalkerPage(initialPage: widget.initialPage);
-    } else if (_userType == 'Indefinido') {
-      return ChooseUserTypeWidget();
-    } else {
-      return const Scaffold(
-        body: Center(child: Text('Tipo de usuario no reconocido')),
-      );
-    }
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator()),
+    );
   }
 }

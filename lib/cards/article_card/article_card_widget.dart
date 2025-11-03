@@ -173,16 +173,13 @@ class _ArticleCardWidgetState extends State<ArticleCardWidget> {
               padding: const EdgeInsetsDirectional.fromSTEB(10, 5, 10, 10),
               child: FFButtonWidget(
               onPressed: () {
-                // Navegar usando Navigator.push tradicional
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ArticleWebViewWidget(
-                      url: widget.actionUrl,
-                      title: widget.title,
-                    ),
-                  ),
-                );
+                context.push(
+                  '/WebView',
+                  extra: <String, dynamic>{
+                    'url': widget.actionUrl,
+                    'title': widget.title,
+                  },
+                );                                           
               },
                 text: 'Abrir',
                 options: FFButtonOptions(

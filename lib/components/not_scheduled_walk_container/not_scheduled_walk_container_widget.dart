@@ -107,9 +107,9 @@ class _NotScheduledWalkContainerWidgetState
                     child: FFButtonWidget(
                       onPressed: () {
                         widget.userType == 'Dueño' ? 
-                          context.pushNamed(SetWalkScheduleWidget.routeName)
+                          context.pushNamed('/owner/requestWalk')
                           :
-                          context.pushNamed(WalksDogWalkerWidget.routeName);   
+                          context.pushNamed('/walker/walksList');   
 
                       },
                       text: 
@@ -149,9 +149,9 @@ class _NotScheduledWalkContainerWidgetState
                     child: FFButtonWidget(
                       onPressed: () async {
                         widget.userType == 'Dueño' ? 
-                        context.pushNamed(WalksDogOwnerWidget.routeName)
+                        context.pushNamed('/owner/walksList')
                         :
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const WalksRecordWidget(userType: 'Paseador',)));
+                        context.push('/walker/walksRecord', extra: {'userType': 'Paseador'});
                                               },
                       text: widget.userType == 'Dueño' ? 'Ver mi Agenda' : 'Ver Historial',
                       options: FFButtonOptions(

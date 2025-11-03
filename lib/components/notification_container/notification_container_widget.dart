@@ -1,10 +1,10 @@
+import 'package:dalk/user_provider.dart';
+import 'package:provider/provider.dart';
+
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'notification_container_model.dart';
 export 'notification_container_model.dart';
 
@@ -41,6 +41,11 @@ class _NotificationContainerWidgetState
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = context.watch<UserProvider>().user;
+    final String? userType = userProvider?.usertype; 
+    final String userPrefix = userType == 'Dueño' ? 'owner' : 'walker';
+
+
     return Container(
       width: 393.0,
       height: 100.0,
@@ -73,11 +78,11 @@ class _NotificationContainerWidgetState
                     hoverColor: Colors.transparent,
                     highlightColor: Colors.transparent,
                     onTap: () async {
-                      context.pushNamed(NotificationsWidget.routeName);
+                      context.push('/$userPrefix/notifications');
                     },
-                    child: Icon(
+                    child: const Icon(
                       Icons.notifications_sharp,
-                      color: FlutterFlowTheme.of(context).secondaryText,
+                      color: Color(0xFFCCDBFF),
                       size: 32.0,
                     ),
                   ),

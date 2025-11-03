@@ -302,7 +302,7 @@ Future<void> _createStripeAccount(BuildContext context, String walkerUid) async 
                       wrapWithModel(
                                 model: _model.goBackContainerModel,
                                 updateCallback: () => safeSetState(() {}),
-                                child: GoBackContainerWidget(),
+                                child: const GoBackContainerWidget(),
                       ),
 
                       Expanded(

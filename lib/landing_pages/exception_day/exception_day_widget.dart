@@ -561,7 +561,7 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                     padding: const EdgeInsetsDirectional.fromSTEB(20, 10, 20, 10),
                                     child: ElevatedButton(
                                       onPressed: () {
-                                        Navigator.pop(context);
+                                        context.pop(context);
                                         safeSetState(() {
                                           _model.datePicked2 = selectedTime;
                                           // Si la hora fin es anterior a la nueva hora inicio, resetearla
@@ -763,7 +763,7 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                     padding: const EdgeInsetsDirectional.fromSTEB(20, 10, 20, 10),
                                     child: ElevatedButton(
                                       onPressed: () {
-                                        Navigator.pop(context);
+                                        context.pop(context);
                                         safeSetState(() {
                                           _model.datePicked3 = selectedTime;
                                         });

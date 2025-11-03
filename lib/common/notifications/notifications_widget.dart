@@ -1,11 +1,8 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '/auth/supabase_auth/auth_util.dart';
@@ -32,7 +29,6 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => NotificationsModel());
-    // Configurar timeago en español si lo deseas
     timeago.setLocaleMessages('es', timeago.EsMessages());
   }
 
@@ -107,7 +103,7 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                                 child: Icon(
                                   Icons.chevron_left_outlined,
                                   color:
-                                      FlutterFlowTheme.of(context).primaryText,
+                                      FlutterFlowTheme.of(context).primary,
                                   size: 35.0,
                                 ),
                               ),
@@ -178,7 +174,7 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsetsDirectional.fromSTEB(
-                              15, 0.0, 0.0, 15.0),
+                              10, 15, 10, 15),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 0.9,
                             decoration: const BoxDecoration(),
@@ -296,7 +292,7 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                                                             ? Icons.notifications
                                                             : Icons.notifications_active,
                                                         color: notification['is_read']
-                                                            ? FlutterFlowTheme.of(context).secondaryText
+                                                            ? const Color(0xFF484848)
                                                             : FlutterFlowTheme.of(context).primary,
                                                         size: 30.0,
                                                       ),
@@ -309,7 +305,6 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                                                         mainAxisSize: MainAxisSize.min,
                                                         crossAxisAlignment: CrossAxisAlignment.start,
                                                         children: [
-                                                          //  CORREGIDO: Mostrar title + body en lugar de message
                                                           Text(
                                                             notification['title'] ?? 'Sin título',
                                                             style: FlutterFlowTheme.of(context)
@@ -318,13 +313,17 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                                                                   fontWeight: notification['is_read'] 
                                                                       ? FontWeight.normal 
                                                                       : FontWeight.bold,
+                                                                color: FlutterFlowTheme.of(context).primary
                                                                 ),
                                                           ),
                                                           if (notification['body'] != null && notification['body'].isNotEmpty) ...[
                                                             const SizedBox(height: 4),
                                                             Text(
                                                               notification['body'],
-                                                              style: FlutterFlowTheme.of(context).bodySmall,
+                                                              style: FlutterFlowTheme.of(context).bodySmall .override(
+                                                                color: FlutterFlowTheme.of(context).secondaryBackground
+                                                              ),
+                                                              
                                                             ),
                                                           ],
                                                           const SizedBox(height: 4),
@@ -335,7 +334,9 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                                                                     locale: 'es',
                                                                   )
                                                                 : 'Fecha desconocida',
-                                                            style: FlutterFlowTheme.of(context).labelSmall,
+                                                            style: FlutterFlowTheme.of(context).labelSmall.override(
+                                                              color:  const Color.fromARGB(255, 126, 126, 126)
+                                                            ),
                                                           ),
                                                         ],
                                                       ),

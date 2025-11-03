@@ -175,19 +175,25 @@ Widget build(BuildContext context) {
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 15, 0),
-                      child: Icon(
-                        Icons.notifications_sharp,
-                        color: FlutterFlowTheme.of(context).accent2,
-                        size: 32,
+                    InkWell(
+                      onTap: () {
+                        final String userPrefix = userType == 'Dueño' ? 'owner' : 'walker';
+                        final String fullPath = '/$userPrefix/notifications';
+                        context.push(fullPath); 
+                      },
+                      child: Padding(
+                        padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 15, 0),
+                        child: Icon(
+                          Icons.notifications_sharp,
+                          color: FlutterFlowTheme.of(context).accent2,
+                          size: 32,
+                        ),
                       ),
-                    ),
+                    )
                   ],
                 ),
               ),
               
-              // Contenido principal - EXPANDIDO para ocupar todo el espacio restante
               Expanded(
                 child: Container(
                   width: MediaQuery.sizeOf(context).width,

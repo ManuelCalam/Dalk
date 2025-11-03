@@ -1233,7 +1233,7 @@ class _TrackerDetailsWidgetState extends State<TrackerDetailsWidget> {
                                       0, 15, 0, 0),
                                   child: FFButtonWidget(
                                     onPressed: () {
-                                      Navigator.push(context,MaterialPageRoute(builder: (context) => const BuyTrackerWidget()),);
+                                      context.push('/owner/buyTracker');
                                     },
                                     text: 'Comprar aquí',
                                     icon: const Icon(

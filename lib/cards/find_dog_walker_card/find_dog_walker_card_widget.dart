@@ -248,14 +248,12 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                       ),
                          onPressed: () {
                           final currentUserId = SupaFlow.client.auth.currentUser?.id;
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ChatWidget(
-                                  walkerId: currentUserId?? '',
-                                  ownerId: uuidPaseador,
-                                ),
-                              ),
+                            context.push(
+                              '/owner/chat',
+                              extra: <String, dynamic>{
+                                'walkerId': uuidPaseador, 
+                                'ownerId': currentUserId,
+                              },
                             );
                           },
                     ),
@@ -417,10 +415,11 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                                           icon: Icons.check_circle,
                                           iconColor: FlutterFlowTheme.of(context).success,
                                           onConfirm: () {
-                                            context.pushNamed(SetWalkScheduleWidget.routeName);
+                                            context.pop();
+                                            context.pushNamed('/owner/requestWalk');
                                           },
                                           onCancel: () {
-                                            context.pushNamed(WalksDogOwnerWidget.routeName);
+                                            context.pushNamed('/owner/walksList');
                                           },
                                         ),
                                       );

@@ -218,10 +218,7 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
           .update({'debt': newDebt})
           .eq('walker_uuid', walkerId);
 
-      context.pushReplacementNamed(
-        '_initialize',
-        queryParameters: {'initialPage': 'homeDogOwner'},
-      );
+      context.go('/owner/home');
 
     } catch (e) {
       print('Error en pago en efectivo: $e');
@@ -385,10 +382,7 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
           context: context,
           text: "Menú principal",
           color: theme.primary,
-          onPressed: () => context.pushReplacementNamed(
-            '_initialize', 
-            queryParameters: {'initialPage': 'homeDogOwner'},
-          ),
+          onPressed: () => context.go('/owner/home'),
           iconWidget: const Icon(Icons.credit_card, color: Colors.white, size: 23),
           isDisabled: isPaid,
         ));

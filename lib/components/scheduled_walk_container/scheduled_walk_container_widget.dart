@@ -433,10 +433,7 @@ class ScheduledWalkContainerWidgetState
     }
 
     // 5. Navegar a CurrentWalkEmptyWindow
-    context.pushReplacementNamed(
-      '_initialize',
-      queryParameters: {'initialPage': 'CurrentWalk'},
-    );
+    context.go('/walker/currentWalk');
 
   }
 
@@ -479,7 +476,7 @@ class ScheduledWalkContainerWidgetState
           // Mapa - 60% del alto
           Container(
             width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height * 0.6, // 60%
+            height: MediaQuery.of(context).size.height * 0.6,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(5),
             ),
@@ -704,14 +701,13 @@ class ScheduledWalkContainerWidgetState
                                         size: 30,
                                       ),
                                       onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => ChatWidget(
-                                              walkerId: walkData['walker_id'],
-                                              ownerId: walkData['owner_id'],
-                                            ),
-                                          ),
+                                        final String userSegment = widget.userType == 'Dueño' ? 'owner' : 'walker';
+                                        context.push(
+                                          '/$userSegment/chat', 
+                                          extra: <String, dynamic>{
+                                            'walkerId': walkData['walker_id'], 
+                                            'ownerId': walkData['owner_id'],
+                                          },
                                         );
                                       },
                                     ),

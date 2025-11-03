@@ -144,7 +144,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                           hoverColor: Colors.transparent,
                           highlightColor: Colors.transparent,
                           onTap: () async {
-                            context.pushNamed(NotificationsWidget.routeName);
+                            context.push('/walker/notifications');
                           },
                           child: const Icon(
                             Icons.notifications_sharp,
@@ -261,8 +261,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                         hoverColor: Colors.transparent,
                                         highlightColor: Colors.transparent,
                                         onTap: () async {
-                                          context.pushNamed(
-                                              DogWalkerServiceWidget.routeName);
+                                          GoRouter.of(context).go('/walker/service');
                                         },
                                         child: Container(
                                           width:
@@ -346,8 +345,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                         hoverColor: Colors.transparent,
                                         highlightColor: Colors.transparent,
                                         onTap: () async {
-                                          context.pushNamed(
-                                              WalksDogWalkerWidget.routeName);
+                                          context.push('/walker/walksList');
                                         },
                                         child: Container(
                                           width:
@@ -439,8 +437,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                         hoverColor: Colors.transparent,
                                         highlightColor: Colors.transparent,
                                         onTap: () async {
-                                          context.pushNamed(
-                                              ExceptionDayWidget.routeName);
+                                          context.push('/walker/exceptionalDay');
                                         },
                                         child: Container(
                                           width:
@@ -526,15 +523,13 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                         hoverColor: Colors.transparent,
                                         highlightColor: Colors.transparent,
                                         onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => ArticleWebViewWidget(
-                                                url: 'https://dalk-legal-git-main-noe-ibarras-projects.vercel.app/?_vercel_share=H06ZuiEgfwHGNcHZ9AdimDz34FNJepDa',
-                                                title: 'Acerca de Nosotros',
-                                              ),
-                                            ),
-                                          );
+                                          context.push(
+                                            '/WebView',
+                                            extra: <String, dynamic>{
+                                              'url': 'https://dalk-legal-git-main-noe-ibarras-projects.vercel.app/?_vercel_share=H06ZuiEgfwHGNcHZ9AdimDz34FNJepDa',
+                                              'title': 'Acerca de Nosotros',
+                                            },
+                                          );                                           
                                         },
                                         child: Container(
                                           width: MediaQuery.sizeOf(context).width * 0.4,
@@ -653,34 +648,6 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                       ),
                                 ),
                               ),
-                              // Padding(
-                              //   padding:
-                              //       EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
-                              //   child: Container(
-                              //     width: MediaQuery.sizeOf(context).width,
-                              //     height:
-                              //         MediaQuery.sizeOf(context).height * 0.3,
-                              //     decoration: BoxDecoration(
-                              //       borderRadius: BorderRadius.circular(0),
-                              //     ),
-                              //     // child: ListView(
-                              //     //   padding: EdgeInsets.zero,
-                              //     //   primary: false,
-                              //     //   shrinkWrap: true,
-                              //     //   scrollDirection: Axis.horizontal,
-                              //     //   children:  [
-
-                              //     //     // AQUI ES DONDE PONDRAS EL FUTURE BUILDER Y UTILIZARÁS EL article_widget_card
-
-                              //     //   ],
-                              //     // ),
-                              //     // child: Padding(
-                              //     //   padding: EdgeInsets.symmetric(horizontal: 12.0),
-                              //     //   child: ArticleWebView(),
-                              //     // ),
-                              //   ),
-                              // ),
-
                               Padding(
                                 padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                                 child: Container(

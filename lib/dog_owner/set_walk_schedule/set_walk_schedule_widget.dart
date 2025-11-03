@@ -131,9 +131,20 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
       print('   - recommendedWalkerUUIDs: ${_recommendedWalkerUUIDs.join(',')}');
       print('   - Total UUIDs: ${_recommendedWalkerUUIDs.length}');
       
-      context.pushNamed(
-        FindDogWalkerWidget.routeName,
-        queryParameters: {
+      // context.pushNamed(
+      //   FindDogWalkerWidget.routeName,
+      //   queryParameters: {
+      //     'time': time.toIso8601String(),
+      //     'addressId': addressId,
+      //     'petId': petId,
+      //     'walkDuration': walkDuration.toString(),
+      //     'instructions': instructions,
+      //     'recommendedWalkerUUIDs': _recommendedWalkerUUIDs.join(','),
+      //   },
+      // );
+      context.push(
+        '/owner/findDogWalker',
+        extra: <String, dynamic>{
           'date': date.toIso8601String(),
           'time': time.toIso8601String(),
           'addressId': addressId,

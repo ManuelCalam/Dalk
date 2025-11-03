@@ -346,10 +346,10 @@ class _PaymentMethodsWidgetState extends State<PaymentMethodsWidget> {
                                                                 onConfirm: () async {
                                                                   await detachPaymentMethod(pm["id"]);
                                                                   setState(() {});
-                                                                  Navigator.pop(context); 
+                                                                  context.pop(context); 
                                                                 },
                                                                 onCancel: () {
-                                                                  Navigator.pop(context);
+                                                                  context.pop(context);
                                                                 },
                                                               ),
                                                             );

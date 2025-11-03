@@ -1,4 +1,3 @@
-import 'package:dalk/common/chat/chat_widget.dart';
 import 'package:dalk/components/pop_up_dog_profile/pop_up_dog_profile_widget.dart';
 import 'package:dalk/components/pop_up_dog_walker_profile/pop_up_dog_walker_profile_widget.dart';
 import 'package:dalk/components/pop_up_walk_options/pop_up_walk_options_widget.dart';
@@ -78,7 +77,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
   @override
   Widget build(BuildContext context) {
     final displayName = Validators.formatDisplayName(widget.userName);
-
+    final String userSegment = (widget.usertype == 'Dueño') ? 'owner' : 'walker';
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
       child: Container(
@@ -108,7 +107,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                         shape: BoxShape.circle,
                       ),
                       child: Image.network(
-                        widget.photoUrl,
+                        widget.photoUrl ?? 'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/public/profile_pics/user.png',
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -457,14 +456,12 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                           size: 35,
                         ),
                         onPressed: () async {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ChatWidget(
-                                walkerId: widget.walkerId,
-                                ownerId: widget.ownerId,   
-                              ),
-                            ),
+                          context.push(
+                            '/$userSegment/chat', 
+                            extra: <String, dynamic>{
+                              'walkerId': widget.walkerId, 
+                              'ownerId': widget.ownerId,
+                            },
                           );
                         },
                       ),

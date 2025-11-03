@@ -217,9 +217,9 @@ class _PetListCardWidgetState extends State<PetListCardWidget> {
                                 return;
                               }
 
-                              widget.onPetDeleted?.call();  // actualiza la lista y muestra SnackBar desde el padre
+                              widget.onPetDeleted?.call();  
                             } catch (e) {
-                              widget.onPetDeleted?.call();  // igual se puede recargar la lista
+                              widget.onPetDeleted?.call();  
                             }
                           },
                         ),
@@ -234,13 +234,11 @@ class _PetListCardWidgetState extends State<PetListCardWidget> {
                             size: 30,
                           ),
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PetUpdateProfileWidget(
-                                  petData: widget.petData, // pasamos los datos de la mascota seleccionada
-                                ),
-                              ),
+                            context.push(
+                              '/owner/updatePet',
+                              extra: <String, dynamic>{
+                                'petData': widget.petData,
+                              },
                             );
                           },
                         ),

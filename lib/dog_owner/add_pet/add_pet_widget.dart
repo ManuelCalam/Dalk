@@ -1199,7 +1199,7 @@ void _showImagePickerOptions(BuildContext context, {int? petId}) {
 
                                                   await supabase.from('pets').update({'photo_url': imageUrl}).eq('id', petId);
 
-                                                  Navigator.pop(context);
+                                                  context.pop(context);
                                                 } catch (e) {
                                                   ScaffoldMessenger.of(context).showSnackBar(
                                                     const SnackBar(content: Text('Error al registrar la mascota. Intenta de nuevo.')),

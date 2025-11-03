@@ -150,7 +150,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                           hoverColor: Colors.transparent,
                           highlightColor: Colors.transparent,
                           onTap: () async {
-                            context.pushNamed(NotificationsWidget.routeName);
+                            context.push('/owner/notifications');
                           },
                           child: const Icon(
                             Icons.notifications_sharp,
@@ -242,90 +242,6 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                       shrinkWrap: true,
                       scrollDirection: Axis.vertical,
                       children:  [ 
-                        // Padding(
-                        //   padding: const EdgeInsetsDirectional.fromSTEB(
-                        //       0.0, 5.0, 0.0, 0.0),
-                        //   child: InkWell(
-                        //     splashColor: Colors.transparent,
-                        //     focusColor: Colors.transparent,
-                        //     hoverColor: Colors.transparent,
-                        //     highlightColor: Colors.transparent,
-                        //     onTap: () async {
-                        //       context
-                        //           .pushNamed(PremiumPlanInfoWidget.routeName);
-                        //     },
-                        //     child: Container(
-                        //       width: MediaQuery.sizeOf(context).width * 1.0,
-                        //       height: MediaQuery.sizeOf(context).height * 0.02,
-                        //       constraints: BoxConstraints(
-                        //         minHeight:
-                        //             MediaQuery.sizeOf(context).height * 0.04,
-                        //       ),
-                        //       decoration: BoxDecoration(
-                        //         color: FlutterFlowTheme.of(context).accent1,
-                        //         borderRadius: BorderRadius.circular(5.0),
-                        //       ),
-                        //       child: Row(
-                        //         mainAxisSize: MainAxisSize.max,
-                        //         children: [
-                        //           Align(
-                        //             alignment: const AlignmentDirectional(-1.0, 0.0),
-                        //             child: Padding(
-                        //               padding: const EdgeInsetsDirectional.fromSTEB(
-                        //                   5.0, 0.0, 0.0, 0.0),
-                        //               child: AutoSizeText(
-                        //                                         isPremium ? "Revisa tus beneficios premium!" :
-                        //                 'Descubre los beneficios del plan premium!' ,
-                        //                 textAlign: TextAlign.start,
-                        //                 minFontSize: 10.0,
-                        //                 style: FlutterFlowTheme.of(context)
-                        //                     .bodyMedium
-                        //                     .override(
-                        //                       font: GoogleFonts.lexend(
-                        //                         fontWeight:
-                        //                             FlutterFlowTheme.of(context)
-                        //                                 .bodyMedium
-                        //                                 .fontWeight,
-                        //                         fontStyle:
-                        //                             FlutterFlowTheme.of(context)
-                        //                                 .bodyMedium
-                        //                                 .fontStyle,
-                        //                       ),
-                        //                       color: Colors.white,
-                        //                       fontSize: 14.0,
-                        //                       letterSpacing: 0.0,
-                        //                       fontWeight:
-                        //                           FlutterFlowTheme.of(context)
-                        //                               .bodyMedium
-                        //                               .fontWeight,
-                        //                       fontStyle:
-                        //                           FlutterFlowTheme.of(context)
-                        //                               .bodyMedium
-                        //                               .fontStyle,
-                        //                     ),
-                        //               ),
-                        //             ),
-                        //           ),
-                        //           Flexible(
-                        //             child: Align(
-                        //               alignment: const AlignmentDirectional(1.0, 0.0),
-                        //               child: Padding(
-                        //                 padding: const EdgeInsetsDirectional.fromSTEB(
-                        //                     0.0, 0.0, 5.0, 0.0),
-                        //                 child: Icon(
-                        //                   Icons.chevron_right_outlined,
-                        //                   color: FlutterFlowTheme.of(context)
-                        //                       .tertiary,
-                        //                   size: 24.0,
-                        //                 ),
-                        //               ),
-                        //             ),
-                        //           ),
-                        //         ],
-                        //       ),
-                        //     ),
-                        //   ),
-                        // ),
                         Padding(
                           padding: const EdgeInsetsDirectional.fromSTEB(
                               0, 5, 0, 0),
@@ -335,8 +251,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                             hoverColor: Colors.transparent,
                             highlightColor: Colors.transparent,
                             onTap: () async {
-                              context.pushNamed(
-                                  PremiumPlanInfoWidget.routeName);
+                              context.push('/owner/premiumInfo');
                             },
                             child: Container(
                               width: MediaQuery.sizeOf(context).width,
@@ -467,11 +382,11 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                                     icon: Icons.person,
                                                     iconColor: FlutterFlowTheme.of(context).primary,
                                                     onConfirm: () {
-                                                      Navigator.pop(context);
-                                                      context.pushNamed(DogOwnerUpdateProfileWidget.routeName);
+                                                      context.pop(context);
+                                                      context.push('/owner/updateProfile');
                                                     },
                                                     onCancel: () {
-                                                      Navigator.pop(context);
+                                                      context.pop(context);
                                                     },
                                                   ),
                                                 );
@@ -480,7 +395,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
 
                                           }
                                           else {
-                                            context.pushNamed(SetWalkScheduleWidget.routeName);
+                                            context.push('/owner/requestWalk');
                                           }
                                         },
                                         child: Container(
@@ -565,8 +480,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                         hoverColor: Colors.transparent,
                                         highlightColor: Colors.transparent,
                                         onTap: () async {
-                                          context.pushNamed(
-                                              WalksDogOwnerWidget.routeName);
+                                          context.push('/owner/walksList');
                                         },
                                         child: Container(
                                           width:
@@ -658,8 +572,7 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                         hoverColor: Colors.transparent,
                                         highlightColor: Colors.transparent,
                                         onTap: () {
-                                          context.pushNamed(
-                                              AddPetWidget.routeName);
+                                          context.push('/owner/addPet');
                                         },
                                         child: Container(
                                           width:
@@ -745,15 +658,13 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                         hoverColor: Colors.transparent,
                                         highlightColor: Colors.transparent,
                                         onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => ArticleWebViewWidget(
-                                                url: 'https://dalk-legal-git-main-noe-ibarras-projects.vercel.app/?_vercel_share=H06ZuiEgfwHGNcHZ9AdimDz34FNJepDa',
-                                                title: 'Acerca de Nosotros',
-                                              ),
-                                            ),
-                                          );
+                                          context.push(
+                                            '/WebView',
+                                            extra: <String, dynamic>{
+                                              'url': 'https://dalk-legal-git-main-noe-ibarras-projects.vercel.app/?_vercel_share=H06ZuiEgfwHGNcHZ9AdimDz34FNJepDa',
+                                              'title': 'Acerca de Nosotros',
+                                            },
+                                          );                                           
                                         },
                                         child: Container(
                                           width: MediaQuery.sizeOf(context).width * 0.4,
@@ -872,34 +783,6 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                                       ),
                                 ),
                               ),
-                              // Padding(
-                              //   padding:
-                              //       const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
-                              //   child: Container(
-                              //     width: MediaQuery.sizeOf(context).width,
-                              //     height:
-                              //         MediaQuery.sizeOf(context).height * 0.3,
-                              //     decoration: BoxDecoration(
-                              //       borderRadius: BorderRadius.circular(0),
-                              //     ),
-                              //     // child: ListView(
-                              //     //   padding: EdgeInsets.zero,
-                              //     //   primary: false,
-                              //     //   shrinkWrap: true,
-                              //     //   scrollDirection: Axis.horizontal,
-                              //     //   children:  [
-
-                              //     //     // AQUI ES DONDE PONDRAS EL FUTURE BUILDER Y UTILIZARÁS EL article_widget_card
-
-                              //     //   ],
-                              //     // ),
-
-                              //     child: Padding(
-                              //       padding: EdgeInsets.symmetric(horizontal: 12.0),
-                              //       child: ArticleWebView(),
-                              //     ),
-                              //   ),
-                              // ),
                               Padding(
                                 padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                                 child: Container(
