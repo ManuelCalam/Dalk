@@ -69,6 +69,8 @@ class SingInDogOwnerModel extends FlutterFlowModel<SingInDogOwnerWidget> {
   late bool confirmPassDogOwnerInputVisibility;
   String? Function(BuildContext, String?)?
       confirmPassDogOwnerInputTextControllerValidator;
+  FormFieldController<String>? neighborhoodDogOwnerMenuValueController;
+  String? neighborhoodDogOwnerMenuValue;
 
   @override
   void initState(BuildContext context) {

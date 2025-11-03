@@ -352,7 +352,13 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
     final sizeValid = _model.dogSizeMenuValue != null && 
                     _model.dogSizeMenuValue!.isNotEmpty;
     final behaviourValid = _model.behaviourChipsValues != null && 
-                         _model.behaviourChipsValues!.isNotEmpty;
+                        _model.behaviourChipsValues!.isNotEmpty;
+    
+    // Validar imagen: debe existir una imagen previa O una nueva imagen seleccionada
+    final imageValid = (_petImage != null) || 
+                      (widget.petData?['photo_url'] != null && 
+                      (widget.petData?['photo_url'] as String).isNotEmpty &&
+                      widget.petData?['photo_url'] != 'https://static.vecteezy.com/system/resources/previews/007/407/996/non_2x/user-icon-person-icon-client-symbol-login-head-sign-icon-design-vector.jpg');
 
     setState(() {
       _showGenderError = !genderValid;
@@ -451,19 +457,19 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
           });
 
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text(' Datos actualizados correctamente')),
+            const SnackBar(content: Text('Datos actualizados correctamente')),
           );
         } else {
           setState(() => _isSaving = false);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-                content: Text(' No se pudo actualizar la mascota (sin coincidencias)')),
+                content: Text('No se pudo actualizar la mascota (sin coincidencias)')),
           );
         }
       } catch (e) {
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(' Error al actualizar: $e')),
+          SnackBar(content: Text('Error al actualizar: $e')),
         );
       }
     } else {
@@ -592,21 +598,21 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                                           alignment: const AlignmentDirectional(0, 0),
                                           child: Padding(
                                             padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
-                                            child: GestureDetector(
-                                              onTap: () => _showImagePickerOptions(context, false, widget.petData?['id']),
-                                              child: CircleAvatar(
-                                                radius: 60,
-                                                backgroundImage: _petImage != null
-                                                    ? FileImage(_petImage!) // Imagen nueva seleccionada
-                                                    : (widget.petData?['photo_url'] != null &&
-                                                            (widget.petData?['photo_url'] as String).isNotEmpty)
-                                                        ? NetworkImage(widget.petData!['photo_url'])
-                                                        : const NetworkImage(
-                                                            'https://static.vecteezy.com/system/resources/previews/007/407/996/non_2x/user-icon-person-icon-client-symbol-login-head-sign-icon-design-vector.jpg',
-                                                          ) as ImageProvider,
-                                              ),
-                                            ),
-                                          ),
+                                                                                  child: GestureDetector(
+                                                                                    onTap: () => _showImagePickerOptions(context, false, widget.petData?['id']),
+                                                    child: CircleAvatar(
+                                                      radius: 60,
+                                                      backgroundImage: _petImage != null
+                                                          ? FileImage(_petImage!) // Imagen nueva seleccionada
+                                                          : (widget.petData?['photo_url'] != null &&
+                                                                  (widget.petData?['photo_url'] as String).isNotEmpty)
+                                                              ? NetworkImage(widget.petData!['photo_url'])
+                                                              : const NetworkImage(
+                                                                  'https://static.vecteezy.com/system/resources/previews/007/407/996/non_2x/user-icon-person-icon-client-symbol-login-head-sign-icon-design-vector.jpg',
+                                                                ) as ImageProvider,
+                                                    ),
+                                                  ),
+                                                ),
                                         ),
                                       ),
                                       Align(
@@ -808,19 +814,12 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                                                     fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
                                                     fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                   ),
-                                              keyboardType: TextInputType.text,
+                                              keyboardType: TextInputType.number,  // Cambiado a number
                                               cursorColor: FlutterFlowTheme.of(context).primaryText,
-                                              // validator: (value) => Validators.validatePetAge(value, fieldName: 'Edad'),                                              
-                                              // validator: (value) {
-                                              //   final required = Validators.requiredField(value, fieldName: 'Edad');
-                                              //     if (required != null) return required;
-                                              //     final min = Validators.minLength(value, 1, fieldName: 'Edad');
-                                              //     if (min != null) return min;
-                                              //     return Validators.maxLength(value, 3, fieldName: 'Edad');
-                                              //   },                                                  
                                               validator: _validateAge,
                                               inputFormatters: [
-                                                LengthLimitingTextInputFormatter(3),
+                                                FilteringTextInputFormatter.digitsOnly,  // Solo permite dígitos
+                                                LengthLimitingTextInputFormatter(2),  // Máximo 2 dígitos
                                               ],   
                                               autovalidateMode: _ageValidateMode,
                                             ),
