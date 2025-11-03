@@ -610,7 +610,7 @@ class _LoginWidgetState extends State<LoginWidget> {
 
                                             // if (!context.mounted) return;
                                             if (userProfile == null) {
-                                              await SupaFlow.client.from('users').insert({
+                                              final response = await SupaFlow.client.from('users').insert({
                                                 'uuid': user.id,
                                                 'email': user.email,
                                                 'usertype': 'Indefinido',
@@ -718,8 +718,9 @@ class _LoginWidgetState extends State<LoginWidget> {
                                       hoverColor: Colors.transparent,
                                       highlightColor: Colors.transparent,
                                       onTap: () async {
-                                        context.pushNamed(SingInDogWalkerWidget.routeName,
-                                          queryParameters: {
+                                        context.pushNamed(
+                                          SingInDogWalkerWidget.routeName,
+                                          extra: <String, dynamic>{ 
                                             'registerMethod': 'email',
                                           },
                                         );

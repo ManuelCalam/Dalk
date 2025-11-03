@@ -668,7 +668,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                             action: SnackBarAction(
                                                               label: 'Ver Planes',
                                                               onPressed: () {
-                                                                context.pushNamed(PremiumPlanInfoWidget.routeName);
+                                                                context.push('/owner/premiumInfo');
                                                               },
                                                             ),
                                                           ),
@@ -922,12 +922,12 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                   hoverColor: Colors.transparent,
                                                   highlightColor: Colors.transparent,
                                                   onTap: () async {
-                                                    context.pushNamed(
-                                                        AddAddressWidget.routeName,
-                                                        queryParameters: {
-                                                          'originWindow': 'addWalk', 
-                                                        },
-                                                      );                                                  
+                                                    context.push(
+                                                      '/owner/addAddress', 
+                                                      extra: <String, dynamic>{
+                                                        'originWindow': 'addWalk',
+                                                      },
+                                                    );                                                  
                                                   },
                                                   child: Container(
                                                     width: 100.0,
@@ -1088,7 +1088,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                   hoverColor: Colors.transparent,
                                                   highlightColor: Colors.transparent,
                                                   onTap: () async {
-                                                    context.pushNamed(AddPetWidget.routeName);
+                                                    context.push('/owner/addPet');
                                                   },
                                                   child: Container(
                                                     width: 100.0,

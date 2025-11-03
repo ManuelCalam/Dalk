@@ -107,9 +107,9 @@ class _NotScheduledWalkContainerWidgetState
                     child: FFButtonWidget(
                       onPressed: () {
                         widget.userType == 'Dueño' ? 
-                          context.pushNamed('/owner/requestWalk')
+                          context.push('/owner/requestWalk')
                           :
-                          context.pushNamed('/walker/walksList');   
+                          context.push('/walker/walksList');   
 
                       },
                       text: 
@@ -149,7 +149,7 @@ class _NotScheduledWalkContainerWidgetState
                     child: FFButtonWidget(
                       onPressed: () async {
                         widget.userType == 'Dueño' ? 
-                        context.pushNamed('/owner/walksList')
+                        context.push('/owner/walksList')
                         :
                         context.push('/walker/walksRecord', extra: {'userType': 'Paseador'});
                                               },

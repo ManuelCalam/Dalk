@@ -158,7 +158,7 @@ class _DogWalkerServiceWidgetState extends State<DogWalkerServiceWidget> {
         );
       }
 
-      context.go('/');
+      GoRouter.of(context).go('/walker/home'); 
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error al guardar servicio: $e')),

@@ -433,7 +433,7 @@ class ScheduledWalkContainerWidgetState
     }
 
     // 5. Navegar a CurrentWalkEmptyWindow
-    context.go('/walker/currentWalk');
+    GoRouter.of(context).go('/walker/currentWalk');
 
   }
 

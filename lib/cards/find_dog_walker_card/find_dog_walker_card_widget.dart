@@ -416,10 +416,10 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                                           iconColor: FlutterFlowTheme.of(context).success,
                                           onConfirm: () {
                                             context.pop();
-                                            context.pushNamed('/owner/requestWalk');
+                                            context.push('/owner/requestWalk');
                                           },
                                           onCancel: () {
-                                            context.pushNamed('/owner/walksList');
+                                            context.push('/owner/walksList');
                                           },
                                         ),
                                       );

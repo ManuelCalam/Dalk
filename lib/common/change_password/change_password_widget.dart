@@ -548,15 +548,13 @@ class _ChangePasswordWidgetState extends State<ChangePasswordWidget> {
                                                 );
 
                                                 if (res.user != null) {
-                                                  //  cerrar sesión para que tenga que iniciar con la nueva contraseña
                                                   await Supabase.instance.client.auth.signOut();
 
                                                   ScaffoldMessenger.of(context).showSnackBar(
                                                     SnackBar(content: Text('Contraseña actualizada, inicia sesión de nuevo')),
                                                   );
 
-                                                  //  redirigir al login
-                                                  context.go('/login');
+                                                  GoRouter.of(context).go('/login');
                                                 } else {
                                                   ScaffoldMessenger.of(context).showSnackBar(
                                                     SnackBar(content: Text('No se pudo actualizar la contraseña')),

@@ -973,7 +973,7 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
 
     // Navegar a la página principal
     if (!mounted) return;
-    context.push('/');
+    context.push('/walker/home');
 
   } catch (e) {
     // Manejar errores

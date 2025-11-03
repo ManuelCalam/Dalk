@@ -191,11 +191,11 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
 
     if (verify == null) throw Exception('Error al verificar registro.');
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('¡Registro completado correctamente!')),
-    );
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   const SnackBar(content: Text('¡Registro completado correctamente!')),
+    // );
 
-    context.pushReplacement('/');
+    // context.pushReplacement('/');
 
   } on AuthException catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -2945,7 +2945,7 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
 
                                                           await Future.delayed(const Duration(milliseconds: 500));
 
-                                                          context.go('/');
+                                                          GoRouter.of(context).go('/walker/home'); 
                                                         } catch (e) {
                                                         } finally {
                                                           if (mounted) setState(() => isRegistering = false);

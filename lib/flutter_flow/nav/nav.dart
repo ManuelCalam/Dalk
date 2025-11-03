@@ -14,6 +14,7 @@ import 'package:dalk/dog_owner/buy_tracker/buy_tracker_widget.dart';
 import 'package:dalk/dog_owner/pet_update_profile/pet_update_profile_widget.dart';
 import 'package:dalk/dog_owner/tracker_details/tracker_details_widget.dart';
 import 'package:dalk/dog_walker/walker_stripe_account/walker_stripe_account_widget.dart';
+import 'package:dalk/dog_walker/walker_stripe_webview/walker_stripe_webview.dart';
 import 'package:dalk/dog_walker/walks_dog_walker/walks_dog_walker_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -208,7 +209,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
       ),
 
       GoRoute(
-        name: 'webView',
+        name: 'WebView',
         path: '/WebView', 
         parentNavigatorKey: appNavigatorKey,
         pageBuilder: (context, state) {
@@ -218,6 +219,24 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
             ArticleWebViewWidget(
               url: args['url'],
               title: args['title'],
+            ),
+          );
+        },
+        redirect: (context, state) => authRedirect(context, state, true),
+      ),
+
+      GoRoute(
+        name: 'StripeWebView',
+        path: '/StripeWebView', 
+        parentNavigatorKey: appNavigatorKey,
+        pageBuilder: (context, state) {
+          final args = state.extra as Map<String, dynamic>? ?? {};
+          return pageBuilderFor(
+            state,
+            WalkerStripeWebview(
+              onboardingUrl: args['onboardingUrl'],
+              returnUrl: args['returnUrl'],
+              refreshUrl: args['refreshUrl'],
             ),
           );
         },
@@ -664,8 +683,6 @@ extension NavigationExtensions on BuildContext {
             );
 
   void safePop() {
-    // If there is only one route on the stack, navigate to the initial
-    // page instead of popping.
     if (canPop()) {
       pop();
     } else {

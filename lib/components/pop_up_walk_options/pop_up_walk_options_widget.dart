@@ -377,10 +377,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                     .update({'status': 'En curso'})
                     .eq('id', widget.walkId),
 
-                  context.pushNamed(
-                    '_initialize',
-                    queryParameters: {'initialPage': 'CurrentWalk'},
-                  ),
+                  GoRouter.of(context).go('/walker/currentWalk'),
                   //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
                   context.pop(),
                   context.pop(),
@@ -678,7 +675,6 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                               size: 24,
                             ),
                             onPressed: () async {
-                              // Action 1
                               context.pop();
                             },
                           ),

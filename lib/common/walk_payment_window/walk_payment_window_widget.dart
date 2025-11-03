@@ -218,7 +218,8 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
           .update({'debt': newDebt})
           .eq('walker_uuid', walkerId);
 
-      context.go('/owner/home');
+      // context.go('/owner/home');
+      GoRouter.of(context).go('/owner/home');       
 
     } catch (e) {
       print('Error en pago en efectivo: $e');
@@ -382,7 +383,8 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
           context: context,
           text: "Menú principal",
           color: theme.primary,
-          onPressed: () => context.go('/owner/home'),
+          // onPressed: () => context.go('/owner/home'),
+          onPressed: () => GoRouter.of(context).go('/owner/home'),
           iconWidget: const Icon(Icons.credit_card, color: Colors.white, size: 23),
           isDisabled: isPaid,
         ));

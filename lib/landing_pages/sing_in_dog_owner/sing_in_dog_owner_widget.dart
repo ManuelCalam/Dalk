@@ -161,7 +161,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
 
       if (verify == null) throw Exception('Error al verificar registro.');
 
-      print('Registro completado correctamente.');
+      // print('Registro completado correctamente.');
     } on AuthException catch (e) {
       // Errores específicos de Supabase Auth
       ScaffoldMessenger.of(context).showSnackBar(
@@ -2901,9 +2901,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                     );
 
                                                     await Future.delayed(const Duration(milliseconds: 500));
-
-                                                    // Navegación segura solo cuando TODO terminó
-                                                    context.go('/');
+                                                    GoRouter.of(context).go('/owner/home'); 
                                                   } catch (e) {
                                                   } finally {
                                                     if (mounted) setState(() => isRegistering = false);

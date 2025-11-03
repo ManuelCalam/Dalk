@@ -77,7 +77,8 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
   @override
   Widget build(BuildContext context) {
     final displayName = Validators.formatDisplayName(widget.userName);
-    final String userSegment = (widget.usertype == 'Dueño') ? 'owner' : 'walker';
+    final String userPrefix= (widget.usertype == 'Dueño') ? 'owner' : 'walker';
+    
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
       child: Container(
@@ -457,7 +458,7 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                         ),
                         onPressed: () async {
                           context.push(
-                            '/$userSegment/chat', 
+                            '/$userPrefix/chat', 
                             extra: <String, dynamic>{
                               'walkerId': widget.walkerId, 
                               'ownerId': widget.ownerId,

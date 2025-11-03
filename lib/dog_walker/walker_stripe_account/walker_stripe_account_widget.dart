@@ -147,6 +147,15 @@ Future<void> _createStripeAccount(BuildContext context, String walkerUid) async 
       ),
     );
 
+    context.push(
+      '/StripeWebView',
+      extra: <String, dynamic>{
+        onboardingUrl: onboardingUrl,
+        returnUrl: returnUrl,
+        refreshUrl: refreshUrl,
+      },
+    );                                           
+
     await _fetchWalkerPaymentsData();
 
     if (result == true) {

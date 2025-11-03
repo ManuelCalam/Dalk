@@ -78,7 +78,8 @@ class _ChooseUserTypeWidgetState extends State<ChooseUserTypeWidget> {
                             onTap: () async {
                               await Supabase.instance.client.auth.signOut();
                               if (context.mounted) {
-                                context.goNamedAuth(LoginWidget.routeName, context.mounted);
+                                // context.goNamedAuth(LoginWidget.routeName, context.mounted);
+                                GoRouter.of(context).go('/login');
                               }
                             },
                             child: Icon(
@@ -221,7 +222,7 @@ class _ChooseUserTypeWidgetState extends State<ChooseUserTypeWidget> {
                                   onTap: () async {
                                     context.pushNamed(
                                       SingInDogWalkerWidget.routeName,
-                                      queryParameters: {
+                                      extra: <String, dynamic>{ 
                                         'registerMethod': 'google',
                                       },
                                     );
