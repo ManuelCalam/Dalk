@@ -2169,27 +2169,40 @@ class _DogOwnerUpdateProfileWidgetState
                                                     //PaintingBinding.instance.imageCache.clear();
                                                     //PaintingBinding.instance.imageCache.clearLiveImages();
                                                     // 2. Limpiar la imagen vieja del caché
-                                                    await CachedNetworkImage.evictFromCache(photoUrl);
-                                                    if (user1 == null) return;
-                                                    // Subir a Supabase
-                                                    final uploadedUrl = await _uploadOwnerImage(user1.id, _tempImage!);
-                                                    if (uploadedUrl != null) {
-                                                      // Solo actualizar Provider y SharedPrefs
-                                                      final currentUser = context.read<UserProvider>().user;
-                                                      final updatedUser = UserModel(
-                                                        name: currentUser?.name ?? "User",
-                                                        photoUrl: uploadedUrl,
-                                                      );
-                                                      context.read<UserProvider>().setUser(updatedUser);
-                                                      await UserPrefs.saveUser(updatedUser);
+                                                    try {
+                                                      await CachedNetworkImage.evictFromCache(photoUrl);
 
-                                                      setState(() {
-                                                        _tempImage = null;
-                                                      });
+                                                      if (user1 == null || _tempImage == null) {
+                                                        debugPrint('Error: no hay usuario o imagen seleccionada.');
+                                                        return; 
+                                                      }
+
+                                                      // Subir a Supabase
+                                                      final uploadedUrl = await _uploadOwnerImage(user1.id, _tempImage!);
+
+                                                      if (uploadedUrl != null) {
+                                                        // Solo actualizar Provider y SharedPrefs
+                                                        final currentUser = context.read<UserProvider>().user;
+                                                        final updatedUser = UserModel(
+                                                          name: currentUser?.name ?? "User",
+                                                          photoUrl: uploadedUrl,
+                                                        );
+                                                        context.read<UserProvider>().setUser(updatedUser);
+                                                        await UserPrefs.saveUser(updatedUser);
+
+                                                        setState(() {
+                                                          _tempImage = null;
+                                                        });
+                                                      }
+                                                    } catch (e, stack) {
+                                                      debugPrint('Error en el proceso de carga: $e');
+                                                      debugPrint('$stack');
+                                                    } finally {
+                                                      if (context.mounted) {
+                                                        context.read<UserProvider>().loadUser(forceRefresh: true);
+                                                        GoRouter.of(context).go('/$userPrefix/profile');
+                                                      }
                                                     }
-
-                                                    GoRouter.of(context).go('/$userPrefix/profile');       
-                                                    // setState(() {});
 
                                                   },
                                                   text: 'Guardar cambios',
