@@ -879,61 +879,92 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
-                                  child: isScheduledForCancellation
-                                      ? const SizedBox.shrink() 
-                                      : FFButtonWidget(
-                                          onPressed: () async {
-                                            if (isPremium) {
-                                              showDialog(
-                                                context: context,
-                                                builder: (context) {
-                                                  return Dialog(
-                                                    backgroundColor: Colors.transparent,
-                                                    child: PopUpConfirmDialogWidget(
-                                                      title: "Cancelar suscripción",
-                                                      message:
-                                                          "¿Estás seguro que quieres cancelar la suscripción? Mantendrás los beneficios hasta la fecha indicada.",
-                                                      confirmText: "Cancelar suscripción",
-                                                      cancelText: "Cerrar",
-                                                      confirmColor: FlutterFlowTheme.of(context).error,
-                                                      cancelColor: FlutterFlowTheme.of(context).primary,
-                                                      icon: Icons.cancel_rounded,
-                                                      iconColor: FlutterFlowTheme.of(context).error,
-                                                      onConfirm: () async {
-                                                        await _cancelSubscription(context);
-                                                        context.pop(context);
-                                                      },
-                                                      onCancel: () {
-                                                        context.pop(context);
-                                                      },
-                                                    ),
-                                                  );
-                                                },
-                                              );
-                                            } else {
-                                              await _subscribeUser(context, _model.planValidity);
-                                            }
-                                          },
-                                          text: isPremium ? "Cancelar suscripción" : 'Suscribirme',
-                                          options: FFButtonOptions(
-                                            width: MediaQuery.sizeOf(context).width,
-                                            height: MediaQuery.sizeOf(context).height * 0.05,
-                                            padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
-                                            iconPadding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                                            color: isPremium
-                                                ? FlutterFlowTheme.of(context).error 
-                                                : FlutterFlowTheme.of(context).accent1,
-                                            textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                                                  fontFamily: 'Lexend',
-                                                  color: Colors.white,
-                                                  letterSpacing: 0.0,
-                                                ),
-                                            elevation: 0,
-                                            borderRadius: BorderRadius.circular(8),
-                                          ),
-                                        ),
-                                )
+  padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
+  child: isScheduledForCancellation
+      ? const SizedBox.shrink()
+      : FFButtonWidget(
+          onPressed: () async {
+            if (isPremium) {
+              bool isProcessing = false; // bandera para evitar múltiples taps
+
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return Dialog(
+                    backgroundColor: Colors.transparent,
+                    child: PopUpConfirmDialogWidget(
+                      title: "Cancelar suscripción",
+                      message:
+                          "¿Estás seguro que quieres cancelar la suscripción? Mantendrás los beneficios hasta la fecha indicada.",
+                      confirmText: "Cancelar suscripción",
+                      cancelText: "Cerrar",
+                      confirmColor: FlutterFlowTheme.of(context).error,
+                      cancelColor: FlutterFlowTheme.of(context).primary,
+                      icon: Icons.cancel_rounded,
+                      iconColor: FlutterFlowTheme.of(context).error,
+                      onConfirm: () async {
+                        if (isProcessing) return; // evita múltiples taps
+                        isProcessing = true;
+
+                        // Cerramos el diálogo inmediatamente
+                        Navigator.of(context, rootNavigator: true).pop();
+
+                        // Mostramos un snackbar temporal mientras se procesa
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Row(
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(width: 16),
+                                Text("Cancelando suscripción..."),
+                              ],
+                            ),
+                            duration: Duration(seconds: 3),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+
+                        // Ejecutamos la cancelación
+                        await _cancelSubscription(context);
+
+                        // Mostramos un mensaje final
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Suscripción cancelada exitosamente"),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                      onCancel: () {
+                        Navigator.of(context, rootNavigator: true).pop();
+                      },
+                    ),
+                  );
+                },
+              );
+            } else {
+              await _subscribeUser(context, _model.planValidity);
+            }
+          },
+          text: isPremium ? "Cancelar suscripción" : 'Suscribirme',
+          options: FFButtonOptions(
+            width: MediaQuery.sizeOf(context).width,
+            height: MediaQuery.sizeOf(context).height * 0.05,
+            padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+            iconPadding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+            color: isPremium
+                ? FlutterFlowTheme.of(context).error
+                : FlutterFlowTheme.of(context).accent1,
+            textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                  fontFamily: 'Lexend',
+                  color: Colors.white,
+                  letterSpacing: 0.0,
+                ),
+            elevation: 0,
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+)
 
                               ],
                             ),

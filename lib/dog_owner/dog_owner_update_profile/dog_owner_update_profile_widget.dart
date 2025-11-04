@@ -324,6 +324,8 @@ class _DogOwnerUpdateProfileWidgetState
   @override
   Widget build(BuildContext context) {
     final user = context.watch<UserProvider>().user;
+    final String? userType = user?.usertype; 
+    final String userPrefix = userType == 'Dueño' ? 'owner' : 'walker';
     final photoUrl = user?.photoUrl ?? "";
     final supabase = Supabase.instance.client;
     final user1 = supabase.auth.currentUser;
@@ -2186,7 +2188,8 @@ class _DogOwnerUpdateProfileWidgetState
                                                       });
                                                     }
 
-                                                    setState(() {});
+                                                    GoRouter.of(context).go('/$userPrefix/profile');       
+                                                    // setState(() {});
 
                                                   },
                                                   text: 'Guardar cambios',
