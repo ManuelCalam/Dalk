@@ -6,46 +6,74 @@ class SubscriptionProvider extends ChangeNotifier {
   final SupabaseClient _supabase;
   late final StreamSubscription<List<Map<String, dynamic>>> _subscription;
 
-  bool _isPremium = false;
-  bool get isPremium => _isPremium;
+  bool _hasActiveAccess = false;
+  bool get isPremium => _hasActiveAccess;
+
+  bool _isCancellationScheduled = false;
+  bool get isCancellationScheduled => _isCancellationScheduled;
+
+  String? _currentPeriodEnd;
+  String? get currentPeriodEnd => _currentPeriodEnd;
 
   SubscriptionProvider(this._supabase) {
     _initSubscriptionStatus();
   }
 
-  // Método de inicialización que obtiene el estado inicial y se suscribe a los cambios
+  void _updateStatus(String? status, {String? periodEnd}) {
+    if (status == null) {
+      _hasActiveAccess = false;
+      _isCancellationScheduled = false;
+      _currentPeriodEnd = null;
+      return;
+    }
+
+    const activeAccessStates = {'active', 'trialing', 'canceled_at_period_end'};
+
+    final newHasActiveAccess = activeAccessStates.contains(status);
+    final newIsCancellationScheduled = status == 'canceled_at_period_end';
+
+    if (periodEnd != null) {
+      _currentPeriodEnd = periodEnd;
+    } else if (!newHasActiveAccess) {
+      _currentPeriodEnd = null;
+    }
+
+    if (_hasActiveAccess != newHasActiveAccess || 
+        _isCancellationScheduled != newIsCancellationScheduled ||
+        _currentPeriodEnd != periodEnd) 
+    {
+      _hasActiveAccess = newHasActiveAccess;
+      _isCancellationScheduled = newIsCancellationScheduled;
+      notifyListeners();
+    }
+  }
+
   void _initSubscriptionStatus() {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
       return;
     }
 
-    // Obtener el estado inicial de la suscripción
     _supabase
         .from('users')
-        .select('subscription_status')
+        .select('subscription_status, subscription_current_period_end')
         .eq('uuid', userId)
         .single()
         .then((data) {
           final status = data['subscription_status'] as String?;
-          _isPremium = status == 'active';
-          notifyListeners();
+          final periodEnd = data['subscription_current_period_end'] as String?;
+          _updateStatus(status, periodEnd: periodEnd);
         });
 
-    // Suscribirse a los cambios en tiempo real en la base de datos
     _subscription = _supabase
         .from('users')
-        .stream(primaryKey: ['uuid']) // stream() es para escuchar cambios
+        .stream(primaryKey: ['uuid'])
         .eq('uuid', userId)
         .listen((data) {
-          // El stream devuelve una lista, pero con .eq('uuid', userId) solo habrá un elemento
           if (data.isNotEmpty) {
             final status = data.first['subscription_status'] as String?;
-            final newIsPremium = status == 'active';
-            if (_isPremium != newIsPremium) {
-              _isPremium = newIsPremium;
-              notifyListeners(); 
-            }
+            final periodEnd = data.first['subscription_current_period_end'] as String?;
+            _updateStatus(status, periodEnd: periodEnd); 
           }
         });
   }

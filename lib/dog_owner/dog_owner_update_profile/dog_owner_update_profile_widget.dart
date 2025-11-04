@@ -129,13 +129,10 @@ class _DogOwnerUpdateProfileWidgetState
             fileOptions: const FileOptions(upsert: true),
           );
 
-      // Generar URL pública
       final imageUrl = storage.from('profile_pics').getPublicUrl(filePath);
 
-      // 🔑 Agregar versión única para forzar refresh solo cuando cambie
       final uniqueUrl = '$imageUrl?version=${DateTime.now().millisecondsSinceEpoch}';
 
-      // Actualizar en tabla users con el nuevo link
       await Supabase.instance.client
           .from('users')
           .update({'photo_url': uniqueUrl})
