@@ -22,14 +22,23 @@ class ZipCodeService {
     try {
       // Validación básica de formato
       if (postalCode.length != 5) {
+        print('❌ CP inválido: debe tener 5 dígitos');
         return PostalCodeInfo(city: '', neighborhoods: [], isValid: false);
       }
+
+      print('🔍 Consultando CP: $postalCode');
+      print('🔑 API Key: ${apiKey.substring(0, 10)}...');
 
       final url = Uri.parse(
         'https://maps.googleapis.com/maps/api/geocode/json?address=$postalCode&components=country:MX&key=$apiKey',
       );
 
+      print('🌐 URL completa (sin key): https://maps.googleapis.com/maps/api/geocode/json?address=$postalCode&components=country:MX&key=...');
+
       final response = await http.get(url);
+
+      print('📡 Status Code: ${response.statusCode}');
+      print('📦 Response Body: ${response.body}');
 
       if (response.statusCode != 200) {
         return PostalCodeInfo(city: '', neighborhoods: [], isValid: false);
@@ -37,13 +46,20 @@ class ZipCodeService {
 
       final data = json.decode(response.body);
 
+      // Imprimir el status de Google
+      print('📍 Google Status: ${data['status']}');
+      if (data['error_message'] != null) {
+        print('❌ Error Message: ${data['error_message']}');
+      }
+
       // Verificar el status de la API
       if (data['status'] != 'OK') {
         return PostalCodeInfo(city: '', neighborhoods: [], isValid: false);
       }
 
       final results = data['results'] as List;
-      
+      print('📋 Cantidad de resultados: ${results.length}');
+
       // Verificar que sea de Jalisco
       bool isJalisco = false;
       String cityName = '';
@@ -69,6 +85,7 @@ class ZipCodeService {
           final stateName = stateComponent['long_name'] as String?;
           final stateShortName = stateComponent['short_name'] as String?;
           isJalisco = stateName == 'Jalisco' || stateShortName == 'Jal.';
+          print('🏛️ Estado encontrado: $stateName ($stateShortName)');
         }
 
         // Obtener ciudad
@@ -79,6 +96,7 @@ class ZipCodeService {
 
         if (cityComponent.isNotEmpty && cityName.isEmpty) {
           cityName = cityComponent['long_name'] as String;
+          print('🏙️ Ciudad encontrada: $cityName');
         }
 
         // Obtener colonia/sublocality
@@ -95,14 +113,22 @@ class ZipCodeService {
         }
       }
 
+      print('✅ Es de Jalisco: $isJalisco');
+      print('🏘️ Colonias encontradas: ${neighborhoods.length}');
+      print('📝 Lista de colonias: $neighborhoods');
+
       if (!isJalisco) {
+        print('❌ Rechazado: no es de Jalisco');
         return PostalCodeInfo(city: '', neighborhoods: [], isValid: false);
       }
 
       // Si no hay colonias, agregar una opción genérica
       if (neighborhoods.isEmpty) {
+        print('⚠️ No se encontraron colonias, agregando "Centro"');
         neighborhoods.add('Centro');
       }
+
+      print('✅ CP VÁLIDO: $cityName con ${neighborhoods.length} colonias');
 
       return PostalCodeInfo(
         city: cityName,
@@ -110,7 +136,8 @@ class ZipCodeService {
         isValid: true,
       );
     } catch (e) {
-      print('Error obteniendo info del CP: $e');
+      print('💥 Error obteniendo info del CP: $e');
+      print('📍 Stack trace: ${StackTrace.current}');
       return PostalCodeInfo(city: '', neighborhoods: [], isValid: false);
     }
   }
