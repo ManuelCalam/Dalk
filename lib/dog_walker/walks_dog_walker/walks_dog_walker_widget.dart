@@ -1,6 +1,5 @@
 import 'package:dalk/common/current_walk_card/current_walk_card_widget.dart';
 import 'package:dalk/common/requested_walk_card/requested_walk_card_widget.dart';
-import 'package:dalk/common/walks_record/walks_record_widget.dart';
 import 'package:dalk/flutter_flow/flutter_flow_widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -128,9 +127,7 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
                                     const EdgeInsetsDirectional.fromSTEB(0, 15, 25, 0),
                                 child: FFButtonWidget(
                                   onPressed: () {
-                                    context.push('/walker/walksRecord', extra: <String, dynamic>{
-                                      'userType': 'Paseador'
-                                    });                                  },
+                                    context.push('/walker/walksRecord', extra: <String, dynamic>{'userType': 'Paseador'});                                  },
                                   text: 'Historial de paseos',
                                   options: FFButtonOptions(
                                     height: 40,
@@ -341,6 +338,7 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
                                               return ListView.builder(
                                                 padding: EdgeInsets.zero,
                                                 shrinkWrap: true,
+                                                physics: const ClampingScrollPhysics(), 
                                                 itemCount: walksList.length,
                                                 itemBuilder: (context, index) {
                                                   final walk = walksList[index];

@@ -19,23 +19,49 @@ class _RootNavWidgetState extends State<RootNavWidget> {
   bool _redirecting = false;
   int _attempts = 0;
   final int _maxAttempts = 10;
+  StreamSubscription<AuthState>? _authSub;
 
   @override
   void initState() {
     super.initState();
-    _checkUserType();
+
+_authSub = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+    final event = data.event;
+    final session = data.session;
+
+    if (!mounted) return;
+
+    if (event == AuthChangeEvent.signedOut || session == null) {
+      if (mounted) {
+        Future.microtask(() => GoRouter.of(context).go('/login'));
+      }
+      return; 
+    } else {
+      _checkUserType(); 
+    }
+});
+  }
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    super.dispose();
   }
 
   Future<void> _checkUserType() async {
+    if (!mounted) return; // Seguridad extra
     final userId = Supabase.instance.client.auth.currentUser?.id;
 
     if (userId == null) {
+      if (!mounted) return;
       setState(() {
         _loading = false;
         _userType = null;
       });
-      
-      Future.microtask(() => GoRouter.of(context).go('/login')); 
+
+      Future.microtask(() {
+        if (mounted) GoRouter.of(context).go('/login');
+      });
       return;
     }
 
@@ -46,16 +72,21 @@ class _RootNavWidgetState extends State<RootNavWidget> {
           .eq('uuid', userId)
           .maybeSingle();
 
+      if (!mounted) return;
+
       final userType = response?['usertype'];
 
+      // 👇 Control de reintentos
       if (userType == null && _attempts < _maxAttempts) {
         _attempts++;
-        print("Haciendo intento en RootNavWidget: $_attempts");
+        debugPrint("Haciendo intento en RootNavWidget: $_attempts");
         await Future.delayed(const Duration(milliseconds: 2500));
-        return _checkUserType();
+        if (mounted) return _checkUserType();
+        return;
       }
 
       if (userType == null && _attempts >= _maxAttempts) {
+        if (!mounted) return;
         setState(() {
           _loading = false;
           _userType = null;
@@ -63,22 +94,23 @@ class _RootNavWidgetState extends State<RootNavWidget> {
         });
 
         Future.delayed(const Duration(seconds: 2), () async {
-          if (mounted) {
-            await Supabase.instance.client.auth.signOut();
-            GoRouter.of(context).go('/login');
-          }
+          if (!mounted) return;
+          await Supabase.instance.client.auth.signOut();
+          GoRouter.of(context).go('/login');
         });
         return;
       }
 
+      if (!mounted) return;
       setState(() {
         _userType = userType;
         _loading = false;
       });
 
-      // Redirección según tipo
+      // 👇 Redirección según tipo
+      if (!mounted) return;
       if (userType == 'Dueño') {
-        GoRouter.of(context).go(widget.initialPage ?? '/owner/home'); 
+        GoRouter.of(context).go(widget.initialPage ?? '/owner/home');
       } else if (userType == 'Paseador') {
         GoRouter.of(context).go(widget.initialPage ?? '/walker/home');
       } else if (userType == 'Indefinido') {
@@ -88,6 +120,7 @@ class _RootNavWidgetState extends State<RootNavWidget> {
       }
     } catch (e) {
       debugPrint('Error al obtener userType: $e');
+      if (!mounted) return;
       setState(() {
         _loading = false;
         _userType = null;

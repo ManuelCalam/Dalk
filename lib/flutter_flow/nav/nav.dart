@@ -158,6 +158,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
       GoRoute(
         name: LoginWidget.routeName,
         path: '/login',
+        parentNavigatorKey: appNavigatorKey,
         pageBuilder: (context, state) => pageBuilderFor(state, const LoginWidget()),
         redirect: (context, state) => authRedirect(context, state, false),
       ),

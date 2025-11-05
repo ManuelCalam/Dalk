@@ -351,7 +351,7 @@ class _ReviewedWalkCardWidgetState extends State<ReviewedWalkCardWidget> {
                                   padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 2, 0, 0),
                                   child: AutoSizeText(
-                                    'Tarifa',
+                                    'Tarifa: ',
                                     maxLines: 1,
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium

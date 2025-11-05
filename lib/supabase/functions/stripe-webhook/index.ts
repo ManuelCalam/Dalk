@@ -566,6 +566,32 @@ async function handleSubscriptionDeleted(subscription: any) {
 async function handlePaymentIntentSucceeded(paymentIntent: any) {
   console.log("Payment intent succeeded:", paymentIntent.id);
 
+  // --- LÓGICA DE PAGO DE DEUDA ---
+  const paymentType = paymentIntent.metadata?.type;
+  const walkerIdToPay = paymentIntent.metadata?.walker_id_to_pay;
+
+  if (paymentType === 'debt_payment' && walkerIdToPay) {
+    console.log("Processing DEBT payment success for walker ID:", walkerIdToPay);
+
+    const { error: debtUpdateError } = await supabase
+      .from("walker_payments") 
+      .update({
+        debt: 0,
+        debt_last_paid_at: new Date().toISOString(), 
+      })
+      .eq("walker_id", walkerIdToPay); // Filtrar por el ID del caminante
+
+    if (debtUpdateError) {
+      console.error("DB error [DebtPaymentSucceeded]:", debtUpdateError);
+      // Nota: Considera enviar una alerta si esta actualización falla.
+    } else {
+      console.log("Walker debt marked as 0. Walker ID:", walkerIdToPay);
+    }
+
+    // Devolver inmediatamente si se trata de un pago de deuda
+    return;
+  }
+
   // --- VERIFICAR COMPRA DE RASTREADOR ---
   const trackerId = paymentIntent.metadata?.internal_order_id; 
 

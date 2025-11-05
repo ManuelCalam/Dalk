@@ -1,3 +1,4 @@
+import 'package:dalk/backend/supabase/database/database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/components/notification_container/notification_container_widget.dart';
@@ -999,26 +1000,36 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                   child: FFButtonWidget(
                                     onPressed: () async {
                                       GoRouter.of(context).prepareAuthEvent(); 
-
                                       final prefs = await SharedPreferences.getInstance();
                                       await prefs.remove('user_data');
 
+
                                       try {
-                                        await authManager.signOut();
-                                        if (!context.mounted) {
-                                          return; 
-                                        }
-                                        context.read<UserProvider>().clearUser();
+                                        GoRouter.of(context).prepareAuthEvent(); 
+                                        final prefs = await SharedPreferences.getInstance();
+                                        await prefs.remove('user_data');
+                                        context.read<UserProvider>().clearUser(); 
+
+                                        await authManager.signOut(); 
+                                        await Supabase.instance.client.auth.signOut(); 
+                                        
+                                        await Future.delayed(const Duration(milliseconds: 400));
+
+                                        if (!context.mounted) return;
+                                        
                                         GoRouter.of(context).clearRedirectLocation();
-                                        GoRouter.of(context).go('/login');
+                                        GoRouter.of(context).go('/login'); 
+
                                       } catch (e) {
+
                                         if (context.mounted) {
                                           ScaffoldMessenger.of(context).showSnackBar(
                                             SnackBar(content: Text("Error cerrando sesión: $e")),
                                           );
                                         }
                                       }
-                                    },
+},
+
                                     text: 'Cerrar Sesión',
                                     options: FFButtonOptions(
                                       width: MediaQuery.sizeOf(context).width,

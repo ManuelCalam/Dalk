@@ -121,13 +121,6 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
         throw Exception('No se encontró el customer_stripe_id del usuario actual.');
       }
 
-      print({
-        'walk_id': walkData['id'],
-        'walker_id': walkData['walker_id'],
-        'customer_stripe_id': customerStripeId,
-        'fee': walkData['fee'],
-      });
-
 
       final session = supabase.auth.currentSession;
       final response = await supabase.functions.invoke(

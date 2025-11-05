@@ -288,7 +288,7 @@ class _ReviewedDogCardWidgetState extends State<ReviewedDogCardWidget> {
                                       5, 2, 0, 0),
                                   child: AutoSizeText(
                                     valueOrDefault<String>(
-                                      widget.duration,
+                                      '${widget.duration} minutos',
                                       '[duration]',
                                     ),
                                     textAlign: TextAlign.center,

@@ -167,7 +167,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
     // ------------------------------------
     if (userType == 'Dueño') {
       // if (walkStatus == 'Por confirmar' || walkStatus == 'Aceptado' || walkStatus == 'En curso') {
-      if (walkStatus == 'Por confirmar' || walkStatus == 'Aceptado') {
+      if (walkStatus == 'Por confirmar') {
         // Estatus "Por confirmar" o "Aceptado" o "En curso": Botón "Cancelar"
         buttons.add(_buildActionButton(
           context: context,
@@ -211,7 +211,67 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
           },
           icon: Icons.cancel_rounded,
         ));
-      } else if (walkStatus == 'Rechazado' || walkStatus == 'Cancelado') {
+      }
+      else if (walkStatus == 'Aceptado' || walkStatus == 'En curso') {
+        // Estatus "Por confirmar" o "Aceptado" o "En curso": Botón "Cancelar"
+        buttons.add(_buildActionButton(
+          context: context,
+          text: 'Pagar paseo',
+          color: FlutterFlowTheme.of(context).error,
+          onPressed: () {
+            context.push('/owner/walkPayment', extra: <String, dynamic> {
+                'walkId': widget.walkId,
+                'userType': 'Dueño'
+            });
+          },
+          icon: Icons.cancel_rounded,
+        ));
+
+        buttons.add(_buildActionButton(
+          context: context,
+          text: 'Cancelar paseo',
+          color: FlutterFlowTheme.of(context).error,
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (_) => PopUpConfirmDialogWidget(
+                title: "Cancelar paseo",
+                message: "¿Estás seguro de que deseas cancelar este paseo?",
+                confirmText: "Cancelar paseo",
+                cancelText: "Cerrar",
+                confirmColor: FlutterFlowTheme.of(context).error,
+                cancelColor: FlutterFlowTheme.of(context).accent1,
+                icon: Icons.cancel_rounded,
+                iconColor: FlutterFlowTheme.of(context).error,
+                onConfirm: () async => {
+                  await SupaFlow.client
+                    .from('walks')
+                    .update({'status': 'Cancelado'})
+                    .eq('id', widget.walkId),
+
+                  //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
+                  context.pop(),
+                  context.pop(),
+
+                  //Envío de notificacion después de cerrar los menús
+                  await Supabase.instance.client.functions.invoke(
+                    'send-walk-notification',
+                    body: {
+                      'walk_id': widget.walkId,
+                      'new_status': 'Cancelado',
+                    },
+                  )
+                },
+                onCancel: () => context.pop(),
+              ), 
+            );
+
+          },
+          icon: Icons.cancel_rounded,
+        ));
+      }
+      
+       else if (walkStatus == 'Rechazado' || walkStatus == 'Cancelado') {
         // Estatus "Rechazado" o "Cancelado": Botón "Borrar"
         buttons.add(_buildActionButton(
           context: context,

@@ -803,7 +803,7 @@ class _PopUpDogProfileWidgetState extends State<PopUpDogProfileWidget> {
                                 rating: review['rating'] ?? 0,
                                 comment: review['comments'] ?? '',
                                 date: DateTime.parse(review['created_at']),
-                                imageUrl: review['reviewer_photo'] ?? 'https://images.unsplash.com/photo-1604004555489-723a93d6ce74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080', // puedes usar la foto del usuario si la tienes
+                                imageUrl: review['reviewer_photo'] ?? 'https://images.unsplash.com/photo-1604004555489-723a93d6ce74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080', 
                               ),
                             );
                           },
