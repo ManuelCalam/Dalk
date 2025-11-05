@@ -1018,7 +1018,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                         if (!context.mounted) return;
                                         
                                         GoRouter.of(context).clearRedirectLocation();
-                                        GoRouter.of(context).go('/login'); 
+                                        GoRouter.of(context).go('/'); 
 
                                       } catch (e) {
 

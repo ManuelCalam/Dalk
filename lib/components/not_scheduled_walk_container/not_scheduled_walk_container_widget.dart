@@ -64,7 +64,7 @@ class _NotScheduledWalkContainerWidgetState
                 mainAxisSize: MainAxisSize.max,
                 children: [
                   Container(
-                    height: 350,
+                    height: 300,
                     decoration: const BoxDecoration(),
                     child: Align(
                       alignment: const AlignmentDirectional(0, 0),

@@ -217,14 +217,14 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
         buttons.add(_buildActionButton(
           context: context,
           text: 'Pagar paseo',
-          color: FlutterFlowTheme.of(context).error,
+          color: FlutterFlowTheme.of(context).success,
           onPressed: () {
             context.push('/owner/walkPayment', extra: <String, dynamic> {
                 'walkId': widget.walkId,
                 'userType': 'Dueño'
             });
           },
-          icon: Icons.cancel_rounded,
+          icon: Icons.attach_money_rounded,
         ));
 
         buttons.add(_buildActionButton(

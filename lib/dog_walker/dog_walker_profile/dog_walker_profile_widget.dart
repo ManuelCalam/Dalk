@@ -989,7 +989,7 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                         if (!context.mounted) return;
                                         
                                         GoRouter.of(context).clearRedirectLocation();
-                                        GoRouter.of(context).go('/login'); 
+                                        GoRouter.of(context).go('/'); 
 
                                     } catch (e) {
                                         if (context.mounted) {
