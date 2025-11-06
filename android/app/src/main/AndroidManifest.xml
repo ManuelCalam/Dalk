@@ -1,22 +1,35 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.dalk.app"
     xmlns:tools="http://schemas.android.com/tools">
+    
+    <!-- Permisos de ubicación -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
-    <!-- Permisos necesarios para FCM y notificaciones -->
+    
+    <!-- Permisos de notificaciones -->
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission
-    android:name="android.permission.USE_FULL_SCREEN_INTENT"
-    tools:node="remove" />
-
-
+        android:name="android.permission.USE_FULL_SCREEN_INTENT"
+        tools:node="remove" />
+    
+    <!-- Permisos de cámara y almacenamiento -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"/>
+    <!-- Para Android 13+ -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    
+    <!-- Declarar que la app puede usar cámara pero no es requerida -->
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
 
     <application
         android:label="Dalk"
@@ -26,8 +39,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="${MAPS_API_KEY}"
- />
+            android:value="${MAPS_API_KEY}" />
 
         <service
             android:name="id.flutter.flutter_background_service.BackgroundService"
@@ -46,7 +58,6 @@
             </intent-filter>
         </service>
 
-
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -55,23 +66,15 @@
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
-            <!-- Specifies an Android theme to apply to this Activity as soon as
-                 the Android process has started. This theme is visible to the user
-                 while the Flutter UI initializes. After that, this theme continues
-                 to determine the Window background behind the Flutter UI. -->
+            
             <meta-data
               android:name="io.flutter.embedding.android.NormalTheme"
-              android:resource="@style/NormalTheme"
-              />
-            <!-- Displays an Android View that continues showing the launch screen
-                 Drawable until Flutter paints its first frame, then this splash
-                 screen fades out. A splash screen is useful to avoid any visual
-                 gap between the end of Android's launch screen and the painting of
-                 Flutter's first frame. -->
+              android:resource="@style/NormalTheme" />
+            
             <meta-data
               android:name="io.flutter.embedding.android.SplashScreenDrawable"
-              android:resource="@drawable/launch_background"
-              />
+              android:resource="@drawable/launch_background" />
+            
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -81,6 +84,7 @@
                 <action android:name="FLUTTER_NOTIFICATION_CLICK" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+            
             <!-- Deep linking -->
             <meta-data android:name="flutter_deeplinking_enabled" android:value="true" />
             
@@ -107,8 +111,6 @@
                 <data android:scheme="dalkpaseos" android:host="changePassword" />
             </intent-filter>
 
-
-
         </activity>
 
         <!-- Don't delete the meta-data below.
@@ -116,9 +118,6 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-
-
-
 
     </application>
 </manifest>

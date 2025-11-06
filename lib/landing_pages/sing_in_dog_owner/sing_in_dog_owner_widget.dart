@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/utils/validation.dart';
+import 'package:dalk/services/image_permission_service.dart';
 
 import 'sing_in_dog_owner_model.dart';
 export 'sing_in_dog_owner_model.dart';
@@ -34,6 +35,8 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
   File? _ownerImage;
   File? _walkerImage;
   final ImagePicker _picker = ImagePicker();
+  final ImagePermissionService _permissionService = ImagePermissionService();
+
   List<String> _availableNeighborhoods = [];
   bool _isLoadingPostalCode = false;
   String? _selectedNeighborhood;
@@ -318,42 +321,119 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
 
   //funcion para seleccionar imagen
   Future<void> _pickImage(bool isOwner, ImageSource source) async {
-    final pickedFile = await _picker.pickImage(source: source);
+    XFile? pickedFile;
+    
+    if (source == ImageSource.camera) {
+      pickedFile = await _permissionService.pickImageFromCamera(context);
+    } else {
+      pickedFile = await _permissionService.pickImageFromGallery(context);
+    }
+    
     if (pickedFile != null) {
       setState(() {
         if (isOwner) {
-          _ownerImage = File(pickedFile.path);
+          _ownerImage = File(pickedFile!.path);
         } else {
-          _walkerImage = File(pickedFile.path);
+          _walkerImage = File(pickedFile!.path);
         }
       });
     }
   }
 
   void _showImagePickerOptions(BuildContext context, bool isOwner) {
-    
     showModalBottomSheet(
       context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) => SafeArea(
-        child: Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Tomar foto'),
-              onTap: () {
-                Navigator.of(context).pop();
-                _pickImage(isOwner, ImageSource.camera);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Elegir de la galería'),
-              onTap: () {
-                Navigator.of(context).pop();
-                _pickImage(isOwner, ImageSource.gallery);
-              },
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Indicador visual
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // Título
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Text(
+                  'Selecciona una opción',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: FlutterFlowTheme.of(context).primary,
+                  ),
+                ),
+              ),
+              // Opción de cámara
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: FlutterFlowTheme.of(context).primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.camera_alt,
+                    color: FlutterFlowTheme.of(context).primary,
+                  ),
+                ),
+                title: const Text('Tomar foto'),
+                subtitle: const Text('Usa la cámara de tu dispositivo'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _pickImage(isOwner, ImageSource.camera);
+                },
+              ),
+              const Divider(height: 1),
+              // Opción de galería
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: FlutterFlowTheme.of(context).primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.photo_library,
+                    color: FlutterFlowTheme.of(context).primary,
+                  ),
+                ),
+                title: const Text('Elegir de la galería'),
+                subtitle: const Text('Selecciona una foto existente'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _pickImage(isOwner, ImageSource.gallery);
+                },
+              ),
+              const Divider(height: 1),
+              // Opción de cancelar
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.cancel,
+                    color: Colors.grey,
+                  ),
+                ),
+                title: const Text('Cancelar'),
+                onTap: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
         ),
       ),
     );
