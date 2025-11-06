@@ -1,7 +1,5 @@
-import 'dart:async';
 import 'package:dalk/NavBar/nav_bar_dog_owner.dart';
 import 'package:dalk/NavBar/nav_bar_dog_walker.dart';
-import 'package:dalk/RootNavWidget.dart';
 import 'package:dalk/common/article_web_view/article_web_view.dart';
 import 'package:dalk/common/current_walk_empty_window/current_walk_empty_window_widget.dart';
 import 'package:dalk/common/password_recovery/password_recovery_widget.dart';
@@ -15,11 +13,8 @@ import 'package:dalk/dog_owner/pet_update_profile/pet_update_profile_widget.dart
 import 'package:dalk/dog_owner/tracker_details/tracker_details_widget.dart';
 import 'package:dalk/dog_walker/walker_stripe_account/walker_stripe_account_widget.dart';
 import 'package:dalk/dog_walker/walker_stripe_webview/walker_stripe_webview.dart';
-import 'package:dalk/dog_walker/walks_dog_walker/walks_dog_walker_widget.dart';
+import 'package:dalk/landing_pages/splash_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '/auth/base_auth_user_provider.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 
 import '/index.dart';
@@ -31,148 +26,44 @@ const kTransitionInfoKey = '__transition_info__';
 
 GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
-class AppStateNotifier extends ChangeNotifier {
-  AppStateNotifier._();
+GoRouter createRouter()
 
-  static AppStateNotifier? _instance;
-  static AppStateNotifier get instance => _instance ??= AppStateNotifier._();
-
-  BaseAuthUser? initialUser;
-  BaseAuthUser? user;
-  bool showSplashImage = true;
-  String? _redirectLocation;
-
-  /// Determines whether the app will refresh and build again when a sign
-  /// in or sign out happens. This is useful when the app is launched or
-  /// on an unexpected logout. However, this must be turned off when we
-  /// intend to sign in/out and then navigate or perform any actions after.
-  /// Otherwise, this will trigger a refresh and interrupt the action(s).
-  bool notifyOnAuthChange = true;
-
-  bool get loading => user == null || showSplashImage;
-  bool get loggedIn => user?.loggedIn ?? false;
-  bool get initiallyLoggedIn => initialUser?.loggedIn ?? false;
-  bool get shouldRedirect => loggedIn && _redirectLocation != null;
-
-  String getRedirectLocation() => _redirectLocation!;
-  bool hasRedirect() => _redirectLocation != null;
-  void setRedirectLocationIfUnset(String loc) => _redirectLocation ??= loc;
-  void clearRedirectLocation() => _redirectLocation = null;
-
-  /// Mark as not needing to notify on a sign in / out when we intend
-  /// to perform subsequent actions (such as navigation) afterwards.
-  void updateNotifyOnAuthChange(bool notify) => notifyOnAuthChange = notify;
-
-  void update(BaseAuthUser newUser) {
-    final shouldUpdate =
-        user?.uid == null || newUser.uid == null || user?.uid != newUser.uid;
-    initialUser ??= newUser;
-    user = newUser;
-    // Refresh the app on auth change unless explicitly marked otherwise.
-    // No need to update unless the user has changed.
-    if (notifyOnAuthChange && shouldUpdate) {
-      notifyListeners();
-    }
-    // Once again mark the notifier as needing to update on auth change
-    // (in order to catch sign in / out events).
-    updateNotifyOnAuthChange(true);
-  }
-
-  void stopShowingSplashImage() {
-    showSplashImage = false;
-    notifyListeners();
-  }
-}
-
-
-GoRouter createRouter(AppStateNotifier appStateNotifier) {
-  // Helper para crear redirect similar a FFRoute.toRoute
-  String? authRedirect(BuildContext context, GoRouterState state, bool requireAuth) {
-    if (appStateNotifier.shouldRedirect) {
-      final redirectLocation = appStateNotifier.getRedirectLocation();
-      appStateNotifier.clearRedirectLocation();
-      return redirectLocation;
-    }
-    if (requireAuth && !appStateNotifier.loggedIn) {
-      appStateNotifier.setRedirectLocationIfUnset(state.uri.toString());
-      return '/login';
-    }
-    return null;
-  }
-
+ {
+  // Constructor de páginas sin manejo de loading
   Page<dynamic> pageBuilderFor(GoRouterState state, Widget child) {
-    final context = appNavigatorKey.currentContext;
-    if (context != null && appStateNotifier.loading) {
-      return MaterialPage(
-        key: state.pageKey,
-        child: Center(
-          child: SizedBox(
-            width: 50.0,
-            height: 50.0,
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                FlutterFlowTheme.of(context).primary,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
     return MaterialPage(key: state.pageKey, child: child);
   }
 
   return GoRouter(
     initialLocation: '/',
     debugLogDiagnostics: true,
-    refreshListenable: appStateNotifier,
     navigatorKey: appNavigatorKey,
-    redirect: (context, state) {
-      final loggedIn = appStateNotifier.loggedIn;
-
-      if (loggedIn && state.matchedLocation == LoginWidget.routePath) {
-        return '/';
-      }
-      return null;
-    },
-    routes: <RouteBase>[
-      GoRoute(
-        name: '_initialize',
-        path: '/',
-        pageBuilder: (context, state) => pageBuilderFor(
-          state,
-          RootNavWidget(
-            initialPage: state.uri.queryParameters['initialPage'],
+      routes: <RouteBase>[
+        GoRoute(
+          name: '_initialize',
+          path: '/',
+          pageBuilder: (context, state) => pageBuilderFor(
+            state,
+            const SplashScreen(),
           ),
         ),
-        redirect: (context, state) {
-          // Mantengo comportamientos de auth si hace falta
-          if (appStateNotifier.shouldRedirect) {
-            final redirectLocation = appStateNotifier.getRedirectLocation();
-            appStateNotifier.clearRedirectLocation();
-            return redirectLocation;
-          }
-          return null;
-        },
-      ),
+
 
       GoRoute(
         name: LoginWidget.routeName,
         path: '/login',
         parentNavigatorKey: appNavigatorKey,
         pageBuilder: (context, state) => pageBuilderFor(state, const LoginWidget()),
-        redirect: (context, state) => authRedirect(context, state, false),
       ),
       GoRoute(
         name: ChangePasswordWidget.routeName,
-        path: ChangePasswordWidget.routePath,
+        path: '/changePassword',
         pageBuilder: (context, state) => pageBuilderFor(state, const ChangePasswordWidget()),
-        redirect: (context, state) => authRedirect(context, state, false),
       ),
       GoRoute(
         name: SingInDogOwnerWidget.routeName,
         path: SingInDogOwnerWidget.routePath,
         pageBuilder: (context, state) => pageBuilderFor(state, const SingInDogOwnerWidget()),
-        redirect: (context, state) => authRedirect(context, state, false),
       ),
 
       GoRoute(
@@ -185,28 +76,24 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
           ));
 
         },
-        redirect: (context, state) => authRedirect(context, state, false),
       ),
 
       GoRoute(
         name: SignInWithGoogleDogOwnerWidget.routeName,
         path: SignInWithGoogleDogOwnerWidget.routePath,
         pageBuilder: (context, state) => pageBuilderFor(state, const SignInWithGoogleDogOwnerWidget()),
-        redirect: (context, state) => authRedirect(context, state, false),
       ),
 
       GoRoute(
         name: ChooseUserTypeWidget.routeName,
         path: '/chooseUserType',
         pageBuilder: (context, state) => pageBuilderFor(state, const ChooseUserTypeWidget()),
-        redirect: (context, state) => authRedirect(context, state, false),
       ),
 
       GoRoute(
         name: PasswordRecoveryWidget.routeName,
         path: PasswordRecoveryWidget.routePath,
         pageBuilder: (context, state) => pageBuilderFor(state, const PasswordRecoveryWidget()),
-        redirect: (context, state) => authRedirect(context, state, false),
       ),
 
       GoRoute(
@@ -223,7 +110,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
             ),
           );
         },
-        redirect: (context, state) => authRedirect(context, state, true),
       ),
 
       GoRoute(
@@ -241,7 +127,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
             ),
           );
         },
-        redirect: (context, state) => authRedirect(context, state, true),
       ),
       
 
@@ -261,7 +146,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
             name: 'owner_notifications',
             path: '/owner/notifications', 
             pageBuilder: (context, state) => pageBuilderFor(state, const NotificationsWidget()),
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
           GoRoute(
             name: 'owner_chat',
@@ -278,32 +162,27 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
                 )
               );
             },
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
           // Rutas de nav
           GoRoute(
             name: 'owner_home',
             path: '/owner/home',
             pageBuilder: (context, state) => pageBuilderFor(state, const HomeDogOwnerWidget()),
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
           GoRoute(
             name: 'owner_currentWalk',
             path: '/owner/currentWalk',
             pageBuilder: (context, state) => pageBuilderFor(state, const CurrentWalkEmptyWindowWidget()),
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
           GoRoute(
             name: 'owner_petList',
             path: '/owner/petList', 
             pageBuilder: (context, state) => pageBuilderFor(state, const PetListWidget()),
-            redirect: (context, state) => authRedirect(context, state,  true),
           ),
           GoRoute(
             name: 'owner_profile',
             path: '/owner/profile', 
             pageBuilder: (context, state) => pageBuilderFor(state, const DogOwnerProfileWidget()),
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
 
           // Rutas de agendar paseo
@@ -319,7 +198,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
                 ),
               );
             },
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
           GoRoute(
             name: 'owner_addAddress',
@@ -332,19 +210,16 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
                 )
               );
             },
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
           GoRoute(
             name: 'owner_premiumInfo',
             path: '/owner/premiumInfo', 
             pageBuilder: (context, state) => pageBuilderFor(state, const PremiumPlanInfoWidget()),
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
           GoRoute(
             name: 'owner_addPet',
             path: '/owner/addPet', 
             pageBuilder: (context, state) => pageBuilderFor(state, const AddPetWidget()),
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
 
           GoRoute(
@@ -379,7 +254,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
                 ),
               );
             },
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
 
           // Rutas de ventana de paseos
@@ -387,7 +261,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
             name: 'owner_walksList',
             path: '/owner/walksList', 
             pageBuilder: (context, state) => pageBuilderFor(state, const WalksDogOwnerWidget()),
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
           GoRoute(
             name: 'owner_walksRecord',
@@ -400,7 +273,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
                 )
               );
             },
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
 
           // Rutas de currentWalk
@@ -416,7 +288,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
                 )
               );
             },
-            redirect: (context, state) => authRedirect(context, state, true),
           ),          
           GoRoute(
             name: 'owner_notScheduledWalk',
@@ -429,7 +300,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
                 )
               );
             },
-            redirect: (context, state) => authRedirect(context, state, true),
           ),          
 
           // Rutas de petList 
@@ -445,7 +315,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
                 ),
               );
             },
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
 
           // Rutas de perfil de dueño
@@ -453,25 +322,21 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
             name: 'owner_updateProfile',
             path: '/owner/updateProfile', 
             pageBuilder: (context, state) => pageBuilderFor(state, const DogOwnerUpdateProfileWidget()),
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
           GoRoute(
             name: 'owner_paymentMethods',
             path: '/owner/paymentMethods', 
             pageBuilder: (context, state) => pageBuilderFor(state, const PaymentMethodsWidget()),
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
           GoRoute(
             name: 'owner_trackerDetails',
             path: '/owner/trackerDetails', 
             pageBuilder: (context, state) => pageBuilderFor(state, const TrackerDetailsWidget()),
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
           GoRoute(
             name: 'owner_buyTracker',
             path: '/owner/buyTracker', 
             pageBuilder: (context, state) => pageBuilderFor(state, const BuyTrackerWidget()),
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
 
           // Ruta para pago de paseo
@@ -487,7 +352,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
                 )
               );
             },
-            redirect: (context, state) => authRedirect(context, state, true),
           ),          
 
 
@@ -509,7 +373,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
             name: 'walker_notifications',
             path: '/walker/notifications', 
             pageBuilder: (context, state) => pageBuilderFor(state, const NotificationsWidget()),
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
           GoRoute(
             name: 'walker_chat',
@@ -526,7 +389,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
                 )
               );
             },
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
 
           // Rutas del nav
@@ -534,25 +396,21 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
             name: '/walker_home',
             path: '/walker/home',
             pageBuilder: (context, state) => pageBuilderFor(state, const HomeDogWalkerWidget()),
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
           GoRoute(
             name: 'walker_currentWalk',
             path: '/walker/currentWalk',
             pageBuilder: (context, state) => pageBuilderFor(state, const CurrentWalkEmptyWindowWidget()),
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
           GoRoute(
             name: 'walker_service',
             path: '/walker/service',
             pageBuilder: (context, state) => pageBuilderFor(state, const DogWalkerServiceWidget()),
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
           GoRoute(
             name: 'walker_profile',
             path: '/walker/profile',
             pageBuilder: (context, state) => pageBuilderFor(state, const DogWalkerProfileWidget()),
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
 
           // Rutas de ventana de paseos
@@ -560,7 +418,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
             name: 'walker_walksList',
             path: '/walker/walksList',
             pageBuilder: (context, state) => pageBuilderFor(state, const WalksDogWalkerWidget()),
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
           GoRoute(
             name: 'walker_walksRecord',
@@ -573,7 +430,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
                 )
               );
             },
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
 
           // Día excepional
@@ -581,7 +437,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
             name: 'walker_exceptionalDay',
             path: '/walker/exceptionalDay',
             pageBuilder: (context, state) => pageBuilderFor(state, const ExceptionDayWidget()),
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
 
           // Rutas de currentWalk
@@ -597,7 +452,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
                 )
               );
             },
-            redirect: (context, state) => authRedirect(context, state, true),
           ),          
           GoRoute(
             name: 'walker_notScheduledWalk',
@@ -610,7 +464,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
                 )
               );
             },
-            redirect: (context, state) => authRedirect(context, state, true),
           ),  
 
           // Rutas de perfil de paseador
@@ -618,19 +471,16 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) {
             name: 'walker_updateProfile',
             path: '/walker/updateProfile', 
             pageBuilder: (context, state) => pageBuilderFor(state, const DogOwnerUpdateProfileWidget()), //La ruta si es correcta
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
           GoRoute(
             name: 'walker_paymentMethods',
             path: '/walker/paymentMethods', 
             pageBuilder: (context, state) => pageBuilderFor(state, const PaymentMethodsWidget()),
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
           GoRoute(
             name: 'walker_getPaid',
             path: '/walker/getPaid', 
             pageBuilder: (context, state) => pageBuilderFor(state, const WalkerStripeAccountWidget()),
-            redirect: (context, state) => authRedirect(context, state, true),
           ),
         ],
       ),
@@ -655,16 +505,15 @@ extension NavigationExtensions on BuildContext {
     Map<String, String> pathParameters = const <String, String>{},
     Map<String, String> queryParameters = const <String, String>{},
     Object? extra,
-    bool ignoreRedirect = false,
-  }) =>
-      !mounted || GoRouter.of(this).shouldRedirect(ignoreRedirect)
-          ? null
-          : goNamed(
-              name,
-              pathParameters: pathParameters,
-              queryParameters: queryParameters,
-              extra: extra,
-            );
+  }) {
+    if (!mounted) return;
+    goNamed(
+      name,
+      pathParameters: pathParameters,
+      queryParameters: queryParameters,
+      extra: extra,
+    );
+  }
 
   void pushNamedAuth(
     String name,
@@ -672,16 +521,15 @@ extension NavigationExtensions on BuildContext {
     Map<String, String> pathParameters = const <String, String>{},
     Map<String, String> queryParameters = const <String, String>{},
     Object? extra,
-    bool ignoreRedirect = false,
-  }) =>
-      !mounted || GoRouter.of(this).shouldRedirect(ignoreRedirect)
-          ? null
-          : pushNamed(
-              name,
-              pathParameters: pathParameters,
-              queryParameters: queryParameters,
-              extra: extra,
-            );
+  }) {
+    if (!mounted) return;
+    pushNamed(
+      name,
+      pathParameters: pathParameters,
+      queryParameters: queryParameters,
+      extra: extra,
+    );
+  }
 
   void safePop() {
     if (canPop()) {
@@ -692,205 +540,193 @@ extension NavigationExtensions on BuildContext {
   }
 }
 
-extension GoRouterExtensions on GoRouter {
-  AppStateNotifier get appState => AppStateNotifier.instance;
-  void prepareAuthEvent([bool ignoreRedirect = false]) =>
-      appState.hasRedirect() && !ignoreRedirect
-          ? null
-          : appState.updateNotifyOnAuthChange(false);
-  bool shouldRedirect(bool ignoreRedirect) =>
-      !ignoreRedirect && appState.hasRedirect();
-  void clearRedirectLocation() => appState.clearRedirectLocation();
-  void setRedirectLocationIfUnset(String location) =>
-      appState.updateNotifyOnAuthChange(false);
-}
 
-extension _GoRouterStateExtensions on GoRouterState {
-  Map<String, dynamic> get extraMap =>
-      extra != null ? extra as Map<String, dynamic> : {};
-  Map<String, dynamic> get allParams => <String, dynamic>{}
-    ..addAll(pathParameters)
-    ..addAll(uri.queryParameters)
-    ..addAll(extraMap);
-  TransitionInfo get transitionInfo => extraMap.containsKey(kTransitionInfoKey)
-      ? extraMap[kTransitionInfoKey] as TransitionInfo
-      : TransitionInfo.appDefault();
-}
+// extension _GoRouterStateExtensions on GoRouterState {
+//   Map<String, dynamic> get extraMap =>
+//       extra != null ? extra as Map<String, dynamic> : {};
+//   Map<String, dynamic> get allParams => <String, dynamic>{}
+//     ..addAll(pathParameters)
+//     ..addAll(uri.queryParameters)
+//     ..addAll(extraMap);
+//   TransitionInfo get transitionInfo => extraMap.containsKey(kTransitionInfoKey)
+//       ? extraMap[kTransitionInfoKey] as TransitionInfo
+//       : TransitionInfo.appDefault();
+// }
 
-class FFParameters {
-  FFParameters(this.state, [this.asyncParams = const {}]);
+// class FFParameters {
+//   FFParameters(this.state, [this.asyncParams = const {}]);
 
-  final GoRouterState state;
-  final Map<String, Future<dynamic> Function(String)> asyncParams;
+//   final GoRouterState state;
+//   final Map<String, Future<dynamic> Function(String)> asyncParams;
 
-  Map<String, dynamic> futureParamValues = {};
+//   Map<String, dynamic> futureParamValues = {};
 
-  // Parameters are empty if the params map is empty or if the only parameter
-  // present is the special extra parameter reserved for the transition info.
-  bool get isEmpty =>
-      state.allParams.isEmpty ||
-      (state.allParams.length == 1 &&
-          state.extraMap.containsKey(kTransitionInfoKey));
-  bool isAsyncParam(MapEntry<String, dynamic> param) =>
-      asyncParams.containsKey(param.key) && param.value is String;
-  bool get hasFutures => state.allParams.entries.any(isAsyncParam);
-  Future<bool> completeFutures() => Future.wait(
-        state.allParams.entries.where(isAsyncParam).map(
-          (param) async {
-            final doc = await asyncParams[param.key]!(param.value)
-                .onError((_, __) => null);
-            if (doc != null) {
-              futureParamValues[param.key] = doc;
-              return true;
-            }
-            return false;
-          },
-        ),
-      ).onError((_, __) => [false]).then((v) => v.every((e) => e));
+//   // Parameters are empty if the params map is empty or if the only parameter
+//   // present is the special extra parameter reserved for the transition info.
+//   bool get isEmpty =>
+//       state.allParams.isEmpty ||
+//       (state.allParams.length == 1 &&
+//           state.extraMap.containsKey(kTransitionInfoKey));
+//   bool isAsyncParam(MapEntry<String, dynamic> param) =>
+//       asyncParams.containsKey(param.key) && param.value is String;
+//   bool get hasFutures => state.allParams.entries.any(isAsyncParam);
+//   Future<bool> completeFutures() => Future.wait(
+//         state.allParams.entries.where(isAsyncParam).map(
+//           (param) async {
+//             final doc = await asyncParams[param.key]!(param.value)
+//                 .onError((_, __) => null);
+//             if (doc != null) {
+//               futureParamValues[param.key] = doc;
+//               return true;
+//             }
+//             return false;
+//           },
+//         ),
+//       ).onError((_, __) => [false]).then((v) => v.every((e) => e));
 
-  dynamic getParam<T>(
-    String paramName,
-    ParamType type, {
-    bool isList = false,
-  }) {
-    if (futureParamValues.containsKey(paramName)) {
-      return futureParamValues[paramName];
-    }
-    if (!state.allParams.containsKey(paramName)) {
-      return null;
-    }
-    final param = state.allParams[paramName];
-    // Got parameter from `extras`, so just directly return it.
-    if (param is! String) {
-      return param;
-    }
-    // Return serialized value.
-    return deserializeParam<T>(
-      param,
-      type,
-      isList,
-    );
-  }
-}
+//   dynamic getParam<T>(
+//     String paramName,
+//     ParamType type, {
+//     bool isList = false,
+//   }) {
+//     if (futureParamValues.containsKey(paramName)) {
+//       return futureParamValues[paramName];
+//     }
+//     if (!state.allParams.containsKey(paramName)) {
+//       return null;
+//     }
+//     final param = state.allParams[paramName];
+//     // Got parameter from `extras`, so just directly return it.
+//     if (param is! String) {
+//       return param;
+//     }
+//     // Return serialized value.
+//     return deserializeParam<T>(
+//       param,
+//       type,
+//       isList,
+//     );
+//   }
+// }
 
-class FFRoute {
-  const FFRoute({
-    required this.name,
-    required this.path,
-    required this.builder,
-    this.requireAuth = false,
-    this.asyncParams = const {},
-    this.routes = const [],
-  });
+// class FFRoute {
+//   const FFRoute({
+//     required this.name,
+//     required this.path,
+//     required this.builder,
+//     this.requireAuth = false,
+//     this.asyncParams = const {},
+//     this.routes = const [],
+//   });
 
-  final String name;
-  final String path;
-  final bool requireAuth;
-  final Map<String, Future<dynamic> Function(String)> asyncParams;
-  final Widget Function(BuildContext, FFParameters) builder;
-  final List<GoRoute> routes;
+//   final String name;
+//   final String path;
+//   final bool requireAuth;
+//   final Map<String, Future<dynamic> Function(String)> asyncParams;
+//   final Widget Function(BuildContext, FFParameters) builder;
+//   final List<GoRoute> routes;
 
-  GoRoute toRoute(AppStateNotifier appStateNotifier) => GoRoute(
-        name: name,
-        path: path,
-        redirect: (context, state) {
-          if (appStateNotifier.shouldRedirect) {
-            final redirectLocation = appStateNotifier.getRedirectLocation();
-            appStateNotifier.clearRedirectLocation();
-            return redirectLocation;
-          }
+//   GoRoute toRoute(AppStateNotifier appStateNotifier) => GoRoute(
+//         name: name,
+//         path: path,
+//         redirect: (context, state) {
+//           if (appStateNotifier.shouldRedirect) {
+//             final redirectLocation = appStateNotifier.getRedirectLocation();
+//             appStateNotifier.clearRedirectLocation();
+//             return redirectLocation;
+//           }
 
-          if (requireAuth && !appStateNotifier.loggedIn) {
-            appStateNotifier.setRedirectLocationIfUnset(state.uri.toString());
-            return '/login';
-          }
-          return null;
-        },
-        pageBuilder: (context, state) {
-          fixStatusBarOniOS16AndBelow(context);
-          final ffParams = FFParameters(state, asyncParams);
-          final page = ffParams.hasFutures
-              ? FutureBuilder(
-                  future: ffParams.completeFutures(),
-                  builder: (context, _) => builder(context, ffParams),
-                )
-              : builder(context, ffParams);
-          final child = appStateNotifier.loading
-              ? Center(
-                  child: SizedBox(
-                    width: 50.0,
-                    height: 50.0,
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        FlutterFlowTheme.of(context).primary,
-                      ),
-                    ),
-                  ),
-                )
-              : page;
+//           if (requireAuth && !appStateNotifier.loggedIn) {
+//             appStateNotifier.setRedirectLocationIfUnset(state.uri.toString());
+//             return '/login';
+//           }
+//           return null;
+//         },
+//         pageBuilder: (context, state) {
+//           fixStatusBarOniOS16AndBelow(context);
+//           final ffParams = FFParameters(state, asyncParams);
+//           final page = ffParams.hasFutures
+//               ? FutureBuilder(
+//                   future: ffParams.completeFutures(),
+//                   builder: (context, _) => builder(context, ffParams),
+//                 )
+//               : builder(context, ffParams);
+//           final child = appStateNotifier.loading
+//               ? Center(
+//                   child: SizedBox(
+//                     width: 50.0,
+//                     height: 50.0,
+//                     child: CircularProgressIndicator(
+//                       valueColor: AlwaysStoppedAnimation<Color>(
+//                         FlutterFlowTheme.of(context).primary,
+//                       ),
+//                     ),
+//                   ),
+//                 )
+//               : page;
 
-          final transitionInfo = state.transitionInfo;
-          return transitionInfo.hasTransition
-              ? CustomTransitionPage(
-                  key: state.pageKey,
-                  child: child,
-                  transitionDuration: transitionInfo.duration,
-                  transitionsBuilder:
-                      (context, animation, secondaryAnimation, child) =>
-                          PageTransition(
-                    type: transitionInfo.transitionType,
-                    duration: transitionInfo.duration,
-                    reverseDuration: transitionInfo.duration,
-                    alignment: transitionInfo.alignment,
-                    child: child,
-                  ).buildTransitions(
-                    context,
-                    animation,
-                    secondaryAnimation,
-                    child,
-                  ),
-                )
-              : MaterialPage(key: state.pageKey, child: child);
-        },
-        routes: routes,
-      );
-}
+//           final transitionInfo = state.transitionInfo;
+//           return transitionInfo.hasTransition
+//               ? CustomTransitionPage(
+//                   key: state.pageKey,
+//                   child: child,
+//                   transitionDuration: transitionInfo.duration,
+//                   transitionsBuilder:
+//                       (context, animation, secondaryAnimation, child) =>
+//                           PageTransition(
+//                     type: transitionInfo.transitionType,
+//                     duration: transitionInfo.duration,
+//                     reverseDuration: transitionInfo.duration,
+//                     alignment: transitionInfo.alignment,
+//                     child: child,
+//                   ).buildTransitions(
+//                     context,
+//                     animation,
+//                     secondaryAnimation,
+//                     child,
+//                   ),
+//                 )
+//               : MaterialPage(key: state.pageKey, child: child);
+//         },
+//         routes: routes,
+//       );
+// }
 
-class TransitionInfo {
-  const TransitionInfo({
-    required this.hasTransition,
-    this.transitionType = PageTransitionType.fade,
-    this.duration = const Duration(milliseconds: 300),
-    this.alignment,
-  });
+// class TransitionInfo {
+//   const TransitionInfo({
+//     required this.hasTransition,
+//     this.transitionType = PageTransitionType.fade,
+//     this.duration = const Duration(milliseconds: 300),
+//     this.alignment,
+//   });
 
-  final bool hasTransition;
-  final PageTransitionType transitionType;
-  final Duration duration;
-  final Alignment? alignment;
+//   final bool hasTransition;
+//   final PageTransitionType transitionType;
+//   final Duration duration;
+//   final Alignment? alignment;
 
-  static TransitionInfo appDefault() => TransitionInfo(hasTransition: false);
-}
+//   static TransitionInfo appDefault() => const TransitionInfo(hasTransition: false);
+// }
 
-class RootPageContext {
-  const RootPageContext(this.isRootPage, [this.errorRoute]);
-  final bool isRootPage;
-  final String? errorRoute;
+// class RootPageContext {
+//   const RootPageContext(this.isRootPage, [this.errorRoute]);
+//   final bool isRootPage;
+//   final String? errorRoute;
 
-  static bool isInactiveRootPage(BuildContext context) {
-    final rootPageContext = context.read<RootPageContext?>();
-    final isRootPage = rootPageContext?.isRootPage ?? false;
-    final location = GoRouterState.of(context).uri.toString();
-    return isRootPage &&
-        location != '/' &&
-        location != rootPageContext?.errorRoute;
-  }
+//   static bool isInactiveRootPage(BuildContext context) {
+//     final rootPageContext = context.read<RootPageContext?>();
+//     final isRootPage = rootPageContext?.isRootPage ?? false;
+//     final location = GoRouterState.of(context).uri.toString();
+//     return isRootPage &&
+//         location != '/' &&
+//         location != rootPageContext?.errorRoute;
+//   }
 
-  static Widget wrap(Widget child, {String? errorRoute}) => Provider.value(
-        value: RootPageContext(true, errorRoute),
-        child: child,
-      );
-}
+//   static Widget wrap(Widget child, {String? errorRoute}) => Provider.value(
+//         value: RootPageContext(true, errorRoute),
+//         child: child,
+//       );
+// }
 
 extension GoRouterLocationExtension on GoRouter {
   String getCurrentLocation() {

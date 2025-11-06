@@ -1,9 +1,5 @@
-import 'package:dalk/common/current_walk_empty_window/current_walk_empty_window_widget.dart';
-import 'package:dalk/dog_walker/dog_walker_profile/dog_walker_profile_widget.dart';
-import 'package:dalk/dog_walker/home_dog_walker/home_dog_walker_widget.dart';
 import 'package:dalk/flutter_flow/flutter_flow_theme.dart';
 import 'package:dalk/flutter_flow/flutter_flow_util.dart';
-import 'package:dalk/landing_pages/dog_walker_service/dog_walker_service_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart'; // ¡Importación clave para GoRouter!
 

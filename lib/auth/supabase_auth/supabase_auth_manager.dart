@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '/auth/auth_manager.dart';
 import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 import 'email_auth.dart';
 import 'google_auth.dart';
 
@@ -143,13 +142,13 @@ class SupabaseAuthManager extends AuthManager
       // doesn't assign the currentUser in time.
       if (authUser != null) {
         currentUser = authUser;
-        AppStateNotifier.instance.update(authUser);
+        // AppStateNotifier.instance.applyLogin(null);
       }
       return authUser;
     } on AuthException catch (e) {
       final errorMsg = e.message.contains('User already registered')
           ? 'Error: The email is already in use by a different account'
-          : 'Error: ${e.message!}';
+          : 'Error: ${e.message}';
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(errorMsg)),

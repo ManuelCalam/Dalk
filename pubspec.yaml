@@ -121,12 +121,22 @@ dependencies:
   carousel_slider: ^5.1.1
   uuid: ^4.5.1
   permission_handler: ^12.0.1
+  flutter_native_splash: ^2.4.4
 
 flutter_icons:
   android: true
   ios: true
   image_path: "assets/icon/DALKLOGO_ICON.png"
   min_sdk_android: 21 
+
+flutter_native_splash:
+  color: "#CCDBFF"      
+  image: "assets/icon/DALKLOGO_ICON.png" 
+  android: true
+  ios: true
+  android_gravity: center
+  ios_content_mode: scaleAspectFit
+
 
 #dependency_overrides:
  # http: 1.2.2

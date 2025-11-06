@@ -1,4 +1,5 @@
 import 'package:dalk/common/password_recovery/password_recovery_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
@@ -102,7 +103,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                           padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 30.0, 0.0, 30.0),
                           child: AutoSizeText(
-                            'Iniciar Sesion ',
+                            'Iniciar Sesión ',
                             textAlign: TextAlign.center,
                             maxLines: 2,
                             minFontSize: 22.0,
@@ -415,11 +416,10 @@ class _LoginWidgetState extends State<LoginWidget> {
                             onPressed: () async {
                               final email = _model.emailInputTextController.text.trim();
                               final password = _model.passwordInputTextController.text;
+
                               if (email.isEmpty || password.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Por favor, completa todos los campos.'),
-                                  ),
+                                  const SnackBar(content: Text('Por favor, completa todos los campos.')),
                                 );
                                 return;
                               }
@@ -430,39 +430,49 @@ class _LoginWidgetState extends State<LoginWidget> {
                                   password: password,
                                 );
                                 final user = response.user;
+
                                 if (user == null) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Error al iniciar sesión. Verifica tus credenciales.'),
-                                    ),
+                                    const SnackBar(content: Text('Error al iniciar sesión. Verifica tus credenciales.')),
                                   );
                                   return;
                                 }
 
                                 final userData = await Supabase.instance.client
                                     .from('users')
-                                    .select()
-                                    .eq('email', email)
+                                    .select('usertype')
+                                    .eq('uuid', user.id)
                                     .maybeSingle();
 
-                                if (userData == null) {
+                                if (userData == null || userData['usertype'] == null) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Usuario no encontrado.'),
-                                    ),
+                                    const SnackBar(content: Text('No se encontró el tipo de usuario.')),
                                   );
                                   return;
                                 }
 
-                                if (context.mounted) {
-                                    GoRouter.of(context).go('/');
-                                }                                
+                                final userType = userData['usertype'] as String;
+
+                                final prefs = await SharedPreferences.getInstance();
+                                await prefs.setBool('session_active', true);
+                                await prefs.setString('user_type', userType);
+
+                                if (!context.mounted) return;
+
+                                if (userType == 'Dueño') {
+                                  context.go('/owner/home');
+                                } else if (userType == 'Paseador') {
+                                  context.go('/walker/home');
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Tipo de usuario desconocido: $userType')),
+                                  );
+                                }
+
                               } on AuthException catch (e) {
                                 if (e.message == 'Invalid login credentials') {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Email o contraseña incorrectos. Intenta nuevamente.'),
-                                    ),
+                                    const SnackBar(content: Text('Email o contraseña incorrectos. Intenta nuevamente.')),
                                   );
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -475,7 +485,9 @@ class _LoginWidgetState extends State<LoginWidget> {
                                 );
                               }
                             },
+
                             text: 'Iniciar Sesión',
+
                             options: FFButtonOptions(
                               width: MediaQuery.sizeOf(context).width * 0.9,
                               height: MediaQuery.sizeOf(context).height * 0.055,
@@ -593,36 +605,62 @@ class _LoginWidgetState extends State<LoginWidget> {
                                         ),
                                         onPressed: () async {
                                           try {
-                                            GoRouter.of(context).prepareAuthEvent();
-
+                                            // 1️⃣ Iniciar sesión con Google
                                             await authManager.signInWithGoogle(context);
 
+                                            // 2️⃣ Obtener el usuario actual de Supabase
                                             final user = Supabase.instance.client.auth.currentUser;
                                             if (user == null) {
+                                              debugPrint('No se pudo obtener el usuario tras Google Sign-In.');
                                               return;
                                             }
 
-                                            final userProfile = await SupaFlow.client
+                                            // 3️⃣ Buscar el perfil del usuario en la tabla 'users'
+                                            final userProfile = await Supabase.instance.client
                                                 .from('users')
                                                 .select('usertype')
                                                 .eq('uuid', user.id)
                                                 .maybeSingle();
 
-                                            // if (!context.mounted) return;
+                                            String? userType;
+
                                             if (userProfile == null) {
-                                              final response = await SupaFlow.client.from('users').insert({
+                                              await Supabase.instance.client.from('users').insert({
                                                 'uuid': user.id,
                                                 'email': user.email,
                                                 'usertype': 'Indefinido',
                                               });
-                                              return;
+                                              debugPrint('Usuario Google insertado con tipo Indefinido.');
+                                              userType = 'Indefinido';
+                                            } else {
+                                              userType = userProfile['usertype'] as String?;
                                             }
 
-                                            context.go('/');
-                                          } catch (e) {
-                                          }
-                                        }
+                                            if (!context.mounted) return;
 
+                                            if (userType == 'Dueño' || userType == 'Paseador') {
+                                              final prefs = await SharedPreferences.getInstance();
+                                              await prefs.setBool('session_active', true);
+                                              await prefs.setString('user_type', userType!);
+
+                                              if (userType == 'Dueño') {
+                                                context.go('/owner/home');
+                                              } else if (userType == 'Paseador') {
+                                                context.go('/walker/home');
+                                              }
+                                            } else {
+                                              context.go('/chooseUserType');
+                                            }
+
+                                          } catch (e) {
+                                            debugPrint('Error durante Google Sign-In: $e');
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(content: Text('Error al iniciar sesión con Google')),
+                                              );
+                                            }
+                                          }
+                                        },
                                       ),
                                     ),
                                   ),

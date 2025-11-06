@@ -1,3 +1,5 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
@@ -2907,50 +2909,59 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
                                                     .fromSTEB(0, 18, 0, 18),
                                                 child: FFButtonWidget(
                                                    onPressed: isRegistering
-                                                    ? null
-                                                    : () async {
-                                                        // Validaciones básicas antes de iniciar el registro
-                                                        if (!_model.formKey.currentState!.validate()) {
+                                                  ? null
+                                                  : () async {
+                                                      // Validaciones básicas antes de iniciar el registro
+                                                      if (!_model.formKey.currentState!.validate()) {
+                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                          const SnackBar(content: Text('Corrige los campos con errores')),
+                                                        );
+                                                        return;
+                                                      }
+
+                                                      if (_model.datePicked == null) {
+                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                          const SnackBar(content: Text('Selecciona una fecha de nacimiento')),
+                                                        );
+                                                        return;
+                                                      }
+
+                                                      if (_model.passDogWalkerInputTextController.text !=
+                                                          _model.confirmPassDogWalkerInputTextController.text) {
+                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                          const SnackBar(content: Text('Las contraseñas no coinciden')),
+                                                        );
+                                                        return;
+                                                      }
+
+                                                      setState(() => isRegistering = true);
+
+                                                      try {
+                                                        await registerDogWalker(context, widget.registerMethod);
+
+                                                        final prefs = await SharedPreferences.getInstance();
+                                                        await prefs.setBool('session_active', true);
+                                                        await prefs.setString('user_type', 'Paseador');
+
+                                                        if (!mounted) return;
+
+                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                          const SnackBar(content: Text('¡Registro exitoso!')),
+                                                        );
+
+                                                        await Future.delayed(const Duration(milliseconds: 500));
+
+                                                        context.go('/walker/home');
+                                                      } catch (e) {
+                                                        if (mounted) {
                                                           ScaffoldMessenger.of(context).showSnackBar(
-                                                            const SnackBar(content: Text('Corrige los campos con errores')),
+                                                            SnackBar(content: Text('Error durante el registro: $e')),
                                                           );
-                                                          return;
                                                         }
-
-                                                        if (_model.datePicked == null) {
-                                                          ScaffoldMessenger.of(context).showSnackBar(
-                                                            const SnackBar(content: Text('Selecciona una fecha de nacimiento')),
-                                                          );
-                                                          return;
-                                                        }
-
-                                                        if (_model.passDogWalkerInputTextController.text !=
-                                                            _model.confirmPassDogWalkerInputTextController.text) {
-                                                          ScaffoldMessenger.of(context).showSnackBar(
-                                                            const SnackBar(content: Text('Las contraseñas no coinciden')),
-                                                          );
-                                                          return;
-                                                        }
-
-                                                        setState(() => isRegistering = true);
-
-                                                        try {
-                                                          await registerDogWalker(context, widget.registerMethod); 
-
-                                                          if (!mounted) return;
-
-                                                          ScaffoldMessenger.of(context).showSnackBar(
-                                                            const SnackBar(content: Text('¡Registro exitoso!')),
-                                                          );
-
-                                                          await Future.delayed(const Duration(milliseconds: 500));
-
-                                                          GoRouter.of(context).go('/walker/home'); 
-                                                        } catch (e) {
-                                                        } finally {
-                                                          if (mounted) setState(() => isRegistering = false);
-                                                        }
-                                                      },
+                                                      } finally {
+                                                        if (mounted) setState(() => isRegistering = false);
+                                                      }
+                                                    },
                                                   text: 'Registrarse',
                                                   options: FFButtonOptions(
                                                     width:

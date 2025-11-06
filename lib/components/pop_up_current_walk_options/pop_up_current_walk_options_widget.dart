@@ -1,6 +1,7 @@
 import 'package:dalk/auth/supabase_auth/auth_util.dart';
 import 'package:dalk/backend/supabase/supabase.dart';
 import 'package:dalk/cards/tracker_card/tracker_card_widget.dart';
+import 'package:dalk/flutter_flow/flutter_flow_model.dart';
 
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';

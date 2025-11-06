@@ -1,4 +1,5 @@
 import 'package:dalk/utils/validation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
@@ -798,25 +799,38 @@ class _SignInWithGoogleDogOwnerWidgetState
                                                       }
 
                                                       try {
-                                                          final response = await Supabase.instance.client
+                                                        // 1️⃣ Actualizar datos en Supabase
+                                                        await Supabase.instance.client
                                                             .from('users')
                                                             .update({
-                                                              'name': _model.nameInputTextController.text,
+                                                              'name': _model.nameInputTextController.text.trim(),
                                                               'email': currentUserEmail,
                                                               'usertype': 'Dueño',
-                                                              'phone': _model.phoneInputTextController.text,
-                                                              'photo_url': 'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/public/profile_pics/user.png'
-                                                            }).eq('uuid', currentUserUid);
+                                                              'phone': _model.phoneInputTextController.text.trim(),
+                                                              'photo_url': 'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/public/profile_pics/user.png',
+                                                            })
+                                                            .eq('uuid', currentUserUid);
 
+                                                        // 2️⃣ Guardar sesión en caché
+                                                        final prefs = await SharedPreferences.getInstance();
+                                                        await prefs.setBool('session_active', true);
+                                                        await prefs.setString('user_type', 'Dueño');
+
+                                                        // 3️⃣ Notificar al usuario y redirigir
+                                                        if (context.mounted) {
                                                           ScaffoldMessenger.of(context).showSnackBar(
                                                             const SnackBar(content: Text('¡Registro exitoso!')),
                                                           );
-                                                          GoRouter.of(context).go('/owner/home'); 
-                                                        } catch (e) {
+
+                                                          context.go('/owner/home');
+                                                        }
+                                                      } catch (e) {
+                                                        if (context.mounted) {
                                                           ScaffoldMessenger.of(context).showSnackBar(
                                                             SnackBar(content: Text('Error al registrar usuario: $e')),
                                                           );
                                                         }
+                                                      }
                                                     },
                                                   text: 'Registrarse',
                                                   options: FFButtonOptions(

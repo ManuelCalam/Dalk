@@ -1,10 +1,7 @@
 import 'package:dalk/backend/supabase/database/database.dart';
-import 'package:dalk/common/article_web_view/article_web_view.dart';
-import 'package:dalk/landing_pages/login/login_widget.dart';
 import 'package:dalk/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:dalk/auth/supabase_auth/auth_util.dart';
 import '/components/notification_container/notification_container_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -13,7 +10,6 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dog_walker_profile_model.dart';
-import 'package:dalk/common/article_web_view/article_web_view.dart';
 
 export 'dog_walker_profile_model.dart';
 
@@ -116,7 +112,7 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                   ),
                                 ),
                                 Text(
-                                  '$nombre',
+                                  nombre,
                                   textAlign: TextAlign.center,
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
@@ -970,38 +966,31 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                       0, 30, 0, 0),
                                   child: FFButtonWidget(
                                     onPressed: () async {
-                                      GoRouter.of(context).prepareAuthEvent(); 
-                                      final prefs = await SharedPreferences.getInstance();
-                                      await prefs.remove('user_data');
-
                                       try {
-                                        GoRouter.of(context).prepareAuthEvent(); 
+                                        await Supabase.instance.client.auth.signOut();
+
+                                        // Limpiar cahcé
                                         final prefs = await SharedPreferences.getInstance();
-                                        await prefs.remove('user_data');
-                                        context.read<UserProvider>().clearUser(); 
+                                        await prefs.clear();
 
-                                        // 1. Cerrar sesión en los servicios
-                                        await authManager.signOut(); 
-                                        await Supabase.instance.client.auth.signOut(); 
-                                        
-                                        await Future.delayed(const Duration(milliseconds: 400));
+                                        if (context.mounted) {
+                                          context.read<UserProvider>().clearUser();
+                                        }
 
-                                        if (!context.mounted) return;
-                                        
-                                        GoRouter.of(context).clearRedirectLocation();
-                                        GoRouter.of(context).go('/'); 
+                                        if (context.mounted) {
+                                          context.go('/login');
+                                        }
 
-                                    } catch (e) {
+                                      } catch (e) {
                                         if (context.mounted) {
                                           ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(content: Text("Error cerrando sesión: $e")),
+                                            SnackBar(content: Text('Error cerrando sesión: $e')),
                                           );
                                         }
                                       }
                                     },
-                                    
-
                                     text: 'Cerrar Sesión',
+
                                     options: FFButtonOptions(
                                       width: MediaQuery.sizeOf(context).width,
                                       height:

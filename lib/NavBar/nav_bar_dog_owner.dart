@@ -1,13 +1,11 @@
 import 'dart:async';
 import 'package:dalk/backend/supabase/supabase.dart';
-import 'package:dalk/common/walk_payment_window/walk_payment_window_widget.dart';
 import 'package:dalk/components/pop_up_current_walk_options/pop_up_current_walk_options_widget.dart';
 import 'package:dalk/dog_owner/walk_monitor.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dalk/flutter_flow/flutter_flow_theme.dart';
 import 'package:dalk/flutter_flow/flutter_flow_util.dart';
-import 'package:go_router/go_router.dart'; // ¡Nueva Importación clave!
+import 'package:go_router/go_router.dart';
 
 class NavBarOwnerPage extends StatefulWidget {
   NavBarOwnerPage({
