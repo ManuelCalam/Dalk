@@ -341,16 +341,16 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error_outline, color: Colors.red, size: 50),
-                  SizedBox(height: 10),
-                  Text(
+                  const Icon(Icons.error_outline, color: Colors.red, size: 50),
+                  const SizedBox(height: 10),
+                  const Text(
                     'Error al cargar paseadores',
                     style: TextStyle(fontSize: 16),
                   ),
-                  SizedBox(height: 5),
+                  const SizedBox(height: 5),
                   Text(
                     '${snapshot.error}',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
                     textAlign: TextAlign.center,
                   ),
                 ],

@@ -9,11 +9,8 @@ import '/cards/address_card/address_card_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
-import '/index.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'set_walk_schedule_model.dart';
@@ -71,13 +68,13 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
     required int walkDuration,
     required String instructions,
   }) async {
-    print('INICIANDO _navigateToFindDogWalker');
-    print('Fecha: $date');
-    print('Hora: $time');
-    print('Address ID: $addressId');
-    print('Pet ID: $petId');
-    print('Duracion: $walkDuration min');
-    print('Instrucciones: $instructions');
+    // print('INICIANDO _navigateToFindDogWalker');
+    // print('Fecha: $date');
+    // print('Hora: $time');
+    // print('Address ID: $addressId');
+    // print('Pet ID: $petId');
+    // print('Duracion: $walkDuration min');
+    // print('Instrucciones: $instructions');
 
     // Mostrar que estamos cargando recomendaciones
     setState(() {
@@ -120,28 +117,17 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
 
     // Navegación solo después de obtener los datos
     if (mounted) {
-      print('Iniciando navegacion a FindDogWalkerWidget...');
-      print('Parametros a enviar:');
-      print('   - date: ${date.toIso8601String()}');
-      print('   - time: ${time.toIso8601String()}');
-      print('   - addressId: $addressId');
-      print('   - petId: $petId');
-      print('   - walkDuration: $walkDuration');
-      print('   - instructions: $instructions');
-      print('   - recommendedWalkerUUIDs: ${_recommendedWalkerUUIDs.join(',')}');
-      print('   - Total UUIDs: ${_recommendedWalkerUUIDs.length}');
+      // print('Iniciando navegacion a FindDogWalkerWidget...');
+      // print('Parametros a enviar:');
+      // print('   - date: ${date.toIso8601String()}');
+      // print('   - time: ${time.toIso8601String()}');
+      // print('   - addressId: $addressId');
+      // print('   - petId: $petId');
+      // print('   - walkDuration: $walkDuration');
+      // print('   - instructions: $instructions');
+      // print('   - recommendedWalkerUUIDs: ${_recommendedWalkerUUIDs.join(',')}');
+      // print('   - Total UUIDs: ${_recommendedWalkerUUIDs.length}');
       
-      // context.pushNamed(
-      //   FindDogWalkerWidget.routeName,
-      //   queryParameters: {
-      //     'time': time.toIso8601String(),
-      //     'addressId': addressId,
-      //     'petId': petId,
-      //     'walkDuration': walkDuration.toString(),
-      //     'instructions': instructions,
-      //     'recommendedWalkerUUIDs': _recommendedWalkerUUIDs.join(','),
-      //   },
-      // );
       context.push(
         '/owner/findDogWalker',
         extra: <String, dynamic>{
