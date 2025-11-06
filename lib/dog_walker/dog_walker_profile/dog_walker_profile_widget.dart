@@ -31,7 +31,6 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
   @override
   void initState() {
     super.initState();
-    context.read<UserProvider>().loadUser(forceRefresh: true);
     _model = createModel(context, () => DogWalkerProfileModel());
     context.read<UserProvider>().loadUser(forceRefresh: true);
   }
