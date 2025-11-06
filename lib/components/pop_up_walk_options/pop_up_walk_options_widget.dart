@@ -1,6 +1,5 @@
 import 'package:dalk/backend/supabase/supabase.dart';
 import 'package:dalk/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
-import 'package:dalk/components/scheduled_walk_container/scheduled_walk_container_widget.dart';
 import 'package:geolocator/geolocator.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -88,8 +87,8 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
           cancelColor: FlutterFlowTheme.of(context).accent1,
           icon: Icons.location_on,
           iconColor: FlutterFlowTheme.of(context).primary,
-          onConfirm: () => Navigator.pop(context, true),
-          onCancel: () => Navigator.pop(context, false), 
+          onConfirm: () => context.pop(true),
+          onCancel: () => context.pop(false), 
         ),
       );
 
@@ -168,7 +167,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
     // ------------------------------------
     if (userType == 'Dueño') {
       // if (walkStatus == 'Por confirmar' || walkStatus == 'Aceptado' || walkStatus == 'En curso') {
-      if (walkStatus == 'Por confirmar' || walkStatus == 'Aceptado') {
+      if (walkStatus == 'Por confirmar') {
         // Estatus "Por confirmar" o "Aceptado" o "En curso": Botón "Cancelar"
         buttons.add(_buildActionButton(
           context: context,
@@ -193,8 +192,8 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                     .eq('id', widget.walkId),
 
                   //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
-                  Navigator.pop(context),
-                  Navigator.pop(context),
+                  context.pop(),
+                  context.pop(),
 
                   //Envío de notificacion después de cerrar los menús
                   await Supabase.instance.client.functions.invoke(
@@ -205,14 +204,74 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                     },
                   )
                 },
-                onCancel: () => Navigator.pop(context),
+                onCancel: () => context.pop(),
               ), 
             );
 
           },
           icon: Icons.cancel_rounded,
         ));
-      } else if (walkStatus == 'Rechazado' || walkStatus == 'Cancelado') {
+      }
+      else if (walkStatus == 'Aceptado' || walkStatus == 'En curso') {
+        // Estatus "Por confirmar" o "Aceptado" o "En curso": Botón "Cancelar"
+        buttons.add(_buildActionButton(
+          context: context,
+          text: 'Pagar paseo',
+          color: FlutterFlowTheme.of(context).success,
+          onPressed: () {
+            context.push('/owner/walkPayment', extra: <String, dynamic> {
+                'walkId': widget.walkId,
+                'userType': 'Dueño'
+            });
+          },
+          icon: Icons.attach_money_rounded,
+        ));
+
+        buttons.add(_buildActionButton(
+          context: context,
+          text: 'Cancelar paseo',
+          color: FlutterFlowTheme.of(context).error,
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (_) => PopUpConfirmDialogWidget(
+                title: "Cancelar paseo",
+                message: "¿Estás seguro de que deseas cancelar este paseo?",
+                confirmText: "Cancelar paseo",
+                cancelText: "Cerrar",
+                confirmColor: FlutterFlowTheme.of(context).error,
+                cancelColor: FlutterFlowTheme.of(context).accent1,
+                icon: Icons.cancel_rounded,
+                iconColor: FlutterFlowTheme.of(context).error,
+                onConfirm: () async => {
+                  await SupaFlow.client
+                    .from('walks')
+                    .update({'status': 'Cancelado'})
+                    .eq('id', widget.walkId),
+
+                  //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
+                  context.pop(),
+                  context.pop(),
+
+                  //Envío de notificacion después de cerrar los menús
+                  await Supabase.instance.client.functions.invoke(
+                    'send-walk-notification',
+                    body: {
+                      'walk_id': widget.walkId,
+                      'new_status': 'Cancelado',
+                    },
+                  )
+                },
+                onCancel: () => context.pop(),
+              ), 
+            );
+
+          },
+          icon: Icons.cancel_rounded,
+        ));
+      }
+      
+       else if (walkStatus == 'Rechazado' || walkStatus == 'Cancelado') {
         // Estatus "Rechazado" o "Cancelado": Botón "Borrar"
         buttons.add(_buildActionButton(
           context: context,
@@ -234,10 +293,10 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                   await SupaFlow.client.from('walks').delete().eq('id', widget.walkId),
 
                   //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
-                  Navigator.pop(context),
-                  Navigator.pop(context)
+                  context.pop(),
+                  context.pop()
                 },
-                onCancel: () => Navigator.pop(context),
+                onCancel: () => context.pop(),
               ), 
             );
           },
@@ -286,8 +345,8 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                     .eq('id', widget.walkId);
 
                 // NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
-                Navigator.pop(context); 
-                Navigator.pop(context); 
+                context.pop(); 
+                context.pop(); 
 
                 // Envío de notificacion después de cerrar los menús
                 await Supabase.instance.client.functions.invoke(
@@ -298,7 +357,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                   },
                 );
               },
-              onCancel: () => Navigator.pop(context),
+              onCancel: () => context.pop(),
             ),
           );
         },
@@ -330,8 +389,8 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
 
 
                   //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
-                  Navigator.pop(context),
-                  Navigator.pop(context),
+                  context.pop(),
+                  context.pop(),
 
                   //Envío de notificacion después de cerrar los menús
                   await Supabase.instance.client.functions.invoke(
@@ -342,7 +401,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                     },
                   )
                 },
-                onCancel: () => Navigator.pop(context),
+                onCancel: () => context.pop(),
               ), 
             );
 
@@ -378,13 +437,10 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                     .update({'status': 'En curso'})
                     .eq('id', widget.walkId),
 
-                  context.pushNamed(
-                    '_initialize',
-                    queryParameters: {'initialPage': 'CurrentWalk'},
-                  ),
+                  GoRouter.of(context).go('/walker/currentWalk'),
                   //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
-                  Navigator.pop(context),
-                  Navigator.pop(context),
+                  context.pop(),
+                  context.pop(),
 
                   await SupaFlow.client
                     .from('users') 
@@ -402,7 +458,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                     },
                   ),
                 },
-                onCancel: () => Navigator.pop(context),
+                onCancel: () => context.pop(),
               ), 
             );
           },
@@ -433,8 +489,8 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                     .eq('id', widget.walkId),
 
                   //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
-                  Navigator.pop(context),
-                  Navigator.pop(context),
+                  context.pop(),
+                  context.pop(),
                   
                   //Envío de notificacion después de cerrar los menús
                   await Supabase.instance.client.functions.invoke(
@@ -445,7 +501,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                           },
                   )
                 },
-                onCancel: () => Navigator.pop(context),
+                onCancel: () => context.pop(),
               ), 
             );
           },
@@ -474,10 +530,10 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                   await SupaFlow.client.from('walks').delete().eq('id', widget.walkId),
 
                   //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
-                  Navigator.pop(context),
-                  Navigator.pop(context)
+                  context.pop(),
+                  context.pop()
                 },
-                onCancel: () => Navigator.pop(context),
+                onCancel: () => context.pop(),
               ), 
             );
           },
@@ -508,13 +564,11 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
               await widget.onWalkCompletion?.call(); 
               
               // Cerramos el PopUp, usando el contexto del diálogo
-              if (Navigator.canPop(context)) {
-                  Navigator.pop(context); 
+              if (context.canPop()) {
+                  context.pop(); 
               }
             },
-
-
-                onCancel: () => Navigator.pop(context),
+                onCancel: () => context.pop(),
               ), 
             );
 
@@ -547,8 +601,8 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
         //             .eq('id', widget.walkId),
 
         //           //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
-        //           Navigator.pop(context),
-        //           Navigator.pop(context),
+        //           Context.pop(),
+        //           Context.pop(),
                   
         //           //Envío de notificacion después de cerrar los menús
         //           await Supabase.instance.client.functions.invoke(
@@ -559,7 +613,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
         //             },
         //           )
         //         },
-        //         onCancel: () => Navigator.pop(context),
+        //         onCancel: () => Context.pop(),
         //       ), 
         //     );
         //   },
@@ -681,8 +735,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                               size: 24,
                             ),
                             onPressed: () async {
-                              // Action 1
-                              Navigator.pop(context);
+                              context.pop();
                             },
                           ),
                         ),

@@ -1,4 +1,5 @@
 import 'package:dalk/backend/supabase/supabase.dart';
+import 'package:dalk/utils/validation.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -61,6 +62,7 @@ class _PopUpReviewDetailsWidgetState extends State<PopUpReviewDetailsWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final String displayName = Validators.formatDisplayName(widget.reviewedName);
     return Align(
       alignment: const AlignmentDirectional(0, 0),
       child: Container(
@@ -95,7 +97,6 @@ class _PopUpReviewDetailsWidgetState extends State<PopUpReviewDetailsWidget> {
                           size: 24,
                         ),
                         onPressed: () async {
-                          // Action 1
                           Navigator.pop(context);
                         },
                       ),
@@ -128,7 +129,7 @@ class _PopUpReviewDetailsWidgetState extends State<PopUpReviewDetailsWidget> {
                         mainAxisSize: MainAxisSize.max,
                         children: [
                           AutoSizeText(
-                            'Tu reseña a ${widget.reviewedName}',
+                            'Tu reseña a ${displayName}',
                             textAlign: TextAlign.center,
                             maxLines: 3,
                             style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -145,7 +146,7 @@ class _PopUpReviewDetailsWidgetState extends State<PopUpReviewDetailsWidget> {
                           Padding(
                             padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
                             child: RatingBar.builder(
-                              ignoreGestures: true, // Solo mostrar, no editar
+                              ignoreGestures: true,
                               onRatingUpdate: (_) {},
                               itemBuilder: (context, index) => Icon(
                                 Icons.star_rounded,

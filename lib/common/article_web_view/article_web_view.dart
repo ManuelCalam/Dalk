@@ -31,6 +31,8 @@ class _ArticleWebViewWidgetState extends State<ArticleWebViewWidget> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        backgroundColor: const Color(0xFF484848),
+        foregroundColor: Color(0xffffffff),
       ),
       body: WebViewWidget(controller: controller),
     );

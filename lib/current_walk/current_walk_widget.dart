@@ -125,7 +125,7 @@ class _CurrentWalkWidgetState extends State<CurrentWalkWidget> {
                                 size: 26,
                               ),
                               onPressed: () {
-                                context.pushNamed(NotificationsWidget.routeName);
+                                context.push(NotificationsWidget.routeName);
                               },
                             ),
                           ),

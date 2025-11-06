@@ -1,7 +1,7 @@
 
 import 'package:dalk/backend/supabase/database/database.dart';
 import 'package:dalk/cards/article_card/article_card_widget.dart';
-
+import 'package:dalk/common/article_web_view/article_web_view.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -144,7 +144,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                           hoverColor: Colors.transparent,
                           highlightColor: Colors.transparent,
                           onTap: () async {
-                            context.pushNamed(NotificationsWidget.routeName);
+                            context.push('/walker/notifications');
                           },
                           child: const Icon(
                             Icons.notifications_sharp,
@@ -261,8 +261,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                         hoverColor: Colors.transparent,
                                         highlightColor: Colors.transparent,
                                         onTap: () async {
-                                          context.pushNamed(
-                                              DogWalkerServiceWidget.routeName);
+                                          GoRouter.of(context).go('/walker/service');
                                         },
                                         child: Container(
                                           width:
@@ -346,8 +345,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                         hoverColor: Colors.transparent,
                                         highlightColor: Colors.transparent,
                                         onTap: () async {
-                                          context.pushNamed(
-                                              WalksDogWalkerWidget.routeName);
+                                          context.push('/walker/walksList');
                                         },
                                         child: Container(
                                           width:
@@ -439,8 +437,7 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                         hoverColor: Colors.transparent,
                                         highlightColor: Colors.transparent,
                                         onTap: () async {
-                                          context.pushNamed(
-                                              ExceptionDayWidget.routeName);
+                                          context.push('/walker/exceptionalDay');
                                         },
                                         child: Container(
                                           width:
@@ -519,72 +516,61 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                       ),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsetsDirectional.fromSTEB(
-                                          6, 6, 12, 12),
-                                      child: Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                0.4,
-                                        decoration: BoxDecoration(
-                                          color: FlutterFlowTheme.of(context)
-                                              .tertiary,
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        child: Align(
-                                          alignment: const AlignmentDirectional(0, 0),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.info_rounded,
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primary,
-                                                size: 80,
-                                              ),
-                                              Align(
-                                                alignment:
-                                                    const AlignmentDirectional(0, 1),
-                                                child: Padding(
-                                                  padding: const EdgeInsetsDirectional
-                                                      .fromSTEB(0, 0, 0, 6),
-                                                  child: AutoSizeText(
-                                                    'Nosotros',
-                                                    textAlign: TextAlign.center,
-                                                    style: FlutterFlowTheme.of(
-                                                            context)
-                                                        .bodyMedium
-                                                        .override(
-                                                          font: GoogleFonts
-                                                              .lexend(
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .secondaryBackground,
-                                                          fontSize: 16,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
+                                      padding: const EdgeInsetsDirectional.fromSTEB(6.0, 6.0, 12.0, 12.0),
+                                      child: InkWell(
+                                        splashColor: Colors.transparent,
+                                        focusColor: Colors.transparent,
+                                        hoverColor: Colors.transparent,
+                                        highlightColor: Colors.transparent,
+                                        onTap: () {
+                                          context.push(
+                                            '/WebView',
+                                            extra: <String, dynamic>{
+                                              'url': 'https://dalk-legal-git-main-noe-ibarras-projects.vercel.app/?_vercel_share=H06ZuiEgfwHGNcHZ9AdimDz34FNJepDa',
+                                              'title': 'Acerca de Nosotros',
+                                            },
+                                          );                                           
+                                        },
+                                        child: Container(
+                                          width: MediaQuery.sizeOf(context).width * 0.4,
+                                          decoration: BoxDecoration(
+                                            color: FlutterFlowTheme.of(context).tertiary,
+                                            borderRadius: BorderRadius.circular(10.0),
+                                          ),
+                                          child: Align(
+                                            alignment: const AlignmentDirectional(0.0, 0.0),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.info_rounded,
+                                                  color: FlutterFlowTheme.of(context).primary,
+                                                  size: 80.0,
+                                                ),
+                                                Align(
+                                                  alignment: const AlignmentDirectional(0.0, 1.0),
+                                                  child: Padding(
+                                                    padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 6.0),
+                                                    child: AutoSizeText(
+                                                      'Nosotros',
+                                                      textAlign: TextAlign.center,
+                                                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                        font: GoogleFonts.lexend(
+                                                          fontWeight: FontWeight.w500,
+                                                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                         ),
+                                                        color: FlutterFlowTheme.of(context).secondaryBackground,
+                                                        fontSize: 16.0,
+                                                        letterSpacing: 0.0,
+                                                        fontWeight: FontWeight.w500,
+                                                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                      ),
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -662,34 +648,6 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
                                       ),
                                 ),
                               ),
-                              // Padding(
-                              //   padding:
-                              //       EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
-                              //   child: Container(
-                              //     width: MediaQuery.sizeOf(context).width,
-                              //     height:
-                              //         MediaQuery.sizeOf(context).height * 0.3,
-                              //     decoration: BoxDecoration(
-                              //       borderRadius: BorderRadius.circular(0),
-                              //     ),
-                              //     // child: ListView(
-                              //     //   padding: EdgeInsets.zero,
-                              //     //   primary: false,
-                              //     //   shrinkWrap: true,
-                              //     //   scrollDirection: Axis.horizontal,
-                              //     //   children:  [
-
-                              //     //     // AQUI ES DONDE PONDRAS EL FUTURE BUILDER Y UTILIZARÁS EL article_widget_card
-
-                              //     //   ],
-                              //     // ),
-                              //     // child: Padding(
-                              //     //   padding: EdgeInsets.symmetric(horizontal: 12.0),
-                              //     //   child: ArticleWebView(),
-                              //     // ),
-                              //   ),
-                              // ),
-
                               Padding(
                                 padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                                 child: Container(

@@ -111,12 +111,11 @@ class _PopUpCurrentWalkOptionsWidgetState
             topRight: Radius.circular(50),
           ),
         ),
-        child: Column( // ← Cambié Padding por Column directo
+        child: Column( 
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Header con icono de cerrar
             Padding(
-              padding: const EdgeInsetsDirectional.fromSTEB(15, 20, 10, 0), // ← Reducí padding top
+              padding: const EdgeInsetsDirectional.fromSTEB(15, 20, 10, 0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 children: [
@@ -148,9 +147,9 @@ class _PopUpCurrentWalkOptionsWidgetState
                   autovalidateMode: AutovalidateMode.disabled,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.start, // ← Cambié a start
+                    mainAxisAlignment: MainAxisAlignment.start, 
                     children: [
-                      const SizedBox(height: 10), // ← Espacio mínimo
+                      const SizedBox(height: 10), 
                       AutoSizeText(
                         'Paseo iniciado',
                         textAlign: TextAlign.center,
@@ -168,7 +167,7 @@ class _PopUpCurrentWalkOptionsWidgetState
                             ),
                       ),
                       Padding(
-                        padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0), // ← Reducí espacio
+                        padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0), 
                         child: Text(
                           'Agrega rastreadores a tu paseo (opcional)',
                           textAlign: TextAlign.center,
@@ -216,14 +215,10 @@ class _PopUpCurrentWalkOptionsWidgetState
                               print("Error al actualizar current_walk_id en Supabase: $e");
                             }
 
-                              // Guardar los rastreadores seleccionados
                               await _saveSelectedTrackers();
-                              Navigator.pop(context);
+                              context.pop();
                               if (context.mounted) {
-                                context.goNamed(
-                                  '_initialize',
-                                  queryParameters: {'initialPage': 'CurrentWalk'},
-                                );
+                                GoRouter.of(context).go('/owner/currentWalk');
                               }                                  
                             },
                             text: 'Abrir Mapa',

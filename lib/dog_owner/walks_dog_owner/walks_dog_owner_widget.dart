@@ -127,10 +127,7 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                     const EdgeInsetsDirectional.fromSTEB(0, 15, 25, 0),
                                 child: FFButtonWidget(
                                   onPressed: () {
-                                    Navigator.push(
-                                      context, 
-                                      MaterialPageRoute(builder: (context) => const WalksRecordWidget(userType: 'Dueño',))
-                                    );
+                                    context.push('/owner/walksRecord', extra: {'userType': 'Dueño'});
                                   },
                                   text: 'Historial de paseos',
                                   options: FFButtonOptions(

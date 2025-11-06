@@ -1,23 +1,17 @@
-import 'package:dalk/NavBar/nav_bar_dog_owner.dart';
-import 'package:dalk/SubscriptionProvider.dart';
-import 'package:dalk/dog_owner/tracker_details/tracker_details_widget.dart';
+import 'package:dalk/backend/supabase/database/database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:dalk/common/payment_methods/payment_methods_widget.dart';
 import '/auth/supabase_auth/auth_util.dart';
-import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import '/index.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+
 import 'dog_owner_profile_model.dart';
 export 'dog_owner_profile_model.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import '/user_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -318,8 +312,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                     hoverColor: Colors.transparent,
                                     highlightColor: Colors.transparent,
                                     onTap: () async {
-                                      context.pushNamed(
-                                          DogOwnerUpdateProfileWidget.routeName);
+                                      context.push('/owner/updateProfile');
                                     },
                                     child: Container(
                                       width: MediaQuery.sizeOf(context).width,
@@ -409,9 +402,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                                 highlightColor:
                                                     Colors.transparent,
                                                 onTap: () async {
-                                                  context.pushNamed(
-                                                      DogOwnerUpdateProfileWidget
-                                                          .routeName);
+                                                  context.push('/owner/updateProfile');
                                                 },
                                                 child: Icon(
                                                   Icons.arrow_forward_ios,
@@ -437,10 +428,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                     hoverColor: Colors.transparent,
                                     highlightColor: Colors.transparent,
                                     onTap: () async {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(builder: (context) => const PaymentMethodsWidget()),
-                                      );
+                                      context.push('/owner/paymentMethods');
                                     },
                                     child: Container(
                                       width: MediaQuery.sizeOf(context).width,
@@ -518,12 +506,22 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                             child: Padding(
                                               padding: const EdgeInsetsDirectional
                                                   .fromSTEB(0, 0, 15, 0),
-                                              child: Icon(
-                                                Icons.arrow_forward_ios,
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primary,
-                                                size: 25,
+                                              child: InkWell(
+                                                splashColor: Colors.transparent,
+                                                focusColor: Colors.transparent,
+                                                hoverColor: Colors.transparent,
+                                                highlightColor:
+                                                    Colors.transparent,
+                                                onTap: () async {
+                                                  context.push('/owner/paymentMethods');
+                                                },
+                                                child: Icon(
+                                                  Icons.arrow_forward_ios,
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .primary,
+                                                  size: 25,
+                                                ),
                                               ),
                                             ),
                                           ),
@@ -541,13 +539,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                     hoverColor: Colors.transparent,
                                     highlightColor: Colors.transparent,
                                     onTap: () async {
-                                      context.goNamed(
-                                        '_initialize', 
-                                        queryParameters: {'initialPage': 'petList'},
-                                      );  
-                                      // final navState = navBarOwnerKey.currentState;
-
-                                      // navState?.changePage('petList');
+                                      GoRouter.of(context).go('/owner/petList'); 
                                     },
                                     child: Container(
                                       width: MediaQuery.sizeOf(context).width,
@@ -632,10 +624,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                                 highlightColor:
                                                     Colors.transparent,
                                                 onTap: () async {
-                                                  context.goNamed(
-                                                    '_initialize', 
-                                                    queryParameters: {'initialPage': 'petList'},
-                                                  );  
+                                                  GoRouter.of(context).go('/owner/petList');
                                                 },
                                                 child: Icon(
                                                   Icons.arrow_forward_ios,
@@ -668,7 +657,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                     hoverColor: Colors.transparent,
                                     highlightColor: Colors.transparent,
                                     onTap: () async {
-                                      Navigator.push(context,MaterialPageRoute(builder: (context) => const TrackerDetailsWidget()),);
+                                      context.push('/owner/trackerDetails');
                                     },
                                     child: Container(
                                       width: MediaQuery.sizeOf(context).width,
@@ -753,7 +742,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                                 highlightColor:
                                                     Colors.transparent,
                                                 onTap: () async {
-                                                  Navigator.push(context,MaterialPageRoute(builder: (context) => const TrackerDetailsWidget()),);
+                                                  context.push('/owner/trackerDetails');
                                                 },
                                                 child: Icon(
                                                   Icons.arrow_forward_ios,
@@ -874,20 +863,30 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                           ),
                                         ),
                                         Align(
-                                          alignment: const AlignmentDirectional(1, 0),
-                                          child: Padding(
-                                            padding:
-                                                const EdgeInsetsDirectional.fromSTEB(
-                                                    0, 0, 15, 0),
-                                            child: Icon(
-                                              Icons.arrow_forward_ios,
-                                              color:
-                                                  FlutterFlowTheme.of(context)
+                                            alignment:
+                                                const AlignmentDirectional(1, 0),
+                                            child: Padding(
+                                              padding: const EdgeInsetsDirectional
+                                                  .fromSTEB(0, 0, 15, 0),
+                                              child: InkWell(
+                                                splashColor: Colors.transparent,
+                                                focusColor: Colors.transparent,
+                                                hoverColor: Colors.transparent,
+                                                highlightColor:
+                                                    Colors.transparent,
+                                                onTap: () async {
+                                                  // context.push('/walker/exceptionalDay');
+                                                },
+                                                child: Icon(
+                                                  Icons.arrow_forward_ios,
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
                                                       .primary,
-                                              size: 25,
+                                                  size: 25,
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                        ),
                                       ],
                                     ),
                                   ),
@@ -925,56 +924,70 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                         ),
                                         Flexible(
                                           child: Align(
-                                            alignment:
-                                                const AlignmentDirectional(-1, 0),
+                                            alignment: const AlignmentDirectional(-1, 0),
                                             child: Padding(
-                                              padding: const EdgeInsetsDirectional
-                                                  .fromSTEB(8, 0, 0, 0),
-                                              child: Text(
-                                                'Acerca de nosotros',
-                                                textAlign: TextAlign.start,
-                                                style: FlutterFlowTheme.of(
-                                                        context)
-                                                    .bodyMedium
-                                                    .override(
-                                                      font: GoogleFonts.lexend(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                      color: FlutterFlowTheme
-                                                              .of(context)
-                                                          .secondaryBackground,
-                                                      fontSize: 16,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .fontStyle,
+                                              padding: const EdgeInsetsDirectional.fromSTEB(8, 0, 0, 0),
+                                              child: InkWell(
+                                                splashColor: Colors.transparent,
+                                                focusColor: Colors.transparent,
+                                                hoverColor: Colors.transparent,
+                                                highlightColor: Colors.transparent,
+                                                onTap: () {
+                                                  context.push(
+                                                    '/WebView',
+                                                    extra: <String, dynamic>{
+                                                      'url': 'https://dalk-legal-git-main-noe-ibarras-projects.vercel.app/?_vercel_share=H06ZuiEgfwHGNcHZ9AdimDz34FNJepDa',
+                                                      'title': 'Acerca de Nosotros',
+                                                    },
+                                                  );                                           
+                                                },
+                                                child: Text(
+                                                  'Acerca de nosotros',
+                                                  textAlign: TextAlign.start,
+                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                    font: GoogleFonts.lexend(
+                                                      fontWeight: FontWeight.w500,
+                                                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                     ),
+                                                    color: FlutterFlowTheme.of(context).secondaryBackground,
+                                                    fontSize: 16,
+                                                    letterSpacing: 0.0,
+                                                    fontWeight: FontWeight.w500,
+                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                  ),
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
                                         Align(
-                                          alignment: const AlignmentDirectional(1, 0),
+                                          alignment:
+                                              const AlignmentDirectional(1, 0),
                                           child: Padding(
-                                            padding:
-                                                const EdgeInsetsDirectional.fromSTEB(
-                                                    0, 0, 15, 0),
-                                            child: Icon(
-                                              Icons.arrow_forward_ios,
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primary,
-                                              size: 25,
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(0, 0, 15, 0),
+                                            child: InkWell(
+                                              splashColor: Colors.transparent,
+                                              focusColor: Colors.transparent,
+                                              hoverColor: Colors.transparent,
+                                              highlightColor:
+                                                  Colors.transparent,
+                                              onTap: () {
+                                                context.push(
+                                                  '/WebView',
+                                                  extra: <String, dynamic>{
+                                                    'url': 'https://dalk-legal-git-main-noe-ibarras-projects.vercel.app/?_vercel_share=H06ZuiEgfwHGNcHZ9AdimDz34FNJepDa',
+                                                    'title': 'Acerca de Nosotros',
+                                                  },
+                                                );                                           
+                                              },
+                                              child: Icon(
+                                                Icons.arrow_forward_ios,
+                                                color: FlutterFlowTheme.of(
+                                                        context)
+                                                    .primary,
+                                                size: 25,
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -986,44 +999,37 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                   padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 30, 0, 0),
                                   child: FFButtonWidget(
-
                                     onPressed: () async {
-                                      // Preparamos el evento de autenticación ANTES de signOut.
                                       GoRouter.of(context).prepareAuthEvent(); 
-
-                                      // 2. Limpiar datos del usuario guardados localmente PRIMERO.
-                                      // Esto no usa 'context', por lo que es seguro antes del signOut.
                                       final prefs = await SharedPreferences.getInstance();
                                       await prefs.remove('user_data');
 
+
                                       try {
-                                        // Cerrar sesión de Supabase (asíncrono)
-                                        await authManager.signOut();
+                                        GoRouter.of(context).prepareAuthEvent(); 
+                                        final prefs = await SharedPreferences.getInstance();
+                                        await prefs.remove('user_data');
+                                        context.read<UserProvider>().clearUser(); 
 
-                                        // Verificamos si el widget fue desmontado por la navegación automática.
-                                        if (!context.mounted) {
-                                          return; 
-                                        }
+                                        await authManager.signOut(); 
+                                        await Supabase.instance.client.auth.signOut(); 
+                                        
+                                        await Future.delayed(const Duration(milliseconds: 400));
 
-                                        // Limpiar Provider de usuario (redundante si main.dart actuó)
-                                        context.read<UserProvider>().clearUser();
-
-                                        // Limpiar rutas protegidas de GoRouter
+                                        if (!context.mounted) return;
+                                        
                                         GoRouter.of(context).clearRedirectLocation();
-
-                                        // Redirigir a Login
-                                        context.goNamedAuth(LoginWidget.routeName, context.mounted);
+                                        GoRouter.of(context).go('/'); 
 
                                       } catch (e) {
-                                        
-                                        // Mostrar error si el contexto todavía está vivo
+
                                         if (context.mounted) {
                                           ScaffoldMessenger.of(context).showSnackBar(
                                             SnackBar(content: Text("Error cerrando sesión: $e")),
                                           );
                                         }
                                       }
-                                    },
+},
 
                                     text: 'Cerrar Sesión',
                                     options: FFButtonOptions(

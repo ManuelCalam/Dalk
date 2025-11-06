@@ -1,5 +1,6 @@
 import 'package:dalk/SubscriptionProvider.dart';
 import 'package:dalk/backend/supabase/database/database.dart';
+import 'package:dalk/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -248,9 +249,9 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
       // Presentar el PaymentSheet
       await Stripe.instance.presentPaymentSheet();
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Suscripción en proceso. Recibirás una confirmación pronto. ")),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(content: Text("Suscripción en proceso. Recibirás una confirmación pronto. ")),
+      // );
 
     } on StripeException catch (e) {
       if (e.error.code == FailureCode.Canceled) {
@@ -268,9 +269,108 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
   }
 
 
+  Future<void> _subscribeUser(BuildContext context, bool planValidity) async {
+    try {
+      final customerId = await createCustomerIfNeeded(); 
+      final methods = await fetchPaymentMethods(customerId);
+
+      if (methods.isEmpty) {
+        await openSetupPaymentSheet(context);
+
+        final newMethods = await fetchPaymentMethods(customerId);
+        if (newMethods.isNotEmpty) {
+          await openSubscriptionPaymentSheet(context, planValidity);
+        } 
+      } else {
+        await openSubscriptionPaymentSheet(context, planValidity);
+      }
+      
+    } catch (e) {
+      // Captura cualquier error en el flujo de Stripe
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error al suscribirse: $e")),
+        );
+      }
+    }
+  }
+
+  Future<void> _cancelSubscription(BuildContext context) async {
+    try {
+      final token = Supabase.instance.client.auth.currentSession?.accessToken;
+      if (token == null) {
+        throw Exception("Usuario no autenticado. Inicia sesión de nuevo.");
+      }
+      
+      final response = await http.post(
+        Uri.parse('https://bsactypehgxluqyaymui.supabase.co/functions/v1/cancel-subscription'),
+        headers: {
+          'Authorization': 'Bearer $token', 
+          'Content-Type': 'application/json',
+        },
+      );
+
+      // 3. Manejo de la respuesta
+      if (response.statusCode == 200) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Cancelación programada con éxito. El acceso continúa hasta el final del período.")),
+          );
+        }
+      } else {
+        final errorBody = jsonDecode(response.body);
+        throw Exception(errorBody['error'] ?? "Fallo desconocido en la Edge Function.");
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error al cancelar la suscripción: $e")),
+        );
+      }
+    }
+  }
+
+
+  Widget _buildEndDateText(BuildContext context, String? currentPeriodEnd) {
+    // Asegúrate de que 'isPremium' sea true antes de llamar a esto
+
+    if (currentPeriodEnd == null) {
+      return const SizedBox.shrink(); 
+    }
+
+    // Formatear la fecha ISO (ej: 2025-11-03T00:00:00.000Z) a un formato legible
+    final DateFormat formatter = DateFormat('dd MMM yyyy', 'es'); 
+    final DateTime endDate = DateTime.parse(currentPeriodEnd).toLocal();
+    final String formattedDate = formatter.format(endDate);
+
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end, 
+        children: [
+          Text(
+            'Válido hasta: $formattedDate',
+            textAlign: TextAlign.end,
+            style: FlutterFlowTheme.of(context).bodyMedium.override(
+              fontFamily: 'Lexend',
+              color: FlutterFlowTheme.of(context).success, 
+              fontSize: 16.0, 
+              fontWeight: FontWeight.w600, 
+              letterSpacing: 0.0,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    final isPremium = context.watch<SubscriptionProvider>().isPremium;
+  final subscriptionProvider = context.watch<SubscriptionProvider>();
+  final bool isPremium = subscriptionProvider.isPremium;
+  final bool isScheduledForCancellation = subscriptionProvider.isCancellationScheduled;
+  final String? currentPeriodEnd = subscriptionProvider.currentPeriodEnd;
 
     return GestureDetector(
       onTap: () {
@@ -285,7 +385,6 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
-              // Header con notificación - FUERA del Expanded
               Container(
                 width: MediaQuery.sizeOf(context).width,
                 height: MediaQuery.sizeOf(context).height * 0.1,
@@ -357,6 +456,7 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                               shrinkWrap: true,
                               scrollDirection: Axis.vertical,
                               children: [
+                                if (isPremium)  _buildEndDateText(context, currentPeriodEnd),
                                 Padding(
                                   padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                                   child: Container(
@@ -371,7 +471,9 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                         color: FlutterFlowTheme.of(context).alternate,
                                         width: 10,
                                       ) : null,
+                                      
                                     ),
+
                                     child: Padding(
                                       padding: const EdgeInsets.all(15),
                                       child: Column(
@@ -777,49 +879,93 @@ class _PremiumPlanInfoWidgetState extends State<PremiumPlanInfoWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
-                                  child: FFButtonWidget(
-                                  onPressed: () async {
-                                    try {
-                                      final customerId = await createCustomerIfNeeded();
-                                      final methods = await fetchPaymentMethods(customerId);
+  padding: const EdgeInsetsDirectional.fromSTEB(0, 18, 0, 0),
+  child: isScheduledForCancellation
+      ? const SizedBox.shrink()
+      : FFButtonWidget(
+          onPressed: () async {
+            if (isPremium) {
+              bool isProcessing = false; // bandera para evitar múltiples taps
 
-                                      if (methods.isEmpty) {
-                                        // No hay métodos, se abre el SetupIntent
-                                        await openSetupPaymentSheet(context);
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return Dialog(
+                    backgroundColor: Colors.transparent,
+                    child: PopUpConfirmDialogWidget(
+                      title: "Cancelar suscripción",
+                      message:
+                          "¿Estás seguro que quieres cancelar la suscripción? Mantendrás los beneficios hasta la fecha indicada.",
+                      confirmText: "Cancelar suscripción",
+                      cancelText: "Cerrar",
+                      confirmColor: FlutterFlowTheme.of(context).error,
+                      cancelColor: FlutterFlowTheme.of(context).primary,
+                      icon: Icons.cancel_rounded,
+                      iconColor: FlutterFlowTheme.of(context).error,
+                      onConfirm: () async {
+                        if (isProcessing) return; // evita múltiples taps
+                        isProcessing = true;
 
-                                        // Tras agregar método, volver a verificar
-                                        final newMethods = await fetchPaymentMethods(customerId);
-                                        if (newMethods.isNotEmpty) {
-                                          await openSubscriptionPaymentSheet(context, _model.planValidity);
-                                        }
-                                      } else {
-                                        // Ya hay métodos, abrir PaymentIntentl
-                                        await openSubscriptionPaymentSheet(context, _model.planValidity);
-                                      }
-                                    } catch (e) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text("Error: $e")),
-                                      );
-                                    }
-                                  },
-                                    text: isPremium ? "Revisa tus beneficios premium!" : 'Suscribirme',
-                                    options: FFButtonOptions(
-                                      width: MediaQuery.sizeOf(context).width,
-                                      height: MediaQuery.sizeOf(context).height * 0.05,
-                                      padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
-                                      iconPadding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                                      color: FlutterFlowTheme.of(context).accent1,
-                                      textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                                        font: GoogleFonts.lexend(),
-                                        color: Colors.white,
-                                        letterSpacing: 0.0,
-                                      ),
-                                      elevation: 0,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
+                        // Cerramos el diálogo inmediatamente
+                        Navigator.of(context, rootNavigator: true).pop();
+
+                        // Mostramos un snackbar temporal mientras se procesa
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Row(
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(width: 16),
+                                Text("Cancelando suscripción..."),
+                              ],
+                            ),
+                            duration: Duration(seconds: 3),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+
+                        // Ejecutamos la cancelación
+                        await _cancelSubscription(context);
+
+                        // Mostramos un mensaje final
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Suscripción cancelada exitosamente"),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                      onCancel: () {
+                        Navigator.of(context, rootNavigator: true).pop();
+                      },
+                    ),
+                  );
+                },
+              );
+            } else {
+              await _subscribeUser(context, _model.planValidity);
+            }
+          },
+          text: isPremium ? "Cancelar suscripción" : 'Suscribirme',
+          options: FFButtonOptions(
+            width: MediaQuery.sizeOf(context).width,
+            height: MediaQuery.sizeOf(context).height * 0.05,
+            padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+            iconPadding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+            color: isPremium
+                ? FlutterFlowTheme.of(context).error
+                : FlutterFlowTheme.of(context).accent1,
+            textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                  fontFamily: 'Lexend',
+                  color: Colors.white,
+                  letterSpacing: 0.0,
+                ),
+            elevation: 0,
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+)
+
                               ],
                             ),
                           ),

@@ -2,12 +2,9 @@ import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 import 'pop_up_confirm_dialog_model.dart';
 export 'pop_up_confirm_dialog_model.dart';
@@ -68,12 +65,12 @@ class _PopUpConfirmDialogWidgetState extends State<PopUpConfirmDialogWidget> {
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: AlignmentDirectional(0, 0),
+      alignment: const AlignmentDirectional(0, 0),
       child: Container(
         width: MediaQuery.sizeOf(context).width * 0.75,
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).tertiary,
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
             bottomLeft: Radius.circular(50),
             bottomRight: Radius.circular(50),
             topLeft: Radius.circular(50),
@@ -84,14 +81,14 @@ class _PopUpConfirmDialogWidgetState extends State<PopUpConfirmDialogWidget> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(15, 20, 10, 0),
+              padding: const EdgeInsetsDirectional.fromSTEB(15, 20, 10, 0),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Expanded(
                     child: Align(
-                      alignment: AlignmentDirectional(1, 0),
+                      alignment: const AlignmentDirectional(1, 0),
                       child: FlutterFlowIconButton(
                         borderRadius: 8,
                         icon: Icon(
@@ -100,7 +97,6 @@ class _PopUpConfirmDialogWidgetState extends State<PopUpConfirmDialogWidget> {
                           size: 30,
                         ),
                         onPressed: () async {
-                          // Action 1
                           Navigator.pop(context);
                         },
                       ),
@@ -110,10 +106,10 @@ class _PopUpConfirmDialogWidgetState extends State<PopUpConfirmDialogWidget> {
               ),
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 25),
+              padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 25),
               child: Container(
                 width: MediaQuery.sizeOf(context).width * 0.65,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   shape: BoxShape.rectangle,
                 ),
                 child: Container(
@@ -149,7 +145,7 @@ class _PopUpConfirmDialogWidgetState extends State<PopUpConfirmDialogWidget> {
                                   ),
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 8, 0, 0),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 8, 0, 0),
                           child: Text(
                             widget.message,
                             textAlign: TextAlign.center,
@@ -185,11 +181,11 @@ class _PopUpConfirmDialogWidgetState extends State<PopUpConfirmDialogWidget> {
                         Padding(
                           padding: const EdgeInsets.only(top: 0),
                           child: Align(
-                            alignment: AlignmentDirectional(0, 1),
+                            alignment: const AlignmentDirectional(0, 1),
                             child: Container(
                               width: MediaQuery.sizeOf(context).width,
                               height: 100,
-                              decoration: BoxDecoration(),
+                              decoration: const BoxDecoration(),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -205,10 +201,10 @@ class _PopUpConfirmDialogWidgetState extends State<PopUpConfirmDialogWidget> {
                                       height:
                                           MediaQuery.sizeOf(context).height *
                                               0.045,
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           16, 0, 16, 0),
                                       iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
+                                          const EdgeInsetsDirectional.fromSTEB(
                                               0, 0, 0, 0),
                                       color: widget.confirmColor,
                                       textStyle: FlutterFlowTheme.of(context)
@@ -240,7 +236,7 @@ class _PopUpConfirmDialogWidgetState extends State<PopUpConfirmDialogWidget> {
                                     ),
                                   ),
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         0, 7, 0, 0),
                                     child: FFButtonWidget(
                                       onPressed: () {
@@ -254,10 +250,10 @@ class _PopUpConfirmDialogWidgetState extends State<PopUpConfirmDialogWidget> {
                                         height:
                                             MediaQuery.sizeOf(context).height *
                                                 0.045,
-                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(
                                             16, 0, 16, 0),
                                         iconPadding:
-                                            EdgeInsetsDirectional.fromSTEB(
+                                            const EdgeInsetsDirectional.fromSTEB(
                                                 0, 0, 0, 0),
                                         color: widget.cancelColor,
                                         textStyle: FlutterFlowTheme.of(context)

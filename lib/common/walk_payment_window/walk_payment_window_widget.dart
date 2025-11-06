@@ -121,13 +121,6 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
         throw Exception('No se encontró el customer_stripe_id del usuario actual.');
       }
 
-      print({
-        'walk_id': walkData['id'],
-        'walker_id': walkData['walker_id'],
-        'customer_stripe_id': customerStripeId,
-        'fee': walkData['fee'],
-      });
-
 
       final session = supabase.auth.currentSession;
       final response = await supabase.functions.invoke(
@@ -218,10 +211,8 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
           .update({'debt': newDebt})
           .eq('walker_uuid', walkerId);
 
-      context.pushReplacementNamed(
-        '_initialize',
-        queryParameters: {'initialPage': 'homeDogOwner'},
-      );
+      // context.go('/owner/home');
+      GoRouter.of(context).go('/owner/home');       
 
     } catch (e) {
       print('Error en pago en efectivo: $e');
@@ -385,10 +376,8 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
           context: context,
           text: "Menú principal",
           color: theme.primary,
-          onPressed: () => context.pushReplacementNamed(
-            '_initialize', 
-            queryParameters: {'initialPage': 'homeDogOwner'},
-          ),
+          // onPressed: () => context.go('/owner/home'),
+          onPressed: () => GoRouter.of(context).go('/owner/home'),
           iconWidget: const Icon(Icons.credit_card, color: Colors.white, size: 23),
           isDisabled: isPaid,
         ));

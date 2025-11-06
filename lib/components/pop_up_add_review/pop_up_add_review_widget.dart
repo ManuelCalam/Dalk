@@ -103,7 +103,6 @@ class _PopUpAddReviewWidgetState extends State<PopUpAddReviewWidget> {
                           size: 24.0,
                         ),
                         onPressed: () async {
-                          // Action 1
                           Navigator.pop(context);
                         },
                       ),
@@ -388,7 +387,7 @@ class _PopUpAddReviewWidgetState extends State<PopUpAddReviewWidget> {
                                         'reviewed_dog_id': reviewedDogId,
                                     });
 
-                                Navigator.of(context).pop();
+                                context.pop();
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('¡Reseña guardada!')),
                                 );

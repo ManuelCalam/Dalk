@@ -10,8 +10,8 @@ class UserModel {
   final String? birthdate;
   final String? gender;
   final String? address;
-  // final String? interior;
-  // final String? exterior;
+  final String? interior;
+  final String? exterior;
   final String? zipCode;
   final String? neighborhood;
   final String? city;
@@ -27,8 +27,8 @@ class UserModel {
     this.birthdate,
     this.gender,
     this.address,
-    // this.interior,
-    // this.exterior,
+    this.interior,
+    this.exterior,
     this.zipCode,
     this.neighborhood,
     this.city,
@@ -64,8 +64,8 @@ class UserModel {
       birthdate: json["birthdate"] ?? "",
       gender: json["gender"] ?? "",
       address: json["address"] ?? "",
-      // interior: json["int"] ?? "",
-      // exterior: json["ext"] ?? "",
+      interior: json["int"] ?? "",
+      exterior: json["ext"] ?? "",
       zipCode: json["zipCode"] ?? "",
       neighborhood: json["neighborhood"] ?? "",
       city: json["city"] ?? "",
@@ -100,8 +100,8 @@ class UserModel {
       birthdate: birthdate ?? this.birthdate,
       gender: gender ?? this.gender,
       address: address ?? this.address,
-      // interior: interior ?? this.interior,
-      // exterior: exterior ?? this.exterior,
+      interior: interior ?? this.interior,
+      exterior: exterior ?? this.exterior,
       zipCode: zipCode ?? this.zipCode,
       neighborhood: neighborhood ?? this.neighborhood,
       city: city ?? this.city,
@@ -132,8 +132,8 @@ class UserProvider with ChangeNotifier {
     try {
       final response = await Supabase.instance.client
           .from('users')
-          .select('uuid, name, email, birthdate, gender, address, zipCode, neighborhood, city, usertype, photo_url, createdAt, phone')
-          // .select('uuid, name, email, birthdate, gender, address, ext, int, zipCode, neighborhood, city, usertype, photo_url, createdAt, phone')
+          // .select('uuid, name, email, birthdate, gender, address, zipCode, neighborhood, city, usertype, photo_url, createdAt, phone')
+          .select('uuid, name, email, birthdate, gender, address, ext_number, int_number, zipCode, neighborhood, city, usertype, photo_url, createdAt, phone')
           .eq('uuid', currentUserUid)
           .maybeSingle();
 
@@ -145,8 +145,8 @@ class UserProvider with ChangeNotifier {
           birthdate: response['birthdate'] ?? '',
           gender: response['gender'] ?? '',
           address: response['address'] ?? '',
-          // interior: response['int'] ?? '',
-          // exterior: response['ext'] ?? '',
+          interior: response['int'] ?? '',
+          exterior: response['ext'] ?? '',
           zipCode: response['zipCode'] ?? '',
           neighborhood: response['neighborhood'] ?? '',
           city: response['city'] ?? '',

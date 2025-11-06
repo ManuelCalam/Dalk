@@ -1310,12 +1310,11 @@ class _AddAddressWidgetState extends State<AddAddressWidget> {
 
                                             });
                                               if (widget.originWindow == 'addWalk') {
-                                                context.pushReplacementNamed(SetWalkScheduleWidget.routeName);
+                                                // context.pop('/owner/requestWalk');
+                                                context.pop();
                                               } else if (widget.originWindow == 'buyTracker') {
-                                                Navigator.pushReplacement(
-                                                  context,
-                                                  MaterialPageRoute(builder: (context) => const BuyTrackerWidget()),
-                                                );                                            
+                                                // context.pop('/owner/buyTracker');
+                                                context.pop();                                           
                                               }
                                           } catch (e) {
                                             ScaffoldMessenger.of(context).showSnackBar(

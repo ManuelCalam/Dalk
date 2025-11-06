@@ -69,6 +69,9 @@ class SingInDogWalkerModel extends FlutterFlowModel<SingInDogWalkerWidget> {
   late bool confirmPassDogWalkerInputVisibility;
   String? Function(BuildContext, String?)?
       confirmPassDogWalkerInputTextControllerValidator;
+  FormFieldController<String>? neighborhoodDogWalkerMenuValueController;
+  String? neighborhoodDogWalkerMenuValue;
+  
 
   @override
   void initState(BuildContext context) {

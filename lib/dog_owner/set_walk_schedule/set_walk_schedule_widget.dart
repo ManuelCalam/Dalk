@@ -131,9 +131,20 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
       print('   - recommendedWalkerUUIDs: ${_recommendedWalkerUUIDs.join(',')}');
       print('   - Total UUIDs: ${_recommendedWalkerUUIDs.length}');
       
-      context.pushNamed(
-        FindDogWalkerWidget.routeName,
-        queryParameters: {
+      // context.pushNamed(
+      //   FindDogWalkerWidget.routeName,
+      //   queryParameters: {
+      //     'time': time.toIso8601String(),
+      //     'addressId': addressId,
+      //     'petId': petId,
+      //     'walkDuration': walkDuration.toString(),
+      //     'instructions': instructions,
+      //     'recommendedWalkerUUIDs': _recommendedWalkerUUIDs.join(','),
+      //   },
+      // );
+      context.push(
+        '/owner/findDogWalker',
+        extra: <String, dynamic>{
           'date': date.toIso8601String(),
           'time': time.toIso8601String(),
           'addressId': addressId,
@@ -657,7 +668,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                             action: SnackBarAction(
                                                               label: 'Ver Planes',
                                                               onPressed: () {
-                                                                context.pushNamed(PremiumPlanInfoWidget.routeName);
+                                                                context.push('/owner/premiumInfo');
                                                               },
                                                             ),
                                                           ),
@@ -911,12 +922,12 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                   hoverColor: Colors.transparent,
                                                   highlightColor: Colors.transparent,
                                                   onTap: () async {
-                                                    context.pushNamed(
-                                                        AddAddressWidget.routeName,
-                                                        queryParameters: {
-                                                          'originWindow': 'addWalk', 
-                                                        },
-                                                      );                                                  
+                                                    context.push(
+                                                      '/owner/addAddress', 
+                                                      extra: <String, dynamic>{
+                                                        'originWindow': 'addWalk',
+                                                      },
+                                                    );                                                  
                                                   },
                                                   child: Container(
                                                     width: 100.0,
@@ -1077,7 +1088,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                   hoverColor: Colors.transparent,
                                                   highlightColor: Colors.transparent,
                                                   onTap: () async {
-                                                    context.pushNamed(AddPetWidget.routeName);
+                                                    context.push('/owner/addPet');
                                                   },
                                                   child: Container(
                                                     width: 100.0,
@@ -1289,18 +1300,6 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
 
                                             return;
                                         }
-
-                                        // context.pushNamed(
-                                        //   FindDogWalkerWidget.routeName,
-                                        //     queryParameters: {
-                                        //       'date': _model.datePicked1?.toIso8601String(),
-                                        //       'time': _model.datePicked2?.toIso8601String(),
-                                        //       'addressId': selectedAddressId?.toString(),
-                                        //       'petId': selectedPetId?.toString(),
-                                        //       'walkDuration': finalWalkDurationInMinutes.toString(),
-                                        //       'instructions': _model.instructionsTextController?.text ?? ''
-                                        //     },
-                                        //   );
 
                                         await _navigateToFindDogWalker(
                                           date: _model.datePicked1!,

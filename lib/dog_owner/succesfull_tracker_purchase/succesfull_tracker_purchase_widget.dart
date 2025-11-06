@@ -549,7 +549,7 @@ class _SuccesfullTrackerPurchaseWidgetState
                                     onPressed: () {
                                       context.go('/');
                                     },
-                                    text: 'Ir al MenÃº Principal',
+                                    text: 'Ir al Menú Principal',
                                     icon: const Icon(
                                       Icons.home_rounded,
                                       size: 25,

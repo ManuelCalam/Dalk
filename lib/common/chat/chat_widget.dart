@@ -1,3 +1,6 @@
+import 'package:dalk/user_provider.dart';
+import 'package:provider/provider.dart';
+
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -201,6 +204,10 @@ class _ChatWidgetState extends State<ChatWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = context.watch<UserProvider>().user;
+    final String? userType = userProvider?.usertype; 
+    final String userPrefix = userType == 'Dueño' ? 'owner' : 'walker';
+    
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -241,7 +248,6 @@ class _ChatWidgetState extends State<ChatWidget> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      /// Back + Title + Notifications
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -266,12 +272,18 @@ class _ChatWidgetState extends State<ChatWidget> {
                                   fontSize: 18,
                                 ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 15),
-                            child: Icon(
-                              Icons.notifications_sharp,
-                              color: FlutterFlowTheme.of(context).accent2,
-                              size: 32,
+                          GestureDetector(
+                            onTap: () {
+                              final String notificationsRoute = '/$userPrefix/notifications';
+                              context.push(notificationsRoute);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 15),
+                              child: Icon(
+                                Icons.notifications_sharp,
+                                color: FlutterFlowTheme.of(context).accent2,
+                                size: 32,
+                              ),
                             ),
                           ),
                         ],

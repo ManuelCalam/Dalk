@@ -1,15 +1,13 @@
+import 'package:dalk/backend/supabase/database/database.dart';
+
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
-import '/index.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 import 'exception_day_model.dart';
 export 'exception_day_model.dart';
@@ -46,6 +44,21 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
     super.dispose();
   }
 
+  String _formatDate(DateTime? date) {
+    if (date == null) return 'Fecha';
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
+
+  // Función para formatear la hora
+  String _formatTime(DateTime? time) {
+    if (time == null) return 'Hora';
+    final hour = time.hour;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final period = hour >= 12 ? 'PM' : 'AM';
+    final displayHour = hour % 12 == 0 ? 12 : hour % 12;
+    return '$displayHour:$minute $period';
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -66,7 +79,7 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                 height: MediaQuery.sizeOf(context).height * 0.1,
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).secondary,
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(0),
                     bottomRight: Radius.circular(0),
                     topLeft: Radius.circular(0),
@@ -79,7 +92,7 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                   width: MediaQuery.sizeOf(context).width,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).tertiary,
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(0),
                       bottomRight: Radius.circular(0),
                       topLeft: Radius.circular(40),
@@ -92,14 +105,14 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                       wrapWithModel(
                         model: _model.goBackContainerModel,
                         updateCallback: () => safeSetState(() {}),
-                        child: GoBackContainerWidget(),
+                        child: const GoBackContainerWidget(),
                       ),
                       Expanded(
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 15),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 15),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 0.9,
-                            decoration: BoxDecoration(),
+                            decoration: const BoxDecoration(),
                             child: SingleChildScrollView(
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
@@ -131,7 +144,7 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                         ),
                                   ),
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                                    padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                                     child: Icon(
                                       Icons.free_cancellation,
                                       color: FlutterFlowTheme.of(context).primary,
@@ -139,7 +152,7 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                     ),
                                   ),
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         0, 15, 0, 15),
                                     child: AutoSizeText(
                                       'Si necesitas tomar un descanso o tienes compromisos personales, Marca los horarios en los que no estarás disponible. Elige entre todo el día u horas específicas.\nDurante este tiempo no recibirás solicitudes y no aparecerás en búsquedas.',
@@ -172,18 +185,16 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                     ),
                                   ),
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         0, 18, 0, 0),
                                     child: Container(
                                       width: 360,
-                                      decoration: BoxDecoration(),
+                                      decoration: const BoxDecoration(),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
                                           Form(
                                             key: _model.formKey,
-                                            autovalidateMode:
-                                                AutovalidateMode.disabled,
                                             child: ListView(
                                               padding: EdgeInsets.zero,
                                               primary: false,
@@ -192,16 +203,16 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                               children: [
                                                 Align(
                                                   alignment:
-                                                      AlignmentDirectional(
+                                                      const AlignmentDirectional(
                                                           1, 0),
                                                   child: Container(
                                                     width: MediaQuery.sizeOf(
                                                             context)
                                                         .width,
-                                                    decoration: BoxDecoration(),
+                                                    decoration: const BoxDecoration(),
                                                     child: Align(
                                                       alignment:
-                                                          AlignmentDirectional(
+                                                          const AlignmentDirectional(
                                                               0, 0),
                                                       child: Row(
                                                         mainAxisSize:
@@ -215,11 +226,11 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                                         children: [
                                                           Align(
                                                             alignment:
-                                                                AlignmentDirectional(
+                                                                const AlignmentDirectional(
                                                                     1, 0),
                                                             child: Padding(
                                                               padding:
-                                                                  EdgeInsetsDirectional
+                                                                  const EdgeInsetsDirectional
                                                                       .fromSTEB(
                                                                           0,
                                                                           0,
@@ -267,12 +278,11 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                                           ),
                                                           Align(
                                                             alignment:
-                                                                AlignmentDirectional(
+                                                                const AlignmentDirectional(
                                                                     -1, 0),
                                                             child:
                                                                 Switch.adaptive(
-                                                              value: _model
-                                                                  .wilDogWalkerWorkSwitchValue!,
+                                                              value: _model.wilDogWalkerWorkSwitchValue!,
                                                               onChanged:
                                                                   (newValue) async {
                                                                 safeSetState(() =>
@@ -301,7 +311,7 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                                   ),
                                                 ),
                                                 Padding(
-                                                  padding: EdgeInsetsDirectional
+                                                  padding: const EdgeInsetsDirectional
                                                       .fromSTEB(0, 18, 0, 0),
                                                   child: InkWell(
                                                     splashColor:
@@ -317,11 +327,12 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                                           await showDatePicker(
                                                         context: context,
                                                         initialDate:
-                                                            getCurrentTimestamp,
+                                                            DateTime.now(),
                                                         firstDate:
-                                                            getCurrentTimestamp,
+                                                            DateTime.now(),
                                                         lastDate:
                                                             DateTime(2050),
+                                                            locale: const Locale('es', 'ES'),
                                                         builder:
                                                             (context, child) {
                                                           return wrapInMaterialDatePickerTheme(
@@ -406,7 +417,8 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                                               getCurrentTimestamp;
                                                         });
                                                       }
-                                                    },
+                                                    } 
+                                                    , 
                                                     child: Container(
                                                       width: MediaQuery.sizeOf(
                                                               context)
@@ -430,7 +442,7 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                                         children: [
                                                           Padding(
                                                             padding:
-                                                                EdgeInsetsDirectional
+                                                                const EdgeInsetsDirectional
                                                                     .fromSTEB(
                                                                         8,
                                                                         0,
@@ -439,22 +451,21 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                                             child: Icon(
                                                               Icons
                                                                   .calendar_month,
-                                                              color: FlutterFlowTheme
-                                                                      .of(context)
-                                                                  .primary,
+                                                              color: FlutterFlowTheme.of(context).primary,
+                                                                  
                                                               size: 25,
                                                             ),
                                                           ),
                                                           Padding(
                                                             padding:
-                                                                EdgeInsetsDirectional
+                                                                const EdgeInsetsDirectional
                                                                     .fromSTEB(
                                                                         7,
                                                                         0,
                                                                         0,
                                                                         0),
                                                             child: AutoSizeText(
-                                                              'Fecha',
+                                                              _formatDate(_model.datePicked1), // Muestra la fecha seleccionada
                                                               textAlign:
                                                                   TextAlign
                                                                       .start,
@@ -475,9 +486,8 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                                                           .bodyMedium
                                                                           .fontStyle,
                                                                     ),
-                                                                    color: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .secondaryBackground,
+                                                                    color:  FlutterFlowTheme.of(context).secondaryBackground,
+                                                                        
                                                                     fontSize:
                                                                         16,
                                                                     letterSpacing:
@@ -498,585 +508,495 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                                     ),
                                                   ),
                                                 ),
+                                                
                                                 Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(0, 18, 0, 0),
-                                                  child: Container(
-                                                    width: MediaQuery.sizeOf(
-                                                            context)
-                                                        .width,
-                                                    child: TextFormField(
-                                                      controller: _model
-                                                          .workZoneInputTextController,
-                                                      focusNode: _model
-                                                          .workZoneInputFocusNode,
-                                                      autofocus: false,
-                                                      obscureText: false,
-                                                      decoration:
-                                                          InputDecoration(
-                                                        isDense: true,
-                                                        labelText:
-                                                            'Zona de Paseo',
-                                                        labelStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyLarge
-                                                                .override(
-                                                                  font: GoogleFonts
-                                                                      .lexend(
-                                                                    fontWeight: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyLarge
-                                                                        .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyLarge
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .primary,
-                                                                  fontSize: 16,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyLarge
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyLarge
-                                                                      .fontStyle,
-                                                                ),
-                                                        hintStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .override(
-                                                                  font: GoogleFonts
-                                                                      .lexend(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .labelMedium
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .primary,
-                                                                  fontSize: 16,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .labelMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                        enabledBorder:
-                                                            OutlineInputBorder(
-                                                          borderSide:
-                                                              BorderSide(
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .alternate,
-                                                            width: 1,
-                                                          ),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(30),
-                                                        ),
-                                                        focusedBorder:
-                                                            OutlineInputBorder(
-                                                          borderSide:
-                                                              BorderSide(
-                                                            color: Color(
-                                                                0x00000000),
-                                                            width: 1,
-                                                          ),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(30),
-                                                        ),
-                                                        errorBorder:
-                                                            OutlineInputBorder(
-                                                          borderSide:
-                                                              BorderSide(
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .error,
-                                                            width: 1,
-                                                          ),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(30),
-                                                        ),
-                                                        focusedErrorBorder:
-                                                            OutlineInputBorder(
-                                                          borderSide:
-                                                              BorderSide(
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .error,
-                                                            width: 1,
-                                                          ),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(30),
-                                                        ),
-                                                        filled: true,
-                                                        fillColor:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .alternate,
-                                                        contentPadding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(0, 0,
-                                                                    0, 20),
-                                                        prefixIcon: Icon(
-                                                          Icons.work_rounded,
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .primary,
-                                                          size: 25,
-                                                        ),
-                                                      ),
-                                                      style:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                font:
-                                                                    GoogleFonts
-                                                                        .lexend(
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                                color: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .secondaryBackground,
-                                                                fontSize: 16,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontWeight,
-                                                                fontStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                              ),
-                                                      cursorColor:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .primaryText,
-                                                      validator: _model
-                                                          .workZoneInputTextControllerValidator
-                                                          .asValidator(context),
+  padding: const EdgeInsetsDirectional.fromSTEB(0, 15, 0, 0),
+  child: Container(
+    width: MediaQuery.sizeOf(context).width,
+    decoration: const BoxDecoration(),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // HORA INICIO
+        Flexible(
+          child: Align(
+            alignment: const AlignmentDirectional(-1, 0),
+            child: Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 10, 0),
+              child: InkWell(
+                splashColor: Colors.transparent,
+                focusColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                onTap: _model.wilDogWalkerWorkSwitchValue!
+                    ? () async {
+                        await showModalBottomSheet<bool>(
+                          context: context,
+                          builder: (context) {
+                            final _datePicked2CupertinoTheme = CupertinoTheme.of(context);
+                            DateTime now = DateTime.now();
+                            
+                            // Verificar si la fecha seleccionada es hoy
+                            bool isToday = _model.datePicked1 != null && 
+                                          _model.datePicked1!.year == now.year && 
+                                          _model.datePicked1!.month == now.month && 
+                                          _model.datePicked1!.day == now.day;
+                            
+                            DateTime selectedTime = _model.datePicked2 ?? now;
+                            DateTime minimumDate = isToday ? now : DateTime(1900); // Para días futuros, cualquier hora
+                            
+                            if (isToday && selectedTime.isBefore(now)) {
+                              selectedTime = now;
+                            }
+
+                            return Container(
+                              height: MediaQuery.of(context).size.height / 3 + 60,
+                              width: MediaQuery.of(context).size.width,
+                              color: FlutterFlowTheme.of(context).alternate,
+                              child: Column(
+                                children: [
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsetsDirectional.fromSTEB(20, 10, 20, 10),
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        context.pop(context);
+                                        safeSetState(() {
+                                          _model.datePicked2 = selectedTime;
+                                          // Si la hora fin es anterior a la nueva hora inicio, resetearla
+                                          if (_model.datePicked3 != null && 
+                                              _model.datePicked3!.isBefore(selectedTime)) {
+                                            _model.datePicked3 = selectedTime.add(const Duration(hours: 1));
+                                          }
+                                        });
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: FlutterFlowTheme.of(context).primary,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                      ),
+                                      child: Text(
+                                        'Aceptar',
+                                        style: GoogleFonts.lexend(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  // Selector de hora
+                                  Expanded(
+                                    child: CupertinoTheme(
+                                      data: _datePicked2CupertinoTheme.copyWith(
+                                        textTheme: _datePicked2CupertinoTheme.textTheme.copyWith(
+                                          dateTimePickerTextStyle:
+                                              FlutterFlowTheme.of(context).headlineMedium.override(
+                                                    font: GoogleFonts.lexend(
+                                                      fontWeight: FlutterFlowTheme.of(context)
+                                                          .headlineMedium
+                                                          .fontWeight,
+                                                      fontStyle: FlutterFlowTheme.of(context)
+                                                          .headlineMedium
+                                                          .fontStyle,
                                                     ),
+                                                    color: FlutterFlowTheme.of(context).primaryText,
+                                                    letterSpacing: 0.0,
                                                   ),
-                                                ),
-                                                Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(0, 15, 0, 0),
-                                                  child: Container(
-                                                    width: MediaQuery.sizeOf(
-                                                            context)
-                                                        .width,
-                                                    decoration: BoxDecoration(),
-                                                    child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        Flexible(
-                                                          child: Align(
-                                                            alignment:
-                                                                AlignmentDirectional(
-                                                                    -1, 0),
-                                                            child: Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0,
-                                                                          0,
-                                                                          10,
-                                                                          0),
-                                                              child: InkWell(
-                                                                splashColor: Colors
-                                                                    .transparent,
-                                                                focusColor: Colors
-                                                                    .transparent,
-                                                                hoverColor: Colors
-                                                                    .transparent,
-                                                                highlightColor:
-                                                                    Colors
-                                                                        .transparent,
-                                                                onTap:
-                                                                    () async {
-                                                                  await showModalBottomSheet<
-                                                                          bool>(
-                                                                      context:
-                                                                          context,
-                                                                      builder:
-                                                                          (context) {
-                                                                        final _datePicked2CupertinoTheme =
-                                                                            CupertinoTheme.of(context);
-                                                                        return Container(
-                                                                          height:
-                                                                              MediaQuery.of(context).size.height / 3,
-                                                                          width: MediaQuery.of(context)
-                                                                              .size
-                                                                              .width,
-                                                                          color:
-                                                                              FlutterFlowTheme.of(context).alternate,
-                                                                          child:
-                                                                              CupertinoTheme(
-                                                                            data:
-                                                                                _datePicked2CupertinoTheme.copyWith(
-                                                                              textTheme: _datePicked2CupertinoTheme.textTheme.copyWith(
-                                                                                dateTimePickerTextStyle: FlutterFlowTheme.of(context).headlineMedium.override(
-                                                                                      font: GoogleFonts.lexend(
-                                                                                        fontWeight: FlutterFlowTheme.of(context).headlineMedium.fontWeight,
-                                                                                        fontStyle: FlutterFlowTheme.of(context).headlineMedium.fontStyle,
-                                                                                      ),
-                                                                                      color: FlutterFlowTheme.of(context).primaryText,
-                                                                                      letterSpacing: 0.0,
-                                                                                      fontWeight: FlutterFlowTheme.of(context).headlineMedium.fontWeight,
-                                                                                      fontStyle: FlutterFlowTheme.of(context).headlineMedium.fontStyle,
-                                                                                    ),
-                                                                              ),
-                                                                            ),
-                                                                            child:
-                                                                                CupertinoDatePicker(
-                                                                              mode: CupertinoDatePickerMode.time,
-                                                                              minimumDate: DateTime(1900),
-                                                                              initialDateTime: getCurrentTimestamp,
-                                                                              maximumDate: DateTime(2050),
-                                                                              backgroundColor: FlutterFlowTheme.of(context).alternate,
-                                                                              use24hFormat: false,
-                                                                              onDateTimeChanged: (newDateTime) => safeSetState(() {
-                                                                                _model.datePicked2 = newDateTime;
-                                                                              }),
-                                                                            ),
-                                                                          ),
-                                                                        );
-                                                                      });
-                                                                },
-                                                                child:
-                                                                    Container(
-                                                                  width: MediaQuery.sizeOf(
-                                                                              context)
-                                                                          .width *
-                                                                      0.4,
-                                                                  height: MediaQuery.sizeOf(
-                                                                              context)
-                                                                          .height *
-                                                                      0.05,
-                                                                  decoration:
-                                                                      BoxDecoration(
-                                                                    color: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .alternate,
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            20),
-                                                                  ),
-                                                                  child:
-                                                                      Padding(
-                                                                    padding: EdgeInsetsDirectional
-                                                                        .fromSTEB(
-                                                                            0,
-                                                                            1,
-                                                                            0,
-                                                                            0),
-                                                                    child: Row(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .max,
-                                                                      children: [
-                                                                        Padding(
-                                                                          padding: EdgeInsetsDirectional.fromSTEB(
-                                                                              8,
-                                                                              0,
-                                                                              0,
-                                                                              0),
-                                                                          child:
-                                                                              Icon(
-                                                                            Icons.timer_sharp,
-                                                                            color:
-                                                                                FlutterFlowTheme.of(context).primary,
-                                                                            size:
-                                                                                25,
-                                                                          ),
-                                                                        ),
-                                                                        Padding(
-                                                                          padding: EdgeInsetsDirectional.fromSTEB(
-                                                                              7,
-                                                                              0,
-                                                                              0,
-                                                                              0),
-                                                                          child:
-                                                                              AutoSizeText(
-                                                                            'Hora',
-                                                                            textAlign:
-                                                                                TextAlign.start,
-                                                                            maxLines:
-                                                                                1,
-                                                                            minFontSize:
-                                                                                12,
-                                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                  font: GoogleFonts.lexend(
-                                                                                    fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                  ),
-                                                                                  color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                  fontSize: 16,
-                                                                                  letterSpacing: 0.0,
-                                                                                  fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                ),
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Align(
-                                                          alignment:
-                                                              AlignmentDirectional(
-                                                                  0, 0),
-                                                          child: Text(
-                                                            'A',
-                                                            style: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  font: GoogleFonts
-                                                                      .lexend(
-                                                                    fontWeight: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .secondaryBackground,
-                                                                  fontSize: 20,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                          ),
-                                                        ),
-                                                        Flexible(
-                                                          child: Align(
-                                                            alignment:
-                                                                AlignmentDirectional(
-                                                                    1, 0),
-                                                            child: Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          10,
-                                                                          0,
-                                                                          0,
-                                                                          0),
-                                                              child: InkWell(
-                                                                splashColor: Colors
-                                                                    .transparent,
-                                                                focusColor: Colors
-                                                                    .transparent,
-                                                                hoverColor: Colors
-                                                                    .transparent,
-                                                                highlightColor:
-                                                                    Colors
-                                                                        .transparent,
-                                                                onTap:
-                                                                    () async {
-                                                                  await showModalBottomSheet<
-                                                                          bool>(
-                                                                      context:
-                                                                          context,
-                                                                      builder:
-                                                                          (context) {
-                                                                        final _datePicked3CupertinoTheme =
-                                                                            CupertinoTheme.of(context);
-                                                                        return Container(
-                                                                          height:
-                                                                              MediaQuery.of(context).size.height / 3,
-                                                                          width: MediaQuery.of(context)
-                                                                              .size
-                                                                              .width,
-                                                                          color:
-                                                                              FlutterFlowTheme.of(context).alternate,
-                                                                          child:
-                                                                              CupertinoTheme(
-                                                                            data:
-                                                                                _datePicked3CupertinoTheme.copyWith(
-                                                                              textTheme: _datePicked3CupertinoTheme.textTheme.copyWith(
-                                                                                dateTimePickerTextStyle: FlutterFlowTheme.of(context).headlineMedium.override(
-                                                                                      font: GoogleFonts.lexend(
-                                                                                        fontWeight: FlutterFlowTheme.of(context).headlineMedium.fontWeight,
-                                                                                        fontStyle: FlutterFlowTheme.of(context).headlineMedium.fontStyle,
-                                                                                      ),
-                                                                                      color: FlutterFlowTheme.of(context).primaryText,
-                                                                                      letterSpacing: 0.0,
-                                                                                      fontWeight: FlutterFlowTheme.of(context).headlineMedium.fontWeight,
-                                                                                      fontStyle: FlutterFlowTheme.of(context).headlineMedium.fontStyle,
-                                                                                    ),
-                                                                              ),
-                                                                            ),
-                                                                            child:
-                                                                                CupertinoDatePicker(
-                                                                              mode: CupertinoDatePickerMode.time,
-                                                                              minimumDate: DateTime(1900),
-                                                                              initialDateTime: getCurrentTimestamp,
-                                                                              maximumDate: DateTime(2050),
-                                                                              backgroundColor: FlutterFlowTheme.of(context).alternate,
-                                                                              use24hFormat: false,
-                                                                              onDateTimeChanged: (newDateTime) => safeSetState(() {
-                                                                                _model.datePicked3 = newDateTime;
-                                                                              }),
-                                                                            ),
-                                                                          ),
-                                                                        );
-                                                                      });
-                                                                },
-                                                                child:
-                                                                    Container(
-                                                                  width: MediaQuery.sizeOf(
-                                                                              context)
-                                                                          .width *
-                                                                      0.4,
-                                                                  height: MediaQuery.sizeOf(
-                                                                              context)
-                                                                          .height *
-                                                                      0.05,
-                                                                  decoration:
-                                                                      BoxDecoration(
-                                                                    color: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .alternate,
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            20),
-                                                                  ),
-                                                                  child:
-                                                                      Padding(
-                                                                    padding: EdgeInsetsDirectional
-                                                                        .fromSTEB(
-                                                                            0,
-                                                                            1,
-                                                                            0,
-                                                                            0),
-                                                                    child: Row(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .max,
-                                                                      children: [
-                                                                        Padding(
-                                                                          padding: EdgeInsetsDirectional.fromSTEB(
-                                                                              8,
-                                                                              0,
-                                                                              0,
-                                                                              0),
-                                                                          child:
-                                                                              Icon(
-                                                                            Icons.timer_sharp,
-                                                                            color:
-                                                                                FlutterFlowTheme.of(context).primary,
-                                                                            size:
-                                                                                25,
-                                                                          ),
-                                                                        ),
-                                                                        Padding(
-                                                                          padding: EdgeInsetsDirectional.fromSTEB(
-                                                                              7,
-                                                                              0,
-                                                                              0,
-                                                                              0),
-                                                                          child:
-                                                                              AutoSizeText(
-                                                                            'Hora',
-                                                                            textAlign:
-                                                                                TextAlign.start,
-                                                                            maxLines:
-                                                                                1,
-                                                                            minFontSize:
-                                                                                12,
-                                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                  font: GoogleFonts.lexend(
-                                                                                    fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                  ),
-                                                                                  color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                  fontSize: 16,
-                                                                                  letterSpacing: 0.0,
-                                                                                  fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                ),
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
+                                        ),
+                                      ),
+                                      child: CupertinoDatePicker(
+                                        mode: CupertinoDatePickerMode.time,
+                                        minimumDate: minimumDate,
+                                        initialDateTime: selectedTime,
+                                        maximumDate: DateTime(2050),
+                                        backgroundColor: FlutterFlowTheme.of(context).alternate,
+                                        use24hFormat: false,
+                                        onDateTimeChanged: (newDateTime) {
+                                          selectedTime = newDateTime;
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      }
+                    : null,
+                child: Container(
+                  width: MediaQuery.sizeOf(context).width * 0.4,
+                  height: MediaQuery.sizeOf(context).height * 0.05,
+                  decoration: BoxDecoration(
+                    color: FlutterFlowTheme.of(context).alternate,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(0, 1, 0, 0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(8, 0, 0, 0),
+                          child: Icon(
+                            Icons.timer_sharp,
+                            color: _model.wilDogWalkerWorkSwitchValue!
+                                ? FlutterFlowTheme.of(context).primary
+                                : FlutterFlowTheme.of(context).secondaryBackground.withOpacity(0.5),
+                            size: 25,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(7, 0, 0, 0),
+                          child: AutoSizeText(
+                            _model.datePicked2 != null
+                                ? dateTimeFormat('Hm', _model.datePicked2)
+                                : 'Hora',
+                            textAlign: TextAlign.start,
+                            maxLines: 1,
+                            minFontSize: 12,
+                            style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                  font: GoogleFonts.lexend(
+                                    fontWeight: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontWeight,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontStyle,
+                                  ),
+                                  color: _model.wilDogWalkerWorkSwitchValue!
+                                      ? FlutterFlowTheme.of(context).secondaryBackground
+                                      : FlutterFlowTheme.of(context).secondaryBackground.withOpacity(0.5),
+                                  fontSize: 16,
+                                  letterSpacing: 0.0,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // TEXTO "A"
+        Align(
+          alignment: const AlignmentDirectional(0, 0),
+          child: Text(
+            'A',
+            style: FlutterFlowTheme.of(context).bodyMedium.override(
+                  font: GoogleFonts.lexend(
+                    fontWeight: FlutterFlowTheme.of(context)
+                        .bodyMedium
+                        .fontWeight,
+                    fontStyle: FlutterFlowTheme.of(context)
+                        .bodyMedium
+                        .fontStyle,
+                  ),
+                  color: _model.wilDogWalkerWorkSwitchValue!
+                      ? FlutterFlowTheme.of(context).secondaryBackground
+                      : FlutterFlowTheme.of(context).secondaryBackground.withOpacity(0.5),
+                  fontSize: 20,
+                  letterSpacing: 0.0,
+                ),
+          ),
+        ),
+
+        // HORA FIN
+        Flexible(
+          child: Align(
+            alignment: const AlignmentDirectional(1, 0),
+            child: Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 0, 0),
+              child: InkWell(
+                splashColor: Colors.transparent,
+                focusColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                onTap: _model.wilDogWalkerWorkSwitchValue!
+                    ? () async {
+                        await showModalBottomSheet<bool>(
+                          context: context,
+                          builder: (context) {
+                            final _datePicked3CupertinoTheme = CupertinoTheme.of(context);
+                            DateTime now = DateTime.now();
+                            
+                            // Verificar si la fecha seleccionada es hoy
+                            bool isToday = _model.datePicked1 != null && 
+                                          _model.datePicked1!.year == now.year && 
+                                          _model.datePicked1!.month == now.month && 
+                                          _model.datePicked1!.day == now.day;
+                            
+                            // Hora mínima: si es hoy, usar ahora; si no, usar la hora inicio o mínimo absoluto
+                            DateTime minimumDate;
+                            if (isToday) {
+                              minimumDate = now;
+                            } else {
+                              minimumDate = _model.datePicked2 ?? DateTime(1900);
+                            }
+                            
+                            // Si hay hora inicio y es mayor que el mínimo, usar la hora inicio
+                            if (_model.datePicked2 != null && _model.datePicked2!.isAfter(minimumDate)) {
+                              minimumDate = _model.datePicked2!;
+                            }
+                            
+                            DateTime selectedTime = _model.datePicked3 ?? minimumDate.add(const Duration(hours: 1));
+                            
+                            if (selectedTime.isBefore(minimumDate)) {
+                              selectedTime = minimumDate.add(const Duration(hours: 1));
+                            }
+
+                            return Container(
+                              height: MediaQuery.of(context).size.height / 3 + 60,
+                              width: MediaQuery.of(context).size.width,
+                              color: FlutterFlowTheme.of(context).alternate,
+                              child: Column(
+                                children: [
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsetsDirectional.fromSTEB(20, 10, 20, 10),
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        context.pop(context);
+                                        safeSetState(() {
+                                          _model.datePicked3 = selectedTime;
+                                        });
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: FlutterFlowTheme.of(context).primary,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                      ),
+                                      child: Text(
+                                        'Aceptar',
+                                        style: GoogleFonts.lexend(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  // Selector de hora
+                                  Expanded(
+                                    child: CupertinoTheme(
+                                      data: _datePicked3CupertinoTheme.copyWith(
+                                        textTheme: _datePicked3CupertinoTheme.textTheme.copyWith(
+                                          dateTimePickerTextStyle:
+                                              FlutterFlowTheme.of(context).headlineMedium.override(
+                                                    font: GoogleFonts.lexend(
+                                                      fontWeight: FlutterFlowTheme.of(context)
+                                                          .headlineMedium
+                                                          .fontWeight,
+                                                      fontStyle: FlutterFlowTheme.of(context)
+                                                          .headlineMedium
+                                                          .fontStyle,
                                                     ),
+                                                    color: FlutterFlowTheme.of(context).primaryText,
+                                                    letterSpacing: 0.0,
                                                   ),
-                                                ),
+                                        ),
+                                      ),
+                                      child: CupertinoDatePicker(
+                                        mode: CupertinoDatePickerMode.time,
+                                        minimumDate: minimumDate,
+                                        initialDateTime: selectedTime,
+                                        maximumDate: DateTime(2050),
+                                        backgroundColor: FlutterFlowTheme.of(context).alternate,
+                                        use24hFormat: false,
+                                        onDateTimeChanged: (newDateTime) {
+                                          selectedTime = newDateTime;
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      }
+                    : null,
+                child: Container(
+                  width: MediaQuery.sizeOf(context).width * 0.4,
+                  height: MediaQuery.sizeOf(context).height * 0.05,
+                  decoration: BoxDecoration(
+                    color: FlutterFlowTheme.of(context).alternate,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(0, 1, 0, 0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(8, 0, 0, 0),
+                          child: Icon(
+                            Icons.timer_sharp,
+                            color: _model.wilDogWalkerWorkSwitchValue!
+                                ? FlutterFlowTheme.of(context).primary
+                                : FlutterFlowTheme.of(context).secondaryBackground.withOpacity(0.5),
+                            size: 25,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(7, 0, 0, 0),
+                          child: AutoSizeText(
+                            _model.datePicked3 != null
+                                ? dateTimeFormat('Hm', _model.datePicked3)
+                                : 'Hora',
+                            textAlign: TextAlign.start,
+                            maxLines: 1,
+                            minFontSize: 12,
+                            style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                  font: GoogleFonts.lexend(
+                                    fontWeight: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontWeight,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontStyle,
+                                  ),
+                                  color: _model.wilDogWalkerWorkSwitchValue!
+                                      ? FlutterFlowTheme.of(context).secondaryBackground
+                                      : FlutterFlowTheme.of(context).secondaryBackground.withOpacity(0.5),
+                                  fontSize: 16,
+                                  letterSpacing: 0.0,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+),
                                                 Padding(
-                                                  padding: EdgeInsetsDirectional
+                                                  padding: const EdgeInsetsDirectional
                                                       .fromSTEB(0, 18, 0, 18),
                                                   child: FFButtonWidget(
                                                     onPressed: () async {
-                                                      context.pushNamed(
-                                                          HomeDogOwnerWidget
-                                                              .routeName);
-                                                    },
+  if (_model.datePicked1 == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Por favor selecciona una fecha'),
+      ),
+    );
+    return;
+  }
+
+  final currentUser = Supabase.instance.client.auth.currentUser;
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo identificar al usuario'),
+        ),
+      );
+      return;
+    }
+
+  try {
+    // Determinar si es día completo o por horas
+    bool isFullDay = !_model.wilDogWalkerWorkSwitchValue!;
+    
+    // Preparar los datos para insertar
+    final Map<String, dynamic> exceptionDayData = {
+      'walker_id': currentUser.id,
+      'rest_date': _model.datePicked1!.toIso8601String().split('T')[0], 
+      'is_full_day': isFullDay,
+      'created_at': DateTime.now().toIso8601String(),
+    };
+
+    // Si no es día completo, agregar las horas
+    if (!isFullDay) {
+      if (_model.datePicked2 == null || _model.datePicked3 == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Por favor selecciona ambas horas'),
+          ),
+        );
+        return;
+      }
+
+      // Validar que la hora de fin sea después de la hora de inicio
+      if (_model.datePicked3!.isBefore(_model.datePicked2!)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('La hora de fin debe ser después de la hora de inicio'),
+          ),
+        );
+        return;
+      }
+
+      // Formatear horas como HH:MM:SS
+      exceptionDayData['start_time'] = 
+          '${_model.datePicked2!.hour.toString().padLeft(2, '0')}:${_model.datePicked2!.minute.toString().padLeft(2, '0')}:00';
+      exceptionDayData['end_time'] = 
+          '${_model.datePicked3!.hour.toString().padLeft(2, '0')}:${_model.datePicked3!.minute.toString().padLeft(2, '0')}:00';
+    }
+
+    // Insertar en Supabase
+    final response = await Supabase.instance.client
+        .from('walker_exception_days')
+        .insert(exceptionDayData);
+
+    // Mostrar mensaje de éxito
+    if (!mounted) return;
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isFullDay 
+            ? 'Día completo guardado como excepción' 
+            : 'Horario de excepción guardado correctamente',
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+
+    // Esperar un momento para que el usuario vea el mensaje
+    await Future.delayed(const Duration(seconds: 2));
+
+    // Navegar a la página principal
+    if (!mounted) return;
+    context.push('/walker/home');
+
+  } catch (e) {
+    // Manejar errores
+    if (!mounted) return;
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Error al guardar: ${e.toString()}'),
+        duration: const Duration(seconds: 4),
+      ),
+    );
+  }
+},
                                                     text: 'Guardar',
                                                     options: FFButtonOptions(
                                                       width: 360,
                                                       height: 40,
                                                       padding:
-                                                          EdgeInsetsDirectional
+                                                          const EdgeInsetsDirectional
                                                               .fromSTEB(
                                                                   0, 0, 0, 0),
                                                       iconPadding:
-                                                          EdgeInsetsDirectional
+                                                          const EdgeInsetsDirectional
                                                               .fromSTEB(
                                                                   0, 0, 0, 0),
                                                       color:

@@ -3,7 +3,9 @@ import 'package:dalk/common/chat/chat_widget.dart';
 import 'package:dalk/components/pop_up_dog_profile/pop_up_dog_profile_widget.dart';
 import 'package:dalk/components/pop_up_dog_walker_profile/pop_up_dog_walker_profile_widget.dart';
 import 'package:dalk/components/pop_up_walk_options/pop_up_walk_options_widget.dart';
+import 'package:dalk/user_provider.dart';
 import 'package:dalk/utils/validation.dart';
+import 'package:provider/provider.dart';
 
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -76,6 +78,10 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = context.watch<UserProvider>().user;
+    final String? userType = userProvider?.usertype; 
+    final String userPrefix = userType == 'Dueño' ? 'owner' : 'walker';
+
     final displayName = Validators.formatDisplayName(widget.userName);
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
@@ -467,14 +473,12 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
                           size: 35,
                         ),
                         onPressed: () async {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ChatWidget(
-                                walkerId: widget.walkerId,
-                                ownerId: widget.ownerId,   
-                              ),
-                            ),
+                          context.push(
+                            '/$userPrefix/chat', 
+                            extra: <String, dynamic>{
+                              'walkerId': widget.walkerId, 
+                              'ownerId': widget.ownerId,
+                            },
                           );
                         },
                       ),
@@ -508,10 +512,7 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
                       print("Error al actualizar current_walk_id en Supabase: $e");
                     }
 
-                    context.goNamed(
-                      '_initialize',
-                      queryParameters: {'initialPage': 'CurrentWalk'},
-                    );
+                    context.push('/$userPrefix/currentWalk');
                   },
                   text: 'Abrir mapa',
                   icon: const FaIcon(FontAwesomeIcons.mapLocation, size: 25),

@@ -1,5 +1,6 @@
 import 'package:dalk/components/pop_up_dog_profile/pop_up_dog_profile_widget.dart';
 import 'package:dalk/components/pop_up_review_details/pop_up_review_details_widget.dart';
+import 'package:dalk/utils/validation.dart';
 
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -229,7 +230,7 @@ class _ReviewedDogCardWidgetState extends State<ReviewedDogCardWidget> {
                                   padding: const EdgeInsetsDirectional.fromSTEB(
                                       5, 2, 0, 0),
                                   child: AutoSizeText(
-                                    widget.dogOwner,
+                                    Validators.formatDisplayName(widget.dogOwner),
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .override(
@@ -287,7 +288,7 @@ class _ReviewedDogCardWidgetState extends State<ReviewedDogCardWidget> {
                                       5, 2, 0, 0),
                                   child: AutoSizeText(
                                     valueOrDefault<String>(
-                                      widget.duration,
+                                      '${widget.duration} minutos',
                                       '[duration]',
                                     ),
                                     textAlign: TextAlign.center,

@@ -1,6 +1,5 @@
 import 'package:dalk/components/pop_up_add_review/pop_up_add_review_widget.dart';
 import 'package:dalk/components/pop_up_dog_profile/pop_up_dog_profile_widget.dart';
-import 'package:dalk/components/pop_up_dog_walker_profile/pop_up_dog_walker_profile_widget.dart';
 
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';

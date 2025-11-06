@@ -463,12 +463,12 @@ class _BuyTrackerWidgetState extends State<BuyTrackerWidget> {
                                                   hoverColor: Colors.transparent,
                                                   highlightColor: Colors.transparent,
                                                   onTap: () async {
-                                                    context.pushNamed(
-                                                        AddAddressWidget.routeName,
-                                                        queryParameters: {
-                                                          'originWindow': 'buyTracker', 
-                                                        },
-                                                      );                                                  
+                                                    context.push(
+                                                      '/owner/addAddress', 
+                                                      extra: <String, dynamic>{
+                                                        'originWindow': 'buyTracker',
+                                                      },
+                                                    );                                                  
                                                   },
                                                   child: Container(
                                                     width: 100.0,

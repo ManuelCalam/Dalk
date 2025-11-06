@@ -36,7 +36,7 @@ class _PetListWidgetState extends State<PetListWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => PetListModel());
-    _loadPets(); // 👈 carga las mascotas al iniciar
+    _loadPets(); // carga las mascotas al iniciar
   }
 
   Future<void> _loadPets() async {
@@ -117,33 +117,36 @@ class _PetListWidgetState extends State<PetListWidget> {
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      Align(
-                        alignment: AlignmentDirectional(0, 0),
-                        child: wrapWithModel(
-                          model: _model.goBackContainerModel,
-                          updateCallback: () => safeSetState(() {}),
-                          child: GoBackContainerWidget(),
-                        ),
-                      ),
-                      AutoSizeText(
-                        'Mis Mascotas',
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                              font: GoogleFonts.lexend(
+                      // Align(
+                      //   alignment: AlignmentDirectional(0, 0),
+                      //   child: wrapWithModel(
+                      //     model: _model.goBackContainerModel,
+                      //     updateCallback: () => safeSetState(() {}),
+                      //     child: GoBackContainerWidget(),
+                      //   ),
+                      // ),
+                      Padding(
+                        padding: const EdgeInsetsDirectional.fromSTEB(0, 30, 0, 0),
+                        child: AutoSizeText(
+                          'Mis Mascotas',
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                font: GoogleFonts.lexend(
+                                  fontWeight: FontWeight.bold,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontStyle,
+                                ),
+                                color: FlutterFlowTheme.of(context).primary,
+                                fontSize: 24,
+                                letterSpacing: 0.0,
                                 fontWeight: FontWeight.bold,
                                 fontStyle: FlutterFlowTheme.of(context)
                                     .bodyMedium
                                     .fontStyle,
                               ),
-                              color: FlutterFlowTheme.of(context).primary,
-                              fontSize: 24,
-                              letterSpacing: 0.0,
-                              fontWeight: FontWeight.bold,
-                              fontStyle: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .fontStyle,
-                            ),
+                        ),
                       ),
                       Expanded(
                         child: Padding(

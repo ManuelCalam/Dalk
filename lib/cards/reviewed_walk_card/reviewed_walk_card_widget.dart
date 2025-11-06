@@ -1,3 +1,5 @@
+import 'package:dalk/utils/validation.dart';
+
 import '/components/pop_up_dog_profile/pop_up_dog_profile_widget.dart';
 import '/components/pop_up_dog_walker_profile/pop_up_dog_walker_profile_widget.dart';
 import '/components/pop_up_review_details/pop_up_review_details_widget.dart';
@@ -253,7 +255,7 @@ class _ReviewedWalkCardWidgetState extends State<ReviewedWalkCardWidget> {
                                       ).then((value) => safeSetState(() {}));
                                     },
                                     child: AutoSizeText(
-                                      widget.dogWalker,
+                                      Validators.formatDisplayName(widget.dogWalker),
                                       style: FlutterFlowTheme.of(context)
                                           .bodyMedium
                                           .override(
@@ -349,7 +351,7 @@ class _ReviewedWalkCardWidgetState extends State<ReviewedWalkCardWidget> {
                                   padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 2, 0, 0),
                                   child: AutoSizeText(
-                                    'Tarifa',
+                                    'Tarifa: ',
                                     maxLines: 1,
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium

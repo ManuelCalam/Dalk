@@ -1,6 +1,7 @@
 import 'package:dalk/auth/supabase_auth/auth_util.dart';
 import 'package:dalk/components/go_back_container/go_back_container_widget.dart';
 import 'package:dalk/dog_walker/walker_stripe_webview/walker_stripe_webview.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -147,6 +148,15 @@ Future<void> _createStripeAccount(BuildContext context, String walkerUid) async 
       ),
     );
 
+    context.push(
+      '/StripeWebView',
+      extra: <String, dynamic>{
+        onboardingUrl: onboardingUrl,
+        returnUrl: returnUrl,
+        refreshUrl: refreshUrl,
+      },
+    );                                           
+
     await _fetchWalkerPaymentsData();
 
     if (result == true) {
@@ -203,6 +213,92 @@ Future<void> _createStripeAccount(BuildContext context, String walkerUid) async 
     }
   }
 
+
+
+  // Future<void> handleDebtPayment({
+  //   required BuildContext context,
+  //   required double debtAmount,
+  // }) async {
+  //   if (debtAmount <= 0) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('La deuda es cero o inválida.')),
+  //     );
+  //     return;
+  //   }
+    
+
+  //   try {
+  //     final supabase = Supabase.instance.client;
+  //     final userId = supabase.auth.currentUser?.id;
+  //     final session = supabase.auth.currentSession;
+      
+  //     if (userId == null || session == null) {
+  //       throw Exception('No hay usuario autenticado o la sesión es nula.');
+  //     }
+
+  //     final customerRes = await supabase
+  //         .from('users')
+  //         .select('customer_stripe_id')
+  //         .eq('uuid', userId)
+  //         .maybeSingle();
+
+  //     final customerStripeId = customerRes?['customer_stripe_id'];
+  //     if (customerStripeId == null) {
+  //       throw Exception('No se encontró el customer_stripe_id del usuario actual.');
+  //     }
+
+  //     final response = await supabase.functions.invoke(
+  //       'pay-debt-intent', 
+  //       body: {
+  //         'debt_amount': debtAmount, 
+  //         // Agregamos el customer_stripe_id para estandarizar el llamado con tu función funcional.
+  //         'customer_stripe_id': customerStripeId, 
+  //       },
+  //       headers: {
+  //         'Authorization': 'Bearer ${session.accessToken}', 
+  //       },
+  //     );
+  //     // -----------------------------------------------------------------------
+
+  //     if (response.data == null) {
+  //       throw Exception('Error al crear el PaymentIntent: Respuesta nula de la Edge Function.');
+  //     }
+
+  //     // Extraer secretos de la respuesta
+  //     final clientSecret = response.data['client_secret'];
+  //     final ephemeralKey = response.data['ephemeralKey'];
+
+  //     if (clientSecret == null || ephemeralKey == null) {
+  //       throw Exception('Respuesta incompleta de la Edge Function (faltan secretos).');
+  //     }
+
+  //     await Stripe.instance.initPaymentSheet(
+  //       paymentSheetParameters: SetupPaymentSheetParameters(
+  //         merchantDisplayName: 'Dalk',
+  //         paymentIntentClientSecret: clientSecret,
+  //         customerEphemeralKeySecret: ephemeralKey,
+  //         customerId: customerStripeId,
+  //       ),
+  //     );
+
+  //     await Stripe.instance.presentPaymentSheet();
+
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('Pago de deuda completado con éxito.')),
+  //     );
+
+  //   } on StripeException catch (e) {
+  //     debugPrint('Error de Stripe: ${e.error.message}');
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('Pago cancelado o fallido.')),
+  //     );
+  //   } catch (e) {
+  //     debugPrint('Error general: $e');
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text('Error al procesar el pago: ${e.toString()}')),
+  //     );
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -302,7 +398,7 @@ Future<void> _createStripeAccount(BuildContext context, String walkerUid) async 
                       wrapWithModel(
                                 model: _model.goBackContainerModel,
                                 updateCallback: () => safeSetState(() {}),
-                                child: GoBackContainerWidget(),
+                                child: const GoBackContainerWidget(),
                       ),
 
                       Expanded(
@@ -1095,13 +1191,17 @@ Future<void> _createStripeAccount(BuildContext context, String walkerUid) async 
                                           ),
                                         ),
                                       ),
+                                      if(debt > 0)
                                       Padding(
                                         padding: const EdgeInsetsDirectional.fromSTEB(
                                             0, 20, 0, 0),
                                         child: FFButtonWidget(
-                                          onPressed: () {
-                                            print('Button pressed ...');
-                                          },
+                                          onPressed: () async {
+                                            // await handleDebtPayment(
+                                            //             context: context,
+                                            //             debtAmount: debt,
+                                            //           );                                          
+                                            },
                                           text: 'Pagar Adeudo',
                                           icon: const Icon(
                                             Icons.credit_card,

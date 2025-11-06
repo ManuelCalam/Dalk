@@ -1,16 +1,14 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '/auth/supabase_auth/auth_util.dart';
 import 'notifications_model.dart';
 export 'notifications_model.dart';
+import '/services/notification_service.dart';
 
 class NotificationsWidget extends StatefulWidget {
   const NotificationsWidget({super.key});
@@ -31,7 +29,6 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => NotificationsModel());
-    // Configurar timeago en español si lo deseas
     timeago.setLocaleMessages('es', timeago.EsMessages());
   }
 
@@ -61,7 +58,7 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                 height: MediaQuery.sizeOf(context).height * 0.1,
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).secondary,
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(0.0),
                     bottomRight: Radius.circular(0.0),
                     topLeft: Radius.circular(0.0),
@@ -74,7 +71,7 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                   width: MediaQuery.sizeOf(context).width * 1.0,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).tertiary,
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(0.0),
                       bottomRight: Radius.circular(0.0),
                       topLeft: Radius.circular(50.0),
@@ -87,14 +84,14 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                       Container(
                         width: MediaQuery.sizeOf(context).width * 1.0,
                         height: MediaQuery.sizeOf(context).height * 0.07,
-                        decoration: BoxDecoration(),
+                        decoration: const BoxDecoration(),
                         child: Row(
                           mainAxisSize: MainAxisSize.max,
                           children: [
                             Container(
                               width: MediaQuery.sizeOf(context).width * 0.2,
                               height: MediaQuery.sizeOf(context).height * 1.0,
-                              decoration: BoxDecoration(),
+                              decoration: const BoxDecoration(),
                               child: InkWell(
                                 splashColor: Colors.transparent,
                                 focusColor: Colors.transparent,
@@ -106,7 +103,7 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                                 child: Icon(
                                   Icons.chevron_left_outlined,
                                   color:
-                                      FlutterFlowTheme.of(context).primaryText,
+                                      FlutterFlowTheme.of(context).primary,
                                   size: 35.0,
                                 ),
                               ),
@@ -114,9 +111,9 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                             Container(
                               width: MediaQuery.sizeOf(context).width * 0.6,
                               height: 100.0,
-                              decoration: BoxDecoration(),
+                              decoration: const BoxDecoration(),
                               child: Align(
-                                alignment: AlignmentDirectional(0.0, 0.0),
+                                alignment: const AlignmentDirectional(0.0, 0.0),
                                 child: AutoSizeText(
                                   'Notificaciones',
                                   textAlign: TextAlign.center,
@@ -147,11 +144,28 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                             Container(
                               width: MediaQuery.sizeOf(context).width * 0.2,
                               height: MediaQuery.sizeOf(context).height * 1.0,
-                              decoration: BoxDecoration(),
-                              child: Icon(
-                                Icons.settings_rounded,
-                                color: FlutterFlowTheme.of(context).primaryText,
-                                size: 27.0,
+                              decoration: const BoxDecoration(),
+                              child: InkWell(
+                                splashColor: Colors.transparent,
+                                focusColor: Colors.transparent,
+                                hoverColor: Colors.transparent,
+                                highlightColor: Colors.transparent,
+                                onTap: () async {
+                                  final notificationService = NotificationService();
+                                  await notificationService.requestNotificationPermission();
+                                  
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Ya cuentas con los permisos de notificaciones'),
+                                      duration: Duration(seconds: 2),
+                                    ),
+                                  );
+                                },
+                                child: Icon(
+                                  Icons.settings_rounded,
+                                  color: FlutterFlowTheme.of(context).primaryText,
+                                  size: 27.0,
+                                ),
                               ),
                             ),
                           ],
@@ -159,11 +173,11 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                       ),
                       Expanded(
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              0.0, 0.0, 0.0, 15.0),
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                              10, 15, 10, 15),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 0.9,
-                            decoration: BoxDecoration(),
+                            decoration: const BoxDecoration(),
                             child: Builder(
                               builder: (context) {
                                 final userId = currentUserUid;
@@ -192,8 +206,8 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                                         child: Column(
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
-                                            Text('Error cargando notificaciones'),
-                                            Text('${snapshot.error}', style: TextStyle(fontSize: 12)),
+                                            const Text('Error cargando notificaciones'),
+                                            Text('${snapshot.error}', style: const TextStyle(fontSize: 12)),
                                           ],
                                         ),
                                       );
@@ -208,7 +222,7 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                                       
                                       try {
                                         final notificationDate = DateTime.parse(createdAt);
-                                        final thirtyDaysAgoDate = DateTime.now().subtract(Duration(days: 30));
+                                        final thirtyDaysAgoDate = DateTime.now().subtract(const Duration(days: 30));
                                         return notificationDate.isAfter(thirtyDaysAgoDate);
                                       } catch (e) {
                                         return false; //  REMOVIDO: Log innecesario
@@ -225,7 +239,7 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                                               size: 64,
                                               color: FlutterFlowTheme.of(context).secondaryText,
                                             ),
-                                            SizedBox(height: 16),
+                                            const SizedBox(height: 16),
                                             Text(
                                               'No tienes notificaciones',
                                               style: FlutterFlowTheme.of(context).bodyMedium,
@@ -278,7 +292,7 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                                                             ? Icons.notifications
                                                             : Icons.notifications_active,
                                                         color: notification['is_read']
-                                                            ? FlutterFlowTheme.of(context).secondaryText
+                                                            ? const Color(0xFF484848)
                                                             : FlutterFlowTheme.of(context).primary,
                                                         size: 30.0,
                                                       ),
@@ -291,7 +305,6 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                                                         mainAxisSize: MainAxisSize.min,
                                                         crossAxisAlignment: CrossAxisAlignment.start,
                                                         children: [
-                                                          //  CORREGIDO: Mostrar title + body en lugar de message
                                                           Text(
                                                             notification['title'] ?? 'Sin título',
                                                             style: FlutterFlowTheme.of(context)
@@ -300,16 +313,20 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                                                                   fontWeight: notification['is_read'] 
                                                                       ? FontWeight.normal 
                                                                       : FontWeight.bold,
+                                                                color: FlutterFlowTheme.of(context).primary
                                                                 ),
                                                           ),
                                                           if (notification['body'] != null && notification['body'].isNotEmpty) ...[
-                                                            SizedBox(height: 4),
+                                                            const SizedBox(height: 4),
                                                             Text(
                                                               notification['body'],
-                                                              style: FlutterFlowTheme.of(context).bodySmall,
+                                                              style: FlutterFlowTheme.of(context).bodySmall .override(
+                                                                color: FlutterFlowTheme.of(context).secondaryBackground
+                                                              ),
+                                                              
                                                             ),
                                                           ],
-                                                          SizedBox(height: 4),
+                                                          const SizedBox(height: 4),
                                                           Text(
                                                             notification['created_at'] != null
                                                                 ? timeago.format(
@@ -317,7 +334,9 @@ class _NotificationsWidgetState extends State<NotificationsWidget> {
                                                                     locale: 'es',
                                                                   )
                                                                 : 'Fecha desconocida',
-                                                            style: FlutterFlowTheme.of(context).labelSmall,
+                                                            style: FlutterFlowTheme.of(context).labelSmall.override(
+                                                              color:  const Color.fromARGB(255, 126, 126, 126)
+                                                            ),
                                                           ),
                                                         ],
                                                       ),

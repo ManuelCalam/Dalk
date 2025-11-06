@@ -1,18 +1,20 @@
-import 'package:dalk/dog_walker/walker_stripe_account/walker_stripe_account_widget.dart';
+import 'package:dalk/backend/supabase/database/database.dart';
+import 'package:dalk/common/article_web_view/article_web_view.dart';
+import 'package:dalk/landing_pages/login/login_widget.dart';
 import 'package:dalk/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dalk/auth/supabase_auth/auth_util.dart';
-import 'package:dalk/common/payment_methods/payment_methods_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import '/index.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dog_walker_profile_model.dart';
+import 'package:dalk/common/article_web_view/article_web_view.dart';
+
 export 'dog_walker_profile_model.dart';
 
 class DogWalkerProfileWidget extends StatefulWidget {
@@ -178,8 +180,7 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                     hoverColor: Colors.transparent,
                                     highlightColor: Colors.transparent,
                                     onTap: () async {
-                                      context.pushNamed(
-                                          DogOwnerUpdateProfileWidget.routeName);
+                                      context.push('/walker/updateProfile');
                                     },
                                     child: Container(
                                       width: MediaQuery.sizeOf(context).width,
@@ -268,9 +269,7 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                                 highlightColor:
                                                     Colors.transparent,
                                                 onTap: () async {
-                                                  context.pushNamed(
-                                                      DogOwnerUpdateProfileWidget
-                                                          .routeName);
+                                                  context.push('/walker/updateProfile');
                                                 },
                                                 child: Icon(
                                                   Icons.arrow_forward_ios,
@@ -296,10 +295,7 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                     hoverColor: Colors.transparent,
                                     highlightColor: Colors.transparent,
                                     onTap: () async {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(builder: (context) => const PaymentMethodsWidget()),
-                                      );
+                                      context.push('/walker/paymentMethods');
                                     },
                                     child: Container(
                                       width: MediaQuery.sizeOf(context).width,
@@ -377,12 +373,22 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                             child: Padding(
                                               padding: const EdgeInsetsDirectional
                                                   .fromSTEB(0, 0, 15, 0),
-                                              child: Icon(
-                                                Icons.arrow_forward_ios,
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primary,
-                                                size: 25,
+                                              child: InkWell(
+                                                splashColor: Colors.transparent,
+                                                focusColor: Colors.transparent,
+                                                hoverColor: Colors.transparent,
+                                                highlightColor:
+                                                    Colors.transparent,
+                                                onTap: () async {
+                                                  context.push('/walker/paymentMethods');
+                                                },
+                                                child: Icon(
+                                                  Icons.arrow_forward_ios,
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .primary,
+                                                  size: 25,
+                                                ),
                                               ),
                                             ),
                                           ),
@@ -400,10 +406,7 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                     hoverColor: Colors.transparent,
                                     highlightColor: Colors.transparent,
                                     onTap: () async {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(builder: (context) => const WalkerStripeAccountWidget())
-                                      );
+                                      context.push('/walker/getPaid');
                                     },
                                     child: Container(
                                       width: MediaQuery.sizeOf(context).width,
@@ -481,12 +484,22 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                             child: Padding(
                                               padding: const EdgeInsetsDirectional
                                                   .fromSTEB(0, 0, 15, 0),
-                                              child: Icon(
-                                                Icons.arrow_forward_ios,
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primary,
-                                                size: 25,
+                                              child: InkWell(
+                                                splashColor: Colors.transparent,
+                                                focusColor: Colors.transparent,
+                                                hoverColor: Colors.transparent,
+                                                highlightColor:
+                                                    Colors.transparent,
+                                                onTap: () async {
+                                                  context.push('/walker/getPaid');
+                                                },
+                                                child: Icon(
+                                                  Icons.arrow_forward_ios,
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .primary,
+                                                  size: 25,
+                                                ),
                                               ),
                                             ),
                                           ),
@@ -504,11 +517,7 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                     hoverColor: Colors.transparent,
                                     highlightColor: Colors.transparent,
                                     onTap: () async {
-                                      context.goNamed(
-                                        '_initialize', 
-                                        queryParameters: {'initialPage': 'walkerService'},
-                                      );  
-
+                                      GoRouter.of(context).go('/walker/service');
                                     },
                                     child: Container(
                                       width: MediaQuery.sizeOf(context).width,
@@ -593,10 +602,7 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                                 highlightColor:
                                                     Colors.transparent,
                                                 onTap: () async {
-                                                  context.goNamed(
-                                                    '_initialize', 
-                                                    queryParameters: {'initialPage': 'walkerService'},
-                                                  );  
+                                                  GoRouter.of(context).go('/walker/service');
                                                 },
                                                 child: Icon(
                                                   Icons.arrow_forward_ios,
@@ -622,8 +628,7 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                     hoverColor: Colors.transparent,
                                     highlightColor: Colors.transparent,
                                     onTap: () async {
-                                      context.pushNamed(
-                                          ExceptionDayWidget.routeName);
+                                      context.push('/walker/exceptionalDay');
                                     },
                                     child: Container(
                                       width: MediaQuery.sizeOf(context).width,
@@ -662,8 +667,10 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                               child: Padding(
                                                 padding: const EdgeInsetsDirectional
                                                     .fromSTEB(8, 0, 0, 0),
+                                                    
                                                 child: Text(
                                                   'Agregar día excepcional',
+                                                    
                                                   style: FlutterFlowTheme.of(
                                                           context)
                                                       .bodyMedium
@@ -681,6 +688,7 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                                         color: FlutterFlowTheme
                                                                 .of(context)
                                                             .secondaryBackground,
+                                                            
                                                         fontSize: 16,
                                                         letterSpacing: 0.0,
                                                         fontWeight:
@@ -707,6 +715,9 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                                 hoverColor: Colors.transparent,
                                                 highlightColor:
                                                     Colors.transparent,
+                                                onTap: () async {
+                                                  context.push('/walker/exceptionalDay');
+                                                },
                                                 child: Icon(
                                                   Icons.arrow_forward_ios,
                                                   color: FlutterFlowTheme.of(
@@ -762,8 +773,7 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                     height: MediaQuery.sizeOf(context).height *
                                         0.055,
                                     decoration: BoxDecoration(
-                                      color: FlutterFlowTheme.of(context)
-                                          .alternate,
+                                      color: FlutterFlowTheme.of(context).alternate,
                                       borderRadius: const BorderRadius.only(
                                         bottomLeft: Radius.circular(5),
                                         bottomRight: Radius.circular(5),
@@ -825,20 +835,30 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                           ),
                                         ),
                                         Align(
-                                          alignment: const AlignmentDirectional(1, 0),
-                                          child: Padding(
-                                            padding:
-                                                const EdgeInsetsDirectional.fromSTEB(
-                                                    0, 0, 15, 0),
-                                            child: Icon(
-                                              Icons.arrow_forward_ios,
-                                              color:
-                                                  FlutterFlowTheme.of(context)
+                                            alignment:
+                                                const AlignmentDirectional(1, 0),
+                                            child: Padding(
+                                              padding: const EdgeInsetsDirectional
+                                                  .fromSTEB(0, 0, 15, 0),
+                                              child: InkWell(
+                                                splashColor: Colors.transparent,
+                                                focusColor: Colors.transparent,
+                                                hoverColor: Colors.transparent,
+                                                highlightColor:
+                                                    Colors.transparent,
+                                                onTap: () async {
+                                                  // GoRouter.of(context).go('/walker/service');
+                                                },
+                                                child: Icon(
+                                                  Icons.arrow_forward_ios,
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
                                                       .primary,
-                                              size: 25,
+                                                  size: 25,
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                        ),
                                       ],
                                     ),
                                   ),
@@ -851,8 +871,7 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                     height: MediaQuery.sizeOf(context).height *
                                         0.055,
                                     decoration: BoxDecoration(
-                                      color: FlutterFlowTheme.of(context)
-                                          .alternate,
+                                      color: FlutterFlowTheme.of(context).alternate,
                                       borderRadius: const BorderRadius.only(
                                         bottomLeft: Radius.circular(5),
                                         bottomRight: Radius.circular(5),
@@ -876,56 +895,70 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                         ),
                                         Flexible(
                                           child: Align(
-                                            alignment:
-                                                const AlignmentDirectional(-1, 0),
+                                            alignment: const AlignmentDirectional(-1, 0),
                                             child: Padding(
-                                              padding: const EdgeInsetsDirectional
-                                                  .fromSTEB(8, 0, 0, 0),
-                                              child: Text(
-                                                'Acerca de nosotros',
-                                                textAlign: TextAlign.start,
-                                                style: FlutterFlowTheme.of(
-                                                        context)
-                                                    .bodyMedium
-                                                    .override(
-                                                      font: GoogleFonts.lexend(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                      color: FlutterFlowTheme
-                                                              .of(context)
-                                                          .secondaryBackground,
-                                                      fontSize: 16,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .fontStyle,
+                                              padding: const EdgeInsetsDirectional.fromSTEB(8, 0, 0, 0),
+                                              child: InkWell(
+                                                splashColor: Colors.transparent,
+                                                focusColor: Colors.transparent,
+                                                hoverColor: Colors.transparent,
+                                                highlightColor: Colors.transparent,
+                                                onTap: () {
+                                                  context.push(
+                                                    '/WebView',
+                                                    extra: <String, dynamic>{
+                                                      'url': 'https://dalk-legal-git-main-noe-ibarras-projects.vercel.app/?_vercel_share=H06ZuiEgfwHGNcHZ9AdimDz34FNJepDa',
+                                                      'title': 'Acerca de Nosotros',
+                                                    },
+                                                  );  
+                                                },
+                                                child: Text(
+                                                  'Acerca de nosotros',
+                                                  textAlign: TextAlign.start,
+                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                    font: GoogleFonts.lexend(
+                                                      fontWeight: FontWeight.w500,
+                                                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                     ),
+                                                    color: FlutterFlowTheme.of(context).secondaryBackground,
+                                                    fontSize: 16,
+                                                    letterSpacing: 0.0,
+                                                    fontWeight: FontWeight.w500,
+                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                  ),
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
                                         Align(
-                                          alignment: const AlignmentDirectional(1, 0),
+                                          alignment:
+                                              const AlignmentDirectional(1, 0),
                                           child: Padding(
-                                            padding:
-                                                const EdgeInsetsDirectional.fromSTEB(
-                                                    0, 0, 15, 0),
-                                            child: Icon(
-                                              Icons.arrow_forward_ios,
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primary,
-                                              size: 25,
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(0, 0, 15, 0),
+                                            child: InkWell(
+                                              splashColor: Colors.transparent,
+                                              focusColor: Colors.transparent,
+                                              hoverColor: Colors.transparent,
+                                              highlightColor:
+                                                  Colors.transparent,
+                                              onTap: () async {
+                                                context.push(
+                                                  '/WebView',
+                                                  extra: <String, dynamic>{
+                                                    'url': 'https://dalk-legal-git-main-noe-ibarras-projects.vercel.app/?_vercel_share=H06ZuiEgfwHGNcHZ9AdimDz34FNJepDa',
+                                                    'title': 'Acerca de Nosotros',
+                                                  },
+                                                );                                           
+                                              },
+                                              child: Icon(
+                                                Icons.arrow_forward_ios,
+                                                color: FlutterFlowTheme.of(
+                                                        context)
+                                                    .primary,
+                                                size: 25,
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -938,35 +971,28 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                       0, 30, 0, 0),
                                   child: FFButtonWidget(
                                     onPressed: () async {
-                                      // Preparamos el evento de autenticación ANTES de signOut.
                                       GoRouter.of(context).prepareAuthEvent(); 
-
-                                      // 2. Limpiar datos del usuario guardados localmente PRIMERO.
-                                      // Esto no usa 'context', por lo que es seguro antes del signOut.
                                       final prefs = await SharedPreferences.getInstance();
                                       await prefs.remove('user_data');
 
                                       try {
-                                        // Cerrar sesión de Supabase (asíncrono)
-                                        await authManager.signOut();
+                                        GoRouter.of(context).prepareAuthEvent(); 
+                                        final prefs = await SharedPreferences.getInstance();
+                                        await prefs.remove('user_data');
+                                        context.read<UserProvider>().clearUser(); 
 
-                                        // Verificamos si el widget fue desmontado por la navegación automática.
-                                        if (!context.mounted) {
-                                          return; 
-                                        }
-
-                                        // Limpiar Provider de usuario (redundante si main.dart actuó)
-                                        context.read<UserProvider>().clearUser();
-
-                                        // Limpiar rutas protegidas de GoRouter
-                                        GoRouter.of(context).clearRedirectLocation();
-
-                                        // Redirigir a Login
-                                        context.goNamedAuth(LoginWidget.routeName, context.mounted);
-
-                                      } catch (e) {
+                                        // 1. Cerrar sesión en los servicios
+                                        await authManager.signOut(); 
+                                        await Supabase.instance.client.auth.signOut(); 
                                         
-                                        // Mostrar error si el contexto todavía está vivo
+                                        await Future.delayed(const Duration(milliseconds: 400));
+
+                                        if (!context.mounted) return;
+                                        
+                                        GoRouter.of(context).clearRedirectLocation();
+                                        GoRouter.of(context).go('/'); 
+
+                                    } catch (e) {
                                         if (context.mounted) {
                                           ScaffoldMessenger.of(context).showSnackBar(
                                             SnackBar(content: Text("Error cerrando sesión: $e")),
@@ -974,6 +1000,8 @@ class _DogWalkerProfileWidgetState extends State<DogWalkerProfileWidget> {
                                         }
                                       }
                                     },
+                                    
+
                                     text: 'Cerrar Sesión',
                                     options: FFButtonOptions(
                                       width: MediaQuery.sizeOf(context).width,

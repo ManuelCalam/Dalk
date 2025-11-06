@@ -49,6 +49,7 @@ class _AddPetWidgetState extends State<AddPetWidget> {
   bool _ageTouched = false;
   bool _breeTouched = false;
   bool _descriptionTouched = false;
+  bool _showImageError = false;
 
   AutovalidateMode _nameValidateMode = AutovalidateMode.disabled;
   AutovalidateMode _ageValidateMode = AutovalidateMode.disabled;
@@ -115,6 +116,23 @@ class _AddPetWidgetState extends State<AddPetWidget> {
           _model.behaviourChipsValues != null &&
           _model.behaviourChipsValues!.isNotEmpty &&
           _model.dogSizeMenuValue != null;
+  }
+
+  String? _validateAge(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Edad es requerida';
+    }
+    final age = int.tryParse(value);
+    if (age == null) {
+      return 'Ingrese una edad válida';
+    }
+    if (age <= 0) {
+      return 'La edad debe ser mayor a 0';
+    }
+    if (age > 30) {
+      return 'La edad debe ser menor a 30';
+    }
+    return null;
   }
 
 // Subir imagen de la mascota a Supabase Storage
@@ -319,21 +337,60 @@ void _showImagePickerOptions(BuildContext context, {int? petId}) {
                                     children: [
                                       Flexible(
                                         child: Align(
-                                        alignment: const AlignmentDirectional(0, 0),
-                                        child: Padding(
-                                          padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
-                                          child: GestureDetector(
-                                            onTap: () => _showImagePickerOptions(context),
-                                            child: CircleAvatar(
-                                              radius: 60,
-                                              backgroundImage: _ownerImage != null
-                                                  ? FileImage(_ownerImage!)
-                                                  : const AssetImage('assets/images/dog.png') as ImageProvider,
+                                          alignment: const AlignmentDirectional(0, 0),
+                                          child: Padding(
+                                            padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    _showImagePickerOptions(context);
+                                                    // Ocultar el error cuando el usuario interactúa
+                                                    if (_showImageError) {
+                                                      setState(() {
+                                                        _showImageError = false;
+                                                      });
+                                                    }
+                                                  },
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      border: Border.all(
+                                                        color: (_showImageError && _formSubmitted)
+                                                            ? FlutterFlowTheme.of(context).error
+                                                            : Colors.transparent,
+                                                        width: 2,
+                                                      ),
+                                                    ),
+                                                    child: CircleAvatar(
+                                                      radius: 60,
+                                                      backgroundImage: _ownerImage != null
+                                                          ? FileImage(_ownerImage!)
+                                                          : const AssetImage('assets/images/dog.png') as ImageProvider,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Text(
+                                                  'Presiona para elegir una foto',
+                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(),
+                                                ),
+                                                if (_showImageError && _formSubmitted)
+                                                  Padding(
+                                                    padding: const EdgeInsetsDirectional.fromSTEB(0, 4, 0, 0),
+                                                    child: Text(
+                                                      'La imagen es requerida',
+                                                      style: TextStyle(
+                                                        color: FlutterFlowTheme.of(context).error,
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                  ),
+                                              ],
                                             ),
                                           ),
                                         ),
-                                      )),
-                                      Text('Presiona para elegir una foto', style: FlutterFlowTheme.of(context).bodyMedium.override()),
+                                      ),
                                       Align(
                                         alignment: const AlignmentDirectional(-1, -1),
                                         child: Padding(
@@ -533,19 +590,13 @@ void _showImagePickerOptions(BuildContext context, {int? petId}) {
                                                     fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
                                                     fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                   ),
-                                              keyboardType: TextInputType.text,
+                                              keyboardType: TextInputType.number,  // Cambiado a number para mejor UX
                                               cursorColor: FlutterFlowTheme.of(context).primaryText,
-                                              // validator: (value) => Validators.validatePetAge(value, fieldName: 'Edad'),                                              
-                                              validator: (value) {
-                                                final required = Validators.requiredField(value, fieldName: 'Edad');
-                                                  if (required != null) return required;
-                                                  final min = Validators.minLength(value, 1, fieldName: 'Edad');
-                                                  if (min != null) return min;
-                                                  return Validators.maxLength(value, 3, fieldName: 'Edad');
-                                                },                                                  
-                                                inputFormatters: [
-                                                  LengthLimitingTextInputFormatter(3),
-                                                ],   
+                                              validator: _validateAge,  // Aquí está el cambio principal
+                                              inputFormatters: [
+                                                FilteringTextInputFormatter.digitsOnly,  // Solo permite dígitos
+                                                LengthLimitingTextInputFormatter(2),  // Máximo 2 dígitos
+                                              ],   
                                               autovalidateMode: _ageValidateMode,
                                             ),
                                           ),
@@ -1153,15 +1204,17 @@ void _showImagePickerOptions(BuildContext context, {int? petId}) {
                                                               _model.dogSizeMenuValue!.isNotEmpty;
                                               final behaviourValid = _model.behaviourChipsValues != null && 
                                                                     _model.behaviourChipsValues!.isNotEmpty;
+                                              final imageValid = _ownerImage != null;
 
                                               setState(() {
                                                 _showGenderError = !genderValid;
                                                 _showSizeError = !sizeValid;
                                                 _showBehaviourError = !behaviourValid;
+                                                _showImageError = !imageValid;
                                               });
 
                                               // Validar el formulario completo
-                                              if (_formKey.currentState!.validate() && genderValid && sizeValid && behaviourValid) {
+                                              if (_formKey.currentState!.validate() && genderValid && sizeValid && behaviourValid && imageValid) {
                                                 try {
                                                   final supabase = Supabase.instance.client;
                                                   final userId = supabase.auth.currentUser?.id;
@@ -1190,16 +1243,22 @@ void _showImagePickerOptions(BuildContext context, {int? petId}) {
                                                   final petData = response.first;
                                                   final petId = petData['id'] as int;
 
-                                                  String imageUrl = 'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/public/profile_pics/dog.png';
-
+                                                  // Ya no usar imagen predeterminada, la imagen debe existir
                                                   if (_ownerImage != null && userId != null) {
                                                     final uploadedUrl = await _uploadPetImage(context, userId, _ownerImage!, petId: petId);
-                                                    if (uploadedUrl != null) imageUrl = uploadedUrl;
+                                                    if (uploadedUrl != null) {
+                                                      await supabase.from('pets').update({'photo_url': uploadedUrl}).eq('id', petId);
+                                                    } else {
+                                                      // Si falla la subida, eliminar el registro de la mascota
+                                                      await supabase.from('pets').delete().eq('id', petId);
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        const SnackBar(content: Text('Error al subir la imagen. Por favor intenta de nuevo.')),
+                                                      );
+                                                      return;
+                                                    }
                                                   }
 
-                                                  await supabase.from('pets').update({'photo_url': imageUrl}).eq('id', petId);
-
-                                                  Navigator.pop(context);
+                                                  context.pop(context);
                                                 } catch (e) {
                                                   ScaffoldMessenger.of(context).showSnackBar(
                                                     const SnackBar(content: Text('Error al registrar la mascota. Intenta de nuevo.')),

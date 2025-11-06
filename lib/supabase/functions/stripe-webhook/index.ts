@@ -1,7 +1,9 @@
 // supabase/functions/stripe-webhook/index.ts
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import Stripe from "https://esm.sh/stripe@14.0.0?target=deno";
+// import Stripe from "https://esm.sh/stripe@14.0.0?target=deno";
+import Stripe from "https://esm.sh/stripe@^14.0.0?target=deno&pin=v135";
+import { sendEmailConfirmation } from './email-helper.ts';
 
 // =====================
 // Configuración
@@ -15,8 +17,12 @@ if (!STRIPE_SECRET_KEY || !STRIPE_WEBHOOK_SECRET || !SUPABASE_URL || !SUPABASE_S
   throw new Error("Missing environment variables");
 }
 
+// const stripe = new Stripe(STRIPE_SECRET_KEY, {
+//   apiVersion: "2023-10-16"
+// });
 const stripe = new Stripe(STRIPE_SECRET_KEY, {
-  apiVersion: "2023-10-16"
+    apiVersion: "2023-10-16",
+    httpClient: Stripe.createFetchHttpClient(), 
 });
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -139,6 +145,7 @@ serve(async (req) => {
         await handleCheckoutSessionCompleted(event.data.object);
         break;
       case "invoice.paid":
+      case "invoice.payment_succeeded": 
         await handleInvoicePaid(event.data.object);
         break;
       case "invoice.finalized":
@@ -279,47 +286,130 @@ async function handleCheckoutSessionCompleted(session: any) {
   await preventDuplicateSubscriptions(customerId, subscriptionId);
 }
 
-async function handleInvoicePaid(invoice: any) {
-  const customerId = invoice.customer;
-  const subscriptionId = invoice.subscription;
-
-  console.log("Invoice paid:", subscriptionId, "Customer:", customerId);
-
-  if (!customerId || !subscriptionId) return;
-
-  const { error } = await supabase
-    .from("users")
-    .update({
-      subscription_id: subscriptionId,
-      subscription_status: "active",
-      subscription_current_period_end: invoice.lines.data[0]?.period?.end
-        ? new Date(invoice.lines.data[0].period.end * 1000).toISOString()
-        : null,
-    })
-    .eq("customer_stripe_id", customerId);
-
-  if (error) {
-    console.error("DB error [InvoicePaid]:", error);
+// async function handleInvoicePaid(invoice: any) {
+//     const customerId = invoice.customer;
+//     const subscriptionId = invoice.subscription;
     
-    // 
-    const { error: fallbackError } = await supabase
-      .from("users")
-      .update({
-        subscription_status: "active",
-        subscription_current_period_end: invoice.lines.data[0]?.period?.end
-          ? new Date(invoice.lines.data[0].period.end * 1000).toISOString()
-          : null,
-      })
-      .eq("subscription_id", subscriptionId);
+//     console.log("Invoice paid:", subscriptionId, "Customer:", customerId);
 
-    if (fallbackError) {
-      console.error("Fallback update also failed:", fallbackError);
-    } else {
-      console.log("Fallback update successful using subscription_id");
+//     if (!customerId || !subscriptionId) return;
+
+    
+//     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+//     let periodEndTimestamp = null;
+//     periodEndTimestamp = subscription.current_period_end; 
+
+//     // Fallback: Si no está en la API, usar la ubicación del webhook
+//     if (!periodEndTimestamp) {
+//         periodEndTimestamp = invoice.lines?.data[0]?.period?.end; 
+//     }
+    
+//     const currentPeriodEnd = periodEndTimestamp 
+//         ? new Date(periodEndTimestamp * 1000).toISOString()
+//         : null;
+
+//     console.log("Current Period End calculated (ISO):", currentPeriodEnd);
+
+//     const { error } = await supabase
+//         .from("users")
+//         .update({
+//             subscription_id: subscriptionId,
+//             subscription_status: "active",
+//             subscription_current_period_end: currentPeriodEnd,
+//         })
+//         .eq("customer_stripe_id", customerId);
+
+//     if (error) {
+//         console.error("DB error [InvoicePaid]:", error);
+        
+//         const { error: fallbackError } = await supabase
+//             .from("users")
+//             .update({
+//                 subscription_status: "active",
+//                 subscription_current_period_end: currentPeriodEnd, 
+//             })
+//             .eq("subscription_id", subscriptionId);
+
+//         if (fallbackError) {
+//             console.error("Fallback update also failed:", fallbackError);
+//         } else {
+//             console.log("Fallback update successful using subscription_id");
+//         }
+//     } else {
+//         console.log("Database updated successfully for paid invoice");
+//     }
+// }
+
+async function handleInvoicePaid(invoice: any) {
+    const customerId = invoice.customer;
+    const subscriptionId = invoice.subscription;
+    
+    console.log("Invoice paid:", subscriptionId, "Customer:", customerId);
+
+    if (!customerId || !subscriptionId) return;
+
+    const { data: userData, error: fetchError } = await supabase
+        .from("users")
+        .select("email, name")
+        .eq("customer_stripe_id", customerId)
+        .maybeSingle(); 
+
+    if (fetchError || !userData) {
+        console.warn(`No se pudo obtener el email para el customerId ${customerId}. Continuando con la actualización DB.`);
     }
-  } else {
-    console.log("Database updated successfully for paid invoice");
-  }
+
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+    let periodEndTimestamp = null;
+    periodEndTimestamp = subscription.current_period_end; 
+
+    if (!periodEndTimestamp) {
+        periodEndTimestamp = invoice.lines?.data[0]?.period?.end; 
+    }
+    
+    const currentPeriodEnd = periodEndTimestamp 
+        ? new Date(periodEndTimestamp * 1000).toISOString()
+        : null;
+
+    console.log("Current Period End calculated (ISO):", currentPeriodEnd);
+
+    const { error } = await supabase
+        .from("users")
+        .update({
+            subscription_id: subscriptionId,
+            subscription_status: "active",
+            subscription_current_period_end: currentPeriodEnd,
+        })
+        .eq("customer_stripe_id", customerId);
+
+    if (error) {
+        console.error("DB error [InvoicePaid]:", error);
+        
+        const { error: fallbackError } = await supabase
+            .from("users")
+            .update({
+                subscription_status: "active",
+                subscription_current_period_end: currentPeriodEnd, 
+            })
+            .eq("subscription_id", subscriptionId);
+
+        if (fallbackError) {
+            console.error("Fallback update also failed:", fallbackError);
+        } else {
+            console.log("Fallback update successful using subscription_id");
+        }
+    } else {
+        console.log("Database updated successfully for paid invoice");
+        
+        if (userData && userData.email) {
+            const customerName = userData.name || "Cliente Premium";
+            console.log(`Intentando enviar correo a ${userData.email} (${customerName}).`);
+            await sendEmailConfirmation(userData.email, customerName);
+        } else {
+             console.warn("No se pudo enviar el correo de confirmación. Faltan email o datos de usuario.");
+        }
+    }
 }
 
 async function handleInvoiceFinalized(invoice: any) {
@@ -415,43 +505,92 @@ async function handleSubscriptionCreated(subscription: any) {
 }
 
 async function handleSubscriptionUpdated(subscription: any) {
-  console.log("Subscription updated:", subscription.id, subscription.status);
+    console.log("Subscription updated:", subscription.id, subscription.status);
 
-  const success = await safeUpdateUser(
-    subscription.customer,
-    {
-      subscription_status: subscription.status,
-      subscription_current_period_end: subscription.current_period_end
-        ? new Date(subscription.current_period_end * 1000).toISOString()
-        : null    },
-    "SubscriptionUpdated"
-  );
+    const terminalStates = ["canceled", "unpaid", "incomplete_expired"];
+    if (terminalStates.includes(subscription.status)) {
+        console.log(`Ignoring updated event for terminal status: ${subscription.status}`);
+        return; 
+    }
 
-  if (success) {
-    console.log("Subscription updated successfully:", subscription.id);
-  }
+    const periodEndTimestamp = subscription.items?.data[0]?.current_period_end;
+
+    const currentPeriodEnd = periodEndTimestamp
+        ? new Date(periodEndTimestamp * 1000).toISOString()
+        : null;
+
+    let statusToUpdate = subscription.status;
+    
+    if (subscription.cancel_at_period_end === true) {
+        statusToUpdate = "canceled_at_period_end";
+        console.log("Status adjusted for local DB: canceled_at_period_end (due to Stripe flag)");
+    }
+
+    const success = await safeUpdateUser(
+        subscription.customer,
+        {
+            subscription_status: statusToUpdate, 
+            subscription_current_period_end: currentPeriodEnd, 
+        },
+        "SubscriptionUpdated"
+    );
+
+    if (success) {
+        console.log("Subscription updated successfully:", subscription.id, "DB Status:", statusToUpdate, "Period End:", currentPeriodEnd);
+    }
 }
 
 async function handleSubscriptionDeleted(subscription: any) {
   console.log("Subscription deleted:", subscription.id);
 
-  const success = await safeUpdateUser(
+    const periodEndTimestamp = subscription.items?.data[0]?.current_period_end;
+    const currentPeriodEnd = periodEndTimestamp
+        ? new Date(periodEndTimestamp * 1000).toISOString()
+        : null;
+
+ const success = await safeUpdateUser(
     subscription.customer,
-    {
-      subscription_status: "canceled",
-      subscription_id: null,
-      subscription_current_period_end: null
-    },
-    "SubscriptionDeleted"
+      {
+        subscription_status: "canceled",
+        subscription_id: null, 
+        subscription_current_period_end: null,
+      },
+      "SubscriptionDeleted"
   );
 
   if (success) {
-    console.log("Subscription canceled and cleaned up:", subscription.id);
+    console.log("Subscription marked as canceled. Access remains until period end:", currentPeriodEnd);
   }
 }
 
 async function handlePaymentIntentSucceeded(paymentIntent: any) {
   console.log("Payment intent succeeded:", paymentIntent.id);
+
+  // --- LÓGICA DE PAGO DE DEUDA ---
+  const paymentType = paymentIntent.metadata?.type;
+  const walkerIdToPay = paymentIntent.metadata?.walker_id_to_pay;
+
+  if (paymentType === 'debt_payment' && walkerIdToPay) {
+    console.log("Processing DEBT payment success for walker ID:", walkerIdToPay);
+
+    const { error: debtUpdateError } = await supabase
+      .from("walker_payments") 
+      .update({
+        debt: 0,
+        debt_last_paid_at: new Date().toISOString(), 
+      })
+      .eq("walker_id", walkerIdToPay); // Filtrar por el ID del caminante
+
+    if (debtUpdateError) {
+      console.error("DB error [DebtPaymentSucceeded]:", debtUpdateError);
+      // Nota: Considera enviar una alerta si esta actualización falla.
+    } else {
+      console.log("Walker debt marked as 0. Walker ID:", walkerIdToPay);
+    }
+
+    // Devolver inmediatamente si se trata de un pago de deuda
+    return;
+  }
 
   // --- VERIFICAR COMPRA DE RASTREADOR ---
   const trackerId = paymentIntent.metadata?.internal_order_id; 

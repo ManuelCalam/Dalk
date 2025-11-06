@@ -191,6 +191,8 @@ class _DogOwnerUpdateProfileWidgetState
   @override
   Widget build(BuildContext context) {
     final user = context.watch<UserProvider>().user;
+    final String? userType = user?.usertype; 
+    final String userPrefix = userType == 'Dueño' ? 'owner' : 'walker';
     final photoUrl = user?.photoUrl ?? "";
     final supabase = Supabase.instance.client;
     final user1 = supabase.auth.currentUser;
@@ -947,7 +949,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                     'Mujer',
                                                     'Otro'
                                                   ]),
-                                                  optionLabels: [
+                                                  optionLabels: const [
                                                     'Hombre',
                                                     'Mujer',
                                                     'Otro'
@@ -2189,6 +2191,21 @@ class _DogOwnerUpdateProfileWidgetState
                                                     .fromSTEB(0, 18, 0, 18),
                                                 child: FFButtonWidget(
                                                   onPressed: () async {
+                                                    if (!_model.formKey.currentState!.validate()) {
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        const SnackBar(content: Text('Corrige los campos con errores')),
+                                                      );
+                                                      return;
+                                                    }
+
+                                                    if (_model.datePicked == null) {
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        const SnackBar(content: Text('Selecciona una fecha de nacimiento')),
+                                                      );
+                                                      return;
+                                                    }
+                                                    final address = (user?.address);
+                                                        
                                                     try {
                                                       final response = await Supabase.instance.client
                                                           .from('users')
@@ -2207,6 +2224,19 @@ class _DogOwnerUpdateProfileWidgetState
                                                           })
                                                           .eq('uuid', currentUserUid); 
 
+                                                          if(address == null || address == '') {
+                                                            await supabase.from('addresses').insert({
+                                                              'uuid': currentUserUid,
+                                                              'alias': 'Mi Dirección',
+                                                              'address': _model.streetDogOwnerInputTextController.text.trim(),
+                                                              'ext_number': _model.exteriorNumberDogOwnerInputTextController.text.trim(),
+                                                              'int_number': _model.interiorNumberDogOwnerInputTextController.text.trim(),
+                                                              'zipCode': _model.zipCodeDogOwnerInputTextController.text.trim(),
+                                                              'neighborhood': _model.neighborhoodDogOwnerInputTextController.text.trim(),
+                                                              'city': _model.cityDogOwnerInputTextController.text.trim(),
+                                                            });
+                                                          }
+
                                                           ScaffoldMessenger.of(context).showSnackBar(
                                                             const SnackBar(content: Text('¡Perfil actualizado exitosamente!')),
                                                           );
@@ -2219,28 +2249,40 @@ class _DogOwnerUpdateProfileWidgetState
                                                     //PaintingBinding.instance.imageCache.clear();
                                                     //PaintingBinding.instance.imageCache.clearLiveImages();
                                                     // 2. Limpiar la imagen vieja del caché
-                                                    await CachedNetworkImage.evictFromCache(photoUrl);
-                                                    if (user1 == null) return;
-                                                    // Subir a Supabase
-                                                    final uploadedUrl = await _uploadOwnerImage(user1.id, _tempImage!);
-                                                    if (uploadedUrl != null) {
-                                                      // Solo actualizar Provider y SharedPrefs
-                                                      final currentUser = context.read<UserProvider>().user;
-                                                      final updatedUser = UserModel(
-                                                        name: currentUser?.name ?? "User",
-                                                        photoUrl: uploadedUrl,
-                                                      );
-                                                      context.read<UserProvider>().setUser(updatedUser);
-                                                      await UserPrefs.saveUser(updatedUser);
+                                                    try {
+                                                      await CachedNetworkImage.evictFromCache(photoUrl);
 
-                                                      // Limpiar temporal para que NetworkImage tome la nueva URL
-                                                      setState(() {
-                                                        _tempImage = null;
-                                                      });
+                                                      if (user1 == null || _tempImage == null) {
+                                                        debugPrint('Error: no hay usuario o imagen seleccionada.');
+                                                        return; 
+                                                      }
+
+                                                      // Subir a Supabase
+                                                      final uploadedUrl = await _uploadOwnerImage(user1.id, _tempImage!);
+
+                                                      if (uploadedUrl != null) {
+                                                        // Solo actualizar Provider y SharedPrefs
+                                                        final currentUser = context.read<UserProvider>().user;
+                                                        final updatedUser = UserModel(
+                                                          name: currentUser?.name ?? "User",
+                                                          photoUrl: uploadedUrl,
+                                                        );
+                                                        context.read<UserProvider>().setUser(updatedUser);
+                                                        await UserPrefs.saveUser(updatedUser);
+
+                                                        setState(() {
+                                                          _tempImage = null;
+                                                        });
+                                                      }
+                                                    } catch (e, stack) {
+                                                      debugPrint('Error en el proceso de carga: $e');
+                                                      debugPrint('$stack');
+                                                    } finally {
+                                                      if (context.mounted) {
+                                                        context.read<UserProvider>().loadUser(forceRefresh: true);
+                                                        GoRouter.of(context).go('/$userPrefix/profile');
+                                                      }
                                                     }
-
-                                                    // 3. Refrescar el widget
-                                                    setState(() {});
 
                                                   },
                                                   text: 'Guardar cambios',
