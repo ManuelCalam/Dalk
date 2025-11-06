@@ -40,6 +40,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
     super.initState();
     context.read<UserProvider>().loadUser(forceRefresh: true);
     _model = createModel(context, () => DogOwnerProfileModel());
+    context.read<UserProvider>().loadUser(forceRefresh: true);
   }
 
   @override
