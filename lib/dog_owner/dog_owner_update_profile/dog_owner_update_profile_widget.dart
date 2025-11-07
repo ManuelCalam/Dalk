@@ -2020,7 +2020,7 @@ class _DogOwnerUpdateProfileWidgetState
                                                 obscureText: false,
                                                 decoration: InputDecoration(
                                                   isDense: true,
-                                                  labelText: 'Ciudad',
+                                                  labelText: 'Municipio',
                                                   hintText: _postalCodeValidated 
                                                       ? 'Puedes editar si es necesario'
                                                       : 'Se completará automáticamente',
@@ -2110,16 +2110,6 @@ class _DogOwnerUpdateProfileWidgetState
                                                       return;
                                                     }
 
-                                                    if (_model.neighborhoodDogOwnerInputTextController.text.trim().isEmpty) {
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        const SnackBar(
-                                                          content: Text('Debes seleccionar o escribir una colonia'),
-                                                          backgroundColor: Colors.red,
-                                                        ),
-                                                      );
-                                                      return;
-                                                    }
-
                                                     if (_model.datePicked == null) {
                                                       ScaffoldMessenger.of(context).showSnackBar(
                                                         const SnackBar(content: Text('Selecciona una fecha de nacimiento')),
@@ -2167,6 +2157,9 @@ class _DogOwnerUpdateProfileWidgetState
                                                         SnackBar(content: Text('Error al actualizar el perfil: $e')),
                                                       );
                                                     }
+                                                    //setState(() {});
+                                                    //PaintingBinding.instance.imageCache.clear();
+                                                    //PaintingBinding.instance.imageCache.clearLiveImages();
                                                     // 2. Limpiar la imagen vieja del caché
                                                     try {
                                                       await CachedNetworkImage.evictFromCache(photoUrl);
@@ -2205,6 +2198,7 @@ class _DogOwnerUpdateProfileWidgetState
 
                                                   },
                                                   text: 'Guardar cambios',
+
                                                   options: FFButtonOptions(
                                                     width: 360,
                                                     height: 40,

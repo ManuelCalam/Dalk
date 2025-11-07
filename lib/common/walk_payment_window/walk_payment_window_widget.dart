@@ -329,20 +329,27 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
     final isPaid = _paymentStatus == 'paid' || _paymentStatus == 'cash_agreed';
     
     // --- 1. BOTÓN DE RESEÑA (Común a ambos usuarios) ---
-    final reviewButton = _buildActionButton(
-      context: context,
-      text: hasReview ? 'Ver Reseña' : 'Agregar Reseña',
-      
-      onPressed: () => _handleReviewAction(walkData), 
-      
-      iconWidget: Icon(
-        hasReview ? Icons.rate_review_rounded : Icons.reviews_sharp,
-        color: Colors.white,
-        size: 23,
-      ),
-      isDisabled: false, 
-      color: hasReview ? theme.accent1 : theme.accent1,
-    );
+    var reviewButton;
+
+    if(walkData['status'] == 'Finalizado') {
+
+      reviewButton = _buildActionButton(
+        context: context,
+        text: hasReview ? 'Ver Reseña' : 'Agregar Reseña',
+        
+        onPressed: () => _handleReviewAction(walkData), 
+        
+        iconWidget: Icon(
+          hasReview ? Icons.rate_review_rounded : Icons.reviews_sharp,
+          color: Colors.white,
+          size: 23,
+        ),
+        isDisabled: false, 
+        color: hasReview ? theme.accent1 : theme.accent1,
+      );
+
+    }
+    
 
     if (userType == 'Dueño') {
       // ------------------------------------
@@ -356,7 +363,7 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
           text: 'Pagar con Tarjeta',
           color: theme.primary,
           onPressed: () => _handleStripePayment(walkData), 
-          iconWidget: const Icon(Icons.home, color: Colors.white, size: 23),
+          iconWidget: const Icon(Icons.credit_card, color: Colors.white, size: 23),
           isDisabled: isPaid,
         ));
       
@@ -376,15 +383,18 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
           context: context,
           text: "Menú principal",
           color: theme.primary,
-          // onPressed: () => context.go('/owner/home'),
           onPressed: () => GoRouter.of(context).go('/owner/home'),
-          iconWidget: const Icon(Icons.credit_card, color: Colors.white, size: 23),
+          iconWidget: const Icon(Icons.home, color: Colors.white, size: 23),
           isDisabled: isPaid,
         ));
       }
       
       // 3. Botón de Reseña
-      buttons.add(reviewButton);
+
+      if(walkData['status'] == 'Finalizado') buttons.add(reviewButton);
+
+
+      
 
     } else if (userType == 'Paseador') {
       // ------------------------------------
@@ -402,7 +412,7 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
       ));
 
       // 2. Botón de Reseña
-      buttons.add(reviewButton);
+      if(walkData['status'] == 'Finalizado') buttons.add(reviewButton);
     }
 
     return buttons;

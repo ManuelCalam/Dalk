@@ -691,7 +691,7 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                                                 fillColor: FlutterFlowTheme.of(context).alternate,
                                                 contentPadding: const EdgeInsetsDirectional.fromSTEB(10, 0, 0, 20),
                                                 prefixIcon: Icon(
-                                                  Icons.person,
+                                                  Icons.pets_rounded,
                                                   color: FlutterFlowTheme.of(context).primary,
                                                   size: 25,
                                                 ),
@@ -1317,7 +1317,7 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
                                                 fillColor: FlutterFlowTheme.of(context).alternate,
                                                 contentPadding: const EdgeInsetsDirectional.fromSTEB(10, 20, 10, 20),
                                                 prefixIcon: Icon(
-                                                  Icons.person,
+                                                  Icons.pets_sharp,
                                                   color: FlutterFlowTheme.of(context).primary,
                                                   size: 25,
                                                 ),

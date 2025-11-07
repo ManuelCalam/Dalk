@@ -36,7 +36,7 @@ class _PetListWidgetState extends State<PetListWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => PetListModel());
-    _loadPets(); // carga las mascotas al iniciar
+    _loadPets(); 
   }
 
   Future<void> _loadPets() async {
@@ -89,7 +89,7 @@ class _PetListWidgetState extends State<PetListWidget> {
                 height: MediaQuery.sizeOf(context).height * 0.1,
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).secondary,
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(0),
                     bottomRight: Radius.circular(0),
                     topLeft: Radius.circular(0),
@@ -99,7 +99,7 @@ class _PetListWidgetState extends State<PetListWidget> {
                 child: wrapWithModel(
                   model: _model.notificationContainerModel,
                   updateCallback: () => safeSetState(() {}),
-                  child: NotificationContainerWidget(),
+                  child: const NotificationContainerWidget(),
                 ),
               ),
               Expanded(
@@ -107,7 +107,7 @@ class _PetListWidgetState extends State<PetListWidget> {
                   width: MediaQuery.sizeOf(context).width,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).tertiary,
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(0),
                       bottomRight: Radius.circular(0),
                       topLeft: Radius.circular(50),
@@ -117,14 +117,6 @@ class _PetListWidgetState extends State<PetListWidget> {
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      // Align(
-                      //   alignment: AlignmentDirectional(0, 0),
-                      //   child: wrapWithModel(
-                      //     model: _model.goBackContainerModel,
-                      //     updateCallback: () => safeSetState(() {}),
-                      //     child: GoBackContainerWidget(),
-                      //   ),
-                      // ),
                       Padding(
                         padding: const EdgeInsetsDirectional.fromSTEB(0, 30, 0, 0),
                         child: AutoSizeText(
@@ -150,41 +142,89 @@ class _PetListWidgetState extends State<PetListWidget> {
                       ),
                       Expanded(
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width * 0.9,
                             height: double.infinity,
-                            decoration: BoxDecoration(),
+                            decoration: const BoxDecoration(),
                             child: Padding(
                               padding:
-                                  EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                                  const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                               child: SingleChildScrollView(
                                 primary: false,
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     if (loading)
-                                      const Center(child: CircularProgressIndicator())
-                                    else if (pets.isEmpty)
-                                      Padding(
-                                        padding: const EdgeInsets.all(20.0),
-                                        child: Text(
-                                          'No tienes mascotas registradas 🐾',
-                                          style: FlutterFlowTheme.of(context).bodyMedium,
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      )
+                                      const Center(child: CircularProgressIndicator())  
                                     else
                                       for (final pet in pets)
                                         PetListCardWidget(
                                         petData: pet,
                                         onPetDeleted: () async {
-                                          if (!mounted) return;  // seguridad si el widget fue desmontado
-                                          await _loadPets();      // recarga la lista desde Supabase
+                                          if (!mounted) return;  
+                                          await _loadPets();     
                                           ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(content: Text('Mascota eliminada correctamente 🐾')),
+                                            const SnackBar(content: Text('Mascota eliminada correctamente.')),
                                           );
                                         },
+                                      ),
+
+                                      Padding(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+                                        child: GestureDetector(
+                                          onTap: () async {
+                                            final shouldReload = await context.push('/owner/addPet');
+                                            if (shouldReload == true) {
+                                              await _loadPets(); 
+                                            }
+                                          },                    
+                                          child: Container(
+                                            width: MediaQuery.sizeOf(context).width,
+                                            decoration: BoxDecoration(
+                                              color: FlutterFlowTheme.of(context).primary,
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(17),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.max,
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  const Align(
+                                                    alignment: AlignmentDirectional(0, 0),
+                                                    child: Icon(
+                                                      Icons.pets_rounded,
+                                                      color: Color(0XFFFFFFFF),
+                                                      size: 35,
+                                                    ),
+                                                  ),
+                                                  AutoSizeText(
+                                                    'Agregar mascota',
+                                                    textAlign: TextAlign.center,
+                                                    style: FlutterFlowTheme.of(context)
+                                                        .bodyMedium
+                                                        .override(
+                                                          font: GoogleFonts.lexend(
+                                                            fontWeight: FontWeight.w600,
+                                                            fontStyle: FlutterFlowTheme.of(context)
+                                                                .bodyMedium
+                                                                .fontStyle,
+                                                          ),
+                                                          color: const Color(0XFFFFFFFF),
+                                                          fontSize: 19,
+                                                          letterSpacing: 0.0,
+                                                          fontWeight: FontWeight.w600,
+                                                          fontStyle: FlutterFlowTheme.of(context)
+                                                              .bodyMedium
+                                                              .fontStyle,
+                                                        ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                   ],
                                 ),

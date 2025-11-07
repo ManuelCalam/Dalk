@@ -1,5 +1,5 @@
 import 'package:dalk/backend/supabase/supabase.dart';
-import 'package:dalk/dog_owner/pet_update_profile/pet_update_profile_widget.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -76,8 +76,8 @@ class _PetListCardWidgetState extends State<PetListCardWidget> {
         height: MediaQuery.sizeOf(context).height * 0.12,
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).alternate,
-          boxShadow: [
-            const BoxShadow(
+          boxShadow: const [
+            BoxShadow(
               blurRadius: 1,
               color: Color(0x33000000),
               offset: Offset(
@@ -86,7 +86,7 @@ class _PetListCardWidgetState extends State<PetListCardWidget> {
               ),
             )
           ],
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.circular(10),
           shape: BoxShape.rectangle,
         ),
         child: Row(
@@ -101,7 +101,7 @@ class _PetListCardWidgetState extends State<PetListCardWidget> {
                 height: MediaQuery.sizeOf(context).height,
                 child: ClipOval(
                   child: Image.network(
-                    pet['photo_url'] ?? 'https://picsum.photos/seed/653/600',
+                    pet['photo_url'] ?? 'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/public/profile_pics/dog.png',
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -229,7 +229,7 @@ class _PetListCardWidgetState extends State<PetListCardWidget> {
                         child: FlutterFlowIconButton(
                           borderRadius: 8,
                           icon: Icon(
-                            Icons.edit,
+                            FontAwesomeIcons.solidPenToSquare,
                             color: FlutterFlowTheme.of(context).primary,
                             size: 30,
                           ),

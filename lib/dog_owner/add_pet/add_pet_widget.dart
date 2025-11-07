@@ -1258,7 +1258,7 @@ void _showImagePickerOptions(BuildContext context, {int? petId}) {
                                                     }
                                                   }
 
-                                                  context.pop(context);
+                                                  context.pop(true);
                                                 } catch (e) {
                                                   ScaffoldMessenger.of(context).showSnackBar(
                                                     const SnackBar(content: Text('Error al registrar la mascota. Intenta de nuevo.')),

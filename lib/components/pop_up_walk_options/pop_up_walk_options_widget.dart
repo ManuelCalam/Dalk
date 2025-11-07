@@ -214,6 +214,8 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
       }
       else if (walkStatus == 'Aceptado' || walkStatus == 'En curso') {
         // Estatus "Por confirmar" o "Aceptado" o "En curso": Botón "Cancelar"
+        bool isChagingRoute = walkStatus == 'En curso';
+
         buttons.add(_buildActionButton(
           context: context,
           text: 'Pagar paseo',
@@ -249,9 +251,11 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                     .update({'status': 'Cancelado'})
                     .eq('id', widget.walkId),
 
+                  if(isChagingRoute) GoRouter.of(context).go('/owner/currentWalk'),
                   //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
                   context.pop(),
                   context.pop(),
+                  
 
                   //Envío de notificacion después de cerrar los menús
                   await Supabase.instance.client.functions.invoke(
@@ -261,6 +265,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                       'new_status': 'Cancelado',
                     },
                   )
+
                 },
                 onCancel: () => context.pop(),
               ), 

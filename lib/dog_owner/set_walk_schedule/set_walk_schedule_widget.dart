@@ -654,7 +654,7 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                             action: SnackBarAction(
                                                               label: 'Ver Planes',
                                                               onPressed: () {
-                                                                context.push('/owner/premiumInfo');
+                                                                GoRouter.of(appNavigatorKey.currentContext!).push('/owner/premiumInfo');
                                                               },
                                                             ),
                                                           ),
