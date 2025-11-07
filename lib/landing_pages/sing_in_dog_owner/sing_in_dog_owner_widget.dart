@@ -1,3 +1,4 @@
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '/auth/supabase_auth/auth_util.dart';
@@ -319,19 +320,53 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
     }
   }
 
-  //funcion para seleccionar imagen
-  Future<void> _pickImage(bool isOwner, ImageSource source) async {
-    final pickedFile = await _picker.pickImage(source: source);
-    if (pickedFile != null) {
-      setState(() {
-        if (isOwner) {
-          _ownerImage = File(pickedFile.path);
-        } else {
-          _walkerImage = File(pickedFile.path);
-        }
-      });
+  // //funcion para seleccionar imagen
+  // Future<void> _pickImage(bool isOwner, ImageSource source) async {
+  //   final pickedFile = await _picker.pickImage(source: source);
+  //   if (pickedFile != null) {
+  //     setState(() {
+  //       if (isOwner) {
+  //         _ownerImage = File(pickedFile.path);
+  //       } else {
+  //         _walkerImage = File(pickedFile.path);
+  //       }
+  //     });
+  //   }
+  // }
+
+  Future<void> _pickImage(bool isOwner, ImageSource source, BuildContext context) async {
+  
+  if (source == ImageSource.camera) {
+    var status = await Permission.camera.request();
+    
+    if (status.isPermanentlyDenied) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Permiso de cámara denegado. Habilítalo en la configuración de la app.'),
+          ),
+        );
+      }
+      return; 
+    }
+    
+    if (!status.isGranted) {
+      return;
     }
   }
+  
+  final pickedFile = await _picker.pickImage(source: source); 
+
+  if (pickedFile != null) {
+    setState(() {
+      if (isOwner) {
+        _ownerImage = File(pickedFile.path); 
+      } else {
+        _walkerImage = File(pickedFile.path); 
+      }
+    });
+  }
+}
 
   void _showImagePickerOptions(BuildContext context, bool isOwner) {
     showModalBottomSheet(
@@ -339,7 +374,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => SafeArea(
+      builder: (modalContext) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Column(
@@ -384,7 +419,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                 subtitle: const Text('Usa la cámara de tu dispositivo'),
                 onTap: () {
                   Navigator.of(context).pop();
-                  _pickImage(isOwner, ImageSource.camera);
+                  _pickImage(isOwner, ImageSource.camera, modalContext);
                 },
               ),
               const Divider(height: 1),
@@ -405,7 +440,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                 subtitle: const Text('Selecciona una foto existente'),
                 onTap: () {
                   Navigator.of(context).pop();
-                  _pickImage(isOwner, ImageSource.gallery);
+                  _pickImage(isOwner, ImageSource.gallery, modalContext);
                 },
               ),
               const Divider(height: 1),

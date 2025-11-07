@@ -36,7 +36,6 @@ class _WalkerStripeAccountWidgetState extends State<WalkerStripeAccountWidget> {
   // Variables para el fetch de datos
   Map<String, dynamic>? _walkerPaymentsData;
   bool _isLoading = true;
-  String? _errorMessage;
 
 @override
 void initState() {
@@ -50,8 +49,8 @@ void initState() {
   _model.nameDogOwnerInputTextController3 ??= TextEditingController(text: '\$0');
   _model.nameDogOwnerInputFocusNode3 ??= FocusNode();
 
-  _fetchWalkerPaymentsData(); // primer fetch
-  _listenForWalkerPaymentsUpdates(); // escucha en tiempo real
+  _fetchWalkerPaymentsData();
+  _listenForWalkerPaymentsUpdates(); 
 }
 
 void _listenForWalkerPaymentsUpdates() {
@@ -74,8 +73,8 @@ void _listenForWalkerPaymentsUpdates() {
       final newData = payload.newRecord;
       final oldData = payload.oldRecord;
 
-      final newStatus = newData?['account_status'];
-      final oldStatus = oldData?['account_status'];
+      final newStatus = newData['account_status'];
+      final oldStatus = oldData['account_status'];
 
       if (newStatus != null && newStatus != oldStatus) {
         setState(() {
@@ -161,11 +160,11 @@ Future<void> _createStripeAccount(BuildContext context, String walkerUid) async 
 
     if (result == true) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Onboarding completado 🎉')),
+        const SnackBar(content: Text('Onboarding completado')),
       );
     } else if (result == false) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Onboarding cancelado o reiniciado 🔁')),
+        const SnackBar(content: Text('Onboarding cancelado o reiniciado')),
       );
     }
 
@@ -184,7 +183,6 @@ Future<void> _createStripeAccount(BuildContext context, String walkerUid) async 
     try {
       setState(() {
         _isLoading = true;
-        _errorMessage = null;
       });
 
       final currentUserUid = Supabase.instance.client.auth.currentUser?.id;
@@ -206,7 +204,6 @@ Future<void> _createStripeAccount(BuildContext context, String walkerUid) async 
 
     } catch (e) {
       setState(() {
-        _errorMessage = e.toString();
         _isLoading = false;
       });
       print('Error fetching walker_payments: $e');
@@ -215,94 +212,102 @@ Future<void> _createStripeAccount(BuildContext context, String walkerUid) async 
 
 
 
-  // Future<void> handleDebtPayment({
-  //   required BuildContext context,
-  //   required double debtAmount,
-  // }) async {
-  //   if (debtAmount <= 0) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('La deuda es cero o inválida.')),
-  //     );
-  //     return;
-  //   }
+  Future<void> handleDebtPayment({
+  required BuildContext context,
+  required double debtAmount,
+  required String debtWalkerId, 
+}) async {
+  if (debtAmount <= 0) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('La deuda es cero o inválida.')),
+    );
+    return;
+  }
+  
+
+  try {
+    final supabase = Supabase.instance.client;
+    final userId = supabase.auth.currentUser?.id;
+    final session = supabase.auth.currentSession;
     
+    debugPrint('[DEBUG FLUTTER] Inicia handleDebtPayment. User ID: $userId');
 
-  //   try {
-  //     final supabase = Supabase.instance.client;
-  //     final userId = supabase.auth.currentUser?.id;
-  //     final session = supabase.auth.currentSession;
-      
-  //     if (userId == null || session == null) {
-  //       throw Exception('No hay usuario autenticado o la sesión es nula.');
-  //     }
+    if (userId == null || session == null) {
+      throw Exception('No hay usuario autenticado o la sesión es nula.');
+    }
 
-  //     final customerRes = await supabase
-  //         .from('users')
-  //         .select('customer_stripe_id')
-  //         .eq('uuid', userId)
-  //         .maybeSingle();
+    // 1. Consulta local para obtener customer_stripe_id (solo para initPaymentSheet de Stripe)
+    final customerRes = await supabase
+        .from('users')
+        .select('customer_stripe_id')
+        .eq('uuid', userId)
+        .maybeSingle();
 
-  //     final customerStripeId = customerRes?['customer_stripe_id'];
-  //     if (customerStripeId == null) {
-  //       throw Exception('No se encontró el customer_stripe_id del usuario actual.');
-  //     }
+    final customerStripeId = customerRes?['customer_stripe_id'];
+    if (customerStripeId == null) {
+      debugPrint('[ERROR FLUTTER] customer_stripe_id no encontrado.');
+      throw Exception('No se encontró el customer_stripe_id del usuario actual.');
+    }
+    
+    debugPrint('[DEBUG FLUTTER] Customer Stripe ID: $customerStripeId');
 
-  //     final response = await supabase.functions.invoke(
-  //       'pay-debt-intent', 
-  //       body: {
-  //         'debt_amount': debtAmount, 
-  //         // Agregamos el customer_stripe_id para estandarizar el llamado con tu función funcional.
-  //         'customer_stripe_id': customerStripeId, 
-  //       },
-  //       headers: {
-  //         'Authorization': 'Bearer ${session.accessToken}', 
-  //       },
-  //     );
-  //     // -----------------------------------------------------------------------
+    final response = await supabase.functions.invoke(
+      'pay-debt-intent', 
+      body: {
+        'debt_amount': debtAmount, 
+        'debt_walker_id': debtWalkerId, 
+      },
+      headers: {
+        'Authorization': 'Bearer ${session.accessToken}', 
+      },
+    );
 
-  //     if (response.data == null) {
-  //       throw Exception('Error al crear el PaymentIntent: Respuesta nula de la Edge Function.');
-  //     }
+    debugPrint('[DEBUG FLUTTER] Respuesta de Edge Function recibida.');
 
-  //     // Extraer secretos de la respuesta
-  //     final clientSecret = response.data['client_secret'];
-  //     final ephemeralKey = response.data['ephemeralKey'];
+    if (response.data == null) {
+      throw Exception('Error al crear el PaymentIntent: Respuesta nula de la Edge Function.');
+    }
 
-  //     if (clientSecret == null || ephemeralKey == null) {
-  //       throw Exception('Respuesta incompleta de la Edge Function (faltan secretos).');
-  //     }
+    final clientSecret = response.data['client_secret'];
+    final ephemeralKey = response.data['ephemeralKey'];
 
-  //     await Stripe.instance.initPaymentSheet(
-  //       paymentSheetParameters: SetupPaymentSheetParameters(
-  //         merchantDisplayName: 'Dalk',
-  //         paymentIntentClientSecret: clientSecret,
-  //         customerEphemeralKeySecret: ephemeralKey,
-  //         customerId: customerStripeId,
-  //       ),
-  //     );
+    if (clientSecret == null || ephemeralKey == null) {
+      throw Exception('Respuesta incompleta de la Edge Function (faltan secretos).');
+    }
 
-  //     await Stripe.instance.presentPaymentSheet();
+    await Stripe.instance.initPaymentSheet(
+      paymentSheetParameters: SetupPaymentSheetParameters(
+        merchantDisplayName: 'Dalk',
+        paymentIntentClientSecret: clientSecret,
+        customerEphemeralKeySecret: ephemeralKey,
+        customerId: customerStripeId, 
+      ),
+    );
 
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('Pago de deuda completado con éxito.')),
-  //     );
+    await Stripe.instance.presentPaymentSheet();
 
-  //   } on StripeException catch (e) {
-  //     debugPrint('Error de Stripe: ${e.error.message}');
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('Pago cancelado o fallido.')),
-  //     );
-  //   } catch (e) {
-  //     debugPrint('Error general: $e');
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text('Error al procesar el pago: ${e.toString()}')),
-  //     );
-  //   }
-  // }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Pago de deuda completado con éxito.')),
+    );
+
+    await _fetchWalkerPaymentsData();
+
+  } on StripeException catch (e) {
+    debugPrint('Error de Stripe: ${e.error.message}');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Pago cancelado o fallido.')),
+    );
+  } catch (e) {
+    debugPrint('Error general en Flutter Function: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error al procesar el pago: ${e.toString()}')),
+    );
+  }
+}
 
   @override
   Widget build(BuildContext context) {
-    final String accountStripeId = _walkerPaymentsData?['account_stripe_id'] as String? ?? 'N/A';
+    // final String accountStripeId = _walkerPaymentsData?['account_stripe_id'] as String? ?? 'N/A';
     final String accountStatus = _walkerPaymentsData?['account_status'] as String? ?? 'Sin cuenta';
     final double pendingBalance = (_walkerPaymentsData?['pending_balance'] as num?)?.toDouble() ?? 0.0;
     final double availableBalance = (_walkerPaymentsData?['available_balance'] as num?)?.toDouble() ?? 0.0;
@@ -1197,10 +1202,11 @@ Future<void> _createStripeAccount(BuildContext context, String walkerUid) async 
                                             0, 20, 0, 0),
                                         child: FFButtonWidget(
                                           onPressed: () async {
-                                            // await handleDebtPayment(
-                                            //             context: context,
-                                            //             debtAmount: debt,
-                                            //           );                                          
+                                            await handleDebtPayment(
+                                                        context: context,
+                                                        debtAmount: debt,
+                                                        debtWalkerId: currentUserUid
+                                                      );                                          
                                             },
                                           text: 'Pagar Adeudo',
                                           icon: const Icon(

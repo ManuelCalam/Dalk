@@ -16,6 +16,9 @@
     android:name="android.permission.USE_FULL_SCREEN_INTENT"
     tools:node="remove" />
 
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
 
 
     <application

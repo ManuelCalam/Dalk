@@ -16,6 +16,8 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
 const CURRENCY = "mxn";
 
 Deno.serve(async (req) => {
+  console.log("[START] pay-debt-intent invoked.");
+  
   if (req.method !== "POST") {
     return new Response(
       JSON.stringify({ error: "Método no permitido. Solo se acepta POST." }),
@@ -23,8 +25,10 @@ Deno.serve(async (req) => {
     );
   }
 
+  // 1. --- VERIFICACIÓN DE SEGURIDAD (JWT) ---
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
+    console.error("[AUTH ERROR] Falta el token.");
     return new Response(
       JSON.stringify({ error: "Falta el token de autenticación (JWT)." }),
       { status: 401, headers: { "Content-Type": "application/json" } },
@@ -36,51 +40,65 @@ Deno.serve(async (req) => {
   const { data: userData, error: userError } = await anonSupabase.auth.getUser(jwt);
   
   if (userError || !userData.user) {
+    console.error("[AUTH ERROR] Usuario no válido o sesión expirada.");
     return new Response(
       JSON.stringify({ error: "Usuario no válido o sesión expirada." }),
       { status: 401, headers: { "Content-Type": "application/json" } },
     );
   }
   
+  const payerUserId = userData.user.id; // El usuario que paga (ID de Auth)
+  console.log(`[DEBUG EF] Payer User ID (from JWT): ${payerUserId}`);
+  // ------------------------------------------
 
   try {
     const body = await req.json();
-    // *** AHORA ESPERAMOS user_id Y debt_amount DEL BODY ***
-    const { debt_amount, user_id } = body; 
+    // ** Requerimos el monto y el ID del Walker al que se destina el pago **
+    const { debt_amount, debt_walker_id } = body; 
 
-    if (typeof debt_amount !== "number" || debt_amount <= 0 || !user_id) {
+    console.log(`[DEBUG EF] Body recibido: amount=${debt_amount}, walker_id=${debt_walker_id}`);
+
+    if (typeof debt_amount !== "number" || debt_amount <= 0 || !debt_walker_id) {
+      console.error("[ERROR EF] Parámetros faltantes: debt_amount o debt_walker_id.");
       return new Response(
-        JSON.stringify({ error: "Faltan parámetros requeridos (debt_amount o user_id) o son inválidos." }),
+        JSON.stringify({ 
+          error: "Faltan parámetros requeridos (debt_amount o debt_walker_id) o son inválidos." 
+        }),
         { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
 
-    // 2. OBTENER CUSTOMER ID Y WALKER ID del usuario
+    // 2. OBTENER CUSTOMER ID del Payer (usando el ID del JWT)
     const { data: userDataLookup, error: lookupError } = await supabase
       .from("users")
-      .select("customer_stripe_id, uuid") 
-      .eq("uuid", user_id)
+      .select("customer_stripe_id") 
+      .eq("uuid", payerUserId) // Usamos el ID del JWT
       .single();
 
-    if (lookupError || !userDataLookup?.customer_stripe_id || !userDataLookup?.walker_id) {
-      console.error("Error al obtener IDs:", lookupError);
+    // ** VALIDACIÓN CORREGIDA: Solo chequeamos si se encontró el customer_stripe_id **
+    if (lookupError || !userDataLookup?.customer_stripe_id) {
+      console.error("[ERROR EF] Lookup falló para Stripe ID:", lookupError);
       return new Response(
         JSON.stringify({
-          error: "No se encontró el Stripe Customer ID o Walker ID para el usuario.",
+          error: "No se encontró el Stripe Customer ID para el usuario pagador.", // Mensaje más específico
         }),
         { status: 404, headers: { "Content-Type": "application/json" } },
       );
     }
+    // ------------------------------------------
 
     const customerStripeId = userDataLookup.customer_stripe_id;
-    const walkerId = userDataLookup.walker_id; 
     const amountCents = Math.round(debt_amount * 100);
 
+    console.log(`[DEBUG EF] Customer Stripe ID: ${customerStripeId}`);
+
+    // 3. Crear ephemeral key
     const ephemeralKey = await stripe.ephemeralKeys.create(
       { customer: customerStripeId },
       { apiVersion: "2023-10-16" },
     );
 
+    // 4. Crear Payment Intent
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountCents,
       currency: CURRENCY,
@@ -89,11 +107,14 @@ Deno.serve(async (req) => {
       setup_future_usage: "off_session", 
       description: `Pago de deuda por ${debt_amount} ${CURRENCY}`,
       metadata: {
-        payer_uuid: user_id,
+        payer_uuid: payerUserId,
         type: "debt_payment",
-        walker_id_to_pay: walkerId, 
+        // Usamos el ID del walker que se recibió en el body
+        walker_id_to_pay: debt_walker_id, 
       },
     });
+
+    console.log("[SUCCESS EF] Payment Intent creado.");
 
     return new Response(
       JSON.stringify({
@@ -103,7 +124,7 @@ Deno.serve(async (req) => {
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
   } catch (error) {
-    console.error("Error en pay-debt-intent:", error);
+    console.error("[ERROR EF] Error interno:", error);
     return new Response(
       JSON.stringify({ error: "Error interno al crear el PaymentIntent de deuda." }),
       { status: 500, headers: { "Content-Type": "application/json" } },

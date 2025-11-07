@@ -1,5 +1,6 @@
 import 'package:dalk/backend/supabase/database/database.dart';
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
@@ -96,8 +97,8 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
     if (age <= 0) {
       return 'La edad debe ser mayor a 0';
     }
-    if (age > 30) {
-      return 'La edad debe ser menor a 30';
+    if (age > 10) {
+      return 'La edad debe ser menor a 10';
     }
     return null;
   }
@@ -185,57 +186,91 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
     }
   }
 
-  Future<void> _pickImage(bool isOwner, ImageSource source, {int? petId}) async {
-    final pickedFile = await _picker.pickImage(source: source);
-    if (pickedFile != null) {
-      setState(() {
-        if (isOwner) {
-          _ownerImage = File(pickedFile.path);
-        } else {
-          _petImage = File(pickedFile.path);
-        }
-      });
+Future<void> _pickImage(
+  bool isOwner,
+  ImageSource source, {
+  int? petId,
+  BuildContext? context,
+}) async {
+  if (source == ImageSource.camera) {
+    final status = await Permission.camera.request();
 
-      if (petId != null) {
-        final userId = Supabase.instance.client.auth.currentUser?.id;
-        if (userId != null) {
-          await _uploadPetImage(userId, File(pickedFile.path), petId: petId);
-        } else {
-          print(' No hay usuario autenticado');
-        }
+    if (status.isPermanentlyDenied) {
+      if (context != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Permiso de cámara denegado. Habilítalo en la configuración de la app.'),
+          ),
+        );
       } else {
-        print(' petId es null, no se puede subir');
+        print('Permiso de cámara permanentemente denegado (no context para SnackBar).');
       }
+      return;
+    }
+
+    if (!status.isGranted) {
+      return;
     }
   }
 
-  void _showImagePickerOptions(BuildContext context, bool isOwner, int? petId) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Tomar foto'),
-              onTap: () {
-                Navigator.of(context).pop();
-                _pickImage(isOwner, ImageSource.camera, petId: petId);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Elegir de la galería'),
-              onTap: () {
-                Navigator.of(context).pop();
-                _pickImage(isOwner, ImageSource.gallery, petId: petId);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
+  final pickedFile = await _picker.pickImage(source: source);
+  if (pickedFile != null) {
+    final selectedFile = File(pickedFile.path);
+
+    // Actualizar estado local (respeta isOwner)
+    setState(() {
+      if (isOwner) {
+        _ownerImage = selectedFile;
+      } else {
+        _petImage = selectedFile;
+      }
+    });
+
+    if (petId != null) {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId != null) {
+        await _uploadPetImage(userId, selectedFile, petId: petId);
+      } else {
+        print('No hay usuario autenticado');
+        if (context != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No hay usuario autenticado.')),
+          );
+        }
+      }
+    } else {
+      print('petId es null, no se puede subir');
+    }
   }
+}
+
+void _showImagePickerOptions(BuildContext context, bool isOwner, int? petId) {
+  showModalBottomSheet(
+    context: context,
+    builder: (modalContext) => SafeArea(
+      child: Wrap(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.camera_alt),
+            title: const Text('Tomar foto'),
+            onTap: () {
+              Navigator.of(context).pop();
+              _pickImage(isOwner, ImageSource.camera, petId: petId, context: modalContext);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.photo_library),
+            title: const Text('Elegir de la galería'),
+            onTap: () {
+              Navigator.of(context).pop();
+              _pickImage(isOwner, ImageSource.gallery, petId: petId, context: modalContext);
+            },
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
   @override
   void initState() {

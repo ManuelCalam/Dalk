@@ -577,9 +577,9 @@ async function handlePaymentIntentSucceeded(paymentIntent: any) {
       .from("walker_payments") 
       .update({
         debt: 0,
-        debt_last_paid_at: new Date().toISOString(), 
+        last_updated: new Date().toISOString(), 
       })
-      .eq("walker_id", walkerIdToPay); // Filtrar por el ID del caminante
+      .eq("walker_uuid", walkerIdToPay); 
 
     if (debtUpdateError) {
       console.error("DB error [DebtPaymentSucceeded]:", debtUpdateError);
@@ -588,7 +588,6 @@ async function handlePaymentIntentSucceeded(paymentIntent: any) {
       console.log("Walker debt marked as 0. Walker ID:", walkerIdToPay);
     }
 
-    // Devolver inmediatamente si se trata de un pago de deuda
     return;
   }
 

@@ -1,5 +1,6 @@
 import 'package:dalk/backend/supabase/supabase.dart';
 import 'package:dalk/utils/validation.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
@@ -283,45 +284,134 @@ class _DogOwnerUpdateProfileWidgetState
     }
   }
 
-  Future<void> _pickImage(ImageSource source) async {
-    final pickedFile = await _picker.pickImage(source: source);
-    if (pickedFile != null) {
-      setState(() {
-        _tempImage = File(pickedFile.path);
-      });
+// Función mejorada para seleccionar imagen con permisos
+Future<void> _pickImage(ImageSource source, BuildContext context) async {
+  if (source == ImageSource.camera) {
+    var status = await Permission.camera.request();
 
-      
+    if (status.isPermanentlyDenied) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Permiso de cámara denegado. Habilítalo en la configuración de la app.'),
+          ),
+        );
+      }
+      return;
+    }
 
+    if (!status.isGranted) {
+      return;
     }
   }
 
-  void _showImagePickerOptions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Wrap(
+  final pickedFile = await _picker.pickImage(source: source);
+
+  if (pickedFile != null) {
+    setState(() {
+      _tempImage = File(pickedFile.path);
+    });
+  }
+}
+
+// Modal para elegir fuente de imagen (galería o cámara)
+void _showImagePickerOptions(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (modalContext) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
+            // Indicador visual
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Text(
+                'Selecciona una opción',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: FlutterFlowTheme.of(context).primary,
+                ),
+              ),
+            ),
+            // Opción de cámara
             ListTile(
-              leading: const Icon(Icons.camera_alt),
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.camera_alt,
+                  color: FlutterFlowTheme.of(context).primary,
+                ),
+              ),
               title: const Text('Tomar foto'),
+              subtitle: const Text('Usa la cámara de tu dispositivo'),
               onTap: () {
                 Navigator.of(context).pop();
-                _pickImage(ImageSource.camera);
+                _pickImage(ImageSource.camera, modalContext);
               },
             ),
+            const Divider(height: 1),
+            // Opción de galería
             ListTile(
-              leading: const Icon(Icons.photo_library),
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.photo_library,
+                  color: FlutterFlowTheme.of(context).primary,
+                ),
+              ),
               title: const Text('Elegir de la galería'),
+              subtitle: const Text('Selecciona una foto existente'),
               onTap: () {
                 Navigator.of(context).pop();
-                _pickImage(ImageSource.gallery);
+                _pickImage(ImageSource.gallery, modalContext);
               },
+            ),
+            const Divider(height: 1),
+            // Opción de cancelar
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.cancel,
+                  color: Colors.grey,
+                ),
+              ),
+              title: const Text('Cancelar'),
+              onTap: () => Navigator.of(context).pop(),
             ),
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {

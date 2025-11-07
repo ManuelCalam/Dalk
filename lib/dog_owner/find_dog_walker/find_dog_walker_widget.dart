@@ -306,132 +306,130 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                         ),
                       ),
                       Expanded(
-  child: Padding(
-    padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 15.0),
-    child: Container(
-      width: MediaQuery.sizeOf(context).width * 0.9,
-      height: double.infinity,
-      decoration: const BoxDecoration(),
-      child: FutureBuilder<List<dynamic>>(
-        future: Supabase.instance.client
-            .from('walkers_info')
-            .select()
-            .ilike(
-              'name',
-              _model.findDogWalkerInputTextController.text.isEmpty
-                  ? '%' 
-                  : '%${_model.findDogWalkerInputTextController.text}%',
-            ),
-        builder: (context, snapshot) {
-          print(' Estado del FutureBuilder: ${snapshot.connectionState}');
-          
-          // Manejar estados de carga
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            print(' Cargando paseadores...');
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
+                        child: Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 15.0),
+                          child: Container(
+                            width: MediaQuery.sizeOf(context).width * 0.9,
+                            height: double.infinity,
+                            decoration: const BoxDecoration(),
+                            child: FutureBuilder<List<dynamic>>(
+                              future: Supabase.instance.client
+                                  .from('walkers_info')
+                                  .select()
+                                  .ilike(
+                                    'name',
+                                    _model.findDogWalkerInputTextController.text.isEmpty
+                                        ? '%' 
+                                        : '%${_model.findDogWalkerInputTextController.text}%',
+                                  ),
+                              builder: (context, snapshot) {
+                                // print(' Estado del FutureBuilder: ${snapshot.connectionState}');
+                                
+                                // Manejar estados de carga
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  print(' Cargando paseadores...');
+                                  return const Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                }
 
-          // Manejar errores
-          if (snapshot.hasError) {
-            print(' Error en FutureBuilder: ${snapshot.error}');
-            print(' StackTrace: ${snapshot.stackTrace}');
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, color: Colors.red, size: 50),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Error al cargar paseadores',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    '${snapshot.error}',
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            );
-          }
+                                // Manejar errores
+                                if (snapshot.hasError) {
+                                  print(' Error en FutureBuilder: ${snapshot.error}');
+                                  print(' StackTrace: ${snapshot.stackTrace}');
+                                  return Center(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.error_outline, color: FlutterFlowTheme.of(context).error, size: 50),
+                                        const SizedBox(height: 10),
+                                        const Text(
+                                          'Error al cargar paseadores',
+                                          style: TextStyle(fontSize: 16),
+                                        ),
+                                        const SizedBox(height: 5),
+                                        Text(
+                                          '${snapshot.error}',
+                                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
 
-          // Verificar datos
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            print('ℹ️  No se encontraron paseadores');
-            return const Center(
-              child: Text('No se encontraron paseadores.'),
-            );
-          }
+                                // Verificar datos
+                                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                                  print('No se encontraron paseadores');
+                                  return const Center(
+                                    child: Text('No se encontraron paseadores.'),
+                                  );
+                                }
 
-          try {
-            print(' Datos recibidos: ${snapshot.data!.length} paseadores');
-            
-            // Copiar datos de forma segura
-            final paseadores = List<Map<String, dynamic>>.from(snapshot.data!);
-            
-            // VERIFICAR ESTRUCTURA DE DATOS
-            print('DEBUG: Verificando estructura de paseadores...');
-            for (int i = 0; i < paseadores.length; i++) {
-              final paseador = paseadores[i];
-              print('DEBUG: Paseador $i:');
-              print('DEBUG:   - UUID: ${paseador['uuid']} (tipo: ${paseador['uuid']?.runtimeType})');
-              print('DEBUG:   - Name: ${paseador['name']}');
-              print('DEBUG:   - Tiene UUID?: ${paseador['uuid'] != null}');
-            }
+                                try {
+                                  print(' Datos recibidos: ${snapshot.data!.length} paseadores');
+                                  
+                                  // Copiar datos de forma segura
+                                  final paseadores = List<Map<String, dynamic>>.from(snapshot.data!);
+                                  
+                                  // // VERIFICAR ESTRUCTURA DE DATOS
+                                  // print('DEBUG: Verificando estructura de paseadores...');
+                                  // for (int i = 0; i < paseadores.length; i++) {
+                                  //   final paseador = paseadores[i];
+                                  //   print('DEBUG: Paseador $i:');
+                                  //   print('DEBUG:   - UUID: ${paseador['uuid']} (tipo: ${paseador['uuid']?.runtimeType})');
+                                  //   print('DEBUG:   - Name: ${paseador['name']}');
+                                  //   print('DEBUG:   - Tiene UUID?: ${paseador['uuid'] != null}');
+                                  // }
 
-            // VERIFICAR UUIDs RECOMENDADOS
-            print('DEBUG: UUIDs recomendados recibidos: ${widget.recommendedWalkerUUIDs}');
-            for (final uuid in widget.recommendedWalkerUUIDs) {
-              print('DEBUG: UUID recomendado: $uuid (tipo: ${uuid.runtimeType})');
-            }
+                                  // // VERIFICAR UUIDs RECOMENDADOS
+                                  // print('DEBUG: UUIDs recomendados recibidos: ${widget.recommendedWalkerUUIDs}');
+                                  // for (final uuid in widget.recommendedWalkerUUIDs) {
+                                  //   print('DEBUG: UUID recomendado: $uuid (tipo: ${uuid.runtimeType})');
+                                  // }
 
-            // ORDENAR solo si hay datos válidos
-            final paseadoresOrdenados = _sortWalkers(paseadores);
-            
-            print(' Lista ordenada, construyendo ListView...');
-            
-            return ListView.builder(
-              itemCount: paseadoresOrdenados.length,
-              itemBuilder: (context, index) {
-                final paseador = paseadoresOrdenados[index];
-                final uuid = paseador['uuid']?.toString();
-                final esRecomendado = uuid != null && 
-                    widget.recommendedWalkerUUIDs.contains(uuid);
-                
-                print(' Construyendo card para: ${paseador['name']} - Recomendado: $esRecomendado');
-                
-                return FindDogWalkerCardWidget(
-                  nombre: paseador['name'] ?? 'Sin nombre',
-                  precio: paseador['fee']?.toString() ?? '0',
-                  calificacion: paseador['average_rating']?.toString() ?? '0',
-                  fotoUrl: paseador['photo_url'] ?? 'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/public/profile_pics/user.png',
-                  date: widget.date,
-                  time: widget.time,
-                  addressId: widget.addressId,
-                  petId: widget.petId,
-                  uuidPaseador: paseador['uuid'],
-                  recomendado: esRecomendado,
-                  walkDuration: widget.walkDuration,
-                  instructions: widget.instructions,
-                );
-              },
-            );
-            
-          } catch (e, stackTrace) {
-            print(' ERROR crítico en builder: $e');
-            print(' StackTrace: $stackTrace');
-            return Center(
-              child: Text('Error al procesar los paseadores: $e'),
-            );
-          }
-        },
-      ),
-    ),
-  ),
-),
+                                  // ORDENAR solo si hay datos válidos
+                                  final paseadoresOrdenados = _sortWalkers(paseadores);
+                                                                    
+                                  return ListView.builder(
+                                    itemCount: paseadoresOrdenados.length,
+                                    itemBuilder: (context, index) {
+                                      final paseador = paseadoresOrdenados[index];
+                                      final uuid = paseador['uuid']?.toString();
+                                      final esRecomendado = uuid != null && 
+                                          widget.recommendedWalkerUUIDs.contains(uuid);
+                                      
+                                      print(' Construyendo card para: ${paseador['name']} - Recomendado: $esRecomendado');
+                                      
+                                      return FindDogWalkerCardWidget(
+                                        nombre: paseador['name'] ?? 'Sin nombre',
+                                        precio: paseador['fee']?.toString() ?? '0',
+                                        calificacion: paseador['average_rating']?.toString() ?? '0',
+                                        fotoUrl: paseador['photo_url'] ?? 'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/public/profile_pics/user.png',
+                                        date: widget.date,
+                                        time: widget.time,
+                                        addressId: widget.addressId,
+                                        petId: widget.petId,
+                                        uuidPaseador: paseador['uuid'],
+                                        recomendado: esRecomendado,
+                                        walkDuration: widget.walkDuration,
+                                        instructions: widget.instructions,
+                                      );
+                                    },
+                                  );
+                                  
+                                } catch (e, stackTrace) {
+                                  print(' ERROR crítico en builder: $e');
+                                  print(' StackTrace: $stackTrace');
+                                  return Center(
+                                    child: Text('Error al procesar los paseadores: $e'),
+                                  );
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),

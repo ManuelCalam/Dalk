@@ -1,4 +1,5 @@
 import 'package:dalk/backend/supabase/supabase.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
 import '/flutter_flow/flutter_flow_choice_chips.dart';
@@ -129,8 +130,8 @@ class _AddPetWidgetState extends State<AddPetWidget> {
     if (age <= 0) {
       return 'La edad debe ser mayor a 0';
     }
-    if (age > 30) {
-      return 'La edad debe ser menor a 30';
+    if (age > 10) {
+      return 'La edad debe ser menor a 10';
     }
     return null;
   }
@@ -181,7 +182,30 @@ Future<String?> _uploadPetImage(
 }
 
 // Seleccionar imagen
-Future<void> _pickImage(BuildContext context, ImageSource source, {int? petId}) async {
+Future<void> _pickImage(
+  BuildContext context,
+  ImageSource source, {
+  int? petId,
+}) async {
+  if (source == ImageSource.camera) {
+    var status = await Permission.camera.request();
+
+    if (status.isPermanentlyDenied) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Permiso de cámara denegado. Habilítalo en la configuración de la app.'),
+          ),
+        );
+      }
+      return;
+    }
+
+    if (!status.isGranted) {
+      return;
+    }
+  }
+
   final pickedFile = await _picker.pickImage(source: source);
 
   if (pickedFile != null) {
@@ -189,6 +213,7 @@ Future<void> _pickImage(BuildContext context, ImageSource source, {int? petId}) 
       _ownerImage = File(pickedFile.path);
     });
 
+    // Subir automáticamente si el usuario y mascota existen
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId != null && petId != null) {
       await _uploadPetImage(context, userId, File(pickedFile.path), petId: petId);
@@ -196,30 +221,100 @@ Future<void> _pickImage(BuildContext context, ImageSource source, {int? petId}) 
   }
 }
 
-// Mostrar opciones de imagen
+///Mostrar opciones de imagen (cámara o galería)
 void _showImagePickerOptions(BuildContext context, {int? petId}) {
   showModalBottomSheet(
     context: context,
-    builder: (context) => SafeArea(
-      child: Wrap(
-        children: [
-          ListTile(
-            leading: const Icon(Icons.camera_alt),
-            title: const Text('Tomar foto'),
-            onTap: () {
-              Navigator.of(context).pop();
-              _pickImage(context, ImageSource.camera, petId: petId);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.photo_library),
-            title: const Text('Elegir de la galería'),
-            onTap: () {
-              Navigator.of(context).pop();
-              _pickImage(context, ImageSource.gallery, petId: petId);
-            },
-          ),
-        ],
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (modalContext) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Indicador visual
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Text(
+                'Selecciona una opción',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: FlutterFlowTheme.of(context).primary,
+                ),
+              ),
+            ),
+            // Opción de cámara
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.camera_alt,
+                  color: FlutterFlowTheme.of(context).primary,
+                ),
+              ),
+              title: const Text('Tomar foto'),
+              subtitle: const Text('Usa la cámara de tu dispositivo'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickImage(modalContext, ImageSource.camera, petId: petId);
+              },
+            ),
+            const Divider(height: 1),
+            // Opción de galería
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.photo_library,
+                  color: FlutterFlowTheme.of(context).primary,
+                ),
+              ),
+              title: const Text('Elegir de la galería'),
+              subtitle: const Text('Selecciona una foto existente'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickImage(modalContext, ImageSource.gallery, petId: petId);
+              },
+            ),
+            const Divider(height: 1),
+            // Opción de cancelar
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.cancel,
+                  color: Colors.grey,
+                ),
+              ),
+              title: const Text('Cancelar'),
+              onTap: () => Navigator.of(context).pop(),
+            ),
+          ],
+        ),
       ),
     ),
   );

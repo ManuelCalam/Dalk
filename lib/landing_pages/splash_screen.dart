@@ -40,6 +40,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return const Scaffold(
       backgroundColor: Color(0xFFCCDBFF),
+      // backgroundColor: FlutterFlowTheme.of(context).alternate,
       body: Center(
         child: CircularProgressIndicator(
           color: Color(0xFF0080C4),
