@@ -1,5 +1,6 @@
 import 'dart:convert';
 import '/backend/supabase/supabase.dart';
+import '/user_provider.dart';
 import 'package:http/http.dart' as http;
 
 class RecommendationService {
@@ -55,7 +56,7 @@ class RecommendationService {
       print('Datos enviados: $requestBody');
       
       final response = await http.post(
-        Uri.parse('https://recomendar-rtwziiuflq-uc.a.run.app'),
+        Uri.parse('https://dalk-ia.onrender.com/recomendar'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -132,11 +133,10 @@ class RecommendationService {
       // 3. Lista para almacenar resultados
       final List<Map<String, dynamic>> recommendations = [];
 
-      // 4. Probar solo con los primeros 5 paseadores (para no saturar)
-      final walkersToProcess = walkers.take(5).toList();
-      print('Procesando ${walkersToProcess.length} paseadores...');
+      // 4. PROCESAR TODOS LOS PASEADORES (sin limitación)
+      print('Procesando TODOS los ${walkers.length} paseadores...');
 
-      for (final walker in walkersToProcess) {
+      for (final walker in walkers) {
         try {
           print('Analizando paseador: ${walker['name']}');
           
