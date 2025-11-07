@@ -1,5 +1,6 @@
 import 'package:dalk/backend/supabase/database/database.dart';
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
@@ -158,84 +159,135 @@ class _PetUpdateProfileWidgetState extends State<PetUpdateProfileWidget> {
   }
 
   Future<String?> _uploadPetImage(String userId, File imageFile, {int? petId}) async {
-    try {
-      final storage = Supabase.instance.client.storage;
-      final supabase = Supabase.instance.client;
+  try {
+    final storage = Supabase.instance.client.storage;
+    final supabase = Supabase.instance.client;
 
-      final filePath = petId != null
-          ? 'owners/$userId/pets/$petId/profile.jpg'
-          : 'owners/$userId/profile.jpg';
+    final filePath = petId != null
+        ? 'owners/$userId/pets/$petId/profile.jpg'
+        : 'owners/$userId/profile.jpg';
 
-      await storage.from('profile_pics').upload(
-            filePath,
-            imageFile,
-            fileOptions: const FileOptions(upsert: true),
-          );
-
-      final imageUrl = storage.from('profile_pics').getPublicUrl(filePath);
-
-      if (petId != null) {
-        await supabase.from('pets').update({'photo_url': imageUrl}).eq('id', petId);
-      }
-
-      return imageUrl;
-    } catch (e) {
-      print('Error al subir imagen: $e');
-      return null;
-    }
-  }
-
-  Future<void> _pickImage(bool isOwner, ImageSource source, {int? petId}) async {
-    final pickedFile = await _picker.pickImage(source: source);
-    if (pickedFile != null) {
-      setState(() {
-        if (isOwner) {
-          _ownerImage = File(pickedFile.path);
-        } else {
-          _petImage = File(pickedFile.path);
-        }
-      });
-
-      if (petId != null) {
-        final userId = Supabase.instance.client.auth.currentUser?.id;
-        if (userId != null) {
-          await _uploadPetImage(userId, File(pickedFile.path), petId: petId);
-        } else {
-          print(' No hay usuario autenticado');
-        }
-      } else {
-        print(' petId es null, no se puede subir');
-      }
-    }
-  }
-
-  void _showImagePickerOptions(BuildContext context, bool isOwner, int? petId) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Tomar foto'),
-              onTap: () {
-                Navigator.of(context).pop();
-                _pickImage(isOwner, ImageSource.camera, petId: petId);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Elegir de la galería'),
-              onTap: () {
-                Navigator.of(context).pop();
-                _pickImage(isOwner, ImageSource.gallery, petId: petId);
-              },
-            ),
-          ],
-        ),
-      ),
+    await storage.from('profile_pics').upload(
+      filePath,
+      imageFile,
+      fileOptions: const FileOptions(upsert: true),
     );
+
+    final imageUrl = storage.from('profile_pics').getPublicUrl(filePath);
+
+    if (petId != null) {
+      await supabase.from('pets').update({'photo_url': imageUrl}).eq('id', petId);
+    }
+
+    return imageUrl;
+  } catch (e) {
+    print('Error al subir imagen: $e');
+    return null;
   }
+}
+
+/// Compatibilidad: añadimos `BuildContext? context` como parámetro nombrado opcional
+/// para que no rompa llamadas existentes.
+/// - Si `context` está presente, mostramos SnackBars para errores/permisos.
+/// - Solo pedimos permiso para la cámara (no pedir galería).
+Future<void> _pickImage(
+  bool isOwner,
+  ImageSource source, {
+  int? petId,
+  BuildContext? context, // opcional, backward-compatible
+}) async {
+  // Permiso solo si se usa la cámara
+  if (source == ImageSource.camera) {
+    final status = await Permission.camera.request();
+
+    if (status.isPermanentlyDenied) {
+      if (context != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Permiso de cámara denegado. Habilítalo en la configuración de la app.'),
+          ),
+        );
+      } else {
+        // No hay contexto para mostrar SnackBar; logueamos para debug
+        print('Permiso de cámara permanentemente denegado (no context para SnackBar).');
+      }
+      return;
+    }
+
+    if (!status.isGranted) {
+      if (context != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Permiso de cámara denegado.')),
+        );
+      } else {
+        print('Permiso de cámara denegado.');
+      }
+      return;
+    }
+  }
+
+  final pickedFile = await _picker.pickImage(source: source);
+  if (pickedFile != null) {
+    final selectedFile = File(pickedFile.path);
+
+    // Actualizar estado local (respeta isOwner)
+    setState(() {
+      if (isOwner) {
+        _ownerImage = selectedFile;
+      } else {
+        _petImage = selectedFile;
+      }
+    });
+
+    // Subir sólo si petId está presente (igual que tu lógica original)
+    if (petId != null) {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId != null) {
+        await _uploadPetImage(userId, selectedFile, petId: petId);
+      } else {
+        print('No hay usuario autenticado');
+        if (context != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No hay usuario autenticado.')),
+          );
+        }
+      }
+    } else {
+      print('petId es null, no se puede subir');
+    }
+  }
+}
+
+void _showImagePickerOptions(BuildContext context, bool isOwner, int? petId) {
+  showModalBottomSheet(
+    context: context,
+    builder: (modalContext) => SafeArea(
+      child: Wrap(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.camera_alt),
+            title: const Text('Tomar foto'),
+            onTap: () {
+              Navigator.of(context).pop();
+              // Pasamos modalContext como contexto al _pickImage opcional
+              _pickImage(isOwner, ImageSource.camera, petId: petId, context: modalContext);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.photo_library),
+            title: const Text('Elegir de la galería'),
+            onTap: () {
+              Navigator.of(context).pop();
+              // Para galería no pedimos permiso; igualmente pasamos context por si queremos mostrar errores
+              _pickImage(isOwner, ImageSource.gallery, petId: petId, context: modalContext);
+            },
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 
   @override
   void initState() {

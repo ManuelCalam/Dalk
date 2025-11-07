@@ -1,3 +1,4 @@
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '/auth/supabase_auth/auth_util.dart';
@@ -329,7 +330,6 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
         return null;
       }
 
-
       final filePath = 'owners/$userId/profile.jpg';
       final storage = Supabase.instance.client.storage;
 
@@ -343,17 +343,36 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
       // Obtener URL pública
       final imageUrl = storage.from('profile_pics').getPublicUrl(filePath);
       print('Imagen subida: $imageUrl');
-      return imageUrl; // ahora es un String
+      return imageUrl;
     } catch (e) {
       print('Error al subir imagen: $e');
       return null;
     }
   }
 
-  //funcion para seleccionar imagen
-    //funcion para seleccionar imagen
-  Future<void> _pickImage(bool isOwner, ImageSource source) async {
+  /// ✅ Función mejorada para seleccionar imagen con permisos
+  Future<void> _pickImage(bool isOwner, ImageSource source, BuildContext context) async {
+    if (source == ImageSource.camera) {
+      var status = await Permission.camera.request();
+
+      if (status.isPermanentlyDenied) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Permiso de cámara denegado. Habilítalo en la configuración de la app.'),
+            ),
+          );
+        }
+        return;
+      }
+
+      if (!status.isGranted) {
+        return;
+      }
+    }
+
     final pickedFile = await _picker.pickImage(source: source);
+
     if (pickedFile != null) {
       setState(() {
         if (isOwner) {
@@ -365,13 +384,14 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
     }
   }
 
+  /// ✅ Modal para elegir fuente de imagen (galería o cámara)
   void _showImagePickerOptions(BuildContext context, bool isOwner) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => SafeArea(
+      builder: (modalContext) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Column(
@@ -416,7 +436,7 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
                 subtitle: const Text('Usa la cámara de tu dispositivo'),
                 onTap: () {
                   Navigator.of(context).pop();
-                  _pickImage(isOwner, ImageSource.camera);
+                  _pickImage(isOwner, ImageSource.camera, modalContext);
                 },
               ),
               const Divider(height: 1),
@@ -437,7 +457,7 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
                 subtitle: const Text('Selecciona una foto existente'),
                 onTap: () {
                   Navigator.of(context).pop();
-                  _pickImage(isOwner, ImageSource.gallery);
+                  _pickImage(isOwner, ImageSource.gallery, modalContext);
                 },
               ),
               const Divider(height: 1),
@@ -463,6 +483,7 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
