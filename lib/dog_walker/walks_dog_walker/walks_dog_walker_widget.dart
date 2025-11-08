@@ -368,6 +368,11 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
                                                         walkerId: fullWalkData['walker_id'],
                                                         ownerId: fullWalkData['owner_id'],
                                                         dogId: fullWalkData['dog_id'],
+                                                        onWalkDeleted: () {
+                                                          if (mounted) {
+                                                              setState(() {}); 
+                                                          } 
+                                                        }
                                                       );
                                                     },
                                                   );

@@ -908,12 +908,16 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                                   hoverColor: Colors.transparent,
                                                   highlightColor: Colors.transparent,
                                                   onTap: () async {
-                                                    context.push(
-                                                      '/owner/addAddress', 
-                                                      extra: <String, dynamic>{
-                                                        'originWindow': 'addWalk',
-                                                      },
-                                                    );                                                  
+                                                    // context.push(
+                                                    //   '/owner/addAddress', 
+                                                    //   extra: <String, dynamic>{
+                                                    //     'originWindow': 'addWalk',
+                                                    //   },
+                                                    // ); 
+                                                    final shouldReload = await context.push('/owner/addAddress');
+                                                    if (shouldReload == true) {
+                                                      safeSetState(() {});
+                                                    }                                                  
                                                   },
                                                   child: Container(
                                                     width: 100.0,

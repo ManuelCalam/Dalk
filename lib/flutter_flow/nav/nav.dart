@@ -2,6 +2,7 @@ import 'package:dalk/NavBar/nav_bar_dog_owner.dart';
 import 'package:dalk/NavBar/nav_bar_dog_walker.dart';
 import 'package:dalk/common/article_web_view/article_web_view.dart';
 import 'package:dalk/common/current_walk_empty_window/current_walk_empty_window_widget.dart';
+import 'package:dalk/common/frequent_questions/frequent_questions_widget.dart';
 import 'package:dalk/common/password_recovery/password_recovery_widget.dart';
 import 'package:dalk/common/payment_methods/payment_methods_widget.dart';
 import 'package:dalk/common/walk_payment_window/walk_payment_window_widget.dart';
@@ -202,14 +203,7 @@ GoRouter createRouter()
           GoRoute(
             name: 'owner_addAddress',
             path: '/owner/addAddress', 
-            pageBuilder: (context, state)  {
-              final args = state.extra as Map<String, dynamic>? ?? {};
-              return pageBuilderFor(state, 
-                AddAddressWidget(
-                  originWindow: args['originWindow'],
-                )
-              );
-            },
+            pageBuilder: (context, state) => pageBuilderFor(state, const AddAddressWidget()),
           ),
           GoRoute(
             name: 'owner_premiumInfo',
@@ -354,6 +348,11 @@ GoRouter createRouter()
             },
           ),          
 
+          GoRoute(
+            name: 'owner_frequentQuestions',
+            path: '/owner/frequentQuestions', 
+            pageBuilder: (context, state) => pageBuilderFor(state, const FrequentQuestionsWidget()),
+          ),
 
         ],
       ),
@@ -481,6 +480,11 @@ GoRouter createRouter()
             name: 'walker_getPaid',
             path: '/walker/getPaid', 
             pageBuilder: (context, state) => pageBuilderFor(state, const WalkerStripeAccountWidget()),
+          ),
+          GoRoute(
+            name: 'walker_frequentQuestions',
+            path: '/walker/frequentQuestions', 
+            pageBuilder: (context, state) => pageBuilderFor(state, const FrequentQuestionsWidget()),
           ),
         ],
       ),

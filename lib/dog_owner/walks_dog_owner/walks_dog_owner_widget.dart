@@ -33,6 +33,7 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+
   @override
   void initState() {
     super.initState();
@@ -43,7 +44,8 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
       length: 3,
       initialIndex: 0,
     )..addListener(() => safeSetState(() {}));
-  }
+
+   }
 
   @override
   void dispose() {
@@ -371,6 +373,11 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                                                         walkerId: fullWalkData['walker_id'],
                                                         ownerId: fullWalkData['owner_id'],
                                                         dogId: fullWalkData['dog_id'],
+                                                        onWalkDeleted: () {
+                                                          if (mounted) {
+                                                              setState(() {}); 
+                                                          } 
+                                                        }
                                                       );
                                                     },
                                                   );

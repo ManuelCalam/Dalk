@@ -419,6 +419,7 @@ class FindDogWalkerCardWidget extends StatelessWidget {
                                             context.push('/owner/requestWalk');
                                           },
                                           onCancel: () {
+                                            context.pop();
                                             context.push('/owner/walksList');
                                           },
                                         ),

@@ -21,6 +21,7 @@ class RequestedWalkCardWidget extends StatefulWidget {
     String? userName,
     String? status,
     String? usertype,
+    this.onWalkDeleted, 
     required this.date,
     required this.time,
     required this.photoUrl,
@@ -44,6 +45,7 @@ class RequestedWalkCardWidget extends StatefulWidget {
   final String walkerId;
   final String ownerId;
   final int dogId;
+  final VoidCallback? onWalkDeleted;
 
   @override
   State<RequestedWalkCardWidget> createState() =>
@@ -488,10 +490,14 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                       return Padding(
                         padding:
                             MediaQuery.viewInsetsOf(context),
-                        child: PopUpWalkOptionsWidget(walkId: widget.id, usertype: widget.usertype),
+                        child: PopUpWalkOptionsWidget(
+                          walkId: widget.id, 
+                          usertype: widget.usertype,
+                          onWalkDeleted: widget.onWalkDeleted,  
+                        ),
                       );
                     },
-                  ).then((value) => safeSetState(() {}));
+                  );
                 },
                   text: 'Ver detalles',
                   icon: const Icon(

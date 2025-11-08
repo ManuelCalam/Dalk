@@ -22,11 +22,13 @@ class PopUpWalkOptionsWidget extends StatefulWidget {
     required this.walkId,
     required this.usertype,
     this.onWalkCompletion,
+    this.onWalkDeleted
   });
 
   final int walkId;
   final String? usertype;
   final WalkCompletionCallback? onWalkCompletion;
+  final VoidCallback? onWalkDeleted;
 
   @override
   State<PopUpWalkOptionsWidget> createState() => _PopUpWalkOptionsWidgetState();
@@ -193,7 +195,8 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
 
                   //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
                   context.pop(),
-                  context.pop(),
+                  context.pop(true),
+
 
                   //Envío de notificacion después de cerrar los menús
                   await Supabase.instance.client.functions.invoke(
@@ -297,6 +300,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                 onConfirm: () async => {
                   await SupaFlow.client.from('walks').delete().eq('id', widget.walkId),
 
+                  widget.onWalkDeleted?.call(),
                   //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
                   context.pop(),
                   context.pop()
@@ -533,10 +537,12 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                 iconColor: FlutterFlowTheme.of(context).error,
                 onConfirm: () async => {
                   await SupaFlow.client.from('walks').delete().eq('id', widget.walkId),
+                  
+                  widget.onWalkDeleted?.call(),
 
                   //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
                   context.pop(),
-                  context.pop()
+                  context.pop(true)
                 },
                 onCancel: () => context.pop(),
               ), 

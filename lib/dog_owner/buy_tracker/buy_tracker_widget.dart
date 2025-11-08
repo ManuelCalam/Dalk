@@ -1,7 +1,6 @@
 import 'package:dalk/auth/supabase_auth/auth_util.dart';
 import 'package:dalk/backend/supabase/supabase.dart';
 import 'package:dalk/cards/address_card/address_card_widget.dart';
-import 'package:dalk/dog_owner/add_address/add_address_widget.dart';
 import 'package:dalk/dog_owner/purchase_logic.dart';
 import 'package:uuid/uuid.dart';
 
@@ -463,12 +462,10 @@ class _BuyTrackerWidgetState extends State<BuyTrackerWidget> {
                                                   hoverColor: Colors.transparent,
                                                   highlightColor: Colors.transparent,
                                                   onTap: () async {
-                                                    context.push(
-                                                      '/owner/addAddress', 
-                                                      extra: <String, dynamic>{
-                                                        'originWindow': 'buyTracker',
-                                                      },
-                                                    );                                                  
+                                                    final shouldReload = await context.push('/owner/addAddress');
+                                                    if (shouldReload == true) {
+                                                      safeSetState(() {});
+                                                    }                                                  
                                                   },
                                                   child: Container(
                                                     width: 100.0,
