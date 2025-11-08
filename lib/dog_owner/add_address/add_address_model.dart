@@ -1,3 +1,5 @@
+import 'package:dalk/flutter_flow/form_field_controller.dart';
+
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -41,6 +43,8 @@ class AddAddressModel extends FlutterFlowModel<AddAddressWidget> {
   FocusNode? cityInputFocusNode;
   TextEditingController? cityInputTextController;
   String? Function(BuildContext, String?)? cityInputTextControllerValidator;
+  FormFieldController<String>? neighborhoodInputValueController;
+  String? neighborhoodInputValue;
 
   @override
   void initState(BuildContext context) {
