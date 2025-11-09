@@ -314,14 +314,15 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                             decoration: const BoxDecoration(),
                             child: FutureBuilder<List<dynamic>>(
                               future: Supabase.instance.client
-                                  .from('walkers_info')
-                                  .select()
-                                  .ilike(
-                                    'name',
-                                    _model.findDogWalkerInputTextController.text.isEmpty
-                                        ? '%' 
-                                        : '%${_model.findDogWalkerInputTextController.text}%',
-                                  ),
+                                .from('walkers_info')
+                                .select()
+                                .ilike(
+                                  'name',
+                                  _model.findDogWalkerInputTextController.text.trim().isEmpty
+                                      ? '%'
+                                      : '%${_model.findDogWalkerInputTextController.text.trim()}%',
+                                ),
+
                               builder: (context, snapshot) {
                                 // print(' Estado del FutureBuilder: ${snapshot.connectionState}');
                                 
@@ -358,20 +359,18 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                                   );
                                 }
 
-                                // Verificar datos
-                                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                                  print('No se encontraron paseadores');
-                                  return const Center(
-                                    child: Text('No se encontraron paseadores.'),
-                                  );
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return const Center(child: CircularProgressIndicator());
                                 }
 
-                                try {
-                                  print(' Datos recibidos: ${snapshot.data!.length} paseadores');
-                                  
-                                  // Copiar datos de forma segura
-                                  final paseadores = List<Map<String, dynamic>>.from(snapshot.data!);
-                                  
+                                if (snapshot.hasError) {
+                                  print(' Error en FutureBuilder: ${snapshot.error}');
+                                  return Center(child: Text('Error al cargar paseadores.'));
+                                }
+
+                                if (!snapshot.hasData) {
+                                  return const Center(child: Text('No se encontraron paseadores.'));
+                                }
                                   // // VERIFICAR ESTRUCTURA DE DATOS
                                   // print('DEBUG: Verificando estructura de paseadores...');
                                   // for (int i = 0; i < paseadores.length; i++) {
@@ -388,24 +387,122 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                                   //   print('DEBUG: UUID recomendado: $uuid (tipo: ${uuid.runtimeType})');
                                   // }
 
-                                  // ORDENAR solo si hay datos válidos
-                                  final paseadoresOrdenados = _sortWalkers(paseadores);
-                                                                    
+                                try {
+                                  final paseadores = List<Map<String, dynamic>>.from(snapshot.data!);
+
+
+                                  final selectedDate = widget.date!;
+                                  final selectedTime = widget.time!;
+                                  final selectedDateStr = DateFormat('yyyy-MM-dd').format(selectedDate);
+                                  final selectedTimeStr = DateFormat('HH:mm:ss').format(selectedTime);
+
+                                  final paseadoresDisponibles = paseadores.where((p) {
+                                  final uuid = p['uuid'] ?? 'Desconocido';
+                                  final name = p['name'] ?? 'Sin nombre';
+                                  String motivo = '';
+
+                                  // --- Datos seleccionados ---
+                                  final selectedDateStr = DateFormat('yyyy-MM-dd').format(selectedDate);
+                                  final selectedTimeStr = DateFormat('HH:mm:ss').format(selectedTime);
+
+                                  // --- Datos del paseador ---
+                                  final exceptionDate = p['exception_date'];
+                                  final isFullDay = p['exception_full_day'];
+                                  final exceptionStart = p['exception_start_time'];
+                                  final exceptionEnd = p['exception_end_time'];
+                                  final workingDays = (p['working_days'] as List?)?.cast<String>() ?? [];
+                                  final startTime = p['start_time'];
+                                  final endTime = p['end_time'];
+
+                                  // --- Día actual (en texto) ---
+                                  final dayName = DateFormat('EEEE', 'es_ES').format(selectedDate);
+                                  final dayCapitalized = toBeginningOfSentenceCase(dayName.toLowerCase()); // lunes → Lunes
+
+                                  // Comentarios para debug
+                                  // print('\nEvaluando paseador: $name ($uuid)');
+                                  // print('Fecha seleccionada: $selectedDateStr | Hora seleccionada: $selectedTimeStr');
+                                  // print('Día de la semana: $dayCapitalized');
+                                  // print('Días laborables: $workingDays');
+                                  // print('Horario laboral: ${startTime ?? "N/A"} - ${endTime ?? "N/A"}');
+                                  // print('Excepciones: $exceptionDate | Día completo: $isFullDay | Rango: $exceptionStart - $exceptionEnd');
+
+                                  // --- Filtro 1: Día de excepción ---
+                                  if (exceptionDate == selectedDateStr) {
+                                    if (isFullDay == true) {
+                                      motivo = 'Día completo de descanso por excepción.';
+                                      print('Excluido → $motivo');
+                                      return false;
+                                    }
+                                    if (exceptionStart != null && exceptionEnd != null) {
+                                      final t = selectedTimeStr;
+                                      final isInside = t.compareTo(exceptionStart) >= 0 && t.compareTo(exceptionEnd) <= 0;
+                                      if (isInside) {
+                                        motivo = 'Hora seleccionada dentro del rango de excepción ($exceptionStart - $exceptionEnd).';
+                                        print('Excluido → $motivo');
+                                        return false;
+                                      }
+                                    }
+                                  }
+
+                                  // --- Filtro 2: Día laboral ---
+                                  if (!workingDays.contains(dayCapitalized)) {
+                                    motivo = 'No trabaja los $dayCapitalized.';
+                                    print('Excluido → $motivo');
+                                    return false;
+                                  }
+
+                                  // --- Filtro 3: Horario laboral ---
+                                  if (startTime != null && endTime != null) {
+                                    final t = selectedTimeStr;
+                                    final isInsideWorkingHours = t.compareTo(startTime) >= 0 && t.compareTo(endTime) <= 0;
+                                    if (!isInsideWorkingHours) {
+                                      motivo = 'No trabaja en la hora seleccionada ($selectedTimeStr).';
+                                      print('Excluido → $motivo');
+                                      return false;
+                                    }
+                                  }
+
+                                  motivo = 'Disponible para la fecha y hora seleccionadas.';
+                                  print('Incluido → $motivo');
+                                  return true;
+                                }).toList();
+
+
+                                  print(' Paseadores disponibles después de filtrar: ${paseadoresDisponibles.length}');
+
+                                  if (paseadoresDisponibles.isEmpty) {
+                                    return const Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 24.0),
+                                        child: Text(
+                                          'No se encontraron paseadores disponibles.',
+                                          textAlign: TextAlign.center, // Centra el texto horizontalmente
+                                          style: TextStyle(
+                                            fontSize: 16.0,
+                                            height: 1.4, // Espaciado entre líneas, mejora legibilidad
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }
+
+
+                                  final paseadoresOrdenados = _sortWalkers(paseadoresDisponibles);
+
                                   return ListView.builder(
                                     itemCount: paseadoresOrdenados.length,
                                     itemBuilder: (context, index) {
                                       final paseador = paseadoresOrdenados[index];
                                       final uuid = paseador['uuid']?.toString();
-                                      final esRecomendado = uuid != null && 
+                                      final esRecomendado = uuid != null &&
                                           widget.recommendedWalkerUUIDs.contains(uuid);
-                                      
-                                      print(' Construyendo card para: ${paseador['name']} - Recomendado: $esRecomendado');
-                                      
+
                                       return FindDogWalkerCardWidget(
                                         nombre: paseador['name'] ?? 'Sin nombre',
                                         precio: paseador['fee']?.toString() ?? '0',
                                         calificacion: paseador['average_rating']?.toString() ?? '0',
-                                        fotoUrl: paseador['photo_url'] ?? 'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/public/profile_pics/user.png',
+                                        fotoUrl: paseador['photo_url'] ??
+                                            'https://bsactypehgxluqyaymui.supabase.co/storage/v1/object/public/profile_pics/user.png',
                                         date: widget.date,
                                         time: widget.time,
                                         addressId: widget.addressId,
@@ -417,14 +514,12 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                                       );
                                     },
                                   );
-                                  
                                 } catch (e, stackTrace) {
                                   print(' ERROR crítico en builder: $e');
                                   print(' StackTrace: $stackTrace');
-                                  return Center(
-                                    child: Text('Error al procesar los paseadores: $e'),
-                                  );
+                                  return Center(child: Text('Error al procesar los paseadores: $e'));
                                 }
+
                               },
                             ),
                           ),

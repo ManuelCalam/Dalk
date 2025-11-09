@@ -17,6 +17,7 @@ class PetListWidget extends StatefulWidget {
 
   static String routeName = 'petList';
   static String routePath = '/petList';
+  
 
   @override
   State<PetListWidget> createState() => _PetListWidgetState();
@@ -167,6 +168,10 @@ class _PetListWidgetState extends State<PetListWidget> {
                                           ScaffoldMessenger.of(context).showSnackBar(
                                             const SnackBar(content: Text('Mascota eliminada correctamente.')),
                                           );
+                                        },
+                                        onPetUpdated: () async {
+                                          if (!mounted) return;
+                                          await _loadPets();
                                         },
                                       ),
 

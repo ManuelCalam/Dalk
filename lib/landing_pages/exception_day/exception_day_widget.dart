@@ -287,7 +287,7 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                                                   (newValue) async {
                                                                 safeSetState(() =>
                                                                     _model.wilDogWalkerWorkSwitchValue =
-                                                                        newValue!);
+                                                                        newValue);
                                                               },
                                                               activeColor:
                                                                   Colors.white,
@@ -510,381 +510,381 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                                 ),
                                                 
                                                 Padding(
-  padding: const EdgeInsetsDirectional.fromSTEB(0, 15, 0, 0),
-  child: Container(
-    width: MediaQuery.sizeOf(context).width,
-    decoration: const BoxDecoration(),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // HORA INICIO
-        Flexible(
-          child: Align(
-            alignment: const AlignmentDirectional(-1, 0),
-            child: Padding(
-              padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 10, 0),
-              child: InkWell(
-                splashColor: Colors.transparent,
-                focusColor: Colors.transparent,
-                hoverColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                onTap: _model.wilDogWalkerWorkSwitchValue!
-                    ? () async {
-                        await showModalBottomSheet<bool>(
-                          context: context,
-                          builder: (context) {
-                            final _datePicked2CupertinoTheme = CupertinoTheme.of(context);
-                            DateTime now = DateTime.now();
-                            
-                            // Verificar si la fecha seleccionada es hoy
-                            bool isToday = _model.datePicked1 != null && 
-                                          _model.datePicked1!.year == now.year && 
-                                          _model.datePicked1!.month == now.month && 
-                                          _model.datePicked1!.day == now.day;
-                            
-                            DateTime selectedTime = _model.datePicked2 ?? now;
-                            DateTime minimumDate = isToday ? now : DateTime(1900); // Para días futuros, cualquier hora
-                            
-                            if (isToday && selectedTime.isBefore(now)) {
-                              selectedTime = now;
-                            }
+                                                  padding: const EdgeInsetsDirectional.fromSTEB(0, 15, 0, 0),
+                                                  child: Container(
+                                                    width: MediaQuery.sizeOf(context).width,
+                                                    decoration: const BoxDecoration(),
+                                                    child: Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      mainAxisAlignment: MainAxisAlignment.center,
+                                                      children: [
+                                                        // HORA INICIO
+                                                        Flexible(
+                                                          child: Align(
+                                                            alignment: const AlignmentDirectional(-1, 0),
+                                                            child: Padding(
+                                                              padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 10, 0),
+                                                              child: InkWell(
+                                                                splashColor: Colors.transparent,
+                                                                focusColor: Colors.transparent,
+                                                                hoverColor: Colors.transparent,
+                                                                highlightColor: Colors.transparent,
+                                                                onTap: _model.wilDogWalkerWorkSwitchValue!
+                                                                    ? () async {
+                                                                        await showModalBottomSheet<bool>(
+                                                                          context: context,
+                                                                          builder: (context) {
+                                                                            final _datePicked2CupertinoTheme = CupertinoTheme.of(context);
+                                                                            DateTime now = DateTime.now();
+                                                                            
+                                                                            // Verificar si la fecha seleccionada es hoy
+                                                                            bool isToday = _model.datePicked1 != null && 
+                                                                                          _model.datePicked1!.year == now.year && 
+                                                                                          _model.datePicked1!.month == now.month && 
+                                                                                          _model.datePicked1!.day == now.day;
+                                                                            
+                                                                            DateTime selectedTime = _model.datePicked2 ?? now;
+                                                                            DateTime minimumDate = isToday ? now : DateTime(1900); 
+                                                                            
+                                                                            if (isToday && selectedTime.isBefore(now)) {
+                                                                              selectedTime = now;
+                                                                            }
 
-                            return Container(
-                              height: MediaQuery.of(context).size.height / 3 + 60,
-                              width: MediaQuery.of(context).size.width,
-                              color: FlutterFlowTheme.of(context).alternate,
-                              child: Column(
-                                children: [
-                                  Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsetsDirectional.fromSTEB(20, 10, 20, 10),
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        context.pop(context);
-                                        safeSetState(() {
-                                          _model.datePicked2 = selectedTime;
-                                          // Si la hora fin es anterior a la nueva hora inicio, resetearla
-                                          if (_model.datePicked3 != null && 
-                                              _model.datePicked3!.isBefore(selectedTime)) {
-                                            _model.datePicked3 = selectedTime.add(const Duration(hours: 1));
-                                          }
-                                        });
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: FlutterFlowTheme.of(context).primary,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(20),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(vertical: 12),
-                                      ),
-                                      child: Text(
-                                        'Aceptar',
-                                        style: GoogleFonts.lexend(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  // Selector de hora
-                                  Expanded(
-                                    child: CupertinoTheme(
-                                      data: _datePicked2CupertinoTheme.copyWith(
-                                        textTheme: _datePicked2CupertinoTheme.textTheme.copyWith(
-                                          dateTimePickerTextStyle:
-                                              FlutterFlowTheme.of(context).headlineMedium.override(
-                                                    font: GoogleFonts.lexend(
-                                                      fontWeight: FlutterFlowTheme.of(context)
-                                                          .headlineMedium
-                                                          .fontWeight,
-                                                      fontStyle: FlutterFlowTheme.of(context)
-                                                          .headlineMedium
-                                                          .fontStyle,
+                                                                            return Container(
+                                                                              height: MediaQuery.of(context).size.height / 3 + 60,
+                                                                              width: MediaQuery.of(context).size.width,
+                                                                              color: FlutterFlowTheme.of(context).alternate,
+                                                                              child: Column(
+                                                                                children: [
+                                                                                  Container(
+                                                                                    width: double.infinity,
+                                                                                    padding: const EdgeInsetsDirectional.fromSTEB(20, 10, 20, 10),
+                                                                                    child: ElevatedButton(
+                                                                                      onPressed: () {
+                                                                                        context.pop(true);
+                                                                                        safeSetState(() {
+                                                                                          _model.datePicked2 = selectedTime;
+                                                                                          // Si la hora fin es anterior a la nueva hora inicio, resetearla
+                                                                                          if (_model.datePicked3 != null && 
+                                                                                              _model.datePicked3!.isBefore(selectedTime)) {
+                                                                                            _model.datePicked3 = selectedTime.add(const Duration(hours: 1));
+                                                                                          }
+                                                                                        });
+                                                                                      },
+                                                                                      style: ElevatedButton.styleFrom(
+                                                                                        backgroundColor: FlutterFlowTheme.of(context).primary,
+                                                                                        shape: RoundedRectangleBorder(
+                                                                                          borderRadius: BorderRadius.circular(20),
+                                                                                        ),
+                                                                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                                                                      ),
+                                                                                      child: Text(
+                                                                                        'Aceptar',
+                                                                                        style: GoogleFonts.lexend(
+                                                                                          color: Colors.white,
+                                                                                          fontSize: 18,
+                                                                                          fontWeight: FontWeight.w600,
+                                                                                        ),
+                                                                                      ),
+                                                                                    ),
+                                                                                  ),
+                                                                                  // Selector de hora
+                                                                                  Expanded(
+                                                                                    child: CupertinoTheme(
+                                                                                      data: _datePicked2CupertinoTheme.copyWith(
+                                                                                        textTheme: _datePicked2CupertinoTheme.textTheme.copyWith(
+                                                                                          dateTimePickerTextStyle:
+                                                                                              FlutterFlowTheme.of(context).headlineMedium.override(
+                                                                                                    font: GoogleFonts.lexend(
+                                                                                                      fontWeight: FlutterFlowTheme.of(context)
+                                                                                                          .headlineMedium
+                                                                                                          .fontWeight,
+                                                                                                      fontStyle: FlutterFlowTheme.of(context)
+                                                                                                          .headlineMedium
+                                                                                                          .fontStyle,
+                                                                                                    ),
+                                                                                                    color: FlutterFlowTheme.of(context).primaryText,
+                                                                                                    letterSpacing: 0.0,
+                                                                                                  ),
+                                                                                        ),
+                                                                                      ),
+                                                                                      child: CupertinoDatePicker(
+                                                                                        mode: CupertinoDatePickerMode.time,
+                                                                                        minimumDate: minimumDate,
+                                                                                        initialDateTime: selectedTime,
+                                                                                        maximumDate: DateTime(2050),
+                                                                                        backgroundColor: FlutterFlowTheme.of(context).alternate,
+                                                                                        use24hFormat: false,
+                                                                                        onDateTimeChanged: (newDateTime) {
+                                                                                          selectedTime = newDateTime;
+                                                                                        },
+                                                                                      ),
+                                                                                    ),
+                                                                                  ),
+                                                                                ],
+                                                                              ),
+                                                                            );
+                                                                          },
+                                                                        );
+                                                                      }
+                                                                    : null,
+                                                                child: Container(
+                                                                  width: MediaQuery.sizeOf(context).width * 0.4,
+                                                                  height: MediaQuery.sizeOf(context).height * 0.05,
+                                                                  decoration: BoxDecoration(
+                                                                    color: FlutterFlowTheme.of(context).alternate,
+                                                                    borderRadius: BorderRadius.circular(20),
+                                                                  ),
+                                                                  child: Padding(
+                                                                    padding: const EdgeInsetsDirectional.fromSTEB(0, 1, 0, 0),
+                                                                    child: Row(
+                                                                      mainAxisSize: MainAxisSize.max,
+                                                                      children: [
+                                                                        Padding(
+                                                                          padding: const EdgeInsetsDirectional.fromSTEB(8, 0, 0, 0),
+                                                                          child: Icon(
+                                                                            Icons.timer_sharp,
+                                                                            color: _model.wilDogWalkerWorkSwitchValue!
+                                                                                ? FlutterFlowTheme.of(context).primary
+                                                                                : FlutterFlowTheme.of(context).secondaryBackground.withOpacity(0.5),
+                                                                            size: 25,
+                                                                          ),
+                                                                        ),
+                                                                        Padding(
+                                                                          padding: const EdgeInsetsDirectional.fromSTEB(7, 0, 0, 0),
+                                                                          child: AutoSizeText(
+                                                                            _model.datePicked2 != null
+                                                                                ? dateTimeFormat('Hm', _model.datePicked2)
+                                                                                : 'Hora',
+                                                                            textAlign: TextAlign.start,
+                                                                            maxLines: 1,
+                                                                            minFontSize: 12,
+                                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                  font: GoogleFonts.lexend(
+                                                                                    fontWeight: FlutterFlowTheme.of(context)
+                                                                                        .bodyMedium
+                                                                                        .fontWeight,
+                                                                                    fontStyle: FlutterFlowTheme.of(context)
+                                                                                        .bodyMedium
+                                                                                        .fontStyle,
+                                                                                  ),
+                                                                                  color: _model.wilDogWalkerWorkSwitchValue!
+                                                                                      ? FlutterFlowTheme.of(context).secondaryBackground
+                                                                                      : FlutterFlowTheme.of(context).secondaryBackground.withOpacity(0.5),
+                                                                                  fontSize: 16,
+                                                                                  letterSpacing: 0.0,
+                                                                                ),
+                                                                          ),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+
+                                                        // TEXTO "A"
+                                                        Align(
+                                                          alignment: const AlignmentDirectional(0, 0),
+                                                          child: Text(
+                                                            'A',
+                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                  font: GoogleFonts.lexend(
+                                                                    fontWeight: FlutterFlowTheme.of(context)
+                                                                        .bodyMedium
+                                                                        .fontWeight,
+                                                                    fontStyle: FlutterFlowTheme.of(context)
+                                                                        .bodyMedium
+                                                                        .fontStyle,
+                                                                  ),
+                                                                  color: _model.wilDogWalkerWorkSwitchValue!
+                                                                      ? FlutterFlowTheme.of(context).secondaryBackground
+                                                                      : FlutterFlowTheme.of(context).secondaryBackground.withOpacity(0.5),
+                                                                  fontSize: 20,
+                                                                  letterSpacing: 0.0,
+                                                                ),
+                                                          ),
+                                                        ),
+
+                                                        // HORA FIN
+                                                        Flexible(
+                                                          child: Align(
+                                                            alignment: const AlignmentDirectional(1, 0),
+                                                            child: Padding(
+                                                              padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 0, 0),
+                                                              child: InkWell(
+                                                                splashColor: Colors.transparent,
+                                                                focusColor: Colors.transparent,
+                                                                hoverColor: Colors.transparent,
+                                                                highlightColor: Colors.transparent,
+                                                                onTap: _model.wilDogWalkerWorkSwitchValue!
+                                                                    ? () async {
+                                                                        await showModalBottomSheet<bool>(
+                                                                          context: context,
+                                                                          builder: (context) {
+                                                                            final _datePicked3CupertinoTheme = CupertinoTheme.of(context);
+                                                                            DateTime now = DateTime.now();
+                                                                            
+                                                                            // Verificar si la fecha seleccionada es hoy
+                                                                            bool isToday = _model.datePicked1 != null && 
+                                                                                          _model.datePicked1!.year == now.year && 
+                                                                                          _model.datePicked1!.month == now.month && 
+                                                                                          _model.datePicked1!.day == now.day;
+                                                                            
+                                                                            // Hora mínima: si es hoy, usar ahora; si no, usar la hora inicio o mínimo absoluto
+                                                                            DateTime minimumDate;
+                                                                            if (isToday) {
+                                                                              minimumDate = now;
+                                                                            } else {
+                                                                              minimumDate = _model.datePicked2 ?? DateTime(1900);
+                                                                            }
+                                                                            
+                                                                            // Si hay hora inicio y es mayor que el mínimo, usar la hora inicio
+                                                                            if (_model.datePicked2 != null && _model.datePicked2!.isAfter(minimumDate)) {
+                                                                              minimumDate = _model.datePicked2!;
+                                                                            }
+                                                                            
+                                                                            DateTime selectedTime = _model.datePicked3 ?? minimumDate.add(const Duration(hours: 1));
+                                                                            
+                                                                            if (selectedTime.isBefore(minimumDate)) {
+                                                                              selectedTime = minimumDate.add(const Duration(hours: 1));
+                                                                            }
+
+                                                                            return Container(
+                                                                              height: MediaQuery.of(context).size.height / 3 + 60,
+                                                                              width: MediaQuery.of(context).size.width,
+                                                                              color: FlutterFlowTheme.of(context).alternate,
+                                                                              child: Column(
+                                                                                children: [
+                                                                                  Container(
+                                                                                    width: double.infinity,
+                                                                                    padding: const EdgeInsetsDirectional.fromSTEB(20, 10, 20, 10),
+                                                                                    child: ElevatedButton(
+                                                                                      onPressed: () {
+                                                                                        context.pop(true);
+                                                                                        safeSetState(() {
+                                                                                          _model.datePicked3 = selectedTime;
+                                                                                        });
+                                                                                      },
+                                                                                      style: ElevatedButton.styleFrom(
+                                                                                        backgroundColor: FlutterFlowTheme.of(context).primary,
+                                                                                        shape: RoundedRectangleBorder(
+                                                                                          borderRadius: BorderRadius.circular(20),
+                                                                                        ),
+                                                                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                                                                      ),
+                                                                                      child: Text(
+                                                                                        'Aceptar',
+                                                                                        style: GoogleFonts.lexend(
+                                                                                          color: Colors.white,
+                                                                                          fontSize: 18,
+                                                                                          fontWeight: FontWeight.w600,
+                                                                                        ),
+                                                                                      ),
+                                                                                    ),
+                                                                                  ),
+                                                                                  // Selector de hora
+                                                                                  Expanded(
+                                                                                    child: CupertinoTheme(
+                                                                                      data: _datePicked3CupertinoTheme.copyWith(
+                                                                                        textTheme: _datePicked3CupertinoTheme.textTheme.copyWith(
+                                                                                          dateTimePickerTextStyle:
+                                                                                              FlutterFlowTheme.of(context).headlineMedium.override(
+                                                                                                    font: GoogleFonts.lexend(
+                                                                                                      fontWeight: FlutterFlowTheme.of(context)
+                                                                                                          .headlineMedium
+                                                                                                          .fontWeight,
+                                                                                                      fontStyle: FlutterFlowTheme.of(context)
+                                                                                                          .headlineMedium
+                                                                                                          .fontStyle,
+                                                                                                    ),
+                                                                                                    color: FlutterFlowTheme.of(context).primaryText,
+                                                                                                    letterSpacing: 0.0,
+                                                                                                  ),
+                                                                                        ),
+                                                                                      ),
+                                                                                      child: CupertinoDatePicker(
+                                                                                        mode: CupertinoDatePickerMode.time,
+                                                                                        minimumDate: minimumDate,
+                                                                                        initialDateTime: selectedTime,
+                                                                                        maximumDate: DateTime(2050),
+                                                                                        backgroundColor: FlutterFlowTheme.of(context).alternate,
+                                                                                        use24hFormat: false,
+                                                                                        onDateTimeChanged: (newDateTime) {
+                                                                                          selectedTime = newDateTime;
+                                                                                        },
+                                                                                      ),
+                                                                                    ),
+                                                                                  ),
+                                                                                ],
+                                                                              ),
+                                                                            );
+                                                                          },
+                                                                        );
+                                                                      }
+                                                                    : null,
+                                                                child: Container(
+                                                                  width: MediaQuery.sizeOf(context).width * 0.4,
+                                                                  height: MediaQuery.sizeOf(context).height * 0.05,
+                                                                  decoration: BoxDecoration(
+                                                                    color: FlutterFlowTheme.of(context).alternate,
+                                                                    borderRadius: BorderRadius.circular(20),
+                                                                  ),
+                                                                  child: Padding(
+                                                                    padding: const EdgeInsetsDirectional.fromSTEB(0, 1, 0, 0),
+                                                                    child: Row(
+                                                                      mainAxisSize: MainAxisSize.max,
+                                                                      children: [
+                                                                        Padding(
+                                                                          padding: const EdgeInsetsDirectional.fromSTEB(8, 0, 0, 0),
+                                                                          child: Icon(
+                                                                            Icons.timer_sharp,
+                                                                            color: _model.wilDogWalkerWorkSwitchValue!
+                                                                                ? FlutterFlowTheme.of(context).primary
+                                                                                : FlutterFlowTheme.of(context).secondaryBackground.withOpacity(0.5),
+                                                                            size: 25,
+                                                                          ),
+                                                                        ),
+                                                                        Padding(
+                                                                          padding: const EdgeInsetsDirectional.fromSTEB(7, 0, 0, 0),
+                                                                          child: AutoSizeText(
+                                                                            _model.datePicked3 != null
+                                                                                ? dateTimeFormat('Hm', _model.datePicked3)
+                                                                                : 'Hora',
+                                                                            textAlign: TextAlign.start,
+                                                                            maxLines: 1,
+                                                                            minFontSize: 12,
+                                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                  font: GoogleFonts.lexend(
+                                                                                    fontWeight: FlutterFlowTheme.of(context)
+                                                                                        .bodyMedium
+                                                                                        .fontWeight,
+                                                                                    fontStyle: FlutterFlowTheme.of(context)
+                                                                                        .bodyMedium
+                                                                                        .fontStyle,
+                                                                                  ),
+                                                                                  color: _model.wilDogWalkerWorkSwitchValue!
+                                                                                      ? FlutterFlowTheme.of(context).secondaryBackground
+                                                                                      : FlutterFlowTheme.of(context).secondaryBackground.withOpacity(0.5),
+                                                                                  fontSize: 16,
+                                                                                  letterSpacing: 0.0,
+                                                                                ),
+                                                                          ),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
-                                                    color: FlutterFlowTheme.of(context).primaryText,
-                                                    letterSpacing: 0.0,
                                                   ),
-                                        ),
-                                      ),
-                                      child: CupertinoDatePicker(
-                                        mode: CupertinoDatePickerMode.time,
-                                        minimumDate: minimumDate,
-                                        initialDateTime: selectedTime,
-                                        maximumDate: DateTime(2050),
-                                        backgroundColor: FlutterFlowTheme.of(context).alternate,
-                                        use24hFormat: false,
-                                        onDateTimeChanged: (newDateTime) {
-                                          selectedTime = newDateTime;
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        );
-                      }
-                    : null,
-                child: Container(
-                  width: MediaQuery.sizeOf(context).width * 0.4,
-                  height: MediaQuery.sizeOf(context).height * 0.05,
-                  decoration: BoxDecoration(
-                    color: FlutterFlowTheme.of(context).alternate,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsetsDirectional.fromSTEB(0, 1, 0, 0),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(8, 0, 0, 0),
-                          child: Icon(
-                            Icons.timer_sharp,
-                            color: _model.wilDogWalkerWorkSwitchValue!
-                                ? FlutterFlowTheme.of(context).primary
-                                : FlutterFlowTheme.of(context).secondaryBackground.withOpacity(0.5),
-                            size: 25,
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(7, 0, 0, 0),
-                          child: AutoSizeText(
-                            _model.datePicked2 != null
-                                ? dateTimeFormat('Hm', _model.datePicked2)
-                                : 'Hora',
-                            textAlign: TextAlign.start,
-                            maxLines: 1,
-                            minFontSize: 12,
-                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                  font: GoogleFonts.lexend(
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
-                                  color: _model.wilDogWalkerWorkSwitchValue!
-                                      ? FlutterFlowTheme.of(context).secondaryBackground
-                                      : FlutterFlowTheme.of(context).secondaryBackground.withOpacity(0.5),
-                                  fontSize: 16,
-                                  letterSpacing: 0.0,
-                                ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-
-        // TEXTO "A"
-        Align(
-          alignment: const AlignmentDirectional(0, 0),
-          child: Text(
-            'A',
-            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                  font: GoogleFonts.lexend(
-                    fontWeight: FlutterFlowTheme.of(context)
-                        .bodyMedium
-                        .fontWeight,
-                    fontStyle: FlutterFlowTheme.of(context)
-                        .bodyMedium
-                        .fontStyle,
-                  ),
-                  color: _model.wilDogWalkerWorkSwitchValue!
-                      ? FlutterFlowTheme.of(context).secondaryBackground
-                      : FlutterFlowTheme.of(context).secondaryBackground.withOpacity(0.5),
-                  fontSize: 20,
-                  letterSpacing: 0.0,
-                ),
-          ),
-        ),
-
-        // HORA FIN
-        Flexible(
-          child: Align(
-            alignment: const AlignmentDirectional(1, 0),
-            child: Padding(
-              padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 0, 0),
-              child: InkWell(
-                splashColor: Colors.transparent,
-                focusColor: Colors.transparent,
-                hoverColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                onTap: _model.wilDogWalkerWorkSwitchValue!
-                    ? () async {
-                        await showModalBottomSheet<bool>(
-                          context: context,
-                          builder: (context) {
-                            final _datePicked3CupertinoTheme = CupertinoTheme.of(context);
-                            DateTime now = DateTime.now();
-                            
-                            // Verificar si la fecha seleccionada es hoy
-                            bool isToday = _model.datePicked1 != null && 
-                                          _model.datePicked1!.year == now.year && 
-                                          _model.datePicked1!.month == now.month && 
-                                          _model.datePicked1!.day == now.day;
-                            
-                            // Hora mínima: si es hoy, usar ahora; si no, usar la hora inicio o mínimo absoluto
-                            DateTime minimumDate;
-                            if (isToday) {
-                              minimumDate = now;
-                            } else {
-                              minimumDate = _model.datePicked2 ?? DateTime(1900);
-                            }
-                            
-                            // Si hay hora inicio y es mayor que el mínimo, usar la hora inicio
-                            if (_model.datePicked2 != null && _model.datePicked2!.isAfter(minimumDate)) {
-                              minimumDate = _model.datePicked2!;
-                            }
-                            
-                            DateTime selectedTime = _model.datePicked3 ?? minimumDate.add(const Duration(hours: 1));
-                            
-                            if (selectedTime.isBefore(minimumDate)) {
-                              selectedTime = minimumDate.add(const Duration(hours: 1));
-                            }
-
-                            return Container(
-                              height: MediaQuery.of(context).size.height / 3 + 60,
-                              width: MediaQuery.of(context).size.width,
-                              color: FlutterFlowTheme.of(context).alternate,
-                              child: Column(
-                                children: [
-                                  Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsetsDirectional.fromSTEB(20, 10, 20, 10),
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        context.pop(context);
-                                        safeSetState(() {
-                                          _model.datePicked3 = selectedTime;
-                                        });
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: FlutterFlowTheme.of(context).primary,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(20),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(vertical: 12),
-                                      ),
-                                      child: Text(
-                                        'Aceptar',
-                                        style: GoogleFonts.lexend(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  // Selector de hora
-                                  Expanded(
-                                    child: CupertinoTheme(
-                                      data: _datePicked3CupertinoTheme.copyWith(
-                                        textTheme: _datePicked3CupertinoTheme.textTheme.copyWith(
-                                          dateTimePickerTextStyle:
-                                              FlutterFlowTheme.of(context).headlineMedium.override(
-                                                    font: GoogleFonts.lexend(
-                                                      fontWeight: FlutterFlowTheme.of(context)
-                                                          .headlineMedium
-                                                          .fontWeight,
-                                                      fontStyle: FlutterFlowTheme.of(context)
-                                                          .headlineMedium
-                                                          .fontStyle,
-                                                    ),
-                                                    color: FlutterFlowTheme.of(context).primaryText,
-                                                    letterSpacing: 0.0,
-                                                  ),
-                                        ),
-                                      ),
-                                      child: CupertinoDatePicker(
-                                        mode: CupertinoDatePickerMode.time,
-                                        minimumDate: minimumDate,
-                                        initialDateTime: selectedTime,
-                                        maximumDate: DateTime(2050),
-                                        backgroundColor: FlutterFlowTheme.of(context).alternate,
-                                        use24hFormat: false,
-                                        onDateTimeChanged: (newDateTime) {
-                                          selectedTime = newDateTime;
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        );
-                      }
-                    : null,
-                child: Container(
-                  width: MediaQuery.sizeOf(context).width * 0.4,
-                  height: MediaQuery.sizeOf(context).height * 0.05,
-                  decoration: BoxDecoration(
-                    color: FlutterFlowTheme.of(context).alternate,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsetsDirectional.fromSTEB(0, 1, 0, 0),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(8, 0, 0, 0),
-                          child: Icon(
-                            Icons.timer_sharp,
-                            color: _model.wilDogWalkerWorkSwitchValue!
-                                ? FlutterFlowTheme.of(context).primary
-                                : FlutterFlowTheme.of(context).secondaryBackground.withOpacity(0.5),
-                            size: 25,
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(7, 0, 0, 0),
-                          child: AutoSizeText(
-                            _model.datePicked3 != null
-                                ? dateTimeFormat('Hm', _model.datePicked3)
-                                : 'Hora',
-                            textAlign: TextAlign.start,
-                            maxLines: 1,
-                            minFontSize: 12,
-                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                  font: GoogleFonts.lexend(
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
-                                  color: _model.wilDogWalkerWorkSwitchValue!
-                                      ? FlutterFlowTheme.of(context).secondaryBackground
-                                      : FlutterFlowTheme.of(context).secondaryBackground.withOpacity(0.5),
-                                  fontSize: 16,
-                                  letterSpacing: 0.0,
-                                ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    ),
-  ),
-),
+                                                ),
                                                 Padding(
                                                   padding: const EdgeInsetsDirectional
                                                       .fromSTEB(0, 18, 0, 18),

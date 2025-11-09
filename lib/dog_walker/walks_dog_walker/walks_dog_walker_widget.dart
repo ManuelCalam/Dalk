@@ -45,6 +45,12 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
     )..addListener(() => safeSetState(() {}));
   }
 
+  void _switchToActiveWalksTab() {
+    if (_model.tabBarController?.index != 1) {
+      _model.tabBarController!.animateTo(1);
+    }
+  }
+
   @override
   void dispose() {
     _model.dispose();
@@ -371,6 +377,11 @@ class _WalksDogWalkerWidgetState extends State<WalksDogWalkerWidget>
                                                         onWalkDeleted: () {
                                                           if (mounted) {
                                                               setState(() {}); 
+                                                          } 
+                                                        },
+                                                        onWalkStarted: () {
+                                                          if (mounted) {
+                                                              _switchToActiveWalksTab(); 
                                                           } 
                                                         }
                                                       );

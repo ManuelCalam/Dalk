@@ -494,6 +494,8 @@ void _showImagePickerOptions(BuildContext context, bool isOwner, int? petId) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Datos actualizados correctamente')),
           );
+
+          Navigator.pop(context, true); 
         } else {
           setState(() => _isSaving = false);
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1392,7 +1394,7 @@ void _showImagePickerOptions(BuildContext context, bool isOwner, int? petId) {
                                               0, 18, 0, 0),
                                           child: FFButtonWidget(
                                             onPressed: () async {
-                                              await _saveChanges();
+                                              await _saveChanges();                                              
                                             },
                                             text: _isSaving ? 'Guardando...' : 'Guardar',
                                             options: FFButtonOptions(

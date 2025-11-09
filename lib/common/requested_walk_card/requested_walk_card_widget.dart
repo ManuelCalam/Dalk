@@ -22,6 +22,7 @@ class RequestedWalkCardWidget extends StatefulWidget {
     String? status,
     String? usertype,
     this.onWalkDeleted, 
+    this.onWalkStarted, 
     required this.date,
     required this.time,
     required this.photoUrl,
@@ -46,6 +47,7 @@ class RequestedWalkCardWidget extends StatefulWidget {
   final String ownerId;
   final int dogId;
   final VoidCallback? onWalkDeleted;
+  final VoidCallback? onWalkStarted;
 
   @override
   State<RequestedWalkCardWidget> createState() =>
@@ -493,7 +495,8 @@ class _RequestedWalkCardWidgetState extends State<RequestedWalkCardWidget> {
                         child: PopUpWalkOptionsWidget(
                           walkId: widget.id, 
                           usertype: widget.usertype,
-                          onWalkDeleted: widget.onWalkDeleted,  
+                          onWalkDeleted: widget.onWalkDeleted, 
+                          onWalkStarted: widget.onWalkStarted, 
                         ),
                       );
                     },

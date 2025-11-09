@@ -1,10 +1,10 @@
 
 import 'package:dalk/backend/supabase/database/database.dart';
 import 'package:dalk/cards/article_card/article_card_widget.dart';
-import 'package:dalk/common/article_web_view/article_web_view.dart';
+import 'package:dalk/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/index.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -34,9 +34,44 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => HomeDogWalkerModel());
-    //recarga el cached del usuario
     context.read<UserProvider>().loadUser();
-    //context.read<UserProvider>().loadUser(forceRefresh: true);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+    final prefs = await SharedPreferences.getInstance();
+    final shouldShow = prefs.getBool('showCompleteProfileDialog') ?? false;
+
+    if (shouldShow && mounted) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            child: PopUpConfirmDialogWidget(
+              title: "Completar perfil",
+              message:
+                  "Para hacer visible tu perfil en el buscador de paseadores necesitas completar el servicio que ofreces y validar tu registro de cuenta para recibir pagos. Ambos los puedes en tu perfil, al final de la barra de navegación.",
+              confirmText: "Registrar servicio",
+              cancelText: "Recibir pagos",
+              confirmColor: FlutterFlowTheme.of(context).primary,
+              cancelColor: FlutterFlowTheme.of(context).success,
+              icon: Icons.person_rounded,
+              iconColor: FlutterFlowTheme.of(context).primary,
+              onConfirm: () {
+                context.pop();
+                context.push('/walker/service');
+              },
+              onCancel: () {
+                context.pop();
+                context.push('/walker/getPaid');
+              },
+            ),
+          );
+        },
+      );
+
+      await prefs.remove('showCompleteProfileDialog');
+    }
+  });
   }
 
   @override

@@ -22,13 +22,15 @@ class PopUpWalkOptionsWidget extends StatefulWidget {
     required this.walkId,
     required this.usertype,
     this.onWalkCompletion,
-    this.onWalkDeleted
+    this.onWalkDeleted,
+    this.onWalkStarted
   });
 
   final int walkId;
   final String? usertype;
   final WalkCompletionCallback? onWalkCompletion;
   final VoidCallback? onWalkDeleted;
+  final VoidCallback? onWalkStarted;
 
   @override
   State<PopUpWalkOptionsWidget> createState() => _PopUpWalkOptionsWidgetState();
@@ -254,7 +256,12 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                     .update({'status': 'Cancelado'})
                     .eq('id', widget.walkId),
 
-                  if(isChagingRoute) GoRouter.of(context).go('/owner/currentWalk'),
+                  if(isChagingRoute){
+                    context.push('/owner/walkPayment', extra: <String, dynamic> {
+                      'walkId': widget.walkId,
+                      'userType': 'Dueño'
+                    })
+                  },
                   //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
                   context.pop(),
                   context.pop(),
@@ -352,6 +359,8 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                     .from('walks')
                     .update({'status': 'Aceptado'})
                     .eq('id', widget.walkId);
+
+                widget.onWalkStarted?.call();
 
                 // NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
                 context.pop(); 

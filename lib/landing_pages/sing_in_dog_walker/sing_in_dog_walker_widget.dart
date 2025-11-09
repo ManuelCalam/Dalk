@@ -2919,13 +2919,15 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
                                                         final prefs = await SharedPreferences.getInstance();
                                                         await prefs.setBool('session_active', true);
                                                         await prefs.setString('user_type', 'Paseador');
+                                                        await prefs.setBool('showCompleteProfileDialog', true);
+
 
                                                         if (!mounted) return;
 
                                                         ScaffoldMessenger.of(context).showSnackBar(
                                                           const SnackBar(content: Text('¡Registro exitoso!')),
                                                         );
-
+                                                        
                                                         await Future.delayed(const Duration(milliseconds: 500));
 
                                                         context.go('/walker/home');

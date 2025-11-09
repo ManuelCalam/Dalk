@@ -14,11 +14,13 @@ export 'pet_list_card_model.dart';
 class PetListCardWidget extends StatefulWidget {
   final Map<String, dynamic> petData; // info de la mascota
   final VoidCallback? onPetDeleted;
+  final VoidCallback? onPetUpdated;
 
   const PetListCardWidget({
     super.key,
     required this.petData, // requerido
     this.onPetDeleted,
+    this.onPetUpdated,       
   });
 
   @override
@@ -233,14 +235,19 @@ class _PetListCardWidgetState extends State<PetListCardWidget> {
                             color: FlutterFlowTheme.of(context).primary,
                             size: 30,
                           ),
-                          onPressed: () {
-                            context.push(
+                          onPressed: () async {
+                            final shouldReload = await context.push(
                               '/owner/updatePet',
                               extra: <String, dynamic>{
                                 'petData': widget.petData,
                               },
                             );
+
+                            if (shouldReload == true) {
+                              widget.onPetUpdated?.call();
+                            }
                           },
+
                         ),
                       ),
                     ],
