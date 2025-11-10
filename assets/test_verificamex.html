@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VerificaMex - Simulación</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        h1 { color: #667eea; margin-bottom: 30px; }
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        button:hover { background: #5568d3; transform: translateY(-2px); }
+        button.danger { background: #e74c3c; }
+        button.danger:hover { background: #c0392b; }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Simulador VerificaMex</h1>
+        <div id="content">
+            <div class="step">
+                <h3>📸 Paso 1: Captura de INE</h3>
+                <p>Simulando captura de credencial...</p>
+            </div>
+            <div class="step">
+                <h3>🤳 Paso 2: Selfie biométrica</h3>
+                <p>Simulando captura de rostro...</p>
+            </div>
+            <div class="step">
+                <h3>🔢 Paso 3: Validación CURP</h3>
+                <p>Simulando validación de datos...</p>
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <p style="color: #666;">Selecciona el resultado de prueba:</p>
+                <button onclick="simulateSuccess()">✅ Verificación Exitosa (Score 95)</button>
+                <button onclick="simulateLowScore()">⚠️ Score Bajo (Score 60)</button>
+                <button class="danger" onclick="simulateFailure()">❌ Verificación Fallida</button>
+            </div>
+            
+            <div id="status"></div>
+        </div>
+    </div>
+
+    <script>
+        // 🔑 OBTENER PARÁMETROS DE LA URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id') || 'test-session-123';
+        const userId = urlParams.get('user_id') || 'test-user-uuid';
+
+        function simulateSuccess() {
+            showStatus('Procesando verificación exitosa...', 'info');
+            
+            setTimeout(() => {
+                // Simular webhook
+                sendWebhook({
+                    status: 'FINISHED',
+                    result: 95,
+                    ine: { data: { status: true } },
+                    renapo: { data: { status: true } }
+                });
+                
+                // Redirigir a Vercel
+                setTimeout(() => {
+                    window.location.href = 'https://dalk-legal-git-main-noe-ibarras-projects.vercel.app/redirect_url.html?session_id=' + sessionId + '&status=success';
+                }, 1000);
+            }, 2000);
+        }
+
+        function simulateLowScore() {
+            showStatus('Procesando con score bajo...', 'info');
+            
+            setTimeout(() => {
+                sendWebhook({
+                    status: 'FINISHED',
+                    result: 60,
+                    ine: { data: { status: true } },
+                    renapo: { data: { status: false } }
+                });
+                
+                setTimeout(() => {
+                    window.location.href = 'https://dalk-legal-git-main-noe-ibarras-projects.vercel.app/redirect_url.html?session_id=' + sessionId + '&status=low_score';
+                }, 1000);
+            }, 2000);
+        }
+
+        function simulateFailure() {
+            showStatus('Procesando verificación fallida...', 'error');
+            
+            setTimeout(() => {
+                sendWebhook({
+                    status: 'FAILED',
+                    result: 0,
+                    errors: ['Documento no legible', 'Rostro no coincide'],
+                    ine: { data: { status: false } },
+                    renapo: { data: { status: false } }
+                });
+                
+                setTimeout(() => {
+                    window.location.href = 'https://dalk-legal-git-main-noe-ibarras-projects.vercel.app/redirect_url.html?session_id=' + sessionId + '&status=failed';
+                }, 1000);
+            }, 2000);
+        }
+
+        function sendWebhook(data) {
+            const webhookData = {
+                data: {
+                    id: 'verificamex-' + Date.now(),
+                    ...data,
+                    optionals: {
+                        session_id: sessionId,
+                        user_id: userId
+                    }
+                }
+            };
+
+            // 🔑 LLAMAR AL WEBHOOK DE SUPABASE
+            fetch('https://bsactypehgxluqyaymui.supabase.co/functions/v1/verificamex_webhook', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer '
+                },
+                body: JSON.stringify(webhookData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log('✅ Webhook enviado:', result);
+                showStatus('Webhook enviado correctamente', 'success');
+            })
+            .catch(error => {
+                console.error('❌ Error webhook:', error);
+                showStatus('Error enviando webhook: ' + error, 'error');
+            });
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+    </script>
+</body>
+</html>

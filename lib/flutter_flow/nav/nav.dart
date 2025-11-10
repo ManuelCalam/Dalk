@@ -17,6 +17,7 @@ import 'package:dalk/dog_walker/walker_stripe_webview/walker_stripe_webview.dart
 import 'package:dalk/landing_pages/splash_screen.dart';
 import 'package:flutter/material.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import 'package:dalk/landing_pages/VerificationCallbackPage/VerificationCallbackPage_widget.dart';
 
 import '/index.dart';
 
@@ -486,6 +487,22 @@ GoRouter createRouter()
             path: '/walker/frequentQuestions', 
             pageBuilder: (context, state) => pageBuilderFor(state, const FrequentQuestionsWidget()),
           ),
+          GoRoute(
+  path: '/verification-callback',
+  name: 'verificationCallback',
+  pageBuilder: (context, state) {
+    final userId = state.uri.queryParameters['user_id'] ?? '';
+    final sessionId = state.uri.queryParameters['session_id'] ?? '';
+    
+    return pageBuilderFor(
+      state,
+      VerificationCallbackWidget(  // 🔑 Nombre correcto
+        userId: userId,
+        sessionId: sessionId,
+      ),
+    );
+  },
+),
         ],
       ),
     ],
