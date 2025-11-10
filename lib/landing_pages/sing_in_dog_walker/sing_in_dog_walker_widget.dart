@@ -277,7 +277,7 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Código postal válido. ${postalInfo.neighborhoods.length} colonia(s) encontrada(s).'),
-            backgroundColor: Colors.green,
+            backgroundColor: FlutterFlowTheme.of(context).success,
             duration: const Duration(seconds: 2),
           ),
         );
@@ -292,9 +292,9 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+           SnackBar(
             content: Text('Código postal no válido o no pertenece a Jalisco.'),
-            backgroundColor: Colors.red,
+            backgroundColor: FlutterFlowTheme.of(context).error,
             duration: Duration(seconds: 2),
           ),
         );
@@ -1779,7 +1779,7 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
                                                           : _postalCodeValidated
                                                               ? Icon(
                                                                   Icons.check_circle,
-                                                                  color: Colors.green,
+                                                                  color: FlutterFlowTheme.of(context).success,
                                                                   size: 25,
                                                                 )
                                                               : null,

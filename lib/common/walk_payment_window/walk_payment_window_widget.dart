@@ -194,9 +194,9 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
       final appFee = double.parse((fee * 0.05).toStringAsFixed(2));
 
       final walkerRes = await supabase
-          .from('walker_payments')
-          .select('debt')
-          .eq('walker_uuid', walkerId)
+          .from('users')
+          .select('total_debt')
+          .eq('uuid', walkerId)
           .maybeSingle();
 
       if (walkerRes == null) {
@@ -207,9 +207,9 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
       final newDebt = double.parse((currentDebt + appFee).toStringAsFixed(2));
 
       await supabase
-          .from('walker_payments')
-          .update({'debt': newDebt})
-          .eq('walker_uuid', walkerId);
+          .from('users')
+          .update({'total_debt': newDebt})
+          .eq('uuid', walkerId);
 
       // context.go('/owner/home');
       GoRouter.of(context).go('/owner/home');       

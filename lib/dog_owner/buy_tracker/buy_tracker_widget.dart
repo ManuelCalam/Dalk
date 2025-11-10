@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:dalk/auth/supabase_auth/auth_util.dart';
 import 'package:dalk/backend/supabase/supabase.dart';
 import 'package:dalk/cards/address_card/address_card_widget.dart';
@@ -61,6 +63,14 @@ class _BuyTrackerWidgetState extends State<BuyTrackerWidget> {
   void dispose() {
     _model.dispose();
     super.dispose();
+  }
+
+  
+  String generateSerialNumber() {
+    const length = 6;
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ123456789'; // evita O, 0, I, 1,
+    final rand = Random.secure();
+    return List.generate(length, (_) => chars[rand.nextInt(chars.length)]).join();
   }
 
   Widget _buildCustomCountController() {
@@ -249,156 +259,6 @@ class _BuyTrackerWidgetState extends State<BuyTrackerWidget> {
                                         ),
                                   ),
                                 ),
-
-                                Padding(
-                                        padding:
-                                            const EdgeInsetsDirectional.fromSTEB(
-                                                0, 20, 0, 20),
-                                        child: Container(
-                                          width: MediaQuery.sizeOf(context)
-                                                  .width *
-                                              0.8,
-                                          child: TextFormField(
-                                            controller: _model
-                                                .trackerAliasInputTextController, 
-                                            focusNode: _model
-                                                .trackerAliasInputFocusNode,
-                                            autofocus: false,
-                                            obscureText: false,
-                                            decoration: InputDecoration(
-                                              isDense: true,
-                                              labelText: 'Alias de dispositivo',
-                                              labelStyle: FlutterFlowTheme.of(
-                                                      context)
-                                                  .bodyLarge
-                                                  .override(
-                                                    font: GoogleFonts.lexend(
-                                                      fontWeight:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyLarge
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyLarge
-                                                              .fontStyle,
-                                                    ),
-                                                    color:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .primary,
-                                                    fontSize: 16,
-                                                    letterSpacing: 0.0,
-                                                    fontWeight:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyLarge
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyLarge
-                                                            .fontStyle,
-                                                  ),
-                                              enabledBorder:
-                                                  OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .tertiary,
-                                                  width: 1,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(30),
-                                              ),
-                                              focusedBorder:
-                                                  OutlineInputBorder(
-                                                borderSide: const BorderSide(
-                                                  color: Color(0x00000000),
-                                                  width: 1,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(30),
-                                              ),
-                                              errorBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .error,
-                                                  width: 1,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(30),
-                                              ),
-                                              focusedErrorBorder:
-                                                  OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .error,
-                                                  width: 1,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(30),
-                                              ),
-                                              filled: true,
-                                              fillColor:
-                                                  FlutterFlowTheme.of(context)
-                                                      .alternate,
-                                              contentPadding:
-                                                  const EdgeInsetsDirectional
-                                                      .fromSTEB(10, 0, 0, 20),
-                                              prefixIcon: Icon(
-                                                Icons.perm_device_information_rounded,
-                                                color: FlutterFlowTheme.of(
-                                                        context)
-                                                    .primary,
-                                                size: 25,
-                                              ),
-                                            ),
-                                            style: FlutterFlowTheme.of(
-                                                    context)
-                                                .bodyMedium
-                                                .override(
-                                                  font: GoogleFonts.lexend(
-                                                    fontWeight:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontStyle,
-                                                  ),
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .secondaryBackground,
-                                                  fontSize: 16,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                            cursorColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .primaryText,
-                                            validator: _model
-                                                .trackerAliasInputTextControllerValidator
-                                                .asValidator(context),
-                                          ),
-                                        ),
-                                      ),
-
                                   Padding(
                                     padding: const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
                                     child: Container(
@@ -1067,23 +927,15 @@ class _BuyTrackerWidgetState extends State<BuyTrackerWidget> {
                                     return;
                                   }
 
-                                  if (_model.trackerAliasInputTextController.text.trim().isEmpty || _model.trackerAliasInputTextController.text.length < 3) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Por favor, ingresa un alias, mínimo 3 caracteres.'),
-                                      ),
-                                    );
-                                    return;
-                                  }
-
                                   // Si pasa las validaciones, continuar con el flujo
                                   String? customerStripeId;
                                   final db = Supabase.instance.client;
                                   final itemCount = _model.countControllerValue as int;
-                                  final trackerAlias = _model.trackerAliasInputTextController.text;
+                                  // final trackerAlias = _model.trackerAliasInputTextController.text;
                                   final productsTotal = itemCount * trackerPrice;
                                   final totalAmount = productsTotal + shippingPrice;
-                                  final trackerId = const Uuid().v4();
+                                  final orderId = const Uuid().v4();
+                                  final tracker_id = generateSerialNumber();
                                   
                                   try {
                                     // Obtener el Stripe Customer ID
@@ -1101,14 +953,14 @@ class _BuyTrackerWidgetState extends State<BuyTrackerWidget> {
                                     
                                     final existingOrderResponse = await db
                                       .from('orders')
-                                      .select('tracker_id')
+                                      .select('order_id')
                                       .eq('user_id', currentUserUid)
                                       .filter('status', 'in', ['Pendiente', 'Fallida', 'Cancelada'])
                                       .maybeSingle();
 
 
                                     if (existingOrderResponse != null) {
-                                      final existingInternalOrderId = existingOrderResponse['tracker_id'] as String;
+                                      final existingInternalOrderId = existingOrderResponse['order_id'] as String;
                                       
                                       await db.from('orders')
                                         .update({
@@ -1117,10 +969,10 @@ class _BuyTrackerWidgetState extends State<BuyTrackerWidget> {
                                           'item_count': itemCount,
                                           'shipping_amount': shippingPrice,
                                           'address_id': selectedAddressId,
-                                          'tracker_id': trackerId,
-                                          'tracker_alias': trackerAlias,
+                                          'order_id': orderId,
+                                          'tracker_id': tracker_id,
                                         })
-                                        .eq('tracker_id', existingInternalOrderId);
+                                        .eq('order_id', existingInternalOrderId);
                                       
                                       final orderIdToUse = existingInternalOrderId;
                                       
@@ -1129,26 +981,26 @@ class _BuyTrackerWidgetState extends State<BuyTrackerWidget> {
                                     } else {
                                       await db.from('orders').insert({
                                         'user_id': currentUserUid,
-                                        'tracker_id': trackerId, 
+                                        'order_id': orderId, 
                                         'status': 'Pendiente', 
                                         'total_amount': totalAmount,
                                         'item_count': itemCount,
                                         'shipping_amount': shippingPrice,
                                         'address_id': selectedAddressId, 
-                                        'tracker_alias': trackerAlias,
+                                        'tracker_id': tracker_id, 
                                       });
                                       
                                       
-                                      print('Nueva orden creada: $trackerId');
+                                      // print('Nueva orden creada: $trackerId');
                                     }
 
                                     await handlePaymentFlow(
-                                  context, 
-                                  itemCount, 
-                                  shippingPrice, 
-                                  customerStripeId!,
-                                  trackerId, 
-                                );
+                                      context, 
+                                      itemCount, 
+                                      shippingPrice, 
+                                      customerStripeId,
+                                      orderId, 
+                                    );
 
 
                                 if (!mounted) return;

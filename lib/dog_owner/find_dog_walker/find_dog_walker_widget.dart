@@ -475,7 +475,7 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                                       child: Padding(
                                         padding: EdgeInsets.symmetric(horizontal: 24.0),
                                         child: Text(
-                                          'No se encontraron paseadores disponibles.',
+                                          'No se encontraron paseadores disponibles. Toma en cuenta que influyen los horarios seleccionados.',
                                           textAlign: TextAlign.center, // Centra el texto horizontalmente
                                           style: TextStyle(
                                             fontSize: 16.0,

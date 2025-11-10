@@ -190,6 +190,7 @@ class _PopUpConfirmDialogWidgetState extends State<PopUpConfirmDialogWidget> {
                                 mainAxisSize: MainAxisSize.min,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
+                                  if(widget.confirmText != '')
                                   FFButtonWidget(
                                     onPressed: () {
                                       widget.onConfirm();
@@ -235,6 +236,7 @@ class _PopUpConfirmDialogWidgetState extends State<PopUpConfirmDialogWidget> {
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                   ),
+                                  if(widget.cancelText != '')
                                   Padding(
                                     padding: const EdgeInsetsDirectional.fromSTEB(
                                         0, 7, 0, 0),

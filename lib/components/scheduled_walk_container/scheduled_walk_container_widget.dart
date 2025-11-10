@@ -246,34 +246,53 @@ class ScheduledWalkContainerWidgetState
 
   // --- LÓGICA DE RASTREO POR UUID DEL DISPOSITIVO ---
 
-  // 1. Obtener TODOS los UUIDs de rastreador del Dueño
   Future<List<String>> _fetchAllTrackerIds() async {
-    final currentUserId = SupaFlow.client.auth.currentUser?.id;
-    if (currentUserId == null) return [];
+  final currentUserId = SupaFlow.client.auth.currentUser?.id;
+  if (currentUserId == null) return [];
 
-    try {
-      final response = await SupaFlow.client
-          .from('users')
-          .select('pet_trackers')
-          .eq('uuid', currentUserId)
-          .limit(1)
-          .maybeSingle(); 
+  try {
+    final response = await SupaFlow.client
+        .from('users')
+        .select('pet_trackers')
+        .eq('uuid', currentUserId)
+        .limit(1)
+        .maybeSingle(); 
 
-      if (response == null || !response.containsKey('pet_trackers')) return [];
-
-      final trackers = response['pet_trackers'];
-
-      // pet_trackers es un array de UUIDs. Filtramos y convertimos a List<String>.
-      if (trackers is List) {
-        return trackers.map((e) => e.toString()).where((id) => id.isNotEmpty).toList();
-      }
-      return [];
-
-    } catch (e) {
-      print('Error fetching pet_trackers: $e');
+    if (response == null || !response.containsKey('pet_trackers')) {
+      debugPrint('USERS_FETCH: No se encontró respuesta o columna pet_trackers.');
       return [];
     }
+
+    final dynamic trackersRaw = response['pet_trackers'];
+    List<String> trackerIds = [];
+
+    // 1. Verificar si es una Lista (el formato esperado para TEXT[])
+    if (trackersRaw is List) {
+      debugPrint('USERS_FETCH: pet_trackers recibido como List (TEXT[] nativo).');
+      
+      // 2. Mapear y asegurar que cada elemento es un String
+      trackerIds = trackersRaw
+          .map((e) => e.toString()) // Convertir cada elemento a String
+          .where((id) => id.isNotEmpty)
+          .toList();
+          
+    } else {
+      // Caso de fallback: Si por alguna razón se devuelve como un String (Ej: "['id1', 'id2']")
+      debugPrint('USERS_FETCH: ADVERTENCIA - pet_trackers no es List. Tipo: ${trackersRaw.runtimeType}');
+      return []; 
+    }
+
+    // *** PUNTO CLAVE DE DEPURACIÓN ***
+    // Imprimir los IDs obtenidos justo antes de usarlos en Firebase.
+    debugPrint('USERS_FETCH: IDs de Trackers Obtenidos: $trackerIds');
+    
+    return trackerIds;
+
+  } catch (e) {
+    debugPrint('USERS_FETCH: Error al obtener o procesar pet_trackers: $e');
+    return [];
   }
+}
 
   // Escuchar la ubicación de CADA rastreador (Tracker UUID) en Firebase RTDB
   void _listenToTrackerLocation() async {
@@ -305,7 +324,7 @@ class ScheduledWalkContainerWidgetState
           final newTrackerMarker = Marker(
             markerId: MarkerId(markerId),
             position: position,
-            infoWindow: InfoWindow(title: 'Rastreador: ${trackerId.substring(0, 8)}...'),
+            infoWindow: InfoWindow(title: 'Rastreador: $trackerId'),
             icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure), 
           );
 
@@ -434,7 +453,6 @@ class ScheduledWalkContainerWidgetState
 
     // 5. Navegar a CurrentWalkEmptyWindow
     GoRouter.of(context).go('/walker/currentWalk');
-
   }
 
 

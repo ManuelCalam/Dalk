@@ -247,7 +247,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Código postal válido. ${postalInfo.neighborhoods.length} colonia(s) encontrada(s).'),
-            backgroundColor: Colors.green,
+            backgroundColor: FlutterFlowTheme.of(context).success,
             duration: const Duration(seconds: 2),
           ),
         );
@@ -262,9 +262,9 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Código postal no válido o no pertenece a Jalisco.'),
-            backgroundColor: Colors.red,
+            backgroundColor: FlutterFlowTheme.of(context).error,
             duration: Duration(seconds: 2),
           ),
         );
@@ -1752,7 +1752,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                         : _postalCodeValidated
                                                             ? Icon(
                                                                 Icons.check_circle,
-                                                                color: Colors.green,
+                                                                  color: FlutterFlowTheme.of(context).success,
                                                                 size: 25,
                                                               )
                                                             : null,

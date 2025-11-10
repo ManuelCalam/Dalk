@@ -1,5 +1,6 @@
 import 'package:dalk/backend/supabase/supabase.dart';
 import 'package:dalk/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
+import 'package:dalk/utils/walk_penalty_calculator.dart';
 import 'package:geolocator/geolocator.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -70,6 +71,110 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
 
     return response;
   }
+
+  Future<Map<String, dynamic>?> calculateWalkPenalty(int walkId, String status) async {
+    try {
+      // Obtener datos del paseo desde la vista
+      final walkInfo = await fetchWalkInfoFromView(walkId);
+
+      if (walkInfo == null) {
+        print('No se encontró información del paseo con id $walkId');
+        return null;
+      }
+
+      // Extraer y convertir valores
+      final double fee = (walkInfo['fee'] as num).toDouble();
+      final int walkDurationMinutes = walkInfo['walk_duration_minutes'] as int;
+      final String endTimeStr = walkInfo['endTime']; 
+
+      // Crear DateTime real para endTime (hoy con la hora del paseo)
+      final now = DateTime.now();
+      final parsedEnd = DateFormat('HH:mm:ss').parse(endTimeStr);
+      final endTime = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        parsedEnd.hour,
+        parsedEnd.minute,
+        parsedEnd.second,
+      );
+
+      // Calcular penalización
+      final penaltyResult = WalkPenaltyCalculator.calculatePenalty(
+        endTime: endTime,
+        fee: fee,
+        walkDurationMinutes: walkDurationMinutes,
+        status: status,
+        cancelTime: now,
+      );
+
+      print('Penalización calculada para walkId=$walkId: $penaltyResult');
+      return penaltyResult;
+    } catch (e, st) {
+      print('Error al calcular penalización del paseo $walkId: $e');
+      print(st);
+      return null;
+    }
+  }
+
+  Future<void> registerDebtForUser({
+    required int walkId,
+    required String role,
+    required String status
+  }) async {
+    try {
+      // Calcular penalización
+      final penaltyResult = await calculateWalkPenalty(walkId, status);
+
+      if (penaltyResult == null || (penaltyResult['penalty'] ?? 0.0) == 0.0) {
+        print('No se aplicó penalización para el paseo $walkId');
+        return;
+      }
+
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) {
+        print('No hay usuario autenticado para registrar deuda.');
+        return;
+      }
+
+      final double penaltyAmount = (penaltyResult['penalty'] as num).toDouble();
+      final reason = penaltyResult['reason'] ?? 'Cancelación de paseo en curso';
+
+      // Registrar el detalle de la deuda
+      await Supabase.instance.client.from('debts').insert({
+        'user_id': userId,
+        'walk_id': walkId,
+        'role': role,
+        'amount': penaltyAmount,
+        'reason': reason,
+      });
+
+      // Obtener deuda actual del usuario
+      final userResponse = await Supabase.instance.client
+          .from('users')
+          .select('total_debt')
+          .eq('uuid', userId)
+          .maybeSingle();
+
+      final double currentDebt =
+          (userResponse?['total_debt'] ?? 0.0).toDouble();
+
+      // Actualizar el total acumulado
+      final newDebt = currentDebt + penaltyAmount;
+
+      await Supabase.instance.client
+          .from('users')
+          .update({'total_debt': newDebt})
+          .eq('uuid', userId);
+
+      print('Deuda registrada: +$penaltyAmount | Total actual: $newDebt');
+    } catch (e, st) {
+      print('Error al registrar deuda: $e');
+      print(st);
+    }
+  }
+
+
 
   Future<bool> _checkAndRequestAlwaysPermission() async {
     // 1. Verificar el permiso actual
@@ -217,7 +322,8 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
           icon: Icons.cancel_rounded,
         ));
       }
-      else if (walkStatus == 'Aceptado' || walkStatus == 'En curso') {
+      // else if (walkStatus == 'Aceptado' || walkStatus == 'En curso') {  //Acaaaa
+      else if (walkStatus == 'Aceptado') {
         // Estatus "Por confirmar" o "Aceptado" o "En curso": Botón "Cancelar"
         bool isChagingRoute = walkStatus == 'En curso';
 
@@ -233,39 +339,61 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
           },
           icon: Icons.attach_money_rounded,
         ));
+        
+
 
         buttons.add(_buildActionButton(
           context: context,
           text: 'Cancelar paseo',
           color: FlutterFlowTheme.of(context).error,
-          onPressed: () {
+          onPressed: () async {
+            String message;
+            String status;
+            if (isChagingRoute) {
+              final penaltyResult = await calculateWalkPenalty(widget.walkId, walkStatus);
+              final penalty = penaltyResult?['penalty'] ?? 0.0;
+              message = penalty > 0
+                  ? '¿Estás seguro que deseas cancelar este paseo? Se te generará un adeudo de \$${penalty.toStringAsFixed(2)}.'
+                  : '¿Estás seguro que deseas cancelar este paseo?';
+              status = 'Cancelado_Dueño';
+            } else {
+              message = "¿Estás seguro que deseas cancelar este paseo?";
+              status = 'Cancelado';
+            }
+
+            
             showDialog(
               context: context,
               builder: (_) => PopUpConfirmDialogWidget(
                 title: "Cancelar paseo",
-                message: "¿Estás seguro de que deseas cancelar este paseo?",
+                message: message,
                 confirmText: "Cancelar paseo",
                 cancelText: "Cerrar",
                 confirmColor: FlutterFlowTheme.of(context).error,
                 cancelColor: FlutterFlowTheme.of(context).accent1,
                 icon: Icons.cancel_rounded,
                 iconColor: FlutterFlowTheme.of(context).error,
-                onConfirm: () async => {
+                onConfirm: () async {
                   await SupaFlow.client
                     .from('walks')
-                    .update({'status': 'Cancelado'})
-                    .eq('id', widget.walkId),
+                    .update({'status': status})
+                    .eq('id', widget.walkId);
 
                   if(isChagingRoute){
-                    context.push('/owner/walkPayment', extra: <String, dynamic> {
-                      'walkId': widget.walkId,
-                      'userType': 'Dueño'
-                    })
-                  },
+                    await registerDebtForUser(
+                      walkId: widget.walkId,
+                      role: 'Dueño',
+                      status: walkStatus
+                    );
+                  }
+
                   //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
-                  context.pop(),
-                  context.pop(),
+                  context.pop();
+                  context.pop();
                   
+                  if(isChagingRoute) {
+                    context.go('/owner/ownerDebt');
+                  }
 
                   //Envío de notificacion después de cerrar los menús
                   await Supabase.instance.client.functions.invoke(
@@ -274,7 +402,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                       'walk_id': widget.walkId,
                       'new_status': 'Cancelado',
                     },
-                  )
+                  );
 
                 },
                 onCancel: () => context.pop(),
@@ -438,6 +566,7 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
           onPressed: () {
             showDialog(
               context: context,
+              useRootNavigator: true, 
               builder: (_) => PopUpConfirmDialogWidget(
                 title: "Iniciar paseo",
                 message: "¿Estás seguro de que deseas iniciar este paseo?",
@@ -455,10 +584,12 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                     .update({'status': 'En curso'})
                     .eq('id', widget.walkId),
 
-                  GoRouter.of(context).go('/walker/currentWalk'),
+                  
                   //NECESARIO: Doble pop para cerrar el showDialog y el popUpWindow
                   context.pop(),
                   context.pop(),
+                  
+                  GoRouter.of(context).go('/walker/currentWalk'),
 
                   await SupaFlow.client
                     .from('users') 
@@ -581,12 +712,12 @@ class _PopUpWalkOptionsWidgetState extends State<PopUpWalkOptionsWidget> {
                 iconColor: FlutterFlowTheme.of(context).primary,
 
             onConfirm: () async {
-              await widget.onWalkCompletion?.call(); 
-              
               // Cerramos el PopUp, usando el contexto del diálogo
               if (context.canPop()) {
                   context.pop(); 
               }
+              context.pop();
+              await widget.onWalkCompletion?.call(); 
             },
                 onCancel: () => context.pop(),
               ), 

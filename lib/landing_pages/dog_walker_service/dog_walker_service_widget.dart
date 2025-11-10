@@ -224,7 +224,6 @@ class _DogWalkerServiceWidgetState extends State<DogWalkerServiceWidget> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Por favor completa todos los campos correctamente'),
-          backgroundColor: Colors.red,
         ),
       );
       return;
