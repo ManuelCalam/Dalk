@@ -282,6 +282,7 @@ GoRouter createRouter()
                 ScheduledWalkContainerWidget(
                   walkId: args['walkId'],
                   userType: args['userType'],
+                  status: args['status'] ?? '',
                 )
               );
             },
@@ -410,11 +411,20 @@ GoRouter createRouter()
             path: '/walker/home',
             pageBuilder: (context, state) => pageBuilderFor(state, const HomeDogWalkerWidget()),
           ),
+          // GoRoute(
+          //   name: 'walker_currentWalk',
+          //   path: '/walker/currentWalk',
+          //   pageBuilder: (context, state) => pageBuilderFor(state, const CurrentWalkEmptyWindowWidget()),
+          // ),
           GoRoute(
             name: 'walker_currentWalk',
             path: '/walker/currentWalk',
-            pageBuilder: (context, state) => pageBuilderFor(state, const CurrentWalkEmptyWindowWidget()),
+            pageBuilder: (context, state) => pageBuilderFor(
+              state,
+              CurrentWalkEmptyWindowWidget(key: UniqueKey()),
+            ),
           ),
+
           GoRoute(
             name: 'walker_service',
             path: '/walker/service',
@@ -462,6 +472,7 @@ GoRouter createRouter()
                 ScheduledWalkContainerWidget(
                   walkId: args['walkId'],
                   userType: args['userType'],
+                  status: args['status'] ?? '',
                 )
               );
             },

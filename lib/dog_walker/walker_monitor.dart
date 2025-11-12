@@ -21,7 +21,6 @@ class WalkerMonitor {
       event: PostgresChangeEvent.update,
       schema: 'public',
       table: 'walks',
-      // Filtramos para escuchar SÓLO los paseos asignados a este Walker
       filter: PostgresChangeFilter(
         type: PostgresChangeFilterType.eq,
         column: 'walker_id',

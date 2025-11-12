@@ -1,5 +1,6 @@
 import 'package:dalk/components/pop_up_add_review/pop_up_add_review_widget.dart';
 import 'package:dalk/components/pop_up_dog_profile/pop_up_dog_profile_widget.dart';
+import 'package:dalk/components/pop_up_walk_options/pop_up_walk_options_widget.dart';
 
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -260,7 +261,7 @@ class _NonReviewedDogCardWidgetState extends State<NonReviewedDogCardWidget> {
                                   padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 2, 0, 0),
                                   child: AutoSizeText(
-                                    'Tiempo:',
+                                    'Duración:',
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .override(
@@ -322,7 +323,7 @@ class _NonReviewedDogCardWidgetState extends State<NonReviewedDogCardWidget> {
                                   padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 2, 0, 0),
                                   child: AutoSizeText(
-                                    'Tarifa',
+                                    'Tarifa:',
                                     maxLines: 1,
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
@@ -350,7 +351,7 @@ class _NonReviewedDogCardWidgetState extends State<NonReviewedDogCardWidget> {
                                       5, 2, 0, 0),
                                   child: AutoSizeText(
                                     valueOrDefault<String>(
-                                      widget.fee,
+                                      '\$${widget.fee}',
                                       '[fee]',
                                     ),
                                     textAlign: TextAlign.center,
@@ -385,6 +386,65 @@ class _NonReviewedDogCardWidgetState extends State<NonReviewedDogCardWidget> {
                   ),
                 ),
               ],
+            ),
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 10, 5),
+              child: Container(
+                width: MediaQuery.sizeOf(context).width,
+                height: 35,
+                decoration: const BoxDecoration(),
+                child: FFButtonWidget(
+                onPressed: () async {
+                  await showModalBottomSheet(
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    enableDrag: false,
+                    context: context,
+                    builder: (context) {
+                      return Padding(
+                        padding:
+                            MediaQuery.viewInsetsOf(context),
+                        child: PopUpWalkOptionsWidget(
+                          walkId: widget.id, 
+                          usertype: 'Paseador',
+                        ),
+                      );
+                    },
+                  );
+                },
+                  text: 'Ver detalles',
+                  icon: const Icon(
+                    Icons.keyboard_double_arrow_up_rounded,
+                    size: 30,
+                  ),
+                  options: FFButtonOptions(
+                    height: 40,
+                    padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+                    iconAlignment: IconAlignment.end,
+                    iconPadding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                    color: FlutterFlowTheme.of(context).primary,
+                    textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                          font: GoogleFonts.lexend(
+                            fontWeight: FlutterFlowTheme.of(context)
+                                .titleSmall
+                                .fontWeight,
+                            fontStyle: FlutterFlowTheme.of(context)
+                                .titleSmall
+                                .fontStyle,
+                          ),
+                          color: Colors.white,
+                          letterSpacing: 0.0,
+                          fontWeight: FlutterFlowTheme.of(context)
+                              .titleSmall
+                              .fontWeight,
+                          fontStyle:
+                              FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                        ),
+                    elevation: 0,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
             ),
             Padding(
               padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 10, 15),

@@ -1,4 +1,3 @@
-import 'package:dalk/dog_owner/buy_tracker/buy_tracker_widget.dart';
 
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
@@ -207,6 +206,60 @@ class _TrackerDetailsWidgetState extends State<TrackerDetailsWidget> {
                                         onPageChanged: (index, _) =>
                                             _model.carouselCurrentIndex = index,
                                       ),
+                                    ),
+                                  ),
+                                ),
+
+                                Padding(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
+                                      0, 20, 0, 0),
+                                  child: FFButtonWidget(
+                                    onPressed: () {
+                                      context.push('/owner/buyTracker');
+                                    },
+                                    text: 'Comprar aquí',
+                                    icon: const Icon(
+                                      Icons.shopping_cart,
+                                      size: 20,
+                                    ),
+                                    options: FFButtonOptions(
+                                      height:
+                                          MediaQuery.sizeOf(context).height *
+                                              0.05,
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
+                                          16, 0, 16, 0),
+                                      iconAlignment: IconAlignment.end,
+                                      iconPadding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              0, 0, 0, 0),
+                                      color:
+                                          FlutterFlowTheme.of(context).accent1,
+                                      textStyle: FlutterFlowTheme.of(context)
+                                          .titleSmall
+                                          .override(
+                                            font: GoogleFonts.lexend(
+                                              fontWeight:
+                                                  FlutterFlowTheme.of(context)
+                                                      .titleSmall
+                                                      .fontWeight,
+                                              fontStyle:
+                                                  FlutterFlowTheme.of(context)
+                                                      .titleSmall
+                                                      .fontStyle,
+                                            ),
+                                            color: Colors.white,
+                                            letterSpacing: 0.0,
+                                            fontWeight:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .fontWeight,
+                                            fontStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .fontStyle,
+                                          ),
+                                      elevation: 0,
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
                                   ),
                                 ),

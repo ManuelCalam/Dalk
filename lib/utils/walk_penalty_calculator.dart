@@ -34,13 +34,13 @@ class WalkPenaltyCalculator {
 
     if (fractionRemaining > 0.5) {
       // Falta más del 50% del paseo
-      penaltyPercentage = 0.1; // Penalización leve del 10%
-    } else if (fractionRemaining > 0.2) {
-      // Falta entre 20% y 50%
-      penaltyPercentage = 0.25; // Penalización moderada del 25%
+      penaltyPercentage = 0.2; // Penalización leve del 20%
+    } else if (fractionRemaining > 0.25) {
+      // Falta entre 25% y 50%
+      penaltyPercentage = 0.4; // Penalización moderada del 40%
     } else {
       // Falta menos del 20%
-      penaltyPercentage = 0.5; // Penalización fuerte del 50%
+      penaltyPercentage = 0.7; // Penalización fuerte del 70%
     }
 
     final penaltyAmount = double.parse((fee * penaltyPercentage).toStringAsFixed(2));

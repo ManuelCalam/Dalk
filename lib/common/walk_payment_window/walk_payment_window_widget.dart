@@ -158,6 +158,13 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
         const SnackBar(content: Text('Pago completado con éxito.')),
       );
 
+
+      if(walkData['status'] == 'Cancelado_Dueño') {
+        context.pop(true);
+      }
+      await fetchWalkInfoFromView(widget.walkId);
+      
+
     } on StripeException catch (e) {
       print('Error de Stripe: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -179,13 +186,20 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
 
       final walkerId = walkData['walker_id'];
       final walkId = walkData['id'];
+      final walkStatus = walkData['status'];
       final fee = double.parse(walkData['fee'].toString());
-
+      
+      
       final updateWalk = await supabase
           .from('walks')
           .update({'payment_status': 'Pagado'})
           .eq('id', walkId)
-          .select(); 
+          .select();
+      
+      if(walkStatus == 'Cancelado_Dueño'){
+        await fetchWalkInfoFromView(widget.walkId);
+        return;
+      }
 
       if (updateWalk.isEmpty) {
         throw Exception('Error al actualizar el estado del paseo.');
@@ -203,7 +217,7 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
         throw Exception('No se encontró la información del paseador.');
       }
 
-      final currentDebt = double.parse((walkerRes['debt'] ?? 0).toString());
+      final currentDebt = double.parse((walkerRes['total_debt'] ?? 0).toString());
       final newDebt = double.parse((currentDebt + appFee).toStringAsFixed(2));
 
       await supabase
@@ -211,8 +225,11 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
           .update({'total_debt': newDebt})
           .eq('uuid', walkerId);
 
+      await fetchWalkInfoFromView(widget.walkId);
+
+
       // context.go('/owner/home');
-      GoRouter.of(context).go('/owner/home');       
+      // GoRouter.of(context).go('/owner/home');       
 
     } catch (e) {
       print('Error en pago en efectivo: $e');

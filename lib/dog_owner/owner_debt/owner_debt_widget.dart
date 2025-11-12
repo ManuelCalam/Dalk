@@ -1,10 +1,10 @@
 import 'package:dalk/auth/supabase_auth/auth_util.dart';
 import 'package:dalk/backend/supabase/database/database.dart';
+import 'package:dalk/cards/owner_debt_card/owner_debt_card_widget.dart';
 
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -59,6 +59,22 @@ class _OwnerDebtWidgetState extends State<OwnerDebtWidget> {
       setState(() {
         _model.nameDogOwnerInputTextController.text = '\$0.00';
       });
+    }
+  }
+
+  // Método para obtener los datos completos del walk desde el view
+  Future<Map<String, dynamic>?> _fetchWalkData(int walkId) async {
+    try {
+      final response = await Supabase.instance.client
+          .from('walks_with_names')
+          .select()
+          .eq('id', walkId)
+          .maybeSingle();
+      
+      return response;
+    } catch (e) {
+      print('Error al obtener datos del walk: $e');
+      return null;
     }
   }
 
@@ -438,54 +454,94 @@ class _OwnerDebtWidgetState extends State<OwnerDebtWidget> {
                                     ),
                                   ),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(
-                                      0, 20, 0, 0),
-                                  child: FFButtonWidget(
-                                    onPressed: () {
-                                      print('Button pressed ...');
-                                    },
-                                    text: 'Pagar Adeudo',
-                                    icon: const Icon(
-                                      Icons.credit_card,
-                                      size: 23,
-                                    ),
-                                    options: FFButtonOptions(
-                                      height:
-                                          MediaQuery.sizeOf(context).height *
-                                              0.05,
-                                      padding: const EdgeInsetsDirectional.fromSTEB(
-                                          16, 0, 16, 0),
-                                      iconAlignment: IconAlignment.end,
-                                      iconPadding:
-                                          const EdgeInsetsDirectional.fromSTEB(
-                                              0, 0, 0, 0),
-                                      color:
-                                          FlutterFlowTheme.of(context).primary,
-                                      textStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .override(
-                                            font: GoogleFonts.lexend(
-                                              fontWeight: FontWeight.w500,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .titleSmall
-                                                      .fontStyle,
+                                
+                                // StreamBuilder para obtener las deudas pendientes
+                                StreamBuilder<List<Map<String, dynamic>>>(
+                                  stream: Supabase.instance.client
+                                      .from('debts')
+                                      .stream(primaryKey: ['id'])
+                                      .order('created_at', ascending: false),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasError) {
+                                      return Center(
+                                        child: Text('Error: ${snapshot.error}'),
+                                      );
+                                    }
+
+                                    if (!snapshot.hasData) {
+                                      return const Center(
+                                        child: CircularProgressIndicator(),
+                                      );
+                                    }
+
+                                    // 🔹 Filtramos manualmente después de obtener todos los datos
+                                    final allDebts = snapshot.data!;
+                                    final debts = allDebts.where((debt) =>
+                                      debt['user_id'] == currentUserUid &&
+                                      debt['status'] == 'Pendiente'
+                                    ).toList();
+
+                                    if (debts.isEmpty) {
+                                      return const Padding(
+                                        padding: EdgeInsets.all(20.0),
+                                        child: Text(
+                                          'No tienes adeudos pendientes',
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      );
+                                    }
+
+                                    return Column(
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.all(15.0),
+                                          child: Text(
+                                            'Paseos con adeudos pendientes',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: FlutterFlowTheme.of(context).primary,
                                             ),
-                                            color: Colors.white,
-                                            fontSize: 17,
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.w500,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .titleSmall
-                                                    .fontStyle,
                                           ),
-                                      elevation: 0,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
+                                        ),
+                                        ...debts.map((debt) => FutureBuilder<Map<String, dynamic>?>(
+                                          future: _fetchWalkData(debt['walk_id'] as int),
+                                          builder: (context, walkSnapshot) {
+                                            if (walkSnapshot.connectionState == ConnectionState.waiting) {
+                                              return const CircularProgressIndicator();
+                                            }
+
+                                            if (!walkSnapshot.hasData || walkSnapshot.data == null) {
+                                              return const ListTile(
+                                                title: Text('Información no disponible'),
+                                              );
+                                            }
+
+                                            final fullWalkData = walkSnapshot.data!;
+
+                                            return OwnerDebtCardWidget(
+                                              id: fullWalkData['id'],
+                                              status: fullWalkData['status'] ?? '',
+                                              petName: fullWalkData['pet_name'] ?? '',
+                                              usertype: 'Dueño',
+                                              duration: (fullWalkData['walk_duration_minutes'] as int?)?.toString() ?? '',
+                                              fee: (fullWalkData['fee'] as int?)?.toString() ?? '',
+                                              dogWalker: fullWalkData['walker_name'] ?? '',
+                                              photoUrl: fullWalkData['walker_photo_url'],
+                                              walkerId: fullWalkData['walker_id'],
+                                              dogId: fullWalkData['dog_id'],
+                                              onPaymentCompleted: () {
+                                                setState(() {});
+                                                _fetchUserDebt(); 
+                                              },
+                                            );
+                                          },
+                                        )).toList(),
+                                      ],
+                                    );
+                                  },
+                                )
+
                               ],
                             ),
                           ),

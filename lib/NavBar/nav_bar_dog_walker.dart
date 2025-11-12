@@ -55,11 +55,11 @@ class _NavBarWalkerPageState extends State<NavBarWalkerPage> {
               backgroundColor: Colors.transparent,
               child: PopUpConfirmDialogWidget(
                 title: "Paseo cancelado",
-                message: "El dueño ha cancelado el paseo. Se registrará el adeudo correspondiente en su cuenta.",
-                confirmText: "",
+                message: "El paseo fue cancelado. El pago se hará efectivo cuando el dueño lo cubra.",
+                confirmText: "Cerrar",
                 cancelText: "",
-                confirmColor: FlutterFlowTheme.of(context).primary,
-                cancelColor: FlutterFlowTheme.of(context).accent1,
+                confirmColor: FlutterFlowTheme.of(context).error,
+                cancelColor: FlutterFlowTheme.of(context).error,
                 icon: Icons.cancel,
                 iconColor: FlutterFlowTheme.of(context).error,
                 onConfirm: () {
@@ -72,6 +72,8 @@ class _NavBarWalkerPageState extends State<NavBarWalkerPage> {
             );
           },
         );
+        context.go('/walker/currentWalk');
+
       });
     }
   }

@@ -31,6 +31,7 @@ class _CurrentWalkEmpyWindowWidgetState
   final scaffoldKey = GlobalKey<ScaffoldState>();
   String currentWalkId = '';
   String userType = '';
+  String status = '';
   bool isLoading = true;
 
   @override
@@ -208,6 +209,7 @@ Widget build(BuildContext context) {
                           ? ScheduledWalkContainerWidget(
                               walkId: currentWalkId,
                               userType: userType,
+                              status: status,
                             )
                           : NotScheduledWalkContainerWidget(userType: userType)),
                 ),

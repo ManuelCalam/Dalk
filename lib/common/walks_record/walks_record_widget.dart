@@ -170,7 +170,9 @@ class _WalksRecordWidgetState extends State<WalksRecordWidget> {
                                                   future: SupaFlow.client
                                                     .from('reviews')
                                                     .select()
-                                                    .eq('walk_id', walk['id']),
+                                                    .eq('walk_id', walk['id'])
+                                                    .eq('author_id', currentUserUid)
+                                                    .eq('reviewType', 'Perro'),
                                                   builder: (context, reviewSnapshot) {
                                                     if (!reviewSnapshot.hasData) {
                                                       return const SizedBox();
@@ -233,7 +235,7 @@ class _WalksRecordWidgetState extends State<WalksRecordWidget> {
                                             return ListView.builder(
                                               padding: EdgeInsets.zero,
                                               shrinkWrap: true, // ← MANTENER
-                                              physics: const ClampingScrollPhysics(), // ← AGREGAR ESTO
+                                              physics: const ClampingScrollPhysics(), 
                                               itemCount: finishedWalks.length,
                                               itemBuilder: (context, index) {
                                                 final walk = finishedWalks[index];
@@ -241,7 +243,9 @@ class _WalksRecordWidgetState extends State<WalksRecordWidget> {
                                                   future: SupaFlow.client
                                                     .from('reviews')
                                                     .select()
-                                                    .eq('walk_id', walk['id']),
+                                                    .eq('walk_id', walk['id'])
+                                                    .eq('author_id', currentUserUid)
+                                                    .eq('reviewType', 'Paseador'),
                                                   builder: (context, reviewSnapshot) {
                                                     if (!reviewSnapshot.hasData) {
                                                       return const SizedBox();
