@@ -22,6 +22,10 @@ Future<void> handlePaymentFlow(
     const SnackBar(content: Text('Preparando pago...')),
   );
 
+  if(customerStripeId == null){
+     throw ('No tienes una tarjeta afiliada a tu cuenta.');
+  }
+
   try { 
 
     final response = await http.post(
@@ -94,7 +98,7 @@ Future<void> handlePaymentFlow(
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Error inesperado: $e. Intenta de nuevo.'),
+        content: Text('Error inesperado: $e.'),
       ),
     );
     print('General Error: $e');

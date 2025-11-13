@@ -1,4 +1,6 @@
 
+import 'dart:io';
+
 import 'package:dalk/auth/supabase_auth/auth_util.dart';
 import 'package:dalk/backend/supabase/database/database.dart';
 import 'package:dalk/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
@@ -268,8 +270,7 @@ class _AddTrackerToAccountWidgetState extends State<AddTrackerToAccountWidget> {
                                               MediaQuery.sizeOf(context).width,
                                           child: TextFormField(
                                             autovalidateMode: AutovalidateMode.onUserInteraction,
-                                            controller: _model
-                                                .serialNumberInputTextController,
+                                            controller: _model.serialNumberInputTextController,
                                             focusNode: _model
                                                 .serialNumberInputFocusNode,
                                             autofocus: false,
@@ -668,14 +669,14 @@ class _AddTrackerToAccountWidgetState extends State<AddTrackerToAccountWidget> {
                                           return;
                                         }
 
-                                        // 3️⃣ Insertar en la tabla trackers
+                                        // Insertar en la tabla trackers
                                         await Supabase.instance.client.from('trackers').insert({
                                           'registered_by': currentUserUid,
                                           'alias': alias,
                                           'serial_number': serialNumber,
                                         });
 
-                                        // 4️⃣ Mostrar popup de éxito
+                                        // Mostrar popup de éxito
                                         showDialog(
                                           context: context,
                                           builder: (context) {
@@ -703,7 +704,12 @@ class _AddTrackerToAccountWidgetState extends State<AddTrackerToAccountWidget> {
                                             );
                                           },
                                         );
-                                      } catch (e) {
+                                      } on SocketException {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('Sin conexión a Internet. Intenta nuevamente.')),
+  ); }
+                                      
+                                      catch (e) {
                                         print('Error registrando rastreador: $e');
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           SnackBar(content: Text('Error al registrar el rastreador: $e')),

@@ -118,7 +118,8 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
 
       final customerStripeId = customerRes?['customer_stripe_id'];
       if (customerStripeId == null) {
-        throw Exception('No se encontró el customer_stripe_id del usuario actual.');
+        // throw Exception('No se encontró el customer_stripe_id del usuario actual.');
+        throw ('No tienes una tarjeta afiliada a tu cuenta.');
       }
 
 
