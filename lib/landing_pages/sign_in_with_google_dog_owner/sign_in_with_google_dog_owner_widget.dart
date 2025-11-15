@@ -208,8 +208,6 @@ class _SignInWithGoogleDogOwnerWidgetState
                                       children: [
                                         Form(
                                           key: _model.formKey,
-                                          autovalidateMode:
-                                              AutovalidateMode.disabled,
                                           child: Column(
                                             mainAxisSize: MainAxisSize.max,
                                             children: [
@@ -397,10 +395,10 @@ class _SignInWithGoogleDogOwnerWidgetState
                                                       if (required != null) return required;
                                                       final min = Validators.minLength(value, 3, fieldName: 'Nombre');
                                                       if (min != null) return min;
-                                                      return Validators.maxLength(value, 50, fieldName: 'Nombre');
+                                                      return Validators.maxLength(value, 25, fieldName: 'Nombre');
                                                     },                                                  
                                                     inputFormatters: [
-                                                      LengthLimitingTextInputFormatter(50),
+                                                      LengthLimitingTextInputFormatter(25),
                                                     ],                                    
                                                   ),
                                                 ),

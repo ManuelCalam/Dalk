@@ -672,10 +672,10 @@ void _onPostalCodeChanged() async {
                                                       if (required != null) return required;
                                                       final min = Validators.minLength(value, 5, fieldName: 'Calle');
                                                       if (min != null) return min;
-                                                      return Validators.maxLength(value, 50, fieldName: 'Calle');
+                                                      return Validators.maxLength(value, 30, fieldName: 'Calle');
                                                     },                                                  
                                                     inputFormatters: [
-                                                      LengthLimitingTextInputFormatter(50),
+                                                      LengthLimitingTextInputFormatter(30),
                                                     ],  
                                                   ),
                                                 ),

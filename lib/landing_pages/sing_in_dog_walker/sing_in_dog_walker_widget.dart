@@ -835,10 +835,10 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
                                                       if (required != null) return required;
                                                       final min = Validators.minLength(value, 3, fieldName: 'Nombre');
                                                       if (min != null) return min;
-                                                      return Validators.maxLength(value, 50, fieldName: 'Nombre');
+                                                      return Validators.maxLength(value, 25, fieldName: 'Nombre');
                                                     },                                                  
                                                     inputFormatters: [
-                                                      LengthLimitingTextInputFormatter(50),
+                                                      LengthLimitingTextInputFormatter(25),
                                                     ],                                                
                                                   ),
                                                 ),
@@ -1684,10 +1684,10 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
                                                       if (required != null) return required;
                                                       final min = Validators.minLength(value, 5, fieldName: 'Calle');
                                                       if (min != null) return min;
-                                                      return Validators.maxLength(value, 50, fieldName: 'Calle');
+                                                      return Validators.maxLength(value, 30, fieldName: 'Calle');
                                                     },                                                  
                                                     inputFormatters: [
-                                                      LengthLimitingTextInputFormatter(50),
+                                                      LengthLimitingTextInputFormatter(30),
                                                     ],  
                                                   ),
                                                 ),

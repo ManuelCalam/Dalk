@@ -127,7 +127,7 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
         _model.emailDogOwnerInputTextController.text.trim(),
         _model.passDogOwnerInputTextController.text.trim(),
       );
-      if (user == null) throw Exception('No se pudo crear el usuario.');
+      if (user == null) throw ('No se pudo crear el usuario. Intentalo de nuevo');
       final userId = user.uid;
 
       // Insertar datos en "users"
@@ -810,10 +810,10 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                     if (required != null) return required;
                                                     final min = Validators.minLength(value, 3, fieldName: 'Nombre');
                                                     if (min != null) return min;
-                                                    return Validators.maxLength(value, 50, fieldName: 'Nombre');
+                                                    return Validators.maxLength(value, 25, fieldName: 'Nombre');
                                                   },                                                  
                                                   inputFormatters: [
-                                                    LengthLimitingTextInputFormatter(50),
+                                                    LengthLimitingTextInputFormatter(25),
                                                   ],                                                
                                                 ),
                                               ),
@@ -1657,10 +1657,10 @@ class _SingInDogOwnerWidgetState extends State<SingInDogOwnerWidget> {
                                                     if (required != null) return required;
                                                     final min = Validators.minLength(value, 5, fieldName: 'Calle');
                                                     if (min != null) return min;
-                                                    return Validators.maxLength(value, 50, fieldName: 'Calle');
+                                                    return Validators.maxLength(value, 30, fieldName: 'Calle');
                                                   },                                                  
                                                   inputFormatters: [
-                                                    LengthLimitingTextInputFormatter(50),
+                                                    LengthLimitingTextInputFormatter(30),
                                                   ],  
                                                 ),
                                               ),

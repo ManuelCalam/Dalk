@@ -800,7 +800,7 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                                 padding: const EdgeInsetsDirectional
                                                     .fromSTEB(8, 0, 0, 0),
                                                 child: Text(
-                                                  '¿Ya recibiste el rastreador',
+                                                  '¿Ya recibiste el rastreador?',
                                                   style: FlutterFlowTheme.of(
                                                           context)
                                                       .bodyMedium
