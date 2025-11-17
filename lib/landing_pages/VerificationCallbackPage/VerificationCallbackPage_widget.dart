@@ -1,16 +1,21 @@
+import 'package:dalk/user_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '/auth/supabase_auth/auth_util.dart';
-import '/backend/supabase/supabase.dart';  // 🔑 IMPORT NECESARIO
+import '/backend/supabase/supabase.dart';  
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'VerificationCallbackPage_model.dart';
+import 'package:provider/provider.dart';
 
 class VerificationCallbackWidget extends StatefulWidget {
   const VerificationCallbackWidget({
     super.key,
     required this.userId,
     required this.sessionId,
+
   });
 
   final String userId;
@@ -27,160 +32,121 @@ class _VerificationCallbackWidgetState extends State<VerificationCallbackWidget>
   late VerificationCallbackModel _model;
   bool _isChecking = true;
   String _statusMessage = 'Verificando tu identidad...';
+  RealtimeChannel? _channel;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => VerificationCallbackModel());
-    _checkVerificationStatus();
+
+    _listenVerificationStatus();
   }
+
 
   @override
   void dispose() {
+    _channel?.unsubscribe();
     _model.dispose();
     super.dispose();
   }
 
-  // 🔑 CONSULTAR STATUS EN BD Y REDIRIGIR
-  Future<void> _checkVerificationStatus() async {
-    try {
-      debugPrint('🔍 Consultando status de verificación...');
-      debugPrint('User ID: ${widget.userId}');
-      debugPrint('Session ID: ${widget.sessionId}');
+void _listenVerificationStatus() {
+  final sessionId = widget.sessionId;
 
-      // Esperar 3 segundos para dar tiempo al webhook de actualizar la BD
-      await Future.delayed(const Duration(seconds: 3));
+  debugPrint('🟢 Escuchando cambios para session_id: $sessionId');
 
-      // 🔑 USAR SupaFlow.client (ya importado correctamente)
-      final response = await SupaFlow.client
-          .from('identity_verifications')
-          .select('status, verification_result, failure_reason')
-          .eq('session_id', widget.sessionId)
-          .maybeSingle();
+  _channel = SupaFlow.client
+      .channel('identity_verification_changes_$sessionId')
+      .onPostgresChanges(
+        event: PostgresChangeEvent.update,
+        schema: 'public',
+        table: 'identity_verifications',
+        filter: PostgresChangeFilter(
+          type: PostgresChangeFilterType.eq,
+          column: 'session_id',
+          value: sessionId,
+        ),
+        callback: (payload) {
+          final newRow = payload.newRecord;
 
-      if (response == null) {
-        debugPrint('❌ No se encontró registro de verificación');
-        _handleVerificationError('No se encontró el registro de verificación');
-        return;
-      }
+          final status = newRow['status'] as String?;
+          final result = newRow['verification_result'] as int?;
+          final failureReason = newRow['failure_reason'] as String?;
 
-      final status = response['status'] as String?;
-      final result = response['verification_result'] as int?;
-      final failureReason = response['failure_reason'] as String?;
+          debugPrint('📡 Cambio Realtime detectado:');
+          debugPrint('status = $status, result = $result');
 
-      debugPrint('📊 Status: $status, Result: $result');
+          if (!mounted) return;
 
-      if (!mounted) return;
+          if (status == 'success') {
+            setState(() {
+              _statusMessage = '¡Verificación exitosa!';
+              _isChecking = false;
+            });
 
-      // 🔑 LÓGICA DE REDIRECCIÓN SEGÚN STATUS
-      if (status == 'completed' && (result ?? 0) >= 90) {
-        // ✅ VERIFICACIÓN EXITOSA
-        setState(() {
-          _isChecking = false;
-          _statusMessage = '¡Verificación exitosa! ✅';
-        });
+            Future.delayed(const Duration(seconds: 2), () {
+              if (mounted) context.go('/walker/home');
+            });
 
-        await Future.delayed(const Duration(seconds: 2));
+          } else if (status == 'failed') {
 
-        if (mounted) {
-          context.goNamed('/walker_home');  // 🔑 Usar la ruta correcta del nav.dart
-        }
-      } else if (status == 'VERIFYING' || status == 'OPEN') {
-        // ⏳ AÚN PROCESANDO
-        setState(() {
-          _statusMessage = 'Procesando verificación, por favor espera...';
-        });
+            _handleAutomaticFailure(failureReason);
 
-        // Reintentar después de 5 segundos
-        await Future.delayed(const Duration(seconds: 5));
-        if (mounted) _checkVerificationStatus();
-      } else {
-        // ❌ VERIFICACIÓN FALLIDA
-        _handleVerificationFailure(status, failureReason);
-      }
-    } catch (e, stackTrace) {
-      debugPrint('💥 Error consultando status: $e');
-      debugPrint('Stack trace: $stackTrace');
-      _handleVerificationError('Error consultando el estado: $e');
+          } else {
+            setState(() {
+              _statusMessage = 'Verificando...';
+            });
+          }
+        },
+      )
+      .subscribe();
+}
+
+
+
+  Future<void> _handleAutomaticFailure(String? failureReason) async {
+  setState(() {
+    _isChecking = false;
+    _statusMessage = 'Verificación fallida ❌';
+  });
+
+  // Opcional: mostrar un mensaje antes de redirigir
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(failureReason != null
+          ? 'Verificación fallida: $failureReason'
+          : 'Verificación fallida'),
+      backgroundColor: Colors.red,
+    ),
+  );
+
+  try {
+    // 1️⃣ Sign out supabase
+    await Supabase.instance.client.auth.signOut();
+
+    // 2️⃣ Clear SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    // 3️⃣ Clear provider
+    if (context.mounted) {
+      context.read<UserProvider>().clearUser();
     }
-  }
 
-  void _handleVerificationFailure(String? status, String? failureReason) {
-    setState(() {
-      _isChecking = false;
-      _statusMessage = 'Verificación fallida ❌';
+    // 4️⃣ Navegar al login
+    Future.microtask(() {
+      if (context.mounted) context.go('/login');
     });
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1A2332),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 28),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Verificación no completada',
-                style: FlutterFlowTheme.of(context).headlineSmall.override(
-                  font: GoogleFonts.lexend(),
-                  color: Colors.white,
-                  fontSize: 18,
-                ),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Tu verificación de identidad no pudo completarse.',
-              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                font: GoogleFonts.lexend(),
-                color: Colors.white70,
-              ),
-            ),
-            if (failureReason != null) ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.red.withOpacity(0.3)),
-                ),
-                child: Text(
-                  'Motivo: $failureReason',
-                  style: TextStyle(color: Colors.red[200], fontSize: 12),
-                ),
-              ),
-            ],
-          ],
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () async {
-              await authManager.signOut();
-              if (mounted) {
-                context.go('/');
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: const Text('Volver al inicio', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
+  } catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error cerrando sesión: $e')),
+      );
+    }
   }
+}
+
 
   void _handleVerificationError(String error) {
     if (!mounted) return;

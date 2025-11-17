@@ -3,7 +3,7 @@
 # 🔑 CONFIGURACIÓN
 SUPABASE_URL="https://bsactypehgxluqyaymui.supabase.co"
 ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzYWN0eXBlaGd4bHVxeWF5bXVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzMTQwNjIsImV4cCI6MjA2Mzg5MDA2Mn0.OLLhOOzrxs27aVpChYIxCg8gDXc7PZ7DxEsex9zn324"
-USER_ID="69ef306c-a65f-4480-9ab3-6f363e03de38"
+USER_ID="f4d99a2a-3e9f-40a5-be26-b3210e77fea2"
 
 echo "🧪 Testing Webhook VerificaMex"
 echo "Session ID: $SESSION_ID"

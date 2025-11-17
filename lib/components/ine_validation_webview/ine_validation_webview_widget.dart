@@ -1,3 +1,5 @@
+import 'package:dalk/auth/supabase_auth/auth_util.dart';
+
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -6,7 +8,6 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 import 'ine_validation_webview_model.dart';
-import 'package:url_launcher/url_launcher.dart';
 export 'ine_validation_webview_model.dart';
 
 class IneValidationWebviewWidget extends StatefulWidget {
@@ -35,6 +36,10 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
   double _progress = 0.0;
   Timer? _timeoutTimer;
 
+  /// URL de retorno que VerificaMex abrirá al finalizar
+  String get redirectUrl =>
+      "https://dalk-legal-git-main-noe-ibarras-projects.vercel.app/redirect_url.html";
+
   @override
   void initState() {
     super.initState();
@@ -60,12 +65,25 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
     super.dispose();
   }
 
-  /// Cierra el WebView devolviendo el resultado (true = éxito, false = cancelado/timeout)
+  /// Cierra el WebView devolviendo un estado
   void _closeWithResult(bool success) {
     debugPrint('🔚 Cerrando WebView con resultado: $success');
     if (mounted) {
       Navigator.of(context).pop(success);
     }
+  }
+
+  /// Navega al VerificationCallbackPageWidget
+  void _goToCallbackPage() {
+    debugPrint("➡️ Redirigiendo a VerificationCallbackPageWidget...");
+
+      Navigator.of(context).pushNamed(
+      'VerificationCallbackPageWidget',
+      arguments: {
+        'sessionId': widget.sessionId,
+        'userId': currentUserUid,
+      },
+    );
   }
 
   @override
@@ -92,11 +110,11 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
           title: Text(
             'Verificación de Identidad',
             style: FlutterFlowTheme.of(context).headlineMedium.override(
-              font: GoogleFonts.lexend(),
-              color: Colors.white,
-              fontSize: 16.0,
-              fontWeight: FontWeight.w600,
-            ),
+                  font: GoogleFonts.lexend(),
+                  color: Colors.white,
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           centerTitle: true,
           elevation: 2.0,
@@ -131,55 +149,49 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
                             _webViewController = controller;
                             debugPrint('✅ WebView creado exitosamente');
                           },
-                          onLoadStart: (controller, url) {
+
+                          /// 🔍 Aquí detectamos el redirect_url
+                          onLoadStart: (controller, url) async {
                             if (mounted) setState(() => _isLoading = true);
+
+                            final current = url?.toString() ?? "";
+                            debugPrint("🔍 onLoadStart URL: $current");
+
+                            // Si la URL contiene redirect_url → HA TERMINADO LA VALIDACIÓN
+                            if (current.startsWith(redirectUrl)) {
+                              debugPrint("🎉 Detectado redirect_url → Cerrar WebView");
+                              // Cierra el WebView primero
+                              Navigator.of(context).pop();
+
+                              // Luego navega al callback page
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                _goToCallbackPage();
+                              });
+                            }
                           },
+
                           onLoadStop: (controller, url) async {
                             if (mounted) setState(() => _isLoading = false);
                             debugPrint('✅ Página cargada: ${url?.toString()}');
                           },
+
                           onProgressChanged: (controller, progress) {
                             if (mounted) setState(() => _progress = progress / 100.0);
                           },
-                          shouldOverrideUrlLoading: (controller, navigationAction) async {
-  final uri = navigationAction.request.url;
-  
-  if (uri != null) {
-    final uriString = uri.toString();
-    debugPrint('🌐 Navegación detectada: $uriString');
-
-    // 🔑 DETECTAR REDIRECCIÓN A VERCEL (PROCESO TERMINADO)
-    if (uriString.contains('dalk-legal-git-main-noe-ibarras-projects.vercel.app') ||
-        uriString.contains('redirect_url.html')) {
-      debugPrint('✅ Proceso de VerificaMex completado');
-      
-      // Esperar 2 segundos para que el webhook procese
-      await Future.delayed(const Duration(seconds: 2));
-      
-      debugPrint('🔙 Cerrando WebView y retornando TRUE');
-      _closeWithResult(true);
-      return NavigationActionPolicy.CANCEL;
-    }
-
-    // 🔑 NO NECESITAS DETECTAR DEEP LINK AQUÍ
-    // El sistema operativo lo maneja automáticamente
-  }
-
-  return NavigationActionPolicy.ALLOW;
-},
 
                           onPermissionRequest: (controller, permissionRequest) async {
-                            // 🔓 Permitir cámara y micrófono dentro del WebView
                             return PermissionResponse(
                               resources: permissionRequest.resources,
                               action: PermissionResponseAction.GRANT,
                             );
                           },
+
                           onReceivedError: (controller, request, error) {
                             debugPrint('💥 Error en WebView: ${error.description}');
                             if (mounted) setState(() => _isLoading = false);
                           },
                         ),
+
                   if (_isLoading)
                     Container(
                       color: FlutterFlowTheme.of(context)
@@ -198,18 +210,18 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
                             Text(
                               'Cargando VerificaMex...',
                               style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                font: GoogleFonts.lexend(),
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
+                                    font: GoogleFonts.lexend(),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                             ),
                             const SizedBox(height: 8),
                             Text(
                               'Por favor, completa tu verificación de identidad',
                               style: FlutterFlowTheme.of(context).bodySmall.override(
-                                font: GoogleFonts.lexend(),
-                                color: FlutterFlowTheme.of(context).secondaryText,
-                              ),
+                                    font: GoogleFonts.lexend(),
+                                    color: FlutterFlowTheme.of(context).secondaryText,
+                                  ),
                             ),
                           ],
                         ),
@@ -224,7 +236,6 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
     );
   }
 
-  /// Pantalla de error si no se pasa una URL válida
   Widget _buildErrorWidget() {
     return Center(
       child: Padding(
@@ -238,18 +249,18 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
             Text(
               'URL de verificación no válida',
               style: FlutterFlowTheme.of(context).bodyLarge.override(
-                font: GoogleFonts.lexend(),
-                fontWeight: FontWeight.w600,
-              ),
+                    font: GoogleFonts.lexend(),
+                    fontWeight: FontWeight.w600,
+                  ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
             Text(
               'No se pudo cargar la página de verificación',
               style: FlutterFlowTheme.of(context).bodyMedium.override(
-                font: GoogleFonts.lexend(),
-                color: FlutterFlowTheme.of(context).secondaryText,
-              ),
+                    font: GoogleFonts.lexend(),
+                    color: FlutterFlowTheme.of(context).secondaryText,
+                  ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -259,7 +270,7 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
               options: FFButtonOptions(
                 color: FlutterFlowTheme.of(context).error,
                 textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                  color: Colors.white,
+                      color: Colors.white,
                   font: GoogleFonts.lexend(),
                 ),
                 borderRadius: BorderRadius.circular(8),
@@ -272,7 +283,6 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
     );
   }
 
-  /// Diálogo de confirmación al intentar cancelar
   Future<bool?> _showCancelDialog() {
     return showDialog<bool>(
       context: context,
@@ -283,17 +293,17 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
         title: Text(
           '¿Cancelar verificación?',
           style: FlutterFlowTheme.of(context).headlineSmall.override(
-            font: GoogleFonts.lexend(),
-            color: Colors.white,
-            fontSize: 18,
-          ),
+                font: GoogleFonts.lexend(),
+                color: Colors.white,
+                fontSize: 18,
+              ),
         ),
         content: Text(
           'Si cancelas, no podrás completar tu registro como paseador.',
           style: FlutterFlowTheme.of(context).bodyMedium.override(
-            font: GoogleFonts.lexend(),
-            color: Colors.white70,
-          ),
+                font: GoogleFonts.lexend(),
+                color: Colors.white70,
+              ),
         ),
         actions: [
           Row(
