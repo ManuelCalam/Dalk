@@ -53,7 +53,7 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
     _timeoutTimer = Timer(const Duration(minutes: 20), () {
       if (mounted) {
         debugPrint('⏰ Tiempo de espera agotado (20 minutos)');
-        _closeWithResult(false);
+        _closeWebView();;
       }
     });
   }
@@ -65,25 +65,21 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
     super.dispose();
   }
 
-  /// Cierra el WebView devolviendo un estado
-  void _closeWithResult(bool success) {
-    debugPrint('🔚 Cerrando WebView con resultado: $success');
+  void _closeWebView() {
     if (mounted) {
-      Navigator.of(context).pop(success);
+      Navigator.of(context).pop();
     }
   }
+
 
   /// Navega al VerificationCallbackPageWidget
   void _goToCallbackPage() {
     debugPrint("➡️ Redirigiendo a VerificationCallbackPageWidget...");
 
-      Navigator.of(context).pushNamed(
-      'VerificationCallbackPageWidget',
-      arguments: {
+      context.go('/verification-callback', extra: {
         'sessionId': widget.sessionId,
         'userId': currentUserUid,
-      },
-    );
+      });
   }
 
   @override
@@ -93,7 +89,7 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
       onPopInvoked: (didPop) async {
         if (didPop) return;
         final shouldClose = await _showCancelDialog();
-        if (shouldClose == true) _closeWithResult(false);
+        if (shouldClose == true) _closeWebView();;
       },
       child: Scaffold(
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
@@ -104,7 +100,7 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () async {
               final shouldClose = await _showCancelDialog();
-              if (shouldClose == true) _closeWithResult(false);
+              if (shouldClose == true) _closeWebView();;
             },
           ),
           title: Text(
@@ -265,7 +261,7 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
             ),
             const SizedBox(height: 24),
             FFButtonWidget(
-              onPressed: () => _closeWithResult(false),
+              onPressed: () => _closeWebView(),
               text: 'Regresar',
               options: FFButtonOptions(
                 color: FlutterFlowTheme.of(context).error,

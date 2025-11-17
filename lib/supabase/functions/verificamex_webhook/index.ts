@@ -64,7 +64,7 @@ serve(async (req) => {
 
       case 'FINISHED':
         if (score >= 90) {
-          finalStatus = 'success';
+          finalStatus = 'completed';
         } else {
           finalStatus = 'failed';
           failureReason = `Score insuficiente: ${score}`;
@@ -72,7 +72,8 @@ serve(async (req) => {
         break;
 
       default:
-        finalStatus = 'unknown';
+        finalStatus = 'failed';
+        failureReason = 'Estado desconocido';
     }
 
     console.log('🔍 Estado interpretado:', { rawStatus, finalStatus, score });

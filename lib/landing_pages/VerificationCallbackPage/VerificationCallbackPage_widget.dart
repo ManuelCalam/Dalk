@@ -78,7 +78,7 @@ void _listenVerificationStatus() {
 
           if (!mounted) return;
 
-          if (status == 'success') {
+          if (status == 'completed') {
             setState(() {
               _statusMessage = '¡Verificación exitosa!';
               _isChecking = false;
