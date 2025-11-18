@@ -102,6 +102,24 @@ class _MyAppState extends State<MyApp> {
       if (uri == null) return;
       print("Deep link recibido: $uri");
 
+      // 🔑 MANEJAR DEEP LINK DE VERIFICACIÓN
+      if (uri.path.contains('verification_callback') || uri.host == 'verification_callback') {
+        final userId = uri.queryParameters['user_id'];
+        final sessionId = uri.queryParameters['session_id'];
+        
+        print('🔗 Deep link de verificación detectado');
+        print('   User ID: $userId');
+        print('   Session ID: $sessionId');
+        
+        if (userId != null && sessionId != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _router.go('/verification-callback?user_id=$userId&session_id=$sessionId');
+          });
+        }
+        return;
+      }
+
+      // 🔑 MANEJAR DEEP LINK DE RECUPERACIÓN DE CONTRASEÑA
       if (uri.fragment.isNotEmpty) {
         final params = Uri.splitQueryString(uri.fragment);
         if (params['type'] == 'recovery') {
@@ -120,6 +138,24 @@ class _MyAppState extends State<MyApp> {
     if (uri == null) return;
     print("URI inicial: $uri");
 
+    // 🔑 MANEJAR DEEP LINK DE VERIFICACIÓN
+    if (uri.path.contains('verification_callback') || uri.host == 'verification_callback') {
+      final userId = uri.queryParameters['user_id'];
+      final sessionId = uri.queryParameters['session_id'];
+      
+      print('🔗 Deep link inicial de verificación detectado');
+      print('   User ID: $userId');
+      print('   Session ID: $sessionId');
+      
+      if (userId != null && sessionId != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _router.go('/verification-callback?user_id=$userId&session_id=$sessionId');
+        });
+      }
+      return;
+    }
+
+    // 🔑 MANEJAR DEEP LINK DE RECUPERACIÓN DE CONTRASEÑA
     if (uri.fragment.isNotEmpty) {
       final params = Uri.splitQueryString(uri.fragment);
       if (params['type'] == 'recovery') {

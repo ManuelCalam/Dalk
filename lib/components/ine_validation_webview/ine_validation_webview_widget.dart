@@ -18,12 +18,10 @@ class IneValidationWebviewWidget extends StatefulWidget {
     super.key,
     required this.formUrl,
     required this.sessionId,
-    required this.accessToken,
   });
 
   final String formUrl;
   final String sessionId;
-  final String accessToken;
 
   @override
   State<IneValidationWebviewWidget> createState() => _IneValidationWebviewWidgetState();
@@ -66,21 +64,13 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
   }
 
   void _closeWebView() {
-    if (mounted) {
-      Navigator.of(context).pop();
-    }
+  if (mounted) {
+    debugPrint('🔙 Cerrando WebView con FALSE (usuario canceló)');
+    Navigator.of(context).pop(false);  // ✅ RETORNAR false cuando cancela
   }
+}
 
 
-  /// Navega al VerificationCallbackPageWidget
-  void _goToCallbackPage() {
-    debugPrint("➡️ Redirigiendo a VerificationCallbackPageWidget...");
-
-      context.go('/verification-callback', extra: {
-        'sessionId': widget.sessionId,
-        'userId': currentUserUid,
-      });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -131,62 +121,120 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
                   widget.formUrl.isEmpty
                       ? _buildErrorWidget()
                       : InAppWebView(
-                          initialUrlRequest: URLRequest(url: WebUri(widget.formUrl)),
-                          initialSettings: InAppWebViewSettings(
-                            javaScriptEnabled: true,
-                            domStorageEnabled: true,
-                            mediaPlaybackRequiresUserGesture: false,
-                            allowsInlineMediaPlayback: true,
-                            useWideViewPort: true,
-                            loadWithOverviewMode: true,
-                            supportMultipleWindows: false,
-                          ),
-                          onWebViewCreated: (controller) {
-                            _webViewController = controller;
-                            debugPrint('✅ WebView creado exitosamente');
-                          },
+  initialUrlRequest: URLRequest(url: WebUri(widget.formUrl)),
+  initialSettings: InAppWebViewSettings(
+    javaScriptEnabled: true,
+    domStorageEnabled: true,
+    mediaPlaybackRequiresUserGesture: false,
+    allowsInlineMediaPlayback: true,
+    useWideViewPort: true,
+    loadWithOverviewMode: true,
+    supportMultipleWindows: false,
+  ),
+  onWebViewCreated: (controller) {
+    _webViewController = controller;
+    debugPrint('✅ WebView creado exitosamente');
+  },
 
-                          /// 🔍 Aquí detectamos el redirect_url
-                          onLoadStart: (controller, url) async {
-                            if (mounted) setState(() => _isLoading = true);
+  onLoadStart: (controller, url) async {
+    if (mounted) setState(() => _isLoading = true);
 
-                            final current = url?.toString() ?? "";
-                            debugPrint("🔍 onLoadStart URL: $current");
+    final current = url?.toString() ?? "";
+    debugPrint("🔍 onLoadStart URL: $current");
 
-                            // Si la URL contiene redirect_url → HA TERMINADO LA VALIDACIÓN
-                            if (current.startsWith(redirectUrl)) {
-                              debugPrint("🎉 Detectado redirect_url → Cerrar WebView");
-                              // Cierra el WebView primero
-                              Navigator.of(context).pop();
+    // 🔑 DETECTAR REDIRECCIÓN A VERCEL (PROCESO TERMINADO)
+    if (current.contains('dalk-legal-git-main-noe-ibarras-projects.vercel.app') ||
+        current.contains('redirect_url.html')) {
+      debugPrint('✅ Proceso de VerificaMex completado');
+      debugPrint('🔗 URL de redirect detectada: $current');
+      
+      final uri = Uri.parse(current);
+      final userId = uri.queryParameters['user_id'];
+      final sessionId = uri.queryParameters['session_id'];
+      
+      debugPrint('📋 User ID extraído: $userId');
+      debugPrint('📋 Session ID extraído: $sessionId');
+      
+      // Esperar 2 segundos para que el webhook procese
+      debugPrint('⏳ Esperando 2 segundos para que el webhook actualice la BD...');
+      await Future.delayed(const Duration(seconds: 2));
+      
+      if (mounted) {
+        Navigator.of(context).pop();
+        
+        if (userId != null && sessionId != null) {
+          debugPrint('🔗 Navegando a VerificationCallbackPage');
+          context.pushNamed(
+            'verificationCallback',
+            queryParameters: {
+              'user_id': userId,
+              'session_id': sessionId,
+            },
+          );
+        } else {
+          debugPrint('❌ ERROR: No se encontraron user_id o session_id en la URL');
+          context.pushNamed(
+            'verificationCallback',
+            queryParameters: {
+              'user_id': currentUserUid,
+              'session_id': widget.sessionId,
+            },
+          );
+        }
+      }
+      return;
+    }
 
-                              // Luego navega al callback page
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                _goToCallbackPage();
-                              });
-                            }
-                          },
+    // 🔑 DETECTAR DEEP LINK (por si acaso)
+    if (current.startsWith('dalkpaseos://verification_callback')) {
+      debugPrint('🔗 Deep link detectado en WebView: $current');
+      
+      final uri = Uri.parse(current);
+      final userId = uri.queryParameters['user_id'];
+      final sessionId = uri.queryParameters['session_id'];
+      
+      if (mounted) {
+        Navigator.of(context).pop();
+        
+        if (userId != null && sessionId != null) {
+          debugPrint('🔗 Navegando desde deep link');
+          context.pushNamed(
+            'verificationCallback',
+            queryParameters: {
+              'user_id': userId,
+              'session_id': sessionId,
+            },
+          );
+        }
+      }
+      return;
+    }
 
-                          onLoadStop: (controller, url) async {
-                            if (mounted) setState(() => _isLoading = false);
-                            debugPrint('✅ Página cargada: ${url?.toString()}');
-                          },
+    debugPrint('🌍 Permitiendo navegación: $current');
+  },
 
-                          onProgressChanged: (controller, progress) {
-                            if (mounted) setState(() => _progress = progress / 100.0);
-                          },
+  // ✅ AGREGAR ESTE CALLBACK (ERA EL QUE FALTABA)
+  onLoadStop: (controller, url) async {
+    if (mounted) setState(() => _isLoading = false);
+    debugPrint('✅ Página cargada completamente: ${url?.toString()}');
+  },
 
-                          onPermissionRequest: (controller, permissionRequest) async {
-                            return PermissionResponse(
-                              resources: permissionRequest.resources,
-                              action: PermissionResponseAction.GRANT,
-                            );
-                          },
+  onProgressChanged: (controller, progress) {
+    if (mounted) setState(() => _progress = progress / 100.0);
+  },
 
-                          onReceivedError: (controller, request, error) {
-                            debugPrint('💥 Error en WebView: ${error.description}');
-                            if (mounted) setState(() => _isLoading = false);
-                          },
-                        ),
+  onPermissionRequest: (controller, permissionRequest) async {
+    return PermissionResponse(
+      resources: permissionRequest.resources,
+      action: PermissionResponseAction.GRANT,
+    );
+  },
+
+  onReceivedError: (controller, request, error) {
+    debugPrint('💥 Error en WebView: ${error.description}');
+    if (mounted) setState(() => _isLoading = false);  // ✅ También ocultar en error
+  },
+),
 
                   if (_isLoading)
                     Container(

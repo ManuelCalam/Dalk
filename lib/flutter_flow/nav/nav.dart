@@ -28,9 +28,7 @@ const kTransitionInfoKey = '__transition_info__';
 
 GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
-GoRouter createRouter()
-
- {
+GoRouter createRouter() {
   // Constructor de páginas sin manejo de loading
   Page<dynamic> pageBuilderFor(GoRouterState state, Widget child) {
     return MaterialPage(key: state.pageKey, child: child);
@@ -40,15 +38,15 @@ GoRouter createRouter()
     initialLocation: '/',
     debugLogDiagnostics: true,
     navigatorKey: appNavigatorKey,
-      routes: <RouteBase>[
-        GoRoute(
-          name: '_initialize',
-          path: '/',
-          pageBuilder: (context, state) => pageBuilderFor(
-            state,
-            const SplashScreen(),
-          ),
+    routes: <RouteBase>[
+      GoRoute(
+        name: '_initialize',
+        path: '/',
+        pageBuilder: (context, state) => pageBuilderFor(
+          state,
+          const SplashScreen(),
         ),
+      ),
 
 
       GoRoute(
@@ -487,23 +485,31 @@ GoRouter createRouter()
             path: '/walker/frequentQuestions', 
             pageBuilder: (context, state) => pageBuilderFor(state, const FrequentQuestionsWidget()),
           ),
-          GoRoute(
-  path: '/verification-callback',
-  name: 'verificationCallback',
-  pageBuilder: (context, state) {
-    final userId = state.uri.queryParameters['user_id'] ?? '';
-    final sessionId = state.uri.queryParameters['session_id'] ?? '';
-    
-    return pageBuilderFor(
-      state,
-      VerificationCallbackWidget(  // 🔑 Nombre correcto
-        userId: userId,
-        sessionId: sessionId,
-      ),
-    );
-  },
-),
+          
         ],
+      ),
+
+      // RUTA DE VERIFICACIÓN FUERA DE LOS SHELLROUTES
+      GoRoute(
+        path: '/verification-callback',
+        name: 'verificationCallback',
+        parentNavigatorKey: appNavigatorKey,  // ✅ USAR NAVEGADOR PRINCIPAL
+        pageBuilder: (context, state) {
+          final userId = state.uri.queryParameters['user_id'] ?? '';
+          final sessionId = state.uri.queryParameters['session_id'] ?? '';
+          
+          debugPrint('🔗 Navegando a VerificationCallbackPage');
+          debugPrint('   User ID: $userId');
+          debugPrint('   Session ID: $sessionId');
+          
+          return pageBuilderFor(
+            state,
+            VerificationCallbackWidget(
+              userId: userId,
+              sessionId: sessionId,
+            ),
+          );
+        },
       ),
     ],
   );

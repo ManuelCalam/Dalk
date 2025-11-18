@@ -1,6 +1,8 @@
-// index.ts
+/// <reference types="https://deno.land/x/deno@v1.42.0/cli/tsc/dts/lib.deno.ns.d.ts" />
+
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
 // ✅ CORS HEADERS
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,7 +22,7 @@ console.log('🔑 Secrets cargadas:', {
   SUPABASE_ANON_KEY: !!SUPABASE_ANON_KEY,
   VERIFICAMEX_SECRET_KEY: !!VERIFICAMEX_SECRET_KEY
 });
-serve(async (req)=>{
+serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       headers: corsHeaders,
@@ -38,18 +40,21 @@ serve(async (req)=>{
     let body = {};
     try {
       body = JSON.parse(bodyText);
-    } catch  {
+    } catch {
       console.warn('⚠️ No se pudo parsear JSON, body recibido como texto:', bodyText);
       body = {};
     }
+
     console.log('📦 Body recibido:', JSON.stringify(body, null, 2));
-    if (body.data && body.data.id) {
+
+    if ((body as any).data && (body as any).data.id) {
       console.log('🔔 WEBHOOK DE VERIFICAMEX DETECTADO');
-      return await handleVerificamexWebhook(body, supabaseClient);
+      return await handleVerificamexWebhook(body as any, supabaseClient);
     }
-    if (body.action === 'create_session') {
+
+    if ((body as any).action === 'create_session') {
       console.log('🏗️ SOLICITUD PARA CREAR SESIÓN');
-      return await createVerificationSession(body, supabaseClient);
+      return await createVerificationSession(body as any, supabaseClient);
     }
     console.log('❌ Acción no reconocida:', body);
     return new Response(JSON.stringify({
@@ -75,21 +80,20 @@ serve(async (req)=>{
 // ====================================================================
 // ✅ FUNCIÓN 1: CREAR SESIÓN DE VERIFICACIÓN CON VERIFICAMEX (MODIFICADA)
 // ====================================================================
-async function createVerificationSession(body, supabaseClient) {
+async function createVerificationSession(body: any, supabaseClient: SupabaseClient) {
   console.log('🏗️ ========================================');
   console.log('🏗️ CREANDO SESIÓN CON VERIFICAMEX');
   console.log('🏗️ ========================================');
   // 🔑 DESESTRUCTURAR EL ACCESS TOKEN ENVIADO DESDE FLUTTER
-  const { user_id, email, access_token: accessToken } = body;
-  if (!user_id || !email || !accessToken) {
+  const { user_id, email } = body;
+  if (!user_id || !email) {
     console.log('❌ Faltan datos requeridos:', {
       user_id,
       email,
-      accessToken: !!accessToken
     });
     return new Response(JSON.stringify({
       success: false,
-      error: 'Faltan user_id, email, o access_token'
+      error: 'Faltan user_id o email'
     }), {
       status: 400,
       headers: {
@@ -98,28 +102,14 @@ async function createVerificationSession(body, supabaseClient) {
       }
     });
   }
-  console.log('🔑 Access Token recibido correctamente');
-  console.log('🔑 Token length:', accessToken.length);
+  
   try {
     const sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-    // ✅ GENERAR ACCESS TOKEN TEMPORAL SEGURO
-    console.log('🔑 Generando access_token temporal con generateLink...');
-    const { data: linkData, error: linkError } = await supabaseClient.auth.admin.generateLink({
-      type: 'magiclink',
-      email: email
-    });
-    if (linkError) {
-      console.error('❌ Error generando access_token:', linkError);
-      throw linkError;
-    }
-    const generatedAccessToken = linkData.properties?.action_link ? linkData.properties.action_link.split('token=')[1] : linkData.access_token;
-    console.log('✅ Access token temporal generado correctamente');
-    // ✅ INSERTAR EN BD
+    
     await supabaseClient.from('identity_verifications').insert({
       session_id: sessionId,
       user_uuid: user_id,
       email: email,
-      access_token: generatedAccessToken,
       status: 'pending',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
@@ -141,7 +131,6 @@ async function createVerificationSession(body, supabaseClient) {
         session_id: sessionId,
         user_id: user_id,
         email: email,
-        access_token: generatedAccessToken,
         timestamp: new Date().toISOString()
       },
       customization: {
@@ -206,8 +195,6 @@ async function createVerificationSession(body, supabaseClient) {
       form_url: formUrl,
       verificamex_session_id: verificamexSessionId,
       user_id: user_id,
-      access_token: generatedAccessToken,
-      refresh_token: generatedAccessToken,
       message: 'Sesión creada exitosamente con token temporal'
     }), {
       status: 200,
@@ -233,17 +220,19 @@ async function createVerificationSession(body, supabaseClient) {
 // ====================================================================
 // ✅ FUNCIÓN 2: MANEJAR WEBHOOK DE VERIFICAMEX (SIN CAMBIOS)
 // ====================================================================
-async function handleVerificamexWebhook(body, supabaseClient) {
+async function handleVerificamexWebhook(body: any, supabaseClient: any) {
   console.log('🔔 ========================================');
   console.log('🔔 PROCESANDO WEBHOOK DE VERIFICAMEX');
   console.log('🔔 ========================================');
+
   const webhookData = body.data;
-  const verificamexSessionId = webhookData.id;
-  const status = webhookData.status;
-  const result = webhookData.result;
-  const ineStatus = webhookData.ine?.data?.status || false;
-  const curpStatus = webhookData.renapo?.data?.status || false;
-  const optionals = webhookData.optionals || {};
+  const verificamexSessionId = webhookData?.id;
+  const status = webhookData?.status;
+  const result = webhookData?.result;
+  const ineStatus = webhookData?.ine?.data?.status || false;
+  const curpStatus = webhookData?.renapo?.data?.status || false;
+  const optionals = webhookData?.optionals || {};
+
   console.log('📊 Webhook Data:', {
     verificamexSessionId,
     status,
@@ -251,31 +240,35 @@ async function handleVerificamexWebhook(body, supabaseClient) {
     ineStatus,
     curpStatus
   });
+
   try {
-    const { data: verification } = await supabaseClient.from('identity_verifications').select('*').eq('verificamex_session_id', verificamexSessionId).maybeSingle();
+    const { data: verification } = await supabaseClient
+      .from('identity_verifications')
+      .select('*')
+      .eq('verificamex_session_id', verificamexSessionId)
+      .maybeSingle();
+
     const sessionId = verification?.session_id || optionals.session_id;
-    const userId = optionals.user_id;
+    const userId = verification?.user_uuid || optionals.user_id;
+
     let finalStatus = 'pending';
-    let failureReason = null;
+    let failureReason: string | null = null;
     const successThreshold = 90;
-    // 🚨 LÓGICA DE VALIDACIÓN CORREGIDA
+
     if (status === 'FINISHED') {
       if (result >= successThreshold) {
-        // ✅ ÉXITO: Score suficiente
         finalStatus = 'completed';
         if (!ineStatus || !curpStatus) {
           console.log('⚠️ WARNING: Validaciones INE/CURP fallaron, pero el score general es de éxito.');
           failureReason = `Éxito (Score: ${result}), pero falló INE/CURP. INE: ${ineStatus}, CURP: ${curpStatus}`;
         }
       } else {
-        // ❌ FALLO: Score bajo
         finalStatus = 'failed';
         failureReason = `Verificación fallida. Score bajo: ${result}`;
       }
     } else if (status === 'FAILED') {
-      // ❌ FALLO: Verificamex reportó fallo
       finalStatus = 'failed';
-      failureReason = webhookData.errors?.join(', ') || 'El proceso de Verificamex falló (FAILED status)';
+      failureReason = webhookData?.errors?.join(', ') || 'El proceso de Verificamex falló (FAILED status)';
     } else if (status === 'VERIFYING') {
       finalStatus = 'VERIFYING';
     } else if (status === 'OPEN') {
@@ -284,7 +277,9 @@ async function handleVerificamexWebhook(body, supabaseClient) {
       finalStatus = 'cancelled';
       failureReason = 'El usuario canceló el proceso';
     }
-    const updateData = {
+
+    // ✅ ACTUALIZAR identity_verifications
+    const updateData: any = {
       status: finalStatus,
       verification_result: result,
       ine_status: ineStatus,
@@ -292,11 +287,52 @@ async function handleVerificamexWebhook(body, supabaseClient) {
       verification_data: webhookData,
       updated_at: new Date().toISOString()
     };
+
     if (failureReason) updateData.failure_reason = failureReason;
     if (finalStatus === 'completed') updateData.completed_at = new Date().toISOString();
-    await supabaseClient.from('identity_verifications').update(updateData).eq('session_id', sessionId);
-    console.log('✅ BD actualizada exitosamente');
+
+    await supabaseClient
+      .from('identity_verifications')
+      .update(updateData)
+      .eq('session_id', sessionId);
+
+    console.log('✅ identity_verifications actualizado');
     console.log('✅ Status final:', finalStatus);
+
+    // 🔑 ACTUALIZAR users.verification_status SI FUE EXITOSO
+    if (finalStatus === 'completed' && userId) {
+      console.log('🔄 Actualizando users.verification_status para user_id:', userId);
+      
+      const { error: userUpdateError } = await supabaseClient
+        .from('users')
+        .update({
+          verification_status: 'verified'
+        })
+        .eq('uuid', userId);
+
+      if (userUpdateError) {
+        console.error('❌ Error actualizando users.verification_status:', userUpdateError);
+      } else {
+        console.log('✅ users.verification_status actualizado a "verified"');
+      }
+    } else if (finalStatus === 'failed' && userId) {
+      // Opcional: marcar como rejected si falló
+      console.log('🔄 Actualizando users.verification_status a "rejected" para user_id:', userId);
+      
+      const { error: userUpdateError } = await supabaseClient
+        .from('users')
+        .update({
+          verification_status: 'rejected'
+        })
+        .eq('uuid', userId);
+
+      if (userUpdateError) {
+        console.error('❌ Error actualizando users.verification_status:', userUpdateError);
+      } else {
+        console.log('✅ users.verification_status actualizado a "rejected"');
+      }
+    }
+
     return new Response(JSON.stringify({
       success: true,
       message: 'Webhook procesado correctamente',

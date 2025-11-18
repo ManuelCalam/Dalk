@@ -358,14 +358,6 @@ Future<void> _startIdentityVerification() async {
 
     debugPrint('🔍 Iniciando verificación para: $userId');
 
-    // 🔑 OBTENER ACCESS TOKEN ACTUAL
-    final session = await SupaFlow.client.auth.currentSession;
-    if (session == null) {
-      throw Exception('No hay sesión activa');
-    }
-
-    final accessToken = session.accessToken;
-    debugPrint('🔑 Access Token obtenido: ${accessToken.substring(0, 20)}...');
 
     // 🔑 LLAMAR A EDGE FUNCTION PARA CREAR SESIÓN
     final response = await SupaFlow.client.functions.invoke(
@@ -374,7 +366,6 @@ Future<void> _startIdentityVerification() async {
         'action': 'create_session',
         'user_id': userId,
         'email': userEmail,
-        'access_token': accessToken,
       },
     );
 
@@ -387,9 +378,8 @@ Future<void> _startIdentityVerification() async {
     final data = response.data as Map<String, dynamic>;
     final formUrl = data['form_url'] as String?;
     final sessionId = data['session_id'] as String?;
-    final newAccessToken = data['access_token'] as String?;
 
-    if (formUrl == null || sessionId == null || newAccessToken == null) {
+    if (formUrl == null || sessionId == null) {
       throw Exception('Respuesta incompleta del servidor');
     }
 
@@ -405,7 +395,6 @@ Future<void> _startIdentityVerification() async {
         builder: (context) => IneValidationWebviewWidget(
           formUrl: formUrl,
           sessionId: sessionId,
-          accessToken: newAccessToken,
         ),
       ),
     );
@@ -3141,6 +3130,11 @@ Future<void> _startIdentityVerification() async {
               debugPrint('📝 Registrando usuario en BD...');
               await registerDogWalker(context, widget.registerMethod);
               debugPrint('✅ Usuario registrado exitosamente');
+
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('session_active', true);
+              await prefs.setString('user_type', 'Paseador');
+              await prefs.setBool('showCompleteProfileDialog', true);
 
               if (!mounted) return;
 
