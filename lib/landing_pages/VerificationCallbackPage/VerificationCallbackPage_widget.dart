@@ -52,6 +52,9 @@ class _VerificationCallbackWidgetState extends State<VerificationCallbackWidget>
     _checkVerificationStatus();
     _listenVerificationStatus();
     _startPolling();
+
+    debugPrint('✅✅✅✅✅✅✅✅✅✅✅ userId en VerificationCallbackPage en InitState: $currentUserUid');
+
   }
 
   @override
@@ -162,7 +165,7 @@ class _VerificationCallbackWidgetState extends State<VerificationCallbackWidget>
   }
 
   // 🔑 PROCESAR STATUS (usado por polling Y realtime)
-  void _processVerificationStatus(Map<String, dynamic> data) {
+  Future<void> _processVerificationStatus(Map<String, dynamic> data) async {
     if (_hasProcessedResult) {
       debugPrint('⚠️ Resultado ya procesado, ignorando...');
       return;
@@ -187,11 +190,19 @@ class _VerificationCallbackWidgetState extends State<VerificationCallbackWidget>
     if (!mounted) return;
 
     // ✅ ESTADOS FINALES
-    switch (status) {
+    switch (status)  {
       case 'completed':
         debugPrint('✅ ========================================');
         debugPrint('✅ VERIFICACIÓN EXITOSA!');
         debugPrint('✅ ========================================');
+      await Supabase.instance.client.auth.refreshSession();
+      debugPrint('✅✅✅✅✅✅✅✅✅✅✅ userId en VerificationCallbackPage: $currentUserUid');
+      final prefs = await SharedPreferences.getInstance();
+      // Para imprimir el booleano
+      print('Valor de session_active: ${prefs.getBool('session_active')}');
+
+      // Para imprimir el String
+      print('Valor de user_type: ${prefs.getString('user_type')}');
         
         _hasProcessedResult = true;
         _pollingTimer?.cancel();
@@ -358,6 +369,8 @@ class _VerificationCallbackWidgetState extends State<VerificationCallbackWidget>
     }
 
     try {
+            debugPrint('🚫🚫🚫🚫🚫🚫🚫 Aqui hubo un singOut en VerificationCallbackPage');
+
       await Supabase.instance.client.auth.signOut();
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();

@@ -126,7 +126,7 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
   try {
     String? userId;
     String? userEmail;
-
+    
     if (windowOrigin == 'email') {
       final user = await authManager.createAccountWithEmail(
         context,
@@ -136,6 +136,7 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
       if (user == null) throw Exception('No se pudo crear el usuario.');
       userId = user.uid;
       userEmail = _model.emailDogWalkerInputTextController.text.trim();
+
     }
     else if (windowOrigin == 'google') {
       final user = Supabase.instance.client.auth.currentUser;
@@ -149,6 +150,8 @@ Future<void> registerDogWalker(BuildContext context, String windowOrigin) async 
     if (userId == null || userEmail == null) {
       throw Exception('Error: datos de usuario incompletos.');
     }
+
+    debugPrint('✅✅✅✅✅✅✅✅✅✅✅ userId: $currentUserUid');
 
     // 🔑 INSERTAR/ACTUALIZAR EN BD
     if (windowOrigin == 'email') {
@@ -389,6 +392,8 @@ Future<void> _startIdentityVerification() async {
     if (!mounted) return;
 
     // 🔑 ABRIR WEBVIEW CON VERIFICAMEX
+
+    debugPrint('✅✅✅✅✅✅✅✅✅✅✅ userId en startIdentityVerification: $currentUserUid');
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -403,7 +408,7 @@ Future<void> _startIdentityVerification() async {
 
     if (!mounted) return;
 
-    // 🔑 SI EL USUARIO COMPLETÓ (result == true) O CANCELÓ (result == false)
+    /* 🔑 SI EL USUARIO COMPLETÓ (result == true) O CANCELÓ (result == false)
     if (result == true) {
       // Usuario terminó el proceso, ir a página de callback
       context.pushNamed(
@@ -415,6 +420,7 @@ Future<void> _startIdentityVerification() async {
       );
     } else {
       // Usuario canceló
+      debugPrint('🚫🚫🚫🚫🚫🚫🚫 Aqui hubo un singOut porque el usuario canceló');
       await authManager.signOut();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -423,7 +429,7 @@ Future<void> _startIdentityVerification() async {
         ),
       );
       context.go('/');
-    }
+    } */
 
   } catch (e, stackTrace) {
     debugPrint('💥 Error en verificación: $e');
@@ -3144,6 +3150,8 @@ Future<void> _startIdentityVerification() async {
 
               if (shouldContinue != true) {
                 // Usuario canceló
+                      debugPrint('🚫🚫🚫🚫🚫🚫🚫 Aqui hubo un singOut después de mostrar el dialog');
+
                 debugPrint('❌ Usuario canceló verificación');
                 await authManager.signOut();
                 debugPrint('🔓 Sesión cerrada');
@@ -3175,6 +3183,9 @@ Future<void> _startIdentityVerification() async {
                     backgroundColor: Colors.red,
                   ),
                 );
+
+                      debugPrint('🚫🚫🚫🚫🚫🚫🚫 Aqui hubo un singOut después de los permisos de la cámara');
+
                 await authManager.signOut();
                 if (mounted) context.go('/');
                 return;

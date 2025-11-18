@@ -42,6 +42,8 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
   void initState() {
     super.initState();
     _model = createModel(context, () => IneValidationWebviewModel());
+        debugPrint('✅✅✅✅✅✅✅✅✅✅✅ userID en INE Validation en InitState: $currentUserUid');
+
 
     debugPrint('🌐 WebView inicializado con VerificaMex');
     debugPrint('🔗 URL: ${widget.formUrl}');
@@ -51,7 +53,7 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
     _timeoutTimer = Timer(const Duration(minutes: 20), () {
       if (mounted) {
         debugPrint('⏰ Tiempo de espera agotado (20 minutos)');
-        _closeWebView();;
+        _closeWebView();
       }
     });
   }
@@ -134,9 +136,13 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
   onWebViewCreated: (controller) {
     _webViewController = controller;
     debugPrint('✅ WebView creado exitosamente');
+        debugPrint('✅✅✅✅✅✅✅✅✅✅✅ userId en WebViewCreated: $currentUserUid');
+
   },
 
   onLoadStart: (controller, url) async {
+
+    
     if (mounted) setState(() => _isLoading = true);
 
     final current = url?.toString() ?? "";
