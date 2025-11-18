@@ -9,7 +9,6 @@ import 'package:dalk/common/walk_payment_window/walk_payment_window_widget.dart'
 import 'package:dalk/common/walks_record/walks_record_widget.dart';
 import 'package:dalk/components/not_scheduled_walk_container/not_scheduled_walk_container_widget.dart';
 import 'package:dalk/components/scheduled_walk_container/scheduled_walk_container_widget.dart';
-import 'package:dalk/dog_owner/add_tracker_to_account/add_tracker_to_account_model.dart';
 import 'package:dalk/dog_owner/add_tracker_to_account/add_tracker_to_account_widget.dart';
 import 'package:dalk/dog_owner/buy_tracker/buy_tracker_widget.dart';
 import 'package:dalk/dog_owner/owner_debt/owner_debt_widget.dart';

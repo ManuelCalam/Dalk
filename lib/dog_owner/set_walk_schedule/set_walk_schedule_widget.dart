@@ -1275,7 +1275,15 @@ class _SetWalkScheduleWidgetState extends State<SetWalkScheduleWidget> {
                                         int finalWalkDurationInMinutes;
 
                                         if (_model.selectedWalkDuration == 'Personalizado') {
-                                            finalWalkDurationInMinutes = _model.customWalkDuration >= 70 ? _model.customWalkDuration : 70;
+                                            if(_model.customWalkDuration < 70){
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text('Por favor, ingresa una duración de paseo válido. Mínimo 70 min.'),
+                                              ));
+
+                                              return;
+                                            } 
+                                            finalWalkDurationInMinutes = _model.customWalkDuration;
                                         } else if (_model.selectedWalkDuration == '60 min') {
                                             finalWalkDurationInMinutes = 60;
                                         } else {

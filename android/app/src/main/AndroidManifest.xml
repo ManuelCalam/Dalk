@@ -28,9 +28,14 @@
         android:requestLegacyExternalStorage="true">
 
         <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-7465142412381768~9736997633"/>
+ 
+
+        <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}"
- />
+        />
 
         <service
             android:name="id.flutter.flutter_background_service.BackgroundService"

@@ -1,7 +1,10 @@
+import 'package:dalk/SubscriptionProvider.dart';
 import 'package:dalk/backend/supabase/supabase.dart';
 import 'package:dalk/cards/pet_list_card/pet_list_card_widget.dart';
+import 'package:dalk/dog_owner/banner_add_widget/banner_add_widget.dart';
+import 'package:dalk/utils/ads_constants.dart';
+import 'package:provider/provider.dart';
 
-import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -72,6 +75,9 @@ class _PetListWidgetState extends State<PetListWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isPremium = context.watch<SubscriptionProvider>().isPremium;
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -242,6 +248,11 @@ class _PetListWidgetState extends State<PetListWidget> {
                   ),
                 ),
               ),
+              if(!isPremium)
+                BannerAdWidget(
+                  adUnitId: bannerPetLisId, 
+                  maxWidth: screenWidth,
+                ),
             ],
           ),
         ),

@@ -734,6 +734,7 @@ class _PopUpDogWalkerProfileWidgetState
               ),
             ),
           ),
+          
         ],
       ),
     );

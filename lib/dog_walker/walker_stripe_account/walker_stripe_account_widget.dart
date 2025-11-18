@@ -163,22 +163,23 @@ Future<void> _createStripeAccount(BuildContext context, String walkerUid) async 
     final refreshUrl = 'https://dalk.com/payments/refresh?walker_id=$walkerId';
 
     // flujo de onboarding
-    final result = await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => WalkerStripeWebview(
-          onboardingUrl: onboardingUrl,
-          returnUrl: returnUrl,
-          refreshUrl: refreshUrl,
-        ),
-      ),
-    );
+    // final result = await Navigator.of(context).push(
+    //   MaterialPageRoute(
+    //     builder: (_) => WalkerStripeWebview(
+    //       onboardingUrl: onboardingUrl,
+    //       returnUrl: returnUrl,
+    //       refreshUrl: refreshUrl,
+    //     ),
+    //   ),
+    // );
+    
 
-    context.push(
+    final result = await context.push(
       '/StripeWebView',
       extra: <String, dynamic>{
-        onboardingUrl: onboardingUrl,
-        returnUrl: returnUrl,
-        refreshUrl: refreshUrl,
+        'onboardingUrl': onboardingUrl,
+        'returnUrl': returnUrl,
+        'refreshUrl': refreshUrl,
       },
     );                                           
 

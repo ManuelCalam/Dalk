@@ -139,7 +139,7 @@ class _OwnerDebtWidgetState extends State<OwnerDebtWidget> {
                               scrollDirection: Axis.vertical,
                               children: [
                                 AutoSizeText(
-                                  'Estado de cuenta',
+                                  'Adeudos',
                                   textAlign: TextAlign.center,
                                   minFontSize: 22,
                                   style: FlutterFlowTheme.of(context)

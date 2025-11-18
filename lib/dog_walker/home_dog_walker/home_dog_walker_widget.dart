@@ -72,6 +72,8 @@ class _HomeDogWalkerCopyWidgetState extends State<HomeDogWalkerWidget> {
       await prefs.remove('showCompleteProfileDialog');
     }
   });
+
+  // print('HOMEEE: ${Supabase.instance.client.auth.currentSession?.accessToken}');
   }
 
   @override

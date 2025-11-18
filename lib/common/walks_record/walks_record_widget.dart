@@ -1,9 +1,13 @@
+import 'package:dalk/SubscriptionProvider.dart';
 import 'package:dalk/auth/supabase_auth/auth_util.dart';
 import 'package:dalk/backend/supabase/supabase.dart';
 import 'package:dalk/cards/non_reviewed_dog_card/non_reviewed_dog_card_widget.dart';
 import 'package:dalk/cards/non_reviewed_walk_card/non_reviewed_walk_card_widget.dart';
 import 'package:dalk/cards/reviewed_dog_card/reviewed_dog_card_widget.dart';
 import 'package:dalk/cards/reviewed_walk_card/reviewed_walk_card_widget.dart';
+import 'package:dalk/dog_owner/banner_add_widget/banner_add_widget.dart';
+import 'package:dalk/utils/ads_constants.dart';
+import 'package:provider/provider.dart';
 
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
@@ -51,6 +55,8 @@ class _WalksRecordWidgetState extends State<WalksRecordWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isPremium = context.watch<SubscriptionProvider>().isPremium;
+    final screenWidth = MediaQuery.of(context).size.width;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -295,6 +301,11 @@ class _WalksRecordWidgetState extends State<WalksRecordWidget> {
                   ),
                 ),
               ),
+              if(widget.userType == 'Dueño' && !isPremium)
+                BannerAdWidget(
+                  adUnitId: bannerWalksRecordId, 
+                  maxWidth: screenWidth,
+                ),
             ],
           ),
         ),

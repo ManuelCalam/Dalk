@@ -982,7 +982,6 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                                         if (!mounted) return;
                                                         context.push('/walker/home');
                                                       } catch (e) {
-                                                        // Manejo elegante del error de duplicado (por si ocurre simultáneamente)
                                                         if (e.toString().contains('duplicate key value')) {
                                                           ScaffoldMessenger.of(context).showSnackBar(
                                                             const SnackBar(content: Text('Ya existe un registro de excepción, se actualizó automáticamente.')),

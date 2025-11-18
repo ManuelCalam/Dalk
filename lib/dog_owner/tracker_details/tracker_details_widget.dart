@@ -341,7 +341,7 @@ class _TrackerDetailsWidgetState extends State<TrackerDetailsWidget> {
                                                 const EdgeInsetsDirectional.fromSTEB(
                                                     0, 5, 0, 0),
                                             child: AutoSizeText(
-                                              'Un pequeño dispositivo GPS que muestra la ubicación de tu mascota en tiempo real.\nSe coloca en el collar y se vincula automáticamente a tu cuenta al comprarlo.',
+                                              'Un dispositivo GPS que muestra la ubicación de tu mascota en tiempo real.\nSe coloca en el collar y al utilizar el mapa durante los paseos podrás ver su ubicación.',
                                               textAlign: TextAlign.justify,
                                               style: FlutterFlowTheme.of(
                                                       context)
@@ -670,7 +670,7 @@ class _TrackerDetailsWidgetState extends State<TrackerDetailsWidget> {
                                                                         0,
                                                                         0),
                                                             child: AutoSizeText(
-                                                              'Al adquirirlo, el dispositivo se registra automáticamente en tu cuenta.\nNo necesitas configurarlo: llega listo para usarse.',
+                                                              'Al tenerlo a la mano, también obtendrás un número de serie.\nEse número de serie te servirá para vincular el dispositivo a tu cuenta.',
                                                               textAlign:
                                                                   TextAlign
                                                                       .justify,
@@ -810,7 +810,7 @@ class _TrackerDetailsWidgetState extends State<TrackerDetailsWidget> {
                                                                         0,
                                                                         0),
                                                             child: AutoSizeText(
-                                                              'Al adquirirlo, el dispositivo se registra automáticamente en tu cuenta.\nNo necesitas configurarlo: llega listo para usarse.',
+                                                              'Colocalo en la pechera de tu compañero y aseguralo con el broche de belcro.',
                                                               textAlign:
                                                                   TextAlign
                                                                       .justify,

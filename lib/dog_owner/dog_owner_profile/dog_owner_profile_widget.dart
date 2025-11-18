@@ -1121,104 +1121,123 @@ class _DogOwnerProfileWidgetState extends State<DogOwnerProfileWidget> {
                                 Padding(
                                   padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 10, 0, 0),
-                                  child: Container(
-                                    width: MediaQuery.sizeOf(context).width,
-                                    height: MediaQuery.sizeOf(context).height *
-                                        0.055,
-                                    decoration: BoxDecoration(
-                                      color: FlutterFlowTheme.of(context)
-                                          .alternate,
-                                      borderRadius: const BorderRadius.only(
-                                        bottomLeft: Radius.circular(5),
-                                        bottomRight: Radius.circular(5),
-                                        topLeft: Radius.circular(5),
-                                        topRight: Radius.circular(5),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      children: [
-                                        Padding(
-                                          padding:
-                                              const EdgeInsetsDirectional.fromSTEB(
-                                                  8, 0, 0, 0),
-                                          child: Icon(
-                                            Icons.error_outline,
-                                            color: FlutterFlowTheme.of(context)
-                                                .primary,
-                                            size: 25,
-                                          ),
+                                  child: InkWell(
+                                    splashColor: Colors.transparent,
+                                    focusColor: Colors.transparent,
+                                    hoverColor: Colors.transparent,
+                                    highlightColor: Colors.transparent,
+                                    onTap: () async {
+                                      context.push(
+                                        '/WebView',
+                                        extra: <String, dynamic>{
+                                          'url': 'https://dalk-legal-git-main-noe-ibarras-projects.vercel.app/?_vercel_share=H06ZuiEgfwHGNcHZ9AdimDz34FNJepDa',
+                                          'title': 'Acerca de Nosotros',
+                                        },
+                                      );                                                    
+                                    },
+                                    child: Container(
+                                      width: MediaQuery.sizeOf(context).width,
+                                      height:
+                                          MediaQuery.sizeOf(context).height *
+                                              0.055,
+                                      decoration: BoxDecoration(
+                                        color: FlutterFlowTheme.of(context)
+                                            .alternate,
+                                        borderRadius: const BorderRadius.only(
+                                          bottomLeft: Radius.circular(5),
+                                          bottomRight: Radius.circular(5),
+                                          topLeft: Radius.circular(5),
+                                          topRight: Radius.circular(5),
                                         ),
-                                        Flexible(
-                                          child: Align(
-                                            alignment: const AlignmentDirectional(-1, 0),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.max,
+                                        children: [
+                                          Padding(
+                                            padding:
+                                                const EdgeInsetsDirectional.fromSTEB(
+                                                    8, 0, 0, 0),
+                                            child: Icon(
+                                              Icons.info_outline_rounded,
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .primary,
+                                              size: 25,
+                                            ),
+                                          ),
+                                          Flexible(
+                                            child: Align(
+                                              alignment:
+                                                  const AlignmentDirectional(-1, 0),
+                                              child: Padding(
+                                                padding: const EdgeInsetsDirectional
+                                                    .fromSTEB(8, 0, 0, 0),
+                                                child: Text(
+                                                  'Acerca de nosotros',
+                                                  style: FlutterFlowTheme.of(
+                                                          context)
+                                                      .bodyMedium
+                                                      .override(
+                                                        font:
+                                                            GoogleFonts.lexend(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          fontStyle:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .bodyMedium
+                                                                  .fontStyle,
+                                                        ),
+                                                        color: FlutterFlowTheme
+                                                                .of(context)
+                                                            .secondaryBackground,
+                                                        fontSize: 16,
+                                                        letterSpacing: 0.0,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        fontStyle:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .bodyMedium
+                                                                .fontStyle,
+                                                      ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          Align(
+                                            alignment:
+                                                const AlignmentDirectional(1, 0),
                                             child: Padding(
-                                              padding: const EdgeInsetsDirectional.fromSTEB(8, 0, 0, 0),
+                                              padding: const EdgeInsetsDirectional
+                                                  .fromSTEB(0, 0, 15, 0),
                                               child: InkWell(
                                                 splashColor: Colors.transparent,
                                                 focusColor: Colors.transparent,
                                                 hoverColor: Colors.transparent,
-                                                highlightColor: Colors.transparent,
-                                                onTap: () {
+                                                highlightColor:
+                                                    Colors.transparent,
+                                                onTap: () async {
                                                   context.push(
                                                     '/WebView',
                                                     extra: <String, dynamic>{
                                                       'url': 'https://dalk-legal-git-main-noe-ibarras-projects.vercel.app/?_vercel_share=H06ZuiEgfwHGNcHZ9AdimDz34FNJepDa',
                                                       'title': 'Acerca de Nosotros',
                                                     },
-                                                  );                                           
+                                                  );                                                    
                                                 },
-                                                child: Text(
-                                                  'Acerca de nosotros',
-                                                  textAlign: TextAlign.start,
-                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                    font: GoogleFonts.lexend(
-                                                      fontWeight: FontWeight.w500,
-                                                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                    ),
-                                                    color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                    fontSize: 16,
-                                                    letterSpacing: 0.0,
-                                                    fontWeight: FontWeight.w500,
-                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                  ),
+                                                child: Icon(
+                                                  Icons.arrow_forward_ios,
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .primary,
+                                                  size: 25,
                                                 ),
                                               ),
                                             ),
                                           ),
-                                        ),
-                                        Align(
-                                          alignment:
-                                              const AlignmentDirectional(1, 0),
-                                          child: Padding(
-                                            padding: const EdgeInsetsDirectional
-                                                .fromSTEB(0, 0, 15, 0),
-                                            child: InkWell(
-                                              splashColor: Colors.transparent,
-                                              focusColor: Colors.transparent,
-                                              hoverColor: Colors.transparent,
-                                              highlightColor:
-                                                  Colors.transparent,
-                                              onTap: () {
-                                                context.push(
-                                                  '/WebView',
-                                                  extra: <String, dynamic>{
-                                                    'url': 'https://dalk-legal-git-main-noe-ibarras-projects.vercel.app/?_vercel_share=H06ZuiEgfwHGNcHZ9AdimDz34FNJepDa',
-                                                    'title': 'Acerca de Nosotros',
-                                                  },
-                                                );                                           
-                                              },
-                                              child: Icon(
-                                                Icons.arrow_forward_ios,
-                                                color: FlutterFlowTheme.of(
-                                                        context)
-                                                    .primary,
-                                                size: 25,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),

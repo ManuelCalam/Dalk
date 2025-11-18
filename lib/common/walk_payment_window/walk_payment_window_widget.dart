@@ -386,15 +386,17 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
         ));
       
 
-        // 2. Pagar con Efectivo 
-        buttons.add(_buildActionButton(
-          context: context,
-          text: 'Pagar con Efectivo',
-          color: theme.success,
-          onPressed: () => _handleCashPayment(walkData),
-          iconWidget: const FaIcon(FontAwesomeIcons.moneyBill1, color: Colors.white, size: 23),
-          isDisabled: isPaid,
-        ));
+        // 2. Pagar con Efectivo
+        if(walkData['status'] != 'Cancelado_Dueño'){ 
+          buttons.add(_buildActionButton(
+            context: context,
+            text: 'Pagar con Efectivo',
+            color: theme.success,
+            onPressed: () => _handleCashPayment(walkData),
+            iconWidget: const FaIcon(FontAwesomeIcons.moneyBill1, color: Colors.white, size: 23),
+            isDisabled: isPaid,
+          ));
+        }
 
       } else if (walkData['payment_status'] == 'Pagado') {
           buttons.add(_buildActionButton(
