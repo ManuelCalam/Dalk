@@ -43,7 +43,11 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
 
-        manifestPlaceholders = [MAPS_API_KEY: localProperties.getProperty("MAPS_API_KEY", "")]
+        manifestPlaceholders = [
+            MAPS_API_KEY: localProperties.getProperty("MAPS_API_KEY", ""),
+            "com.google.android.gms.ads.APPLICATION_ID": "ca-app-pub-7465142412381768~9736997633"
+
+        ]
     }
 
     signingConfigs {
@@ -72,4 +76,5 @@ flutter {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22"
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
+    implementation "com.google.android.gms:play-services-ads:24.6.0"
 }
