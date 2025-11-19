@@ -1,7 +1,6 @@
 import 'package:dalk/auth/supabase_auth/auth_util.dart';
 import 'package:dalk/backend/supabase/supabase.dart';
 import 'package:dalk/cards/tracker_card/tracker_card_widget.dart';
-import 'package:dalk/flutter_flow/flutter_flow_model.dart';
 
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -59,10 +58,9 @@ class _PopUpCurrentWalkOptionsWidgetState
   Future<void> _loadTrackers() async {
     try {
       final response = await Supabase.instance.client 
-          .from('orders')
+          .from('trackers')
           .select()
-          .eq('user_id', currentUserUid)
-          .eq('status', 'Pagada');
+          .eq('registered_by', currentUserUid);
 
       if (mounted) {
         setState(() {
@@ -296,7 +294,7 @@ class _PopUpCurrentWalkOptionsWidgetState
       itemCount: _trackers!.length,
       itemBuilder: (context, index) {
         final tracker = _trackers![index];
-        final trackerId = tracker['tracker_id']?.toString() ?? '';
+        final trackerId = tracker['serial_number']?.toString() ?? '';
         final isSelected = selectedTrackers.contains(trackerId);
         
         return Padding(
@@ -312,7 +310,7 @@ class _PopUpCurrentWalkOptionsWidgetState
               });
             },
             child: TrackerCardWidget(
-              alias: tracker['tracker_alias']?.toString() ?? 'Rastreador',
+              alias: tracker['alias']?.toString() ?? 'Rastreador',
               id: trackerId,
               selected: isSelected,
             ),

@@ -7,7 +7,6 @@ export '/dog_owner/add_address/add_address_widget.dart' show AddAddressWidget;
 export '/dog_owner/find_dog_walker/find_dog_walker_widget.dart'
     show FindDogWalkerWidget;
 export '/dog_owner/add_pet/add_pet_widget.dart' show AddPetWidget;
-export '/current_walk/current_walk_widget.dart' show CurrentWalkWidget;
 export '/dog_owner/walks_dog_owner/walks_dog_owner_widget.dart'
     show WalksDogOwnerWidget;
 export '/landing_pages/login/login_widget.dart' show LoginWidget;

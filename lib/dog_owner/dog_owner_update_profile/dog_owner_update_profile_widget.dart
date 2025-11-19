@@ -175,7 +175,7 @@ class _DogOwnerUpdateProfileWidgetState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Código postal válido. ${postalInfo.neighborhoods.length} colonia(s) encontrada(s).'),
-            backgroundColor: Colors.green,
+          backgroundColor: FlutterFlowTheme.of(context).success,
             duration: const Duration(seconds: 2),
           ),
         );
@@ -190,9 +190,9 @@ class _DogOwnerUpdateProfileWidgetState
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Código postal no válido o no pertenece a Jalisco.'),
-            backgroundColor: Colors.red,
+            backgroundColor: FlutterFlowTheme.of(context).error,
             duration: Duration(seconds: 2),
           ),
         );
@@ -771,10 +771,10 @@ void _showImagePickerOptions(BuildContext context) {
                                                     if (required != null) return required;
                                                     final min = Validators.minLength(value, 3, fieldName: 'Nombre');
                                                     if (min != null) return min;
-                                                    return Validators.maxLength(value, 50, fieldName: 'Nombre');
+                                                    return Validators.maxLength(value, 25, fieldName: 'Nombre');
                                                   },                                                  
                                                   inputFormatters: [
-                                                    LengthLimitingTextInputFormatter(50),
+                                                    LengthLimitingTextInputFormatter(25),
                                                   ],                                                
                                                 ),
                                               ),
@@ -1436,10 +1436,10 @@ void _showImagePickerOptions(BuildContext context) {
                                                     if (required != null) return required;
                                                     final min = Validators.minLength(value, 5, fieldName: 'Calle');
                                                     if (min != null) return min;
-                                                    return Validators.maxLength(value, 50, fieldName: 'Calle');
+                                                    return Validators.maxLength(value, 30, fieldName: 'Calle');
                                                   },                                                  
                                                   inputFormatters: [
-                                                    LengthLimitingTextInputFormatter(50),
+                                                    LengthLimitingTextInputFormatter(30),
                                                   ],  
                                                 ),
                                               ),
@@ -1518,7 +1518,7 @@ void _showImagePickerOptions(BuildContext context) {
                                                         : _postalCodeValidated
                                                             ? Icon(
                                                                 Icons.check_circle,
-                                                                color: Colors.green,
+                                                                  color: FlutterFlowTheme.of(context).success,
                                                                 size: 25,
                                                               )
                                                             : null,

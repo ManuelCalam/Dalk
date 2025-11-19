@@ -118,7 +118,8 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
 
       final customerStripeId = customerRes?['customer_stripe_id'];
       if (customerStripeId == null) {
-        throw Exception('No se encontró el customer_stripe_id del usuario actual.');
+        // throw Exception('No se encontró el customer_stripe_id del usuario actual.');
+        throw ('No tienes una tarjeta afiliada a tu cuenta.');
       }
 
 
@@ -158,6 +159,13 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
         const SnackBar(content: Text('Pago completado con éxito.')),
       );
 
+
+      if(walkData['status'] == 'Cancelado_Dueño') {
+        context.pop(true);
+      }
+      await fetchWalkInfoFromView(widget.walkId);
+      
+
     } on StripeException catch (e) {
       print('Error de Stripe: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -179,13 +187,20 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
 
       final walkerId = walkData['walker_id'];
       final walkId = walkData['id'];
+      final walkStatus = walkData['status'];
       final fee = double.parse(walkData['fee'].toString());
-
+      
+      
       final updateWalk = await supabase
           .from('walks')
           .update({'payment_status': 'Pagado'})
           .eq('id', walkId)
-          .select(); 
+          .select();
+      
+      if(walkStatus == 'Cancelado_Dueño'){
+        await fetchWalkInfoFromView(widget.walkId);
+        return;
+      }
 
       if (updateWalk.isEmpty) {
         throw Exception('Error al actualizar el estado del paseo.');
@@ -194,25 +209,28 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
       final appFee = double.parse((fee * 0.05).toStringAsFixed(2));
 
       final walkerRes = await supabase
-          .from('walker_payments')
-          .select('debt')
-          .eq('walker_uuid', walkerId)
+          .from('users')
+          .select('total_debt')
+          .eq('uuid', walkerId)
           .maybeSingle();
 
       if (walkerRes == null) {
         throw Exception('No se encontró la información del paseador.');
       }
 
-      final currentDebt = double.parse((walkerRes['debt'] ?? 0).toString());
+      final currentDebt = double.parse((walkerRes['total_debt'] ?? 0).toString());
       final newDebt = double.parse((currentDebt + appFee).toStringAsFixed(2));
 
       await supabase
-          .from('walker_payments')
-          .update({'debt': newDebt})
-          .eq('walker_uuid', walkerId);
+          .from('users')
+          .update({'total_debt': newDebt})
+          .eq('uuid', walkerId);
+
+      await fetchWalkInfoFromView(widget.walkId);
+
 
       // context.go('/owner/home');
-      GoRouter.of(context).go('/owner/home');       
+      // GoRouter.of(context).go('/owner/home');       
 
     } catch (e) {
       print('Error en pago en efectivo: $e');
@@ -368,15 +386,17 @@ class _WalkPaymentWindowWidgetState extends State<WalkPaymentWindowWidget> {
         ));
       
 
-        // 2. Pagar con Efectivo 
-        buttons.add(_buildActionButton(
-          context: context,
-          text: 'Pagar con Efectivo',
-          color: theme.success,
-          onPressed: () => _handleCashPayment(walkData),
-          iconWidget: const FaIcon(FontAwesomeIcons.moneyBill1, color: Colors.white, size: 23),
-          isDisabled: isPaid,
-        ));
+        // 2. Pagar con Efectivo
+        if(walkData['status'] != 'Cancelado_Dueño'){ 
+          buttons.add(_buildActionButton(
+            context: context,
+            text: 'Pagar con Efectivo',
+            color: theme.success,
+            onPressed: () => _handleCashPayment(walkData),
+            iconWidget: const FaIcon(FontAwesomeIcons.moneyBill1, color: Colors.white, size: 23),
+            isDisabled: isPaid,
+          ));
+        }
 
       } else if (walkData['payment_status'] == 'Pagado') {
           buttons.add(_buildActionButton(

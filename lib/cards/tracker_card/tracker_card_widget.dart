@@ -1,8 +1,11 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_widgets.dart';
+import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 import 'tracker_card_model.dart';
 export 'tracker_card_model.dart';
@@ -49,9 +52,9 @@ class _TrackerCardWidgetState extends State<TrackerCardWidget> {
   Widget build(BuildContext context) {
     return Container(
       width: 100,
-      height: 80,
+      height: 110,
       decoration: BoxDecoration(
-        color: widget.selected == true
+        color: widget!.selected == true
             ? FlutterFlowTheme.of(context).primary
             : FlutterFlowTheme.of(context).alternate,
         borderRadius: BorderRadius.circular(20),
@@ -62,12 +65,12 @@ class _TrackerCardWidgetState extends State<TrackerCardWidget> {
           Container(
             width: 100,
             height: 70,
-            decoration: const BoxDecoration(),
+            decoration: BoxDecoration(),
             child: Align(
-              alignment: const AlignmentDirectional(0, 0),
+              alignment: AlignmentDirectional(0, 0),
               child: Icon(
                 Icons.track_changes,
-                color: widget.selected == true
+                color: widget!.selected == true
                     ? FlutterFlowTheme.of(context).primaryBackground
                     : FlutterFlowTheme.of(context).primary,
                 size: 45,
@@ -75,18 +78,16 @@ class _TrackerCardWidgetState extends State<TrackerCardWidget> {
             ),
           ),
           Container(
-            width: 100,
-            height: 30,
-            decoration: const BoxDecoration(),
+            decoration: BoxDecoration(),
             child: Align(
-              alignment: const AlignmentDirectional(0, 0),
+              alignment: AlignmentDirectional(0, 0),
               child: AutoSizeText(
                 valueOrDefault<String>(
-                  widget.alias,
+                  widget!.alias,
                   '[alias]',
                 ),
                 textAlign: TextAlign.center,
-                maxLines: 1,
+                maxLines: 2,
                 minFontSize: 8,
                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                       font: GoogleFonts.lexend(

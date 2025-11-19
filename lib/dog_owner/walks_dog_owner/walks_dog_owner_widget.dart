@@ -1,8 +1,11 @@
+import 'package:dalk/SubscriptionProvider.dart';
 import 'package:dalk/common/current_walk_card/current_walk_card_widget.dart';
 import 'package:dalk/common/requested_walk_card/requested_walk_card_widget.dart';
-import 'package:dalk/common/walks_record/walks_record_widget.dart';
+import 'package:dalk/dog_owner/banner_add_widget/banner_add_widget.dart';
 import 'package:dalk/flutter_flow/flutter_flow_widgets.dart';
+import 'package:dalk/utils/ads_constants.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
@@ -68,6 +71,8 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
 
   @override
   Widget build(BuildContext context) {
+    final isPremium = context.watch<SubscriptionProvider>().isPremium;
+    final screenWidth = MediaQuery.of(context).size.width;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -530,6 +535,11 @@ class _WalksDogOwnerWidgetState extends State<WalksDogOwnerWidget>
                   ),
                 ),
               ),
+              if(!isPremium)
+                BannerAdWidget(
+                  adUnitId: bannerWalksListId, 
+                  maxWidth: screenWidth,
+                ),
             ],
           ),
         ),

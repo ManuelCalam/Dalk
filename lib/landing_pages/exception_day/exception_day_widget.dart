@@ -155,7 +155,7 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                     padding: const EdgeInsetsDirectional.fromSTEB(
                                         0, 15, 0, 15),
                                     child: AutoSizeText(
-                                      'Si necesitas tomar un descanso o tienes compromisos personales, Marca los horarios en los que no estarás disponible. Elige entre todo el día u horas específicas.\nDurante este tiempo no recibirás solicitudes y no aparecerás en búsquedas.',
+                                      'Si necesitas tomar un descanso o tienes compromisos personales, Marca el horarios en los que no estarás disponible. Elige entre todo el día u horas específicas.\nDurante este tiempo no recibirás solicitudes y no aparecerás en búsquedas.',
                                       textAlign: TextAlign.center,
                                       style: FlutterFlowTheme.of(context)
                                           .bodyMedium
@@ -890,103 +890,110 @@ class _ExceptionDayWidgetState extends State<ExceptionDayWidget> {
                                                       .fromSTEB(0, 18, 0, 18),
                                                   child: FFButtonWidget(
                                                     onPressed: () async {
-  if (_model.datePicked1 == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Por favor selecciona una fecha'),
-      ),
-    );
-    return;
-  }
+                                                      if (_model.datePicked1 == null) {
+                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                          const SnackBar(content: Text('Por favor selecciona una fecha')),
+                                                        );
+                                                        return;
+                                                      }
 
-  final currentUser = Supabase.instance.client.auth.currentUser;
-    if (currentUser == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No se pudo identificar al usuario'),
-        ),
-      );
-      return;
-    }
+                                                      final currentUser = Supabase.instance.client.auth.currentUser;
+                                                      if (currentUser == null) {
+                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                          const SnackBar(content: Text('No se pudo identificar al usuario')),
+                                                        );
+                                                        return;
+                                                      }
 
-  try {
-    // Determinar si es día completo o por horas
-    bool isFullDay = !_model.wilDogWalkerWorkSwitchValue!;
-    
-    // Preparar los datos para insertar
-    final Map<String, dynamic> exceptionDayData = {
-      'walker_id': currentUser.id,
-      'rest_date': _model.datePicked1!.toIso8601String().split('T')[0], 
-      'is_full_day': isFullDay,
-      'created_at': DateTime.now().toIso8601String(),
-    };
+                                                      try {
+                                                        bool isFullDay = !_model.wilDogWalkerWorkSwitchValue!;
+                                                        final selectedDate = _model.datePicked1!.toIso8601String().split('T')[0];
 
-    // Si no es día completo, agregar las horas
-    if (!isFullDay) {
-      if (_model.datePicked2 == null || _model.datePicked3 == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Por favor selecciona ambas horas'),
-          ),
-        );
-        return;
-      }
+                                                        // Verificar si ya existe un registro de excepción para este paseador
+                                                        final existing = await Supabase.instance.client
+                                                            .from('walker_exception_days')
+                                                            .select('id')
+                                                            .eq('walker_id', currentUser.id)
+                                                            .maybeSingle();
 
-      // Validar que la hora de fin sea después de la hora de inicio
-      if (_model.datePicked3!.isBefore(_model.datePicked2!)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('La hora de fin debe ser después de la hora de inicio'),
-          ),
-        );
-        return;
-      }
+                                                        final Map<String, dynamic> exceptionDayData = {
+                                                          'walker_id': currentUser.id,
+                                                          'rest_date': selectedDate,
+                                                          'is_full_day': isFullDay,
+                                                          'created_at': DateTime.now().toIso8601String(),
+                                                        };
 
-      // Formatear horas como HH:MM:SS
-      exceptionDayData['start_time'] = 
-          '${_model.datePicked2!.hour.toString().padLeft(2, '0')}:${_model.datePicked2!.minute.toString().padLeft(2, '0')}:00';
-      exceptionDayData['end_time'] = 
-          '${_model.datePicked3!.hour.toString().padLeft(2, '0')}:${_model.datePicked3!.minute.toString().padLeft(2, '0')}:00';
-    }
+                                                        if (!isFullDay) {
+                                                          if (_model.datePicked2 == null || _model.datePicked3 == null) {
+                                                            ScaffoldMessenger.of(context).showSnackBar(
+                                                              const SnackBar(content: Text('Por favor selecciona ambas horas')),
+                                                            );
+                                                            return;
+                                                          }
 
-    // Insertar en Supabase
-    final response = await Supabase.instance.client
-        .from('walker_exception_days')
-        .insert(exceptionDayData);
+                                                          if (_model.datePicked3!.isBefore(_model.datePicked2!)) {
+                                                            ScaffoldMessenger.of(context).showSnackBar(
+                                                              const SnackBar(content: Text('La hora de fin debe ser después de la hora de inicio')),
+                                                            );
+                                                            return;
+                                                          }
 
-    // Mostrar mensaje de éxito
-    if (!mounted) return;
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          isFullDay 
-            ? 'Día completo guardado como excepción' 
-            : 'Horario de excepción guardado correctamente',
-        ),
-        duration: const Duration(seconds: 3),
-      ),
-    );
+                                                          exceptionDayData['start_time'] =
+                                                              '${_model.datePicked2!.hour.toString().padLeft(2, '0')}:${_model.datePicked2!.minute.toString().padLeft(2, '0')}:00';
+                                                          exceptionDayData['end_time'] =
+                                                              '${_model.datePicked3!.hour.toString().padLeft(2, '0')}:${_model.datePicked3!.minute.toString().padLeft(2, '0')}:00';
+                                                        }
 
-    // Esperar un momento para que el usuario vea el mensaje
-    await Future.delayed(const Duration(seconds: 2));
+                                                        if (existing != null) {
+                                                          // Actualizar si ya existe un registro
+                                                          await Supabase.instance.client
+                                                              .from('walker_exception_days')
+                                                              .update(exceptionDayData)
+                                                              .eq('id', existing['id']);
 
-    // Navegar a la página principal
-    if (!mounted) return;
-    context.push('/walker/home');
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            SnackBar(
+                                                              content: Text(
+                                                                isFullDay
+                                                                    ? 'Excepción actualizada como día completo'
+                                                                    : 'Horario de excepción actualizado correctamente',
+                                                              ),
+                                                              duration: const Duration(seconds: 3),
+                                                            ),
+                                                          );
+                                                        } else {
+                                                          // Insertar nuevo registro si no existe
+                                                          await Supabase.instance.client
+                                                              .from('walker_exception_days')
+                                                              .insert(exceptionDayData);
 
-  } catch (e) {
-    // Manejar errores
-    if (!mounted) return;
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Error al guardar: ${e.toString()}'),
-        duration: const Duration(seconds: 4),
-      ),
-    );
-  }
-},
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            SnackBar(
+                                                              content: Text(
+                                                                isFullDay
+                                                                    ? 'Día completo guardado como excepción'
+                                                                    : 'Horario de excepción guardado correctamente',
+                                                              ),
+                                                              duration: const Duration(seconds: 3),
+                                                            ),
+                                                          );
+                                                        }
+
+                                                        if (!mounted) return;
+                                                        context.push('/walker/home');
+                                                      } catch (e) {
+                                                        if (e.toString().contains('duplicate key value')) {
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            const SnackBar(content: Text('Ya existe un registro de excepción, se actualizó automáticamente.')),
+                                                          );
+                                                        } else {
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            SnackBar(content: Text('Error al guardar excepción: $e')),
+                                                          );
+                                                        }
+                                                      }
+                                                    },
+
                                                     text: 'Guardar',
                                                     options: FFButtonOptions(
                                                       width: 360,

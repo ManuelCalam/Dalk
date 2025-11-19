@@ -4,13 +4,13 @@ import 'package:dalk/SubscriptionProvider.dart';
 import 'package:dalk/auth/supabase_auth/supabase_user_provider.dart';
 import 'package:dalk/user_provider.dart';
 import 'package:dalk/services/notification_service.dart';
-import 'package:dalk/auth/supabase_auth/auth_util.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '/backend/firebase/firebase_config.dart';
@@ -35,7 +35,9 @@ Future<void> main() async {
   await initFirebase();
   await FlutterFlowTheme.initialize();
 
-  // 🔗 Inicializar Supabase
+  MobileAds.instance.initialize();
+
+  // Inicializar Supabase
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL']!,
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,

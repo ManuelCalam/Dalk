@@ -1,3 +1,8 @@
+import 'package:dalk/SubscriptionProvider.dart';
+import 'package:dalk/dog_owner/banner_add_widget/banner_add_widget.dart';
+import 'package:dalk/utils/ads_constants.dart';
+import 'package:provider/provider.dart';
+
 import '/backend/supabase/supabase.dart';
 import '/cards/find_dog_walker_card/find_dog_walker_card_widget.dart';
 import '/components/go_back_container/go_back_container_widget.dart';
@@ -147,6 +152,8 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isPremium = context.watch<SubscriptionProvider>().isPremium;
+    final screenWidth = MediaQuery.of(context).size.width;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -475,7 +482,7 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                                       child: Padding(
                                         padding: EdgeInsets.symmetric(horizontal: 24.0),
                                         child: Text(
-                                          'No se encontraron paseadores disponibles.',
+                                          'No se encontraron paseadores disponibles. Toma en cuenta que influyen los horarios seleccionados.',
                                           textAlign: TextAlign.center, // Centra el texto horizontalmente
                                           style: TextStyle(
                                             fontSize: 16.0,
@@ -529,6 +536,11 @@ class _FindDogWalkerWidgetState extends State<FindDogWalkerWidget> {
                   ),
                 ),
               ),
+              if(!isPremium)
+                BannerAdWidget(
+                  adUnitId: bannerWalkersList, 
+                  maxWidth: screenWidth,
+                ),
             ],
           ),
         ),

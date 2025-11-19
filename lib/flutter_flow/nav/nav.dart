@@ -9,7 +9,9 @@ import 'package:dalk/common/walk_payment_window/walk_payment_window_widget.dart'
 import 'package:dalk/common/walks_record/walks_record_widget.dart';
 import 'package:dalk/components/not_scheduled_walk_container/not_scheduled_walk_container_widget.dart';
 import 'package:dalk/components/scheduled_walk_container/scheduled_walk_container_widget.dart';
+import 'package:dalk/dog_owner/add_tracker_to_account/add_tracker_to_account_widget.dart';
 import 'package:dalk/dog_owner/buy_tracker/buy_tracker_widget.dart';
+import 'package:dalk/dog_owner/owner_debt/owner_debt_widget.dart';
 import 'package:dalk/dog_owner/pet_update_profile/pet_update_profile_widget.dart';
 import 'package:dalk/dog_owner/tracker_details/tracker_details_widget.dart';
 import 'package:dalk/dog_walker/walker_stripe_account/walker_stripe_account_widget.dart';
@@ -278,6 +280,7 @@ GoRouter createRouter() {
                 ScheduledWalkContainerWidget(
                   walkId: args['walkId'],
                   userType: args['userType'],
+                  status: args['status'] ?? '',
                 )
               );
             },
@@ -331,6 +334,11 @@ GoRouter createRouter() {
             path: '/owner/buyTracker', 
             pageBuilder: (context, state) => pageBuilderFor(state, const BuyTrackerWidget()),
           ),
+          GoRoute(
+            name: 'owner_addTracker',
+            path: '/owner/addTracker', 
+            pageBuilder: (context, state) => pageBuilderFor(state, const AddTrackerToAccountWidget()),
+          ),
 
           // Ruta para pago de paseo
           GoRoute(
@@ -345,7 +353,13 @@ GoRouter createRouter() {
                 )
               );
             },
-          ),          
+          ),    
+
+          GoRoute(
+            name: 'owner_ownerDebt',
+            path: '/owner/ownerDebt', 
+            pageBuilder: (context, state) => pageBuilderFor(state, const OwnerDebtWidget()),
+          ),      
 
           GoRoute(
             name: 'owner_frequentQuestions',
@@ -395,11 +409,20 @@ GoRouter createRouter() {
             path: '/walker/home',
             pageBuilder: (context, state) => pageBuilderFor(state, const HomeDogWalkerWidget()),
           ),
+          // GoRoute(
+          //   name: 'walker_currentWalk',
+          //   path: '/walker/currentWalk',
+          //   pageBuilder: (context, state) => pageBuilderFor(state, const CurrentWalkEmptyWindowWidget()),
+          // ),
           GoRoute(
             name: 'walker_currentWalk',
             path: '/walker/currentWalk',
-            pageBuilder: (context, state) => pageBuilderFor(state, const CurrentWalkEmptyWindowWidget()),
+            pageBuilder: (context, state) => pageBuilderFor(
+              state,
+              CurrentWalkEmptyWindowWidget(key: UniqueKey()),
+            ),
           ),
+
           GoRoute(
             name: 'walker_service',
             path: '/walker/service',
@@ -447,6 +470,7 @@ GoRouter createRouter() {
                 ScheduledWalkContainerWidget(
                   walkId: args['walkId'],
                   userType: args['userType'],
+                  status: args['status'] ?? '',
                 )
               );
             },

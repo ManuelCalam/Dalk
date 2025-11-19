@@ -574,12 +574,11 @@ async function handlePaymentIntentSucceeded(paymentIntent: any) {
     console.log("Processing DEBT payment success for walker ID:", walkerIdToPay);
 
     const { error: debtUpdateError } = await supabase
-      .from("walker_payments") 
+      .from("users") 
       .update({
-        debt: 0,
-        last_updated: new Date().toISOString(), 
+        total_debt: 0,
       })
-      .eq("walker_uuid", walkerIdToPay); 
+      .eq("uuid", walkerIdToPay); 
 
     if (debtUpdateError) {
       console.error("DB error [DebtPaymentSucceeded]:", debtUpdateError);
@@ -603,7 +602,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: any) {
         status: "Pagada",
         // payment_intent_id: paymentIntent.id,
       })
-      .eq("tracker_id", trackerId)
+      .eq("order_id", trackerId)
       .in("status", ["Pendiente", "Fallida", "Cancelada"]); 
 
     if (error) {
@@ -649,7 +648,7 @@ async function handlePaymentIntentFailed(paymentIntent: any) {
       .update({ 
         status: "Fallida" 
       })
-      .eq("tracker_id", trackerId);
+      .eq("order_id", trackerId);
 
     if (error) {
       console.error("DB error [TrackerOrderFailed]:", error);

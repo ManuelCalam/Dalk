@@ -1,4 +1,3 @@
-import 'package:dalk/dog_owner/buy_tracker/buy_tracker_widget.dart';
 
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
@@ -210,6 +209,60 @@ class _TrackerDetailsWidgetState extends State<TrackerDetailsWidget> {
                                     ),
                                   ),
                                 ),
+
+                                Padding(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
+                                      0, 20, 0, 0),
+                                  child: FFButtonWidget(
+                                    onPressed: () {
+                                      context.push('/owner/buyTracker');
+                                    },
+                                    text: 'Comprar aquí',
+                                    icon: const Icon(
+                                      Icons.shopping_cart,
+                                      size: 20,
+                                    ),
+                                    options: FFButtonOptions(
+                                      height:
+                                          MediaQuery.sizeOf(context).height *
+                                              0.05,
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
+                                          16, 0, 16, 0),
+                                      iconAlignment: IconAlignment.end,
+                                      iconPadding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              0, 0, 0, 0),
+                                      color:
+                                          FlutterFlowTheme.of(context).accent1,
+                                      textStyle: FlutterFlowTheme.of(context)
+                                          .titleSmall
+                                          .override(
+                                            font: GoogleFonts.lexend(
+                                              fontWeight:
+                                                  FlutterFlowTheme.of(context)
+                                                      .titleSmall
+                                                      .fontWeight,
+                                              fontStyle:
+                                                  FlutterFlowTheme.of(context)
+                                                      .titleSmall
+                                                      .fontStyle,
+                                            ),
+                                            color: Colors.white,
+                                            letterSpacing: 0.0,
+                                            fontWeight:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .fontWeight,
+                                            fontStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .fontStyle,
+                                          ),
+                                      elevation: 0,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
                                 Padding(
                                   padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 20, 0, 0),
@@ -288,7 +341,7 @@ class _TrackerDetailsWidgetState extends State<TrackerDetailsWidget> {
                                                 const EdgeInsetsDirectional.fromSTEB(
                                                     0, 5, 0, 0),
                                             child: AutoSizeText(
-                                              'Un pequeño dispositivo GPS que muestra la ubicación de tu mascota en tiempo real.\nSe coloca en el collar y se vincula automáticamente a tu cuenta al comprarlo.',
+                                              'Un dispositivo GPS que muestra la ubicación de tu mascota en tiempo real.\nSe coloca en el collar y al utilizar el mapa durante los paseos podrás ver su ubicación.',
                                               textAlign: TextAlign.justify,
                                               style: FlutterFlowTheme.of(
                                                       context)
@@ -617,7 +670,7 @@ class _TrackerDetailsWidgetState extends State<TrackerDetailsWidget> {
                                                                         0,
                                                                         0),
                                                             child: AutoSizeText(
-                                                              'Al adquirirlo, el dispositivo se registra automáticamente en tu cuenta.\nNo necesitas configurarlo: llega listo para usarse.',
+                                                              'Al tenerlo a la mano, también obtendrás un número de serie.\nEse número de serie te servirá para vincular el dispositivo a tu cuenta.',
                                                               textAlign:
                                                                   TextAlign
                                                                       .justify,
@@ -757,7 +810,7 @@ class _TrackerDetailsWidgetState extends State<TrackerDetailsWidget> {
                                                                         0,
                                                                         0),
                                                             child: AutoSizeText(
-                                                              'Al adquirirlo, el dispositivo se registra automáticamente en tu cuenta.\nNo necesitas configurarlo: llega listo para usarse.',
+                                                              'Colocalo en la pechera de tu compañero y aseguralo con el broche de belcro.',
                                                               textAlign:
                                                                   TextAlign
                                                                       .justify,

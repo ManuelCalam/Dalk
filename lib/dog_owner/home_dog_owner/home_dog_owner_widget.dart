@@ -1,12 +1,12 @@
 import 'package:dalk/SubscriptionProvider.dart';
 import 'package:dalk/backend/supabase/database/database.dart';
 import 'package:dalk/cards/article_card/article_card_widget.dart';
-import 'package:dalk/common/article_web_view/article_web_view.dart';
 import 'package:dalk/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
+import 'package:dalk/dog_owner/banner_add_widget/banner_add_widget.dart';
+import 'package:dalk/utils/ads_constants.dart';
 import 'package:provider/provider.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/index.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -39,6 +39,8 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
     //recarga el cached del usuario
     // context.read<UserProvider>().loadUser();
     context.read<UserProvider>().loadUser(forceRefresh: true);
+    // print('HOMEEE: ${Supabase.instance.client.auth.currentSession?.accessToken}');
+
   }
   
 
@@ -64,12 +66,14 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     final user = context.watch<UserProvider>().user;
     final nombre = (user?.name?.split(" ").first) ?? "User";
     final address = (user?.address);
     final isPremium = context.watch<SubscriptionProvider>().isPremium;
+    final screenWidth = MediaQuery.of(context).size.width;
     
     return GestureDetector(
       onTap: () {
@@ -850,6 +854,11 @@ class _HomeDogOwnerWidgetState extends State<HomeDogOwnerWidget> {
                 ),
               ),
             ),
+            if(!isPremium)
+              BannerAdWidget(
+                adUnitId: bannerHomeId, 
+                maxWidth: screenWidth,
+              ),
           ],
         ),
       ),

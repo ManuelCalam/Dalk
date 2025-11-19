@@ -1,9 +1,8 @@
 import '/flutter_flow/flutter_flow_util.dart';
-import '/index.dart';
-import 'home_dog_owner_widget.dart' show HomeDogOwnerWidget;
+import 'owner_debt_card_widget.dart' show OwnerDebtCardWidget;
 import 'package:flutter/material.dart';
 
-class HomeDogOwnerModel extends FlutterFlowModel<HomeDogOwnerWidget> {
+class OwnerDebtCardModel extends FlutterFlowModel<OwnerDebtCardWidget> {
   @override
   void initState(BuildContext context) {}
 

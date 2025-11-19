@@ -1,13 +1,16 @@
+import 'package:dalk/SubscriptionProvider.dart';
+import 'package:dalk/dog_owner/banner_add_widget/banner_add_widget.dart';
+import 'package:dalk/user_provider.dart';
+import 'package:dalk/utils/ads_constants.dart';
+import 'package:provider/provider.dart';
+
 import '/components/go_back_container/go_back_container_widget.dart';
 import '/components/notification_container/notification_container_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 import 'frequent_questions_model.dart';
 export 'frequent_questions_model.dart';
@@ -43,6 +46,10 @@ class _FrequentQuestionsWidgetState extends State<FrequentQuestionsWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = context.watch<UserProvider>().user;
+    final String? userType = userProvider?.usertype; 
+    final isPremium = context.watch<SubscriptionProvider>().isPremium;
+    final screenWidth = MediaQuery.of(context).size.width;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -123,6 +130,39 @@ class _FrequentQuestionsWidgetState extends State<FrequentQuestionsWidget> {
                                             .bodyMedium
                                             .fontStyle,
                                       ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
+                                      0, 15, 0, 0),
+                                  child: AutoSizeText(
+                                    'Si tienes alguna otra duda, puedes contactarnos en cualquier momento a nuestro correo: dalk.paseos@gmail.com',
+                                    textAlign: TextAlign.justify,
+                                    style: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .override(
+                                          font: GoogleFonts.lexend(
+                                            fontWeight:
+                                                FlutterFlowTheme.of(context)
+                                                    .bodyMedium
+                                                    .fontWeight,
+                                            fontStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .bodyMedium
+                                                    .fontStyle,
+                                          ),
+                                          color: FlutterFlowTheme.of(context)
+                                              .secondaryBackground,
+                                          letterSpacing: 0.0,
+                                          fontWeight:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontWeight,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle,
+                                        ),
+                                  ),
                                 ),
                                 Padding(
                                   padding: const EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
@@ -1926,6 +1966,11 @@ class _FrequentQuestionsWidgetState extends State<FrequentQuestionsWidget> {
                   ),
                 ),
               ),
+              if(userType == 'Dueño' && !isPremium)
+                BannerAdWidget(
+                  adUnitId: bannerFAQId, 
+                  maxWidth: screenWidth,
+                ),
             ],
           ),
         ),

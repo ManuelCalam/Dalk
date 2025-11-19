@@ -10,9 +10,11 @@ class WalkMonitor {
   // Dos controladores: uno para En curso y otro para Finalizado
   final _startedController = StreamController<String>.broadcast();
   final _finishedController = StreamController<String>.broadcast();
+  final _canceledByWalkerController = StreamController<String>.broadcast();
 
   Stream<String> get walkStartedUpdates => _startedController.stream;
   Stream<String> get walkFinishedUpdates => _finishedController.stream;
+  Stream<String> get walkCanceledWalkerUpdates => _canceledByWalkerController.stream;
 
   WalkMonitor({required this.userId});
 
@@ -47,11 +49,11 @@ class WalkMonitor {
           _finishedController.add(walkId.toString());
         }
 
-        // // Detectar finalización
-        // if (newStatus == 'Finalizado' && oldStatus != 'Finalizado') {
-        //   print('REALTIME: Paseo $walkId cambió a Finalizado');
-        //   _finishedController.add(walkId.toString());
-        // }
+        // Detectar finalización
+        if (newStatus == 'Cancelado_Paseador' && oldStatus != 'Cancelado_Paseador') {
+          print('REALTIME: Paseo $walkId cambió a Cancelado_Dueño');
+          _canceledByWalkerController.add(walkId.toString());
+        }
       },
     );
 
@@ -67,6 +69,7 @@ class WalkMonitor {
     _channel.unsubscribe();
     _startedController.close();
     _finishedController.close();
+    _canceledByWalkerController.close();
     print('REALTIME: Monitor de paseos deshabilitado.');
   }
 }

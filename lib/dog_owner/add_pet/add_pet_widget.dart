@@ -584,10 +584,10 @@ void _showImagePickerOptions(BuildContext context, {int? petId}) {
                                                     if (required != null) return required;
                                                     final min = Validators.minLength(value, 3, fieldName: 'Nombre');
                                                     if (min != null) return min;
-                                                    return Validators.maxLength(value, 30, fieldName: 'Nombre');
+                                                    return Validators.maxLength(value, 20, fieldName: 'Nombre');
                                                   },                                                  
                                                   inputFormatters: [
-                                                    LengthLimitingTextInputFormatter(30),
+                                                    LengthLimitingTextInputFormatter(20),
                                                   ],                                              
                                                   autovalidateMode: _nameValidateMode,
                                             ),

@@ -1,62 +1,55 @@
-import 'package:dalk/backend/supabase/supabase.dart';
-import 'package:dalk/common/chat/chat_widget.dart';
-import 'package:dalk/components/pop_up_current_walk_options/pop_up_current_walk_options_widget.dart';
-import 'package:dalk/components/pop_up_dog_profile/pop_up_dog_profile_widget.dart';
-import 'package:dalk/components/pop_up_dog_walker_profile/pop_up_dog_walker_profile_widget.dart';
-import 'package:dalk/components/pop_up_walk_options/pop_up_walk_options_widget.dart';
-import 'package:dalk/user_provider.dart';
-import 'package:dalk/utils/validation.dart';
-import 'package:provider/provider.dart';
-
-import '/flutter_flow/flutter_flow_icon_button.dart';
+import '/components/pop_up_dog_profile/pop_up_dog_profile_widget.dart';
+import '/components/pop_up_dog_walker_profile/pop_up_dog_walker_profile_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'current_walk_card_model.dart';
-export 'current_walk_card_model.dart';
+import 'owner_debt_card_model.dart';
+export 'owner_debt_card_model.dart';
 
-class CurrentWalkCardWidget extends StatefulWidget {
-  const CurrentWalkCardWidget({
+class OwnerDebtCardWidget extends StatefulWidget {
+  const OwnerDebtCardWidget({
     super.key,
     String? petName,
-    String? userName,
+    String? dogWalker,
     String? status,
     String? usertype,
-    required this.date,
-    required this.time,
-    required this.photoUrl,
-    required this.id, 
+    required this.id,
+    required this.duration,
+    required this.fee,
     required this.walkerId,
-    required this.ownerId,
-    required this.dogId, 
+    required this.dogId,
+    required this.photoUrl,
+    this.onPaymentCompleted,
+
   })  : this.petName = petName ?? '[petName]',
-        this.userName = userName ?? '[userName]',
+        this.dogWalker = dogWalker ?? '[dogOwner]',
         this.status = status ?? '[status]',
         this.usertype = usertype ?? '';
 
+  final VoidCallback? onPaymentCompleted;
   final String petName;
-  final String userName;
-  final DateTime? date;
-  final DateTime? time;
-  final int id;
+  final String dogWalker;
+  final int? id;
   final String status;
   final String usertype;
-  final String photoUrl;
+  final String? duration;
+  final String? fee;
   final String walkerId;
-  final String ownerId;
   final int dogId;
+  final String photoUrl;
+  
+  
 
   @override
-  State<CurrentWalkCardWidget> createState() => _CurrentWalkCardWidgetState();
+  State<OwnerDebtCardWidget> createState() => _OwnerDebtCardWidgetState();
 }
 
-class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
-  late CurrentWalkCardModel _model;
+class _OwnerDebtCardWidgetState extends State<OwnerDebtCardWidget> {
+  late OwnerDebtCardModel _model;
 
   @override
   void setState(VoidCallback callback) {
@@ -67,7 +60,7 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => CurrentWalkCardModel());
+    _model = createModel(context, () => OwnerDebtCardModel());
   }
 
   @override
@@ -79,18 +72,13 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = context.watch<UserProvider>().user;
-    final String? userType = userProvider?.usertype; 
-    final String userPrefix = userType == 'Dueño' ? 'owner' : 'walker';
-
-    final displayName = Validators.formatDisplayName(widget.userName);
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
       child: Container(
         width: MediaQuery.sizeOf(context).width,
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).alternate,
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.circular(15),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.max,
@@ -131,32 +119,6 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Align(
-                              alignment: const AlignmentDirectional(-1, 0),
-                              child: AutoSizeText(
-                                widget.status,
-                                maxLines: 2,
-                                minFontSize: 10,
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      font: GoogleFonts.lexend(
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .fontStyle,
-                                      ),
-                                      color: FlutterFlowTheme.of(context)
-                                          .secondaryBackground,
-                                      fontSize: 16,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                              ),
-                            ),
                             Row(
                               mainAxisSize: MainAxisSize.max,
                               children: [
@@ -195,21 +157,21 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
                                     focusColor: Colors.transparent,
                                     hoverColor: Colors.transparent,
                                     highlightColor: Colors.transparent,
-                                      onTap: () async {
-                                        await showModalBottomSheet(
-                                          isScrollControlled: true,
-                                          backgroundColor: Colors.transparent,
-                                          enableDrag: false,
-                                          context: context,
-                                          builder: (context) {
-                                            return Padding(
-                                              padding:
-                                                  MediaQuery.viewInsetsOf(context),
-                                              child: PopUpDogProfileWidget(dogId: widget.dogId,),
-                                            );
-                                          },
-                                        ).then((value) => safeSetState(() {}));
-                                      },
+                                    onTap: () async {
+                                      await showModalBottomSheet(
+                                        isScrollControlled: true,
+                                        backgroundColor: Colors.transparent,
+                                        enableDrag: false,
+                                        context: context,
+                                        builder: (context) {
+                                          return Padding(
+                                            padding: MediaQuery.viewInsetsOf(
+                                                context),
+                                            child: PopUpDogProfileWidget(dogId: widget.dogId),
+                                          );
+                                        },
+                                      );
+                                    },
                                     child: AutoSizeText(
                                       widget.petName,
                                       style: FlutterFlowTheme.of(context)
@@ -247,7 +209,7 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
                                   padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 2, 0, 0),
                                   child: AutoSizeText(
-                                    widget.usertype == 'Paseador' ? 'Dueño:' : 'Paseador:',
+                                    'Paseador:',
                                     textAlign: TextAlign.center,
                                     maxLines: 1,
                                     style: FlutterFlowTheme.of(context)
@@ -272,60 +234,51 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(5, 2, 0, 0),
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
+                                      5, 2, 0, 0),
                                   child: InkWell(
                                     splashColor: Colors.transparent,
                                     focusColor: Colors.transparent,
                                     hoverColor: Colors.transparent,
                                     highlightColor: Colors.transparent,
                                     onTap: () async {
-                                      if (widget.usertype == 'Dueño') {
-                                        await showModalBottomSheet(
-                                          isScrollControlled: true,
-                                          backgroundColor: Colors.transparent,
-                                          enableDrag: false,
-                                          context: context,
-                                          builder: (context) {
-                                            return Padding(
-                                              padding: MediaQuery.viewInsetsOf(context),
-                                              child: PopUpDogWalkerProfileWidget(walkerId: widget.walkerId),
-                                            );
-                                          },
-                                        );
-                                      } else {
-                                        await showModalBottomSheet(
-                                          isScrollControlled: true,
-                                          backgroundColor: Colors.transparent,
-                                          enableDrag: false,
-                                          context: context,
-                                          builder: (context) {
-                                            return Padding(
-                                              padding: MediaQuery.viewInsetsOf(context),
-                                              child: PopUpDogProfileWidget(dogId: widget.dogId),
-                                            );
-                                          },
-                                        ).then((value) => safeSetState(() {}));
-                                      }
+                                      await showModalBottomSheet(
+                                        isScrollControlled: true,
+                                        backgroundColor: Colors.transparent,
+                                        enableDrag: false,
+                                        context: context,
+                                        builder: (context) {
+                                          return Padding(
+                                            padding: MediaQuery.viewInsetsOf(
+                                                context),
+                                            child:
+                                                PopUpDogWalkerProfileWidget(walkerId: widget.walkerId),
+                                          );
+                                        },
+                                      );
                                     },
                                     child: AutoSizeText(
-                                      displayName,
+                                      widget.dogWalker,
                                       style: FlutterFlowTheme.of(context)
                                           .bodyMedium
                                           .override(
                                             font: GoogleFonts.lexend(
                                               fontWeight: FontWeight.w500,
-                                              fontStyle: FlutterFlowTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontStyle,
+                                              fontStyle:
+                                                  FlutterFlowTheme.of(context)
+                                                      .bodyMedium
+                                                      .fontStyle,
                                             ),
                                             color: FlutterFlowTheme.of(context)
                                                 .accent1,
                                             letterSpacing: 0.0,
                                             fontWeight: FontWeight.w500,
-                                            fontStyle: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .fontStyle,
-                                            decoration: TextDecoration.underline,
+                                            fontStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .bodyMedium
+                                                    .fontStyle,
+                                            decoration:
+                                                TextDecoration.underline,
                                           ),
                                     ),
                                   ),
@@ -339,7 +292,7 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
                                   padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 2, 0, 0),
                                   child: AutoSizeText(
-                                    'Fecha:',
+                                    'Duración:',
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .override(
@@ -365,7 +318,10 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
                                   padding: const EdgeInsetsDirectional.fromSTEB(
                                       5, 2, 0, 0),
                                   child: AutoSizeText(
-                                    dateTimeFormat("d/M/y", widget.date),
+                                    valueOrDefault<String>(
+                                      '${widget.duration} minutos',
+                                      '[duration]',
+                                    ),
                                     textAlign: TextAlign.center,
                                     maxLines: 2,
                                     style: FlutterFlowTheme.of(context)
@@ -398,7 +354,7 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
                                   padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 2, 0, 0),
                                   child: AutoSizeText(
-                                    'Hora:',
+                                    'Tarifa:',
                                     maxLines: 1,
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
@@ -425,7 +381,10 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
                                   padding: const EdgeInsetsDirectional.fromSTEB(
                                       5, 2, 0, 0),
                                   child: AutoSizeText(
-                                    dateTimeFormat("Hm", widget.time),
+                                    valueOrDefault<String>(
+                                      '\$${widget.fee}',
+                                      '[fee]',
+                                    ),
                                     textAlign: TextAlign.center,
                                     maxLines: 2,
                                     style: FlutterFlowTheme.of(context)
@@ -465,24 +424,6 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
                     child: Container(
                       height: MediaQuery.sizeOf(context).height,
                       decoration: const BoxDecoration(),
-                      child: FlutterFlowIconButton(
-                        borderRadius: 0,
-                        buttonSize: MediaQuery.sizeOf(context).width * 0.18,
-                        icon: Icon(
-                          Icons.chat,
-                          color: FlutterFlowTheme.of(context).primary,
-                          size: 35,
-                        ),
-                        onPressed: () async {
-                          context.push(
-                            '/$userPrefix/chat', 
-                            extra: <String, dynamic>{
-                              'walkerId': widget.walkerId, 
-                              'ownerId': widget.ownerId,
-                            },
-                          );
-                        },
-                      ),
                     ),
                   ),
                 ),
@@ -496,70 +437,28 @@ class _CurrentWalkCardWidgetState extends State<CurrentWalkCardWidget> {
                 decoration: const BoxDecoration(),
                 child: FFButtonWidget(
                   onPressed: () async {
-                    final currentUserId = SupaFlow.client.auth.currentUser?.id;
+                    final result = await context.push('/owner/walkPayment', extra: <String, dynamic>{
+                      'walkId': widget.id,
+                      'userType': 'Dueño',
+                    });
 
-                    if (currentUserId == null) {
-                      print("Error: No se pudo obtener el ID del usuario actual.");
-                      return;
-                    }
-
-                    try {
-                      await SupaFlow.client
-                        .from('users') 
-                        .update({'current_walk_id': widget.id}) 
-                        .eq('uuid', currentUserId) 
-                        .maybeSingle();
-                    } catch (e) {
-                      print("Error al actualizar current_walk_id en Supabase: $e");
-                    }
-
-                    bool hasActiveTrackers = false; 
-
-                    try {
-                      // Solo consultamos el campo 'pet_trackers' para saber si tiene algún valor.
-                      final response = await SupaFlow.client
-                          .from('trackers')
-                          .select('id')
-                          .eq('registered_by', currentUserId)
-                          .limit(1)
-                          .maybeSingle(); 
-
-                      if (response != null && response['id'] != null) {
-                        hasActiveTrackers = true;
-                      }
-                    } catch (e) {
-                      print('Error al consultar pet_trackers: $e. Procediendo a la redirección directa.');
-                    }
-
-                    if (userType == 'Dueño') {
-                      if (hasActiveTrackers) {
-                        showModalBottomSheet(
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          enableDrag: false,
-                          context: context,
-                          builder: (context) {
-                            return Padding(
-                              padding: MediaQuery.viewInsetsOf(context),
-                              child: PopUpCurrentWalkOptionsWidget(walkId: widget.id), 
-                            );
-                          },
-                        );
-                      } else {
-                        context.push('/$userPrefix/currentWalk');
-                      }
-                    } else {
-                      context.push('/$userPrefix/currentWalk');
+                    // Si el pago se completó, se devuelve true desde walkPaymentWindow
+                    if (result == true && widget.onPaymentCompleted != null) {
+                      widget.onPaymentCompleted!();
                     }
                   },
-                  text: 'Abrir mapa',
-                  icon: const FaIcon(FontAwesomeIcons.mapLocation, size: 25),
+
+                  text: 'Ficha de pago',
+                  icon: const Icon(
+                    Icons.attach_money,
+                    size: 25,
+                  ),
                   options: FFButtonOptions(
                     height: 40,
                     padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
                     iconAlignment: IconAlignment.end,
-                    iconPadding: const EdgeInsetsDirectional.fromSTEB(5, 0, 0, 0),
-                    color: FlutterFlowTheme.of(context).primary,
+                    iconPadding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                    color: FlutterFlowTheme.of(context).success,
                     textStyle: FlutterFlowTheme.of(context).titleSmall.override(
                           font: GoogleFonts.lexend(
                             fontWeight: FlutterFlowTheme.of(context)

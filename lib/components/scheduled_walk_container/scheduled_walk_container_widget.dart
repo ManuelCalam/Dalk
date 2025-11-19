@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'package:dalk/backend/supabase/supabase.dart' show SupaFlow;
-import 'package:dalk/common/chat/chat_widget.dart';
+import 'package:dalk/auth/supabase_auth/auth_util.dart';
+import 'package:dalk/backend/supabase/supabase.dart' show SupaFlow, Supabase;
 import 'package:dalk/components/pop_up_walk_options/pop_up_walk_options_widget.dart';
 import 'package:dalk/dog_walker/background_service/background_service.dart';
 import 'package:dalk/dog_walker/background_service/on_ios_background';
@@ -27,9 +27,11 @@ export 'scheduled_walk_container_model.dart';
 class ScheduledWalkContainerWidget extends StatefulWidget {
   final String walkId;
   final String userType;
+  final String status;
   const ScheduledWalkContainerWidget({
     required this.walkId,
     required this.userType,
+    required this.status,
     super.key,
   });
 
@@ -82,6 +84,7 @@ class ScheduledWalkContainerWidgetState
 
     _model.textController ??= TextEditingController(text: '[username]');
     _model.textFieldFocusNode ??= FocusNode();
+
 
   }
 
@@ -245,8 +248,6 @@ class ScheduledWalkContainerWidgetState
 
 
   // --- LÓGICA DE RASTREO POR UUID DEL DISPOSITIVO ---
-
-  // 1. Obtener TODOS los UUIDs de rastreador del Dueño
   Future<List<String>> _fetchAllTrackerIds() async {
     final currentUserId = SupaFlow.client.auth.currentUser?.id;
     if (currentUserId == null) return [];
@@ -259,18 +260,34 @@ class ScheduledWalkContainerWidgetState
           .limit(1)
           .maybeSingle(); 
 
-      if (response == null || !response.containsKey('pet_trackers')) return [];
-
-      final trackers = response['pet_trackers'];
-
-      // pet_trackers es un array de UUIDs. Filtramos y convertimos a List<String>.
-      if (trackers is List) {
-        return trackers.map((e) => e.toString()).where((id) => id.isNotEmpty).toList();
+      if (response == null || !response.containsKey('pet_trackers')) {
+        debugPrint('USERS_FETCH: No se encontró respuesta o columna pet_trackers.');
+        return [];
       }
-      return [];
+
+      final dynamic trackersRaw = response['pet_trackers'];
+      List<String> trackerIds = [];
+
+      if (trackersRaw is List) {
+        debugPrint('USERS_FETCH: pet_trackers recibido como List (TEXT[] nativo).');
+        
+        // 2. Mapear y asegurar que cada elemento es un String
+        trackerIds = trackersRaw
+            .map((e) => e.toString())
+            .where((id) => id.isNotEmpty)
+            .toList();
+            
+      } else {
+        debugPrint('USERS_FETCH: ADVERTENCIA - pet_trackers no es List. Tipo: ${trackersRaw.runtimeType}');
+        return []; 
+      }
+
+      // debugPrint('USERS_FETCH: IDs de Trackers Obtenidos: $trackerIds');
+      
+      return trackerIds;
 
     } catch (e) {
-      print('Error fetching pet_trackers: $e');
+      debugPrint('USERS_FETCH: Error al obtener o procesar pet_trackers: $e');
       return [];
     }
   }
@@ -305,7 +322,7 @@ class ScheduledWalkContainerWidgetState
           final newTrackerMarker = Marker(
             markerId: MarkerId(markerId),
             position: position,
-            infoWindow: InfoWindow(title: 'Rastreador: ${trackerId.substring(0, 8)}...'),
+            infoWindow: InfoWindow(title: 'Rastreador: $trackerId'),
             icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure), 
           );
 
@@ -372,7 +389,7 @@ class ScheduledWalkContainerWidgetState
     });
   }
 
-    Future<void> handleWalkCompletion() async { 
+  Future<void> handleWalkCompletion() async { 
     final currentUserId = SupaFlow.client.auth.currentUser?.id;
 
     if (currentUserId == null) {
@@ -387,9 +404,48 @@ class ScheduledWalkContainerWidgetState
       .update({'status': 'Finalizado'})
       .eq('id', widget.walkId);
     
-    // print("Paseo ${widget.walkId} marcado como Finalizado.");
+
+    // ===========================================
+    // Fallback de limpieza en el usuario dueño
+    // ===========================================
+    // Obtener el owner_id del paseo recién finalizado
+    final ownerRes = await SupaFlow.client
+      .from('walks')
+      .select('owner_id')
+      .eq('id', widget.walkId)
+      .maybeSingle();
+
+    final ownerId = ownerRes?['owner_id'];
+
+    if (ownerId != null) {
+      print("Iniciando limpieza de estado para el Dueño: $ownerId");
+      try {
+        await SupaFlow.client
+          .from('users')
+          .update({'current_walk_id': null, 'pet_trackers': null})
+          .eq('uuid', ownerId)
+          .maybeSingle();
+        print("Limpieza del estado del Dueño ($ownerId) completada con éxito.");
+      } catch (e) {
+        print("Error al limpiar el estado del Dueño en Supabase: $e");
+      }
+    } else {
+      print("ADVERTENCIA: No se pudo encontrar el owner_id para el paseo ${widget.walkId}.");
+    }
+      
+    await handleWalkCleanupAndReassign(currentUserId);
+
+  }
+
+  Future<void> handleCancellationMidWalk() async {
+    await handleWalkCleanupAndReassign(currentUserUid);
+  }
 
 
+  /// ===============================================================
+  /// Limpieza y reasignación de paseos
+  /// ===============================================================
+  Future<void> handleWalkCleanupAndReassign(String currentUserId) async {
     final remainingWalksRes = await SupaFlow.client
         .from('walks')
         .select('id')
@@ -401,6 +457,7 @@ class ScheduledWalkContainerWidgetState
         .map((e) => e['id']?.toString() ?? '')
         .where((id) => id.isNotEmpty)
         .toList();
+
 
     // El primer paseo en la lista será el nuevo paseo principal (foreground)
     final nextForegroundWalkId = allActiveWalkIds.isNotEmpty 
@@ -414,10 +471,10 @@ class ScheduledWalkContainerWidgetState
         .eq('uuid', currentUserId)
         .maybeSingle();
         
+
       print("current_walk_id reasignado a $nextForegroundWalkId.");
 
       await _setTrackingIds(includeCurrentWalk: true);
-
     } else {
       
       await SupaFlow.client
@@ -432,10 +489,9 @@ class ScheduledWalkContainerWidgetState
       print("current_walk_id limpiado. Servicio de fondo detenido.");
     }
 
-    // 5. Navegar a CurrentWalkEmptyWindow
-    GoRouter.of(context).go('/walker/currentWalk');
-
+    context.go('/walker/currentWalk');
   }
+
 
 
   @override
@@ -503,288 +559,418 @@ class ScheduledWalkContainerWidgetState
 
           // Contenedor de información del usuario con scroll
           Expanded(
-            // El FutureBuilder solo se ejecuta UNA VEZ (al cargar el widget)
-            child: FutureBuilder<Map<String, dynamic>?>(
-              future: fetchWalkInfoFromView(widget.walkId),
-              builder: (context, snapshot) {
-                // Mientras carga
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
+  child: StreamBuilder<List<Map<String, dynamic>>>(
+    stream: Supabase.instance.client
+        .from('walks_with_names')
+        .stream(primaryKey: ['id'])
+        .eq('id', widget.walkId)
+        .limit(1),
+    builder: (context, snapshot) {
+      // Mientras carga
+      if (!snapshot.hasData) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      }
 
-                // Si hay error
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Text('Error: ${snapshot.error}'),
-                  );
-                }
+      // Si no hay datos
+      if (snapshot.data!.isEmpty) {
+        return const Center(
+          child: Text('No se encontraron datos'),
+        );
+      }
 
-                // Si no hay datos
-                if (!snapshot.hasData) {
-                  return const Center(
-                    child: Text('No se encontraron datos'),
-                  );
-                }
+      final walkData = snapshot.data!.first;
+      final walkStatus = walkData['status'];
 
-                final walkData = snapshot.data!;
-
-                return SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                    child: Container(
-                      width: MediaQuery.sizeOf(context).width,
-                      decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context).tertiary,
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsetsDirectional.fromSTEB(
-                                15, 15, 15, 0),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Container(
-                                  decoration: const BoxDecoration(),
-                                  child: Container(
-                                    width:
-                                        MediaQuery.sizeOf(context).width * 0.2,
-                                    height:
-                                        MediaQuery.sizeOf(context).width * 0.2,
-                                    clipBehavior: Clip.antiAlias,
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Image.network(
-                                      widget.userType == 'Dueño'
-                                          ? walkData['walker_photo_url']
-                                          : walkData['dog_photo_url'],
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
+      // Si el paseo fue cancelado por el dueño
+      if (walkStatus == 'Cancelado_Dueño' && widget.userType == 'Paseador') {
+  return SingleChildScrollView(
+    child: Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+      child: Container(
+        width: MediaQuery.sizeOf(context).width,
+        decoration: BoxDecoration(
+          color: FlutterFlowTheme.of(context).tertiary,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(15, 0, 15, 10),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Icon(
+                    Icons.cancel_rounded,
+                    color: FlutterFlowTheme.of(context).error,
+                    size: 35, // Más pequeño
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.fromSTEB(7, 0, 0, 0),
+                      child: TextFormField(
+                        controller: _model.textController
+                          ..text = 'Paseo cancelado',
+                        focusNode: _model.textFieldFocusNode,
+                        autofocus: false,
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 12), // Más compacto
+                          labelText: 'Estado',
+                          labelStyle: FlutterFlowTheme.of(context)
+                              .bodyMedium
+                              .override(
+                                font: GoogleFonts.lexend(
+                                  fontWeight: FontWeight.bold,
                                 ),
-                                Expanded(
-                                  child: Padding(
-                                    padding:
-                                        const EdgeInsetsDirectional.fromSTEB(10, 0, 0, 0),
-                                    child: TextFormField(
-                                  
-                                      controller: _model.textController..text = widget.userType == 'Dueño' 
-                                                  ? Validators.formatDisplayName(walkData['walker_name'])
-                                                  : walkData['pet_name'],
-                                      focusNode: _model.textFieldFocusNode,
-                                      autofocus: false,
-                                      readOnly: true,
-                                      obscureText: false,
-                                      decoration: InputDecoration(
-                                        isDense: true,
-                                        labelText: widget.userType == 'Dueño' ? 'Paseador' : 'Mascota',
-                                        labelStyle: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              font: GoogleFonts.lexend(
-                                                fontWeight: FontWeight.bold,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                              color: FlutterFlowTheme.of(context)
-                                                  .primary,
-                                              fontSize: 18,
-                                              letterSpacing: 0.0,
-                                              fontWeight: FontWeight.bold,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                            ),
-                                        hintStyle: FlutterFlowTheme.of(context)
-                                            .labelMedium
-                                            .override(
-                                              font: GoogleFonts.lexend(
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .labelMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .labelMedium
-                                                        .fontStyle,
-                                              ),
-                                              letterSpacing: 0.0,
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelMedium
-                                                      .fontStyle,
-                                            ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                            color: Color(0x00000000),
-                                            width: 1,
-                                          ),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                            color: Color(0x00000000),
-                                            width: 1,
-                                          ),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        errorBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                            color:
-                                                FlutterFlowTheme.of(context).error,
-                                            width: 1,
-                                          ),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        focusedErrorBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                            color:
-                                                FlutterFlowTheme.of(context).error,
-                                            width: 1,
-                                          ),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        filled: true,
-                                        fillColor:
-                                            FlutterFlowTheme.of(context).alternate,
-                                        prefixIcon: Icon(
-                                          widget.userType == 'Dueño' ?
-                                          Icons.person : Icons.pets_outlined,
-                                          color:
-                                              FlutterFlowTheme.of(context).primary,
-                                          size: 25,
-                                        ),
-                                      ),
-                                      style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                        font: GoogleFonts.lexend(
-                                          fontWeight: FontWeight.w600,
-                                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                        ),
-                                        color: FlutterFlowTheme.of(context).secondaryBackground,
-                                        fontSize: 23,
-                                        letterSpacing: 0.0,
-                                        fontWeight: FontWeight.w600,
-                                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                      ),
-                                      textAlign: TextAlign.start,
-                                      cursorColor:
-                                          FlutterFlowTheme.of(context).primaryText,
-                                      enableInteractiveSelection: false,
-                                      validator: _model.textControllerValidator
-                                          .asValidator(context),
-                                    ),
-                                  ),
-                                ),
-                                Align(
-                                  alignment: const AlignmentDirectional(1, 0),
-                                  child: Padding(
-                                    padding: const EdgeInsetsDirectional.fromSTEB(
-                                        10, 0, 0, 0),
-                                    child: FlutterFlowIconButton(
-                                      borderRadius: 8,
-                                      icon: Icon(
-                                        Icons.chat,
-                                        color: FlutterFlowTheme.of(context)
-                                            .primary,
-                                        size: 30,
-                                      ),
-                                      onPressed: () {
-                                        final String userSegment = widget.userType == 'Dueño' ? 'owner' : 'walker';
-                                        context.push(
-                                          '/$userSegment/chat', 
-                                          extra: <String, dynamic>{
-                                            'walkerId': walkData['walker_id'], 
-                                            'ownerId': walkData['owner_id'],
-                                          },
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          
-
-                          Padding(
-                            padding: const EdgeInsetsDirectional.fromSTEB(
-                                0, 0, 0, 15),
-                            child: Container(
-                              width: MediaQuery.sizeOf(context).width * 0.9,
-                              height: MediaQuery.sizeOf(context).height * 0.06,
-                              decoration: const BoxDecoration(),
-                              child: Padding(
-                                padding: const EdgeInsetsDirectional.fromSTEB(
-                                    0, 10, 0, 0),
-                                child: FFButtonWidget(
-                                  onPressed: () async {
-                                     await showModalBottomSheet(
-                                      isScrollControlled: true,
-                                      backgroundColor: Colors.transparent,
-                                      enableDrag: false,
-                                      context: context,
-                                      builder: (context) {
-                                        return Padding(
-                                          padding:
-                                              MediaQuery.viewInsetsOf(context),
-                                          child: PopUpWalkOptionsWidget(walkId: int.parse(widget.walkId), usertype: widget.userType,  onWalkCompletion: handleWalkCompletion),
-                                        );
-                                      },
-                                    ).then((value) => safeSetState(() {}));
-                                  },
-                                  text: 'Ver detalles',
-                                  icon: const Icon(
-                                    Icons.keyboard_double_arrow_up_rounded,
-                                    size: 30,
-                                  ),
-                                  options: FFButtonOptions(
-                                    height: 40,
-                                    padding: const EdgeInsetsDirectional.fromSTEB(
-                                        16, 0, 16, 0),
-                                    iconAlignment: IconAlignment.end,
-                                    iconPadding: const EdgeInsetsDirectional.fromSTEB(
-                                        0, 0, 0, 0),
-                                    color: FlutterFlowTheme.of(context).primary,
-                                    textStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .override(
-                                          font: GoogleFonts.lexend(
-                                            fontWeight: FlutterFlowTheme.of(
-                                                    context)
-                                                .titleSmall
-                                                .fontWeight,
-                                          ),
-                                          color: Colors.white,
-                                          letterSpacing: 0.0,
-                                        ),
-                                    elevation: 0,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
+                                color: FlutterFlowTheme.of(context).primary,
+                                fontSize: 16, // Texto más pequeño
+                                letterSpacing: 0.0,
                               ),
-                            ),
+                          filled: true,
+                          fillColor: FlutterFlowTheme.of(context).alternate,
+                          prefixIcon: Icon(
+                            Icons.info_outline,
+                            color: FlutterFlowTheme.of(context).primary,
+                            size: 22, // Icono más pequeño
                           ),
-                        ],
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Color(0x00000000),
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        style: FlutterFlowTheme.of(context)
+                            .bodyMedium
+                            .override(
+                              font: GoogleFonts.lexend(
+                                fontWeight: FontWeight.w600,
+                              ),
+                              color: FlutterFlowTheme.of(context)
+                                  .secondaryBackground,
+                              fontSize: 20, // Texto más pequeño
+                              letterSpacing: 0.0,
+                            ),
+                        textAlign: TextAlign.start,
+                        cursorColor: FlutterFlowTheme.of(context).primaryText,
                       ),
                     ),
                   ),
-                );
-              },
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(15, 5, 15, 10),
+              child: Text(
+                'Por favor, finaliza la sesión de ubicación y cierra el proceso del paseo.',
+                textAlign: TextAlign.center,
+                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                      font: GoogleFonts.lexend(
+                        fontWeight: FontWeight.w400, // Un poco menos grueso
+                      ),
+                      color: FlutterFlowTheme.of(context).secondaryBackground,
+                      fontSize: 14, // Texto más pequeño
+                      letterSpacing: 0.0,
+                    ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(0, 5, 0, 0),
+              child: Container(
+                width: MediaQuery.sizeOf(context).width * 0.9,
+                height: MediaQuery.sizeOf(context).height * 0.05, // Botón más compacto
+                decoration: const BoxDecoration(),
+                child: FFButtonWidget(
+                  onPressed: () async {
+                    handleCancellationMidWalk();
+                  },
+                  text: 'Cerrar comunicación',
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    size: 20, // Icono más pequeño
+                  ),
+                  options: FFButtonOptions(
+                    height: 35, // Altura reducida
+                    padding: const EdgeInsetsDirectional.fromSTEB(12, 0, 12, 0), // Padding reducido
+                    color: FlutterFlowTheme.of(context).error,
+                    textStyle: FlutterFlowTheme.of(context)
+                        .titleSmall
+                        .override(
+                          font: GoogleFonts.lexend(
+                            fontWeight: FontWeight.w600,
+                          ),
+                          color: Colors.white,
+                          fontSize: 14, // Texto más pequeño
+                          letterSpacing: 0.0,
+                        ),
+                    elevation: 0,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+      // Cualquier otro status
+      return SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+          child: Container(
+            width: MediaQuery.sizeOf(context).width,
+            decoration: BoxDecoration(
+              color: FlutterFlowTheme.of(context).tertiary,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(15, 15, 15, 0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Container(
+                        width: MediaQuery.sizeOf(context).width * 0.2,
+                        height: MediaQuery.sizeOf(context).width * 0.2,
+                        clipBehavior: Clip.antiAlias,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                        ),
+                        child: Image.network(
+                          widget.userType == 'Dueño'
+                              ? walkData['walker_photo_url']
+                              : walkData['dog_photo_url'],
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding:
+                              const EdgeInsetsDirectional.fromSTEB(10, 0, 0, 0),
+                          child: TextFormField(
+                        
+                            controller: _model.textController..text = widget.userType == 'Dueño' 
+                                        ? Validators.formatDisplayName(walkData['walker_name'])
+                                        : walkData['pet_name'],
+                            focusNode: _model.textFieldFocusNode,
+                            autofocus: false,
+                            readOnly: true,
+                            obscureText: false,
+                            decoration: InputDecoration(
+                              isDense: true,
+                              labelText: widget.userType == 'Dueño' ? 'Paseador' : 'Mascota',
+                              labelStyle: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .override(
+                                    font: GoogleFonts.lexend(
+                                      fontWeight: FontWeight.bold,
+                                      fontStyle:
+                                          FlutterFlowTheme.of(context)
+                                              .bodyMedium
+                                              .fontStyle,
+                                    ),
+                                    color: FlutterFlowTheme.of(context)
+                                        .primary,
+                                    fontSize: 18,
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.bold,
+                                    fontStyle:
+                                        FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontStyle,
+                                  ),
+                              hintStyle: FlutterFlowTheme.of(context)
+                                  .labelMedium
+                                  .override(
+                                    font: GoogleFonts.lexend(
+                                      fontWeight:
+                                          FlutterFlowTheme.of(context)
+                                              .labelMedium
+                                              .fontWeight,
+                                      fontStyle:
+                                          FlutterFlowTheme.of(context)
+                                              .labelMedium
+                                              .fontStyle,
+                                    ),
+                                    letterSpacing: 0.0,
+                                    fontWeight:
+                                        FlutterFlowTheme.of(context)
+                                            .labelMedium
+                                            .fontWeight,
+                                    fontStyle:
+                                        FlutterFlowTheme.of(context)
+                                            .labelMedium
+                                            .fontStyle,
+                                  ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                  color: Color(0x00000000),
+                                  width: 1,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                  color: Color(0x00000000),
+                                  width: 1,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color:
+                                      FlutterFlowTheme.of(context).error,
+                                  width: 1,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              focusedErrorBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color:
+                                      FlutterFlowTheme.of(context).error,
+                                  width: 1,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              filled: true,
+                              fillColor:
+                                  FlutterFlowTheme.of(context).alternate,
+                              prefixIcon: Icon(
+                                widget.userType == 'Dueño' ?
+                                Icons.person : Icons.pets_outlined,
+                                color:
+                                    FlutterFlowTheme.of(context).primary,
+                                size: 25,
+                              ),
+                            ),
+                            style: FlutterFlowTheme.of(context).bodyMedium.override(
+                              font: GoogleFonts.lexend(
+                                fontWeight: FontWeight.w600,
+                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                              ),
+                              color: FlutterFlowTheme.of(context).secondaryBackground,
+                              fontSize: 23,
+                              letterSpacing: 0.0,
+                              fontWeight: FontWeight.w600,
+                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                            ),
+                            textAlign: TextAlign.start,
+                            cursorColor:
+                                FlutterFlowTheme.of(context).primaryText,
+                            enableInteractiveSelection: false,
+                            validator: _model.textControllerValidator
+                                .asValidator(context),
+                          ),
+                        ),
+                      ),
+                      Align(
+                        alignment: const AlignmentDirectional(1, 0),
+                        child: Padding(
+                          padding:
+                              const EdgeInsetsDirectional.fromSTEB(10, 0, 0, 0),
+                          child: FlutterFlowIconButton(
+                            borderRadius: 8,
+                            icon: Icon(
+                              Icons.chat,
+                              color: FlutterFlowTheme.of(context).primary,
+                              size: 30,
+                            ),
+                            onPressed: () {
+                              final String userSegment =
+                                  widget.userType == 'Dueño'
+                                      ? 'owner'
+                                      : 'walker';
+                              context.push(
+                                '/$userSegment/chat',
+                                extra: <String, dynamic>{
+                                  'walkerId': walkData['walker_id'],
+                                  'ownerId': walkData['owner_id'],
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 15),
+                  child: Container(
+                    width: MediaQuery.sizeOf(context).width * 0.9,
+                    height: MediaQuery.sizeOf(context).height * 0.06,
+                    decoration: const BoxDecoration(),
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                          0, 10, 0, 0),
+                      child: FFButtonWidget(
+                        onPressed: () async {
+                          await showModalBottomSheet(
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            enableDrag: false,
+                            context: context,
+                            builder: (context) {
+                              return Padding(
+                                padding: MediaQuery.viewInsetsOf(context),
+                                child: PopUpWalkOptionsWidget(
+                                  walkId: int.parse(widget.walkId),
+                                  usertype: widget.userType,
+                                  onWalkCompletion: handleWalkCompletion,
+                                  onWalkMidCancellation: handleCancellationMidWalk,
+                                ),
+                              );
+                            },
+                          ).then((value) => safeSetState(() {}));
+                        },
+                        text: 'Ver detalles',
+                        icon: const Icon(
+                          Icons.keyboard_double_arrow_up_rounded,
+                          size: 30,
+                        ),
+                        options: FFButtonOptions(
+                          height: 40,
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                              16, 0, 16, 0),
+                          color: FlutterFlowTheme.of(context).primary,
+                          textStyle: FlutterFlowTheme.of(context)
+                              .titleSmall
+                              .override(
+                                font: GoogleFonts.lexend(
+                                  fontWeight: FlutterFlowTheme.of(context)
+                                      .titleSmall
+                                      .fontWeight,
+                                ),
+                                color: Colors.white,
+                                letterSpacing: 0.0,
+                              ),
+                          elevation: 0,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
+        ),
+      );
+    },
+  ),
+),
+
         ],
       ),
     );

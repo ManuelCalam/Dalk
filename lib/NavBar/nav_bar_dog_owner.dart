@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:dalk/backend/supabase/supabase.dart';
+import 'package:dalk/components/pop_up_confirm_dialog/pop_up_confirm_dialog_widget.dart';
 import 'package:dalk/components/pop_up_current_walk_options/pop_up_current_walk_options_widget.dart';
 import 'package:dalk/dog_owner/walk_monitor.dart';
 import 'package:flutter/material.dart';
@@ -27,6 +28,7 @@ class _NavBarOwnerPageState extends State<NavBarOwnerPage> {
   late WalkMonitor _walkMonitor;
   StreamSubscription<String>? _walkStartSubscription;
   StreamSubscription<String>? _walkFinishSubscription;
+  StreamSubscription<String>? _walkCanceledSubscriptions;
 
   @override
   void initState() {
@@ -54,6 +56,41 @@ class _NavBarOwnerPageState extends State<NavBarOwnerPage> {
             return Padding(
               padding: MediaQuery.viewInsetsOf(context),
               child: PopUpCurrentWalkOptionsWidget(walkId: int.tryParse(walkId) ?? 0,),
+            );
+          },
+        );
+      });
+
+      _walkCanceledSubscriptions = _walkMonitor.walkCanceledWalkerUpdates.listen((walkId) async {
+        print('REALTIME: Paseo $walkId cambió a Cancelado_Dueño');
+
+        if (!mounted) return;
+        await Future.delayed(Duration.zero);
+        if (!mounted) return;
+
+        context.go('/owner/home');
+        // Mostrar pop-up de notificación
+        showDialog(
+          context: context,
+          builder: (context) {
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              child: PopUpConfirmDialogWidget(
+                title: "Paseo cancelado",
+                message: "El paseador ha cancelado el paseo. Se registrará el adeudo correspondiente en su cuenta.",
+                confirmText: "Cerrar",
+                cancelText: "",
+                confirmColor: FlutterFlowTheme.of(context).error,
+                cancelColor: FlutterFlowTheme.of(context).accent1,
+                icon: Icons.cancel,
+                iconColor: FlutterFlowTheme.of(context).error,
+                onConfirm: () {
+                  context.pop();
+                },
+                onCancel: () {
+                  context.pop();
+                },
+              ),
             );
           },
         );
@@ -104,6 +141,7 @@ class _NavBarOwnerPageState extends State<NavBarOwnerPage> {
   void dispose() {
     _walkStartSubscription?.cancel();
     _walkFinishSubscription?.cancel();
+    _walkCanceledSubscriptions?.cancel();
     _walkMonitor.dispose();
     super.dispose();
   }

@@ -23,7 +23,7 @@ class Validators {
   }
 
   static String? email(String? value) {
-    if (value == null || value.isEmpty) return 'Correo obligatorio';
+    if (value == null || value.trim().isEmpty) return 'Correo obligatorio';
     final regex = RegExp(
       r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
     );
@@ -32,15 +32,22 @@ class Validators {
   }
 
   static String? password(String? value) {
-    if (value == null || value.isEmpty) return 'Contraseña obligatoria';
+    if (value == null || value.trim().isEmpty) return 'Contraseña obligatoria';
     if (value.length < 8) return 'Mínimo 8 caracteres';
     return null;
   }
 
   static String? postalCode(String? value) {
-    if (value == null || value.isEmpty) return 'Código postal obligatorio';
+    if (value == null || value.trim().isEmpty) return 'Código postal obligatorio';
     final regex = RegExp(r'^\d{5}$');
     if (!regex.hasMatch(value)) return 'Código postal a 5 digitos';
+    return null;
+  }
+
+  static String? serialNumberValidator(String? value) {
+    if (value == null || value.trim().isEmpty) return 'Número de serie obligatorio';
+    final regex = RegExp(r'^[A-Z0-9]{6}$');
+    if (!regex.hasMatch(value)) return 'Debe tener 6 caracteres, solo letras mayúsculas y números';
     return null;
   }
 
@@ -50,7 +57,7 @@ class Validators {
   }
 
   static String? phone(String? value) {
-    if (value == null || value.isEmpty) return 'Teléfono obligatorio';
+    if (value == null || value.trim().isEmpty) return 'Teléfono obligatorio';
     final regex = RegExp(r'^\d{10}$');
     if (!regex.hasMatch(value)) return 'Teléfono a 10 dígitos';
     return null;

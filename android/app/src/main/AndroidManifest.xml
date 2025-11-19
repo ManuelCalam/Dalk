@@ -12,12 +12,17 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission 
+        android:name="com.google.android.gms.permission.AD_ID"
+        tools:node="merge" />
+        
     <uses-permission
     android:name="android.permission.USE_FULL_SCREEN_INTENT"
     tools:node="remove" />
 
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    
 
 
 
@@ -28,9 +33,14 @@
         android:requestLegacyExternalStorage="true">
 
         <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-7465142412381768~9736997633"/>
+ 
+
+        <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}"
- />
+        />
 
         <service
             android:name="id.flutter.flutter_background_service.BackgroundService"
