@@ -419,51 +419,6 @@ class _VerificationCallbackWidgetState extends State<VerificationCallbackWidget>
               if (!_isChecking && _statusMessage.contains('exitosa'))
                 const Icon(Icons.check_circle, color: Colors.green, size: 64),
               
-              // 🔧 INFO DE DEBUG
-              const SizedBox(height: 40),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.black26,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Debug Info:',
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'User ID: ${widget.userId.isEmpty ? "NULL ❌" : widget.userId}',
-                      style: TextStyle(
-                        color: widget.userId.isEmpty ? Colors.red : Colors.white70,
-                        fontSize: 11,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Session: ${widget.sessionId}',
-                      style: const TextStyle(color: Colors.white70, fontSize: 11),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Polling: ${_pollingTimer?.isActive ?? false ? "Activo ($_pollingAttempts/$_maxPollingAttempts) ✅" : "Inactivo"}',
-                      style: const TextStyle(color: Colors.white70, fontSize: 11),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Realtime: ${_channel != null ? "Conectado ✅" : "Desconectado"}',
-                      style: const TextStyle(color: Colors.white70, fontSize: 11),
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),

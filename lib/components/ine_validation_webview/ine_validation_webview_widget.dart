@@ -9,6 +9,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 import 'ine_validation_webview_model.dart';
 export 'ine_validation_webview_model.dart';
+import 'package:dalk/auth/supabase_auth/auth_util.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '/backend/supabase/supabase.dart';
 
 class IneValidationWebviewWidget extends StatefulWidget {
   static const String routeName = 'ineValidationWebview';
@@ -65,12 +69,77 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
     super.dispose();
   }
 
-  void _closeWebView() {
-  if (mounted) {
-    debugPrint('🔙 Cerrando WebView con FALSE (usuario canceló)');
-    Navigator.of(context).pop(false);  // ✅ RETORNAR false cuando cancela
+  void _closeWebView() async {
+    if (!mounted) return;
+
+    debugPrint('🔙 Cerrando WebView - Usuario canceló verificación');
+    
+    final userId = currentUserUid;
+    debugPrint('👤 User ID a eliminar: $userId');
+
+    // 1️⃣ CERRAR SESIÓN DE SUPABASE
+    try {
+      await Supabase.instance.client.auth.signOut();
+      debugPrint('🔓 Sesión de Supabase cerrada');
+    } catch (e) {
+      debugPrint('⚠️ Error cerrando sesión: $e');
+    }
+
+    // 2️⃣ LIMPIAR CACHÉ
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+      debugPrint('🗑️ Caché limpiado');
+    } catch (e) {
+      debugPrint('⚠️ Error limpiando caché: $e');
+    }
+
+    // 3️⃣ ELIMINAR USUARIO DE BD Y AUTH
+    if (userId.isNotEmpty) {
+      await _deleteUnverifiedUser(userId);
+      debugPrint('🚫 Usuario eliminado completamente desde WebView');
+    } else {
+      debugPrint('⚠️ No se pudo obtener userId para eliminar');
+    }
+
+    // 4️⃣ CERRAR WEBVIEW Y REDIRIGIR
+    if (mounted) {
+      Navigator.of(context).pop(false); // Retornar false al cerrar
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Debes verificar tu identidad para continuar'),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 3),
+        ),
+      );
+
+      // Esperar un momento para mostrar el SnackBar
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      context.go('/login');
+    }
   }
-}
+
+Future<void> _deleteUnverifiedUser(String userId) async {
+    try {
+      debugPrint('🗑️ Eliminando usuario no verificado: $userId');
+
+      final response = await SupaFlow.client.functions.invoke(
+        'delete-unverified-user',
+        body: {'userId': userId},
+      );
+
+      if (response.status == 200) {
+        debugPrint('✅ Usuario eliminado exitosamente desde WebView');
+      } else {
+        debugPrint('⚠️ Error eliminando usuario: ${response.data}');
+      }
+    } catch (e) {
+      debugPrint('💥 Error llamando a delete-unverified-user: $e');
+    }
+  }
+
 
 
 
@@ -81,7 +150,7 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
       onPopInvoked: (didPop) async {
         if (didPop) return;
         final shouldClose = await _showCancelDialog();
-        if (shouldClose == true) _closeWebView();;
+        if (shouldClose == true) _closeWebView();
       },
       child: Scaffold(
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
@@ -91,8 +160,14 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () async {
+              debugPrint('🔙 Usuario presionó botón de retroceso');
               final shouldClose = await _showCancelDialog();
-              if (shouldClose == true) _closeWebView();;
+              if (shouldClose == true) {
+                debugPrint('✅ Usuario confirmó cerrar - Ejecutando eliminación');
+                _closeWebView();
+              } else {
+                debugPrint('❌ Usuario canceló cierre - Continúa en WebView');
+              }
             },
           ),
           title: Text(
@@ -349,7 +424,7 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
               ),
         ),
         content: Text(
-          'Si cancelas, no podrás completar tu registro como paseador.',
+          'Si cancelas, no podrás completar tu registro como paseador y tu cuenta será eliminada.',
           style: FlutterFlowTheme.of(context).bodyMedium.override(
                 font: GoogleFonts.lexend(),
                 color: Colors.white70,
@@ -360,14 +435,20 @@ class _IneValidationWebviewWidgetState extends State<IneValidationWebviewWidget>
             children: [
               Expanded(
                 child: TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
+                  onPressed: () {
+                    debugPrint('✅ Usuario decidió continuar con la verificación');
+                    Navigator.of(context).pop(false);
+                  },
                   child: const Text('Continuar', style: TextStyle(color: Colors.white70)),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(true),
+                  onPressed: () {
+                    debugPrint('❌ Usuario confirmó cancelación de verificación');
+                    Navigator.of(context).pop(true);
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
                     shape: RoundedRectangleBorder(

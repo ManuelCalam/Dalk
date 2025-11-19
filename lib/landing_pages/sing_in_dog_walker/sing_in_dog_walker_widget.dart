@@ -408,28 +408,6 @@ Future<void> _startIdentityVerification() async {
 
     if (!mounted) return;
 
-    /* 🔑 SI EL USUARIO COMPLETÓ (result == true) O CANCELÓ (result == false)
-    if (result == true) {
-      // Usuario terminó el proceso, ir a página de callback
-      context.pushNamed(
-        'verificationCallback',
-        queryParameters: {
-          'user_id': userId,
-          'session_id': sessionId,
-        },
-      );
-    } else {
-      // Usuario canceló
-      debugPrint('🚫🚫🚫🚫🚫🚫🚫 Aqui hubo un singOut porque el usuario canceló');
-      await authManager.signOut();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Verificación cancelada. Debes completarla para acceder.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      context.go('/');
-    } */
 
   } catch (e, stackTrace) {
     debugPrint('💥 Error en verificación: $e');
@@ -440,6 +418,25 @@ Future<void> _startIdentityVerification() async {
         SnackBar(content: Text('Error iniciando verificación: $e')),
       );
     }
+  }
+}
+
+Future<void> _deleteUnverifiedUser(String userId) async {
+  try {
+    debugPrint('🗑️ Eliminando usuario no verificado: $userId');
+
+    final response = await SupaFlow.client.functions.invoke(
+      'delete-unverified-user',
+      body: {'userId': userId},
+    );
+
+    if (response.status == 200) {
+      debugPrint('✅ Usuario eliminado exitosamente');
+    } else {
+      debugPrint('⚠️ Error eliminando usuario: ${response.data}');
+    }
+  } catch (e) {
+    debugPrint('💥 Error llamando a delete-unverified-user: $e');
   }
 }
 
@@ -3150,12 +3147,34 @@ Future<void> _startIdentityVerification() async {
 
               if (shouldContinue != true) {
                 // Usuario canceló
-                      debugPrint('🚫🚫🚫🚫🚫🚫🚫 Aqui hubo un singOut después de mostrar el dialog');
-
                 debugPrint('❌ Usuario canceló verificación');
-                await authManager.signOut();
-                debugPrint('🔓 Sesión cerrada');
                 
+                final userId = currentUserUid;
+                
+                // 1️⃣ CERRAR SESIÓN DE SUPABASE
+                try {
+                  await Supabase.instance.client.auth.signOut();
+                  debugPrint('🔓 Sesión de Supabase cerrada');
+                } catch (e) {
+                  debugPrint('⚠️ Error cerrando sesión: $e');
+                }
+
+                // 2️⃣ LIMPIAR CACHÉ
+                try {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.clear();
+                  debugPrint('🗑️ Caché limpiado');
+                } catch (e) {
+                  debugPrint('⚠️ Error limpiando caché: $e');
+                }
+
+                // 3️⃣ ELIMINAR USUARIO DE BD Y AUTH
+                if (userId.isNotEmpty) {
+                  await _deleteUnverifiedUser(userId);
+                }
+
+                debugPrint('🚫 Usuario canceló verificación y fue eliminado completamente');
+
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -3163,11 +3182,11 @@ Future<void> _startIdentityVerification() async {
                       backgroundColor: Colors.orange,
                     ),
                   );
-                  // Regresar al login
-                  context.go('/');
+                  context.go('/login');
                 }
                 return;
               }
+
 
               debugPrint('✅ Usuario aceptó continuar con verificación');
 
@@ -3177,17 +3196,42 @@ Future<void> _startIdentityVerification() async {
               
               if (!cameraGranted.isGranted) {
                 debugPrint('❌ Permiso de cámara denegado');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Se requiere permiso de cámara para la verificación'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
+                
+                final userId = currentUserUid;
 
-                      debugPrint('🚫🚫🚫🚫🚫🚫🚫 Aqui hubo un singOut después de los permisos de la cámara');
+                // 1️⃣ CERRAR SESIÓN DE SUPABASE
+                try {
+                  await Supabase.instance.client.auth.signOut();
+                  debugPrint('🔓 Sesión de Supabase cerrada');
+                } catch (e) {
+                  debugPrint('⚠️ Error cerrando sesión: $e');
+                }
 
-                await authManager.signOut();
-                if (mounted) context.go('/');
+                // 2️⃣ LIMPIAR CACHÉ
+                try {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.clear();
+                  debugPrint('🗑️ Caché limpiado');
+                } catch (e) {
+                  debugPrint('⚠️ Error limpiando caché: $e');
+                }
+
+                // 3️⃣ ELIMINAR USUARIO DE BD Y AUTH
+                if (userId.isNotEmpty) {
+                  await _deleteUnverifiedUser(userId);
+                }
+
+                debugPrint('🚫 Permiso de cámara denegado - Usuario eliminado completamente');
+
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Se requiere permiso de cámara para la verificación'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  context.go('/login');
+                }
                 return;
               }
 
